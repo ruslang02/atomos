@@ -1,0 +1,9 @@
+{
+  "name": "AtomOS SHell",
+  "shortName": "ASH",
+  "icon": "/atomos/icons/Console.png",
+  "description": "AtomOS Shell for embedding into applications",
+  "width": 450,
+  "height": 250,
+  "hidden": true
+}

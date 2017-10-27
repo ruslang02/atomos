@@ -1,0 +1,74 @@
+<start-menu class="bg-light">
+  <profile-section class="bg-light">
+    <profile-name class="lead">atomOS</profile-name>
+    <atomos-version class='lead help-block' style="position: absolute">0.4</atomos-version>
+  </profile-section>
+  <div class="panel">
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="folders">
+        <a href="#" onclick="new aos.components.Window('aos-cabinet',{path: '/atomos/home/Documents/'})" class="list-item btn btn-light">
+          <img src="/atomos/icons/Documents Folder.png">
+          <name>Documents</name><br>
+          <description>Work with all your documents in one folder</description>
+        </a>
+        <a href="#" onclick="new aos.components.Window('aos-cabinet',{path: '/atomos/home/Music/'})" class="list-item btn btn-light">
+              <img src="/atomos/icons/Music Folder.png">
+              <name>Music</name><br>
+              <description>Listen to the music from one location</description>
+            </a>
+        <a href="#" onclick="new aos.components.Window('aos-cabinet',{path: '/atomos/home/Pictures/'})" class="list-item btn btn-light">
+                  <img src="/atomos/icons/Pictures Folder.png">
+                  <name>Pictures</name><br>
+                  <description>View your photos here</description>
+                </a>
+        <a href="#" onclick="new aos.components.Window('aos-cabinet',{path: '/atomos/home/Videos/'})" class="list-item btn btn-light">
+                      <img src="/atomos/icons/Movies Folder.png">
+                      <name>Videos</name><br>
+                      <description>See all your movies available locally</description>
+                    </a>
+        <hr />
+        <a href="#" onclick="new aos.components.Window('aos-cabinet',{path: '/atomos/home/'})" class="list-item btn btn-light">
+                          <img src="/atomos/icons/User Folder.png">
+                          <name>Home</name><br>
+                          <description>All your storage lays here</description>
+                        </a>
+        <a href="#" onclick="new aos.components.Window('aos-cabinet',{path: '/'})" class="list-item btn btn-light">
+                              <img src="/atomos/icons/Binder.png">
+                              <name>Root</name><br>
+                              <description>The whole system is yours, be careful!</description>
+                            </a>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="applications"></div>
+      <div role="tabpanel" class="tab-pane" id="logout">
+        <a href="#" onclick="aos.core.system.stopx()" class="list-item btn btn-light">
+        <img src="/atomos/icons/Change User.png">
+        <name>Log out</name><br>
+        <description>Close all apps and exit system</description>
+      </a>
+        <a href="#" onclick="aos.core.system.restart()" class="list-item btn btn-light">
+          <img src="/atomos/icons/Restart.png">
+          <name>Reboot</name><br>
+          <description>Close all apps, turn off, and then turn on the AtomPC again</description>
+        </a>
+        <a href="#" onclick="aos.core.system.shutdown()" class="list-item btn btn-light">
+            <img src="/atomos/icons/Shutdown.png">
+            <name>Shutdown</name><br>
+            <description>Close all apps and turn off AtomPC</description>
+          </a>
+      </div>
+    </div>
+  </div>
+  <ul class="nav nav-pills nav-fill" role="tablist">
+    <li class="nav-item"><a href="#folders" class="nav-link active" aria-controls="home" role="tab" data-toggle="tab">Folders</a></li>
+    <li class="nav-item"><a href="#applications" class="nav-link" aria-controls="messages" role="tab" data-toggle="tab">Applications</a></li>
+    <li class="nav-item"><a href="#logout" class="nav-link" aria-controls="settings" role="tab" data-toggle="tab">Log out</a></li>
+  </ul>
+</start-menu>
+<link rel="stylesheet" href="/atomos/sys/internetMenu/index.css" />
+<script>
+  window.$ = window.jQuery = require("jquery");
+  window.Popper = require("popper.js");
+  require("bootstrap");
+  require("atomos")
+  require("./index")
+</script>

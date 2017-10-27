@@ -1,0 +1,532 @@
+<div class="btn-toolbar">
+	<div class="btn-group mr-1 btn-group-sm" style="flex-shrink:0">
+		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateBack" onclick="goBack()">arrow_back</button>
+		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateForward" onclick="goForward()">arrow_forward</button>
+	</div>
+	<div class="btn-group mr-1 btn-group-sm">
+		<button class="btn btn-outline-primary material-icons" onclick="reNavigate()">refresh</button>
+	</div>
+	<div class="input-group" style="
+    flex-grow: 2;
+"><input class="form-control form-control-sm" type="text" id="path"></div>
+</div>
+
+<section>
+	<ul class="dropdown-menu" style="display:block;" viewMode="list" id="sidebar">
+		<div class="dropdown-header">Favorites</div>
+		<button class='dropdown-item active' data-location="/atomos/home/"><img src="/atomos/icons/folders-small/User Folder.png"> Home</button>
+		<button class="dropdown-item"><img src="/atomos/icons/folders-small/Trash.png"> Trash</button>
+		<button class="dropdown-item" data-location="/"><img src="/atomos/icons/folders-small/Binder.png"> Root</button>
+		<div class="dropdown-header">Libraries</div>
+		<button class="dropdown-item" data-location="/atomos/home/Documents/"><img src="/atomos/icons/folders-small/Documents Folder.png"> Documents</button>
+		<button class="dropdown-item" data-location="/atomos/home/Music/"><img src="/atomos/icons/folders-small/Music Folder.png"> Music</button>
+		<button class="dropdown-item" data-location="/atomos/home/Pictures/"><img src="/atomos/icons/folders-small/Pictures Folder.png"> Pictures</button>
+		<button class="dropdown-item" data-location="/atomos/home/Videos/"><img src="/atomos/icons/folders-small/Movies Folder.png"> Videos</button>
+	</ul>
+
+	<div class="files dropdown-menu" viewMode="list">
+
+	</div>
+</section>
+
+<div class="ofdBar input-group p-1 bg-light hide" style="flex-shrink:0;border-top:1px solid lightgray;">
+	<span class="input-group-btn">
+	<button class="btn btn-sm btn-secondary btn-block" onclick="aos.windows[window.name].close()">Cancel</button>
+</span>
+	<input type="text" class="form-control form-control-sm" id="ofdFile" readonly>
+	<span class="input-group-btn">
+		<button class="btn btn-sm btn-primary btn-block" onclick="submitFile()" disabled>Open</button>
+	</span>
+</div>
+<script>
+	var fm = {};
+	const {
+		clipboard,
+		remote
+	} = require('electron')
+	const {
+		Menu
+	} = remote;
+	var fs = require("fs");
+	fm.elements = [];
+	fm.folders = [];
+	fm.files = [];
+	fm.nHistory = [];
+	fm.historyNow = -1;
+	fm.sorting = "A-Z";
+	fm.path = document.querySelector("#path").value;
+	fm.window = remote.getCurrentWindow();
+	fm.arguments = window.arguments;
+	fm.arguments.path ? 1 + 1 : fm.arguments.path = "/atomos/home/";
+	fm.action = fm.arguments["action"];
+	fm.showHidden = false;
+	fm.foldersFirst = true;
+	console.log(fm.arguments);
+	window.addEventListener("load", function() {
+		navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
+		initContextMenus();
+		$("#sidebar [data-location]").click(function() {
+			$("#sidebar>.nav>li").removeClass("active");
+			$(this).parent("li").addClass("active");
+			navigate($(this).attr("data-location"));
+
+		});
+		if (fm.action) {
+			$("#sidebar").hide();
+			fm.window.setMinimumSize(500, 250);
+			fm.window.setSize(500, 250);
+			fm.window.setMaximizable(false);
+			fm.window.setResizable(false);
+			$(".ofdBar .btn-primary").text(fm.arguments.okText || "Open");
+			$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
+			fm.window.setTitle(fm.arguments.title);
+			if (fm.action == "sfd") {
+				$(".ofdBar .btn-primary").text(fm.arguments.okText || "Save");
+				$("#ofdFile").removeAttr("readonly");
+				$("#ofdFile").on("input change", function() {
+					if ($(this).val() == "") $(".ofdBar button.btn-primary").attr("disabled", "disabled");
+					else $(".ofdBar button.btn-primary").removeAttr("disabled");
+				})
+			}
+			$(".ofdBar").removeClass("hide");
+		}
+
+		$(".files").on("dblclick", "[type=folder]", function() {
+			navigate($(this).attr("data-location"));
+		});
+		$(".files").on("mouseup", "[type]", function() {
+			if ($(this).attr("type") == "file") {
+				$("#ofdFile").val($(this).children(".file-title").text());
+				$(".ofdBar button.btn-primary").removeAttr("disabled");
+			} else {
+				$(".ofdBar button.btn-primary").attr("disabled", "disabled");
+				$("#ofdFile").val("");
+			}
+		})
+		$(".files").on("dblclick", "[type=file]", function() {
+			if (fm.action) submitFile();
+			else
+				window.fileOpen(fm.path + $(this).children(".file-title").text());
+		});
+	})
+
+	function reNavigate() {
+		navigate($("#path").val(), "reload");
+	}
+
+	function navigate(path, historymode) {
+		$(".files").html("");
+		$("#ofdFile").val("");
+		$(".ofdBar button.btn-primary").prop("disabled", "disabled");
+		if (path === undefined) path = "/";
+		fm.path = path;
+		fm.viewMode = $(".files").attr("viewmode");
+		$("[data-location]").removeClass("active");
+		$("[data-location='" + path + "']").addClass("active");
+		var nohistory = false;
+		if (historymode == "back") fm.historyNow--;
+		else if (historymode == "forward") fm.historyNow++;
+		else if (historymode == "reload") 1 + 1;
+		else {
+			fm.historyNow++;
+			fm.nHistory.splice(fm.historyNow, fm.nHistory.length);
+			fm.nHistory.push(fm.path);
+			nohistory = true
+		}
+
+		checkHistory();
+
+		$("#path").val(path);
+		list(path, (data) => {
+			if (fm.action) {
+				if (fm.viewMode == "list") $('div.files').prepend('<button data-location="' + path.substring(0, path.lastIndexOf("/", path.length - 2)) +
+					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/folders-small/Extensions Folder.png"><div class="file-title">..</div></button>')
+				else $('div.files').prepend('<button data-location="' + path.substring(0, path.lastIndexOf("/", path.length - 2)) +
+					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/Extensions Folder.png"><div class="file-title">..</div></button>')
+			}
+
+			data.forEach(function(item) {
+				if (item.type == "folder") $("div.files").append('<button data-mime="' + item.mimeType + '" data-location="' + path + item.name + '/" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon +
+					'"><div class="file-title">' +
+					item.name +
+					'</div></button>')
+				else $("div.files").append('<button data-mime="' + item.mimeType + '" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon + '"><div class="file-title">' + item.name + '</div></button>')
+			});
+			if (nohistory && historymode) $("button:contains('" + historymode + "')").focus();
+		});
+	}
+
+	function checkHistory() {
+		if (fm.nHistory[fm.historyNow + 1] == undefined) $("#navigateForward").attr("disabled", "disabled");
+		else
+			$("#navigateForward").removeAttr("disabled");
+		if (fm.nHistory[fm.historyNow - 1] == undefined) $("#navigateBack").attr("disabled", "disabled");
+		else
+			$("#navigateBack").removeAttr("disabled");
+	}
+
+	function submitFile() {
+		var arguments = window.arguments;
+		fm.window.getParentWindow().webContents.send("return-file", $("#path").val() + $("#ofdFile").val())
+		fm.window.close();
+	}
+
+	function goBack() {
+		navigate(fm.nHistory[fm.historyNow - 1], "back");
+	}
+
+	function goForward() {
+		navigate(fm.nHistory[fm.historyNow + 1], "forward");
+	}
+
+	var deleteFolderRecursive = function(path) {
+		if (fs.existsSync(path)) {
+			fs.readdirSync(path).forEach(function(file, index) {
+				var curPath = path + "/" + file;
+				if (fs.lstatSync(curPath).isDirectory()) deleteFolderRecursive(curPath);
+				else fs.unlinkSync(curPath);
+			});
+			fs.rmdirSync(path);
+		}
+	};
+
+	function list(path, callback) {
+		var result = [];
+		fs.readdir(path, function(errno, files) {
+			files.forEach(function(file) {
+				if (!fm.showHidden && file.startsWith(".")) return;
+				var fileRes = {
+					"name": file
+				}
+				var stat = fs.lstatSync(path + "/" + file);
+				if (stat.isFile()) {
+					fileRes.type = "file";
+					fileRes.mimeType = window.getMimeType(file.substring(file.lastIndexOf(".") + 1));
+				} else if (stat.isDirectory()) fileRes.type = "folder";
+				else if (stat.isSymbolicLink()) {
+					fileRes.link = true;
+					var link = fs.readlinkSync(path + file);
+					var statLink = fs.statSync((link.startsWith("/") ? link : path+link));
+					if (statLink.isFile()) {
+						fileRes.type = "file";
+						fileRes.mimeType = window.getMimeType(link.substring(link.lastIndexOf(".") + 1));
+					} else if (statLink.isDirectory()) fileRes.type = "folder";
+				} else return;
+				fileRes.atime = stat.atime;
+				fileRes.mtime = stat.mtime;
+				fileRes.ctime = stat.ctime;
+				try {
+					fs.accessSync(path, fs.constants.R_OK);
+					fileRes.readable = true
+				} catch (e) {
+					fileRes.readable = false
+				}
+				try {
+					fs.accessSync(path, fs.constants.W_OK);
+					fileRes.writable = true
+				} catch (e) {
+					fileRes.writable = false
+				}
+				try {
+					fs.accessSync(path, fs.constants.X_OK);
+					fileRes.executable = true
+				} catch (e) {
+					fileRes.executable = false
+				}
+				if (fileRes.type == "folder") {
+
+					if (fs.existsSync(path + "/" + file + "/.folderinfo")) {
+						var data = $.parseJSON(fs.readFileSync(path + "/" + file + "/.folderinfo", "utf8"));
+						if (fm.viewMode == "list") fileRes.icon = data.smallIcon;
+						else fileRes.icon = data.icon;
+					} else if (fm.viewMode == "list")
+						if (fileRes.link) fileRes.icon = "/atomos/icons/folders-small/Symlink Folder.png";
+						else fileRes.icon = "/atomos/icons/folders-small/Extensions Folder.png";
+					else if (fileRes.link) fileRes.icon = "/atomos/icons/Symlink Folder.png";
+					else fileRes.icon = "/atomos/icons/Extensions Folder.png";
+
+				} else if (fileRes.type == "file") {
+					var mime = "/atomos/icons/file-types/" + file.substring(file.lastIndexOf(".") + 1).toUpperCase() + ".png";
+					if (fs.existsSync(mime)) fileRes.icon = mime;
+					else if (fileRes.link) fileRes.icon = "/atomos/icons/file-types/Symlink.png";
+					else fileRes.icon = "/atomos/icons/file-types/Unknown.png";
+					if (fm.viewMode == "list") fileRes.icon = fileRes.icon.replace(/file-types/g, "file-types-small");
+				}
+				result.push(fileRes);
+			});
+
+			if (fm.sorting == "A-Z") {
+				result.sort(function(a, b) {
+					var nameA = a.name.toLowerCase(),
+						nameB = b.name.toLowerCase();
+					if (nameA < nameB) return -1;
+					if (nameA > nameB) return 1;
+					return 0;
+				});
+			}
+			if (fm.sorting == "Z-A") {
+				result.sort(function(a, b) {
+					var nameA = a.name.toLowerCase(),
+						nameB = b.name.toLowerCase();
+					if (nameA < nameB) return 1;
+					if (nameA > nameB) return -1;
+					return 0;
+				});
+			}
+			if(fm.foldersFirst) {
+				var newResult = [];
+				result.forEach(function(item) {
+					if(item.type == "folder") newResult.push(item);
+				})
+				result.forEach(function(item) {
+					if(item.type == "file") newResult.push(item);
+				})
+				console.log(newResult);
+				callback(newResult)
+			} else callback(result)
+
+		})
+	}
+
+	function initContextMenus() {
+		$("body").on("contextmenu", "div.files", function(event) {
+			const fmMenu = [{
+				label: "View",
+				type: "submenu",
+				submenu: [{
+					label: "List",
+					type: "radio",
+					checked: (fm.viewMode == "list" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "list");
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Small icons",
+					type: "radio",
+					checked: (fm.viewMode == "smalltiles" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "smalltiles");
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Medium icons",
+					type: "radio",
+					checked: (fm.viewMode == "midtiles" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "midtiles");
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Large icons",
+					type: "radio",
+					checked: (fm.viewMode == "bigtiles" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "bigtiles");
+						navigate(fm.path, "reload")
+					}
+				}]
+			}, {
+				label: "Sort by",
+				type: "submenu",
+				submenu: [{
+					label: "A to Z",
+					type: "radio",
+					checked: (fm.sorting == "A-Z" ? true : false),
+					click() {
+						fm.sorting = "A-Z";
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Z to A",
+					type: "radio",
+					checked: (fm.sorting == "Z-A" ? true : false),
+					click() {
+						fm.sorting = "Z-A";
+						navigate(fm.path, "reload")
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Folders first",
+					type: "checkbox",
+					checked: (fm.foldersFirst),
+					click() {
+						if (fm.foldersFirst) fm.foldersFirst = false;
+						else fm.foldersFirst = true;
+						navigate(fm.path, "reload")
+					}
+				}]
+			}, {
+				type: "separator"
+			}, {
+				label: "Refresh",
+				accelerator: "F5",
+				click() {navigate(fm.path, "reload")}
+			}, {
+				label: "Paste",
+				accelerator: "CmdOrCtrl+V",
+				click() {
+					window.fileClipboard.flush(fm.path)
+				},
+				enabled: window.fileClipboard.isFilled
+			}, {
+				type: "separator"
+			}, {
+				label: "Properties",
+				disabled: true
+			}]
+			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
+			fm.filesMenu.popup(fm.window);
+		});
+
+		$("body").on("contextmenu", ".file-item[type=file]", function(e) {
+			e.stopPropagation();
+			var mime = $(this).attr("data-mime");
+			var file = fm.path + $(this).find(".file-title").text()
+			var $this = $(this);
+			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
+				if(!err) var assocs = $.parseJSON(data);
+				console.log(data);
+				var appName = assocs.find(o => o.mime == mime);
+				if(appName) appName = appName["app"];
+				const menu = [{
+					label: "Open in " + (!err ? appName : "default application"),
+					visible: (appName !== undefined),
+					click() {
+						$this.trigger("dblclick");
+					}
+				}, {
+					label: "Open using...",
+					click() {
+						window.new("aos-appchooserdialog",{path: file, mimeType: mime})
+					}
+				}, {type: "separator"}, {
+					label: "Cut",
+					click() {
+						window.fileClipboard.copyMode = "cut";
+						window.fileClipboard.clear();
+						console.log()
+						window.fileClipboard.add(file);
+					}
+				}, {
+					label: "Copy",
+					click() {
+						window.fileClipboard.copyMode = "copy";
+						window.fileClipboard.clear();
+						window.fileClipboard.add(file);
+					}
+				}, {type: "separator"}, {
+					label: "Delete",
+					click() {
+						fs.unlink(file, function(err) {
+							if(!err) reNavigate();
+						})
+					}
+				}, {
+					label: "Properties",
+					click() {
+						window.new("properties", {path: file});
+					}
+				}]
+				Menu.buildFromTemplate(menu).popup(fm.window);
+			})
+		})
+	}
+</script>
+<style>
+	#sidebar a>i.fa {
+		width: 20px;
+		text-align: center;
+	}
+
+
+	#sidebar {
+		min-width: 150px;
+		position: static;
+		padding: 0;
+		border: 0;
+		margin: 0;
+		font-size: 14px;
+		border-right: 1px solid lightgray;
+	}
+
+	[viewMode=list].dropdown-menu img {
+		vertical-align: sub;
+		height: 16px;
+		filter: invert() sepia() saturate(1000%) brightness(50%) hue-rotate(140deg)
+	}
+
+	[viewMode=list].dropdown-menu button:hover img {
+		filter: invert() sepia() saturate(1000%) brightness(30%) hue-rotate(140deg)
+	}
+
+	[viewMode=list].dropdown-menu button.active img,
+	[viewMode=list].dropdown-menu button:active img,
+	[viewMode=list].dropdown-menu button:focus img {
+		filter: invert(100%) drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.2));
+	}
+
+	[viewMode=list].dropdown-menu button.active,
+	[viewMode=list].dropdown-menu button:active,
+	[viewMode=list].dropdown-menu button:focus {
+		color: #fff;
+		text-decoration: none;
+		background-color: #007bff;
+	}
+
+	div.files {
+		flex-grow: 2;
+		overflow: auto;
+		height: auto;
+		border: 0;
+		margin: 0;
+		display: inline-block;
+		position: static;
+		padding: 0.25rem !important;
+	}
+
+	div.files>button {
+		padding: 0.25rem .5rem;
+		border-radius: 3px;
+	}
+
+	div.files>button>div {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		margin-left: 0.25rem;
+		vertical-align: text-top
+	}
+
+	section {
+		flex-grow: 2;
+		display: flex;
+	}
+
+	#navigateBack:not(:disabled)::after {
+		content: " Back";
+		font-family: "Source Sans Pro", sans-serif;
+		font-size: 12px;
+		display: inline-block;
+		padding-top: 2px;
+		vertical-align: middle;
+		padding-left: 5px;
+	}
+
+	.files:empty::before {
+		content: "Nothing here";
+		display: block;
+		text-align: center;
+		width: 100%;
+		padding: 0.5rem;
+		color: grey;
+	}
+
+	body {
+		height: 100%;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+</style>

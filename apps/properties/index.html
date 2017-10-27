@@ -1,0 +1,153 @@
+<app class="bg-light d-flex p-1 h-100">
+  <div class="dropdown-menu mr-2 d-block" style="position:static">
+    <button class="dropdown-item active" onclick="$('*').removeAttr('active').removeClass('active');$('properties').attr('active','active');$(this).addClass('active');"><i class="material-icons">list</i> General</button>
+    <button class="dropdown-item" onclick="$('*').removeAttr('active').removeClass('active');$('permissions').attr('active','active');$(this).addClass('active');"><i class="material-icons">supervisor_account</i> Permissions</button>
+    <button class="dropdown-item" onclick="$('*').removeAttr('active').removeClass('active');$('associations').attr('active','active');$(this).addClass('active');"><i class="material-icons">launch</i> Association</button>
+  </div>
+  <section style="flex-grow:2;display:flex;flex-direction:column;">
+    <properties class="p-1" active>
+      <dl>
+        <dd>File Name:</dd>
+        <dt data="fname"></dt>
+      </dl>
+      <dl>
+        <dd>Type:</dd>
+        <dt data="ftype"></dt>
+      </dl>
+      <dl>
+        <dd>Size:</dd>
+        <dt data="fsize"></dt>
+      </dl>
+      <hr>
+      <dl>
+        <dd>Last Access Time:</dd>
+        <dt data="fatime"></dt>
+      </dl>
+      <dl>
+        <dd>Last Modification Time:</dd>
+        <dt data="fmtime"></dt>
+      </dl>
+    </properties>
+
+    <permissions class="p-1">
+      <dl>
+        <dd>Readable:</dd>
+        <dt data="fread">unknown</dt>
+      </dl>
+      <dl>
+        <dd>Writable:</dd>
+        <dt data="fwrite">unknown</dt>
+      </dl>
+      <dl>
+        <dd>Executable:</dd>
+        <dt data="fexec">unknown</dt>
+      </dl>
+
+    </permissions>
+
+    <associations class="p-1">
+      <dl>
+        <dd>File mimetype:</dd>
+        <dt data="fmime">none</dt>
+      </dl>
+      <dl>
+        <dd>Default application:</dd>
+        <dt data="fapp">none</dt>
+      </dl>
+      <button class="btn btn-sm btn-info"><i class="material-icons"></i> Assign default application...</button>
+
+    </associations>
+    <div class="text-right mt-2"><button class="btn btn-sm btn-secondary"><i class="material-icons">content_paste</i> Copy link</button> <button class="btn btn-sm btn-primary" onclick="window.close()">Close</button></div>
+  </section>
+</app>
+<script>
+  const fs = require('fs');
+  window.onload = function() {
+    $(".btn-secondary").tooltip({
+      title: "Copied!",
+      trigger: "click"
+    })
+    $(".btn-secondary").click(function() {
+      require('electron').clipboard.writeText(window.arguments.path);
+    })
+    var mime = window.getMimeType(window.arguments.path.substring(window.arguments.path.lastIndexOf(".") + 1));
+    $("[data=fmime]").text(mime);
+    fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
+      data = JSON.parse(data);
+      if(data.find(o => o.mime === mime))
+      $("[data=fapp]").text(data.find(o => o.mime === mime)["app"]);
+
+    })
+  }
+
+  if (window.arguments.path) {
+    fs.stat(window.arguments.path, function(err, stat) {
+      if (!err) {
+        console.log(stat);
+        $("[data=fname]").text(window.arguments.path.substring(window.arguments.path.lastIndexOf("/") + 1));
+        $("[data=fsize]").text(stat.size + " bytes");
+        $("[data=fatime]").text(stat.atime.toDateString());
+        $("[data=fmtime]").text(stat.mtime.toDateString());
+        if (stat.isFile()) $("[data=ftype]").text("File");
+        else
+        if (stat.isDirectory()) $("[data=ftype]").text("Folder");
+        else
+        if (stat.isBlockDevice()) $("[data=ftype]").text("Block Device");
+        else
+        if (stat.isCharacterDevice()) $("[data=ftype]").text("Character Device");
+        else
+        if (stat.isFIFO()) $("[data=ftype]").text("FIFO");
+        else
+        if (stat.isSocket()) $("[data=ftype]").text("Socket");
+        else
+          $("[data=ftype]").text("Unknown");
+      }
+    })
+    fs.access(window.arguments.path, fs.constants.R_OK, function(err) {
+      if (err) $("[data=fread]").text("no");
+      else $("[data=fread]").text("yes")
+    })
+    fs.access(window.arguments.path, fs.constants.W_OK, function(err) {
+      if (err) $("[data=fwrite]").text("no");
+      else $("[data=fwrite]").text("yes")
+    })
+    fs.access(window.arguments.path, fs.constants.X_OK, function(err) {
+      if (err) $("[data=fexec]").text("no");
+      else $("[data=fexec]").text("yes")
+    })
+  }
+</script>
+<style>
+  .dropdown-item>i {
+    position: absolute;
+    left: 0;
+    margin: 0.25em 0.8em;
+  }
+
+  properties,
+  permissions,
+  associations {
+    flex-grow: 2;
+    overflow: auto;
+    display: none;
+  }
+
+  [active] {
+    display: inline-block;
+  }
+
+  dl {
+    margin-bottom: 0.4rem;
+  }
+
+  dd {
+    font-weight: bold;
+    margin: 0;
+    display: inline-block;
+  }
+
+  dt {
+    font-weight: normal;
+    display: inline-block;
+  }
+</style>

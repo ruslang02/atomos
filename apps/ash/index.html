@@ -1,0 +1,205 @@
+<kbd>
+  <center><img src="/atomos/apps/aos-about/atom.png" style="height: 40vh;margin: 1em 0;filter: brightness(1000%);"><br><h3>atomOS Terminal</h3>The first next-gen web terminal.</center>
+</kbd>
+<cwd>/atomos/home</cwd>
+<cmd><input type="text"></cmd>
+<suggestions></suggestions>
+<script>
+  const fs = require('fs');
+  var commands = [];
+  window.onload = function() {
+    $("input")
+    .on("input", autocomplete)
+    .on("keydown", function(e) {
+      if (event.keyCode == 13) execute();
+    })
+
+    $("body").on('click','suggestions button', function() {
+      $("input").val($(this).text());
+      autocomplete();
+    })
+    fs.readdir("/atomos/apps", function(err, files) {
+      files.forEach(function(file) {
+        fs.stat("/atomos/apps/" + file, function(err, stat) {
+          if (stat.isDirectory()) commands.push(file);
+        })
+      })
+    });
+    $("body").on("click","kbd .expander button", function() {
+      if($(this).parent().hasClass("show")) {
+        $(this).parent().removeClass("show");
+        $(this).attr("caret", "arrow_drop_down");
+        $(this).text("Expand output")
+      } else {
+        $(this).parent().addClass("show");
+        $(this).attr("caret", "arrow_drop_up");
+        $(this).text("Collapse output")
+
+      }
+    })
+  }
+
+  function autocomplete() {
+    $("suggestions").html("");
+    var value = $("input").val();
+    var sugCount = 0;
+    commands.forEach(function(sug) {
+      if (sug.indexOf(value) !== -1 && value !== sug && value.trim() !== "") {
+        sug = sug.replace(value, "<b>" + value + "</b>");
+        if (sugCount !== 3) {
+          $("suggestions").append("<button>" + sug + "</button>");
+          sugCount++
+        } else return;
+      }
+      if (value === sug) $("suggestions").html("");
+
+    })
+  }
+  function addMessage(text) {
+    $("kbd > center").remove()
+    if(text.length > 1000) {
+      text = "<button caret='arrow_drop_down'>Expand output</button>" + text;
+    }
+    text = text.replace(/\n/gi, "<br>")
+    $("kbd").append("<div " + (text.length > 1000 ? "class='expander'" : "") + ">" + text + "</div>")
+
+
+  }
+
+  function execute() {
+    addMessage(" > " + $("input").val())
+    fs.access("/atomos/apps/" + $("input").val().substring(0,($("input").val().indexOf(" ") !== -1 ? $("input").val().indexOf(" ") : Infinity)).trim(), function(err) {
+      if(err) {
+        require('child_process').exec($("input").val(), {
+          cwd: $("cwd").text().trim()
+        }, function(err, stdout, stderr) {
+          if(err) addMessage("<error>" + err + "</error>")
+          else if(stderr) addMessage("<error>" + stderr + "</error>")
+          addMessage(stdout)
+        })
+      } else {
+        window.new($("input").val().substring(0,$("input").val().indexOf(" ")).trim(), $("input").val().substring($("input").val().indexOf(" ")).trim())
+      }
+    })
+  }
+</script>
+
+<link href="/atomos/lib/atomos.css" rel="stylesheet">
+<style>
+  kbd {
+    display: block;
+    flex-grow: 2;
+    border-radius: 0;
+    border: 0;
+    overflow:auto;
+  }
+
+  error {
+    color: orangered;
+  }
+
+  suggestions {
+    position: fixed;
+    bottom: 20px;
+    width: calc(100% - 10px);
+    display: flex;
+    flex-direction: column;
+    background: #394047;
+    margin: 5px;
+    border: 1px solid #111316;
+  }
+
+  suggestions:empty {
+    display: none;
+  }
+
+  suggestions button {
+    background: none;
+    text-align: left;
+    border: 0;
+    color: white;
+    padding: 3px 10px;
+  }
+
+  html body button:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  button:active,
+  button:hover:active,
+  button:active:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    height:100%;
+  }
+
+  cwd {
+    background: #394047;
+    border-style: solid;
+    border-color: #111316;
+    border-width: 1px 0;
+    font-size: small;
+    color: lightgrey;
+    padding: 1px 5px;
+  }
+
+  cmd {
+    background: #212529;
+    color: white;
+    font-family: monospace;
+    padding: 0 5px;
+    height: 20px;
+    display: flex;
+    flex-shrink:0;
+  }
+  .expander {font-size:0;}
+  .expander.show {font-size:inherit;}
+  .expander button {
+    font-size: 12px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: #394047;
+    color: white;
+    font-family: inherit;
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 2px 5px;
+    margin: 3px 0;
+}
+
+.expander button::after {
+    content: attr(caret);
+    font-family: "Material Icons";
+    font-size: 17px;
+    float: right;
+    margin: -4px 0;
+}
+
+  cwd::after {
+    content: "working directory";
+    color: darkgrey;
+    font-size: smaller;
+    float: right;
+    line-height: 19px;
+  }
+
+  cmd::before {
+    content: ">";
+    padding: 0 5px;
+  }
+
+  cmd input {
+    background: none;
+    border: none;
+    outline: 0;
+    color: white;
+    flex-grow: 2;
+    font-size: smaller;
+  }
+</style>

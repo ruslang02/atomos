@@ -1,0 +1,11 @@
+{
+  "name": "About this PC",
+  "shortName": "About",
+  "icon": "/atomos/icons/Info.png",
+  "description": "What is my operating system?",
+  "width": 312,
+  "height": 199,
+  "maximizable": false,
+  "minimizable": false,
+  "resizable": false
+}

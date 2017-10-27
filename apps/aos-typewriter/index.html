@@ -1,0 +1,328 @@
+<div class="btn-toolbar bg-light">
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      File
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="fileMenu">
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="new aos.components.Window('notepad')">New Window</button>
+      <button class="dropdown-item" data-key="Ctrl+N" data-description="Creates a new tab" onclick="newTab()">New Tab</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file" onclick="save()">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+S" data-description="Saves opened file with specific name and extension">Save as...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
+    </div>
+  </div>
+
+  <div class="btn-group btn-group-sm dropdown">
+    <button id='editMenu' class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Edit
+      <b class="caret"></b></button>
+    <div class="dropdown-menu" aria-labelledby="editMenu">
+      <button class="dropdown-item" data-key="Ctrl+Z" data-description="Undoes most recent operation">Undo</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+Z" data-description="Redoes undone operation">Redo</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+X" data-description="Places selected text into the clipboard and deletes it">Cut</button>
+      <button class="dropdown-item" data-key="Ctrl+C" data-description="Places selected text into the clipboard">Copy</button>
+      <button class="dropdown-item" data-key="Ctrl+V" data-description="Pastes text placed in the clipboard">Paste</button>
+      <button class="dropdown-item" data-key="Del" data-description="Deletes selected text">Delete</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+A" data-description="Selects the whole text">Select All</button>
+    </div>
+  </div>
+</div>
+<textarea autofocus></textarea>
+<div class="statusBar bg-light d-flex p-1">
+  <div id="menuDescription"></div>
+  <div id="editInfo">Line: 0</div>
+</div>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .dropdown>button {
+    border: 0 !important;
+  }
+
+  textarea {
+    border-radius: 0;
+    background: white;
+    border: 0;
+    box-shadow: none !important;
+    resize: none;
+    flex-grow: 2;
+    width: 100%;
+    overflow: auto;
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  #menuDescription {
+    flex-grow: 2;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .dropdown-item::after {
+    content: attr(data-key);
+    color: grey;
+    float: right;
+  }
+
+  .dropdown-menu {
+    min-width: 220px !important;
+  }
+</style>
+
+<script defer>
+  const ipcRenderer = require('electron').ipcRenderer;
+  const fs = require('fs');
+  const {
+    remote
+  } = require('electron')
+  const {
+    Menu,
+    MenuItem
+  } = remote;
+  const MAX_SIZE = 51240;
+
+  var taMenu;
+
+  var win = remote.getCurrentWindow();
+  var fileName = undefined;
+  initContextMenus();
+
+  window.onload = function() {
+    $(window).keypress(function(event) {
+      if (event.ctrlKey && event.shiftKey && event.key == "N") window.new('aos-typewriter');
+      if (event.ctrlKey && event.key == "n") {
+        $("#menuDescription").text("Tab functions are not implemented yet.")
+        setTimeout(function() {
+          $("#menuDescription").text("")
+        }, 1000);
+      }
+      if (event.ctrlKey && event.key == "o") $("[data-key='Ctrl+O']").click();
+      if (event.ctrlKey && event.key == "s") $("[data-key='Ctrl+S']").click();
+      if (event.ctrlKey && event.shiftKey && event.key == "S") $("[data-key='Ctrl+Shift+S']").click();
+    });
+
+    $(".dropdown-toggle").click(function() {
+      $(".dropdown").removeClass("show");
+      $(".dropdown-menu").removeClass("show");
+      $("[aria-expanded]").attr("aria-expanded", "false");
+    });
+
+    ipcRenderer.on("return-file", function(event, file) {
+      loadFile(file);
+    })
+
+    $("textarea").on("contextmenu", function(e) {
+      e.preventDefault();
+      taMenu.popup(win);
+    })
+
+    $(".dropdown-toggle").dropdown();
+    $('app').click(function() {
+      $(".dropdown").removeClass("show");
+      $(".dropdown-menu").removeClass("show");
+      $("[aria-expanded]").attr("aria-expanded", "false");
+    });
+    $("[data-description]").hover(function() {
+      $("#menuDescription").text($(this).attr("data-description"))
+    });
+    $("[data-description]").mouseleave(function() {
+      $("#menuDescription").text("")
+    });
+    $("[data-key]").mouseup($("textarea").focus)
+    $("[data-key]").click(function() {
+      switch ($(this).attr("data-key")) {
+        case 'Alt+F4':
+          window.close();
+          break;
+        case 'Ctrl+Z':
+          document.execCommand("undo", false, null);
+          break;
+        case 'Ctrl+Shift+Z':
+          document.execCommand("redo", false, null);
+          break;
+        case 'Ctrl+X':
+          document.execCommand("cut", false, null);
+          break;
+        case 'Ctrl+C':
+          document.execCommand("copy", false, null);
+          break;
+        case 'Ctrl+V':
+          document.execCommand("paste", false, null);
+          break;
+        case 'Ctrl+A':
+          document.execCommand("selectAll", false, null);
+          break;
+        case 'Ctrl+O':
+          window.new("aos-cabinet", {
+            action: "ofd",
+            path: "/atomos/home/Documents/",
+            title: "Choose a text file to open..."
+          }, {
+            parent: win,
+            modal: true
+          });
+          break;
+        case 'Ctrl+Shift+S':
+          window.new("aos-cabinet", {
+            action: "sfd",
+            path: "/atomos/home/Documents/",
+            title: "Choose the location to save the file"
+          }, {
+            parent: win,
+            modal: true
+          });
+          break;
+        case 'Del':
+          document.execCommand("delete", false, null);
+          break;
+      }
+    })
+    var arguments = window.arguments;
+    var fs = require('fs');
+    if (arguments !== undefined)
+      if (arguments["path"] !== undefined) loadFile(arguments["path"]);
+    $("textarea").on("keyup click focus", function() {
+      $("#editInfo").text("Line: " + this.value.substr(0, this.selectionStart).split("\n").length);
+    });
+  }
+
+  function save(path) {
+    var contents = $("textarea").val();
+    if (!path && !fileName) window.new("aos-cabinet", {
+      action: "sfd"
+    }, {
+      modal: true,
+      parent: win
+    });
+    else if (path) {
+      fs.open(path, 'w', function(err, fd) {
+        /*if (err) aos.notifications.add({
+          head: "We're unable to save the file",
+          body: "Here is a library output: " + err,
+          type: "warning"
+        });*/
+        fs.write(fd, contents, function(err) {
+          if (err)
+            /*aos.notifications.add({
+                       head: "We're unable to save the file",
+                       body: "Here is a library output: " + err,
+                       type: "warning"
+                     });
+                     else aos.notifications.add({
+                       head: "File was successfully saved",
+                       body: 'It is located here: ' + path +
+                         '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="new aos.components.Window(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+                           "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
+                       type: "success"
+                     })*/
+            console.log(err);
+        });
+
+      })
+      fileName = path;
+    } else {
+      path = fileName;
+      fs.open(fileName, 'w', function(err, fd) {
+        if (err)
+          /*aos.notifications.add({
+                   head: "We're unable to save the file",
+                   body: "Here is a library output: " + err,
+                   type: "warning"
+                 });*/
+          console.log(err);
+        fs.write(fd, contents, function(err) {
+          if (err)
+            /*aos.notifications.add({
+                       head: "We're unable to save the file",
+                       body: "Here is a library output: " + err,
+                       type: "warning"
+                     });
+                     else aos.notifications.add({
+                       head: "File was successfully saved",
+                       body: 'It is located here: ' + path +
+                         '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="new aos.components.Window(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+                           "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
+                       type: "success"
+                     })*/
+            console.log(err);
+        });
+
+      })
+    }
+  }
+
+  function loadFile(path, loadAnyway) {
+    fileName = path;
+    win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Typewriter");
+    fs.stat(path, function(err, stat) {
+      if (stat.size > MAX_SIZE && !loadAnyway) {
+        window.new("aos-typewriter/toolargefile", {}, {
+          modal: true,
+          parent: win
+        });
+        ipcRenderer.on("largeFileConfirmation", function(event, data) {
+          console.log("Loading...");
+          loadFile(path, data.load)
+        })
+      } else {
+        fs.readFile(path, 'utf8', function(err, data) {
+          if (err)
+            /*aos.notifications.add({
+                       head: "We're unable to open the file",
+                       body: "Here is a library output: " + err,
+                       type: "warning"
+                     });*/
+            console.log(err);
+          else $("textarea").val(data)
+        })
+      }
+    })
+  }
+
+  function initContextMenus() {
+    const taTemplate = [{
+      label: "Undo",
+      click () {$("[data-key='Ctrl+Z']").click()},
+      accelerator: "CmdOrCtrl+Z"
+    }, {
+      label: "Redo",
+      click () {$("[data-key='Ctrl+Shift+Z']").click()},
+      accelerator: "CmdOrCtrl+Shift+Z"
+    }, {type: "separator"}, {
+      label: "Cut",
+      click () {$("[data-key='Ctrl+X']").click()},
+      accelerator: "CmdOrCtrl+X"
+    }, {
+      label: "Copy",
+      click () {$("[data-key='Ctrl+C']").click()},
+      accelerator: "CmdOrCtrl+C"
+    }, {
+      label: "Paste",
+      click () {$("[data-key='Ctrl+V']").click()},
+      accelerator: "CmdOrCtrl+V"
+    }, {
+      label: "Delete",
+      click () {$("[data-key='Delete']").click()},
+      accelerator: "Delete"
+    }, {type: "separator"}, {
+      label: "Select All",
+      click () {$("[data-key='Ctrl+A']").click()},
+      accelerator: "CmdOrCtrl+A"
+    }];
+
+    taMenu = Menu.buildFromTemplate(taTemplate);
+  }
+</script>

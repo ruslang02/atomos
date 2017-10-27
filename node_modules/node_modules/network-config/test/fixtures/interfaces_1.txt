@@ -1,0 +1,18 @@
+auto lo
+iface lo inet loopback
+
+iface eth1 inet manual
+
+auto eth0
+iface eth0 inet static
+    address 1.1.1.165
+    netmask 1.1.1.0
+    gateway 1.1.1.1
+    bridge_ports eth0
+    bridge_stp off
+    bridge_fd 0
+
+auto vmbr2:0
+iface vmbr2:0 inet static
+  address 1.1.1.218
+  netmask 255.255.255.255

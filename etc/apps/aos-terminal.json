@@ -1,0 +1,8 @@
+{
+  "name": "ASH Terminal",
+  "shortName": "Terminal",
+  "icon": "/atomos/icons/Console.png",
+  "description": "Get a root access to your system",
+  "width": 450,
+  "height": 250
+}

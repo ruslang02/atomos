@@ -1,0 +1,12 @@
+{
+  "name": "The file is too large",
+  "shortName": "Warning due to large file",
+  "description": "A simple dialog to prevent user to load a large file (that can possibly hang the system).",
+  "maximizable": false,
+  "minimizable": false,
+  "modal": true,
+  "width": 475,
+  "height": 150,
+  "resizable": false,
+  "hidden": true
+}

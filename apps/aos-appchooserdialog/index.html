@@ -1,0 +1,94 @@
+<content>
+  <header>
+    <img src="/atomos/icons/Ask Question.png" />
+    <small style="padding:2px">File with mime type "<span id="mime"></span>" doesn't have an association with atomOS apps. Choose application, which can probably open this type of file.</small>
+  </header>
+
+  <select size="10">
+
+  </select>
+
+  <footer class="text-right mt-2">
+    <button class="btn btn-sm btn-secondary" onclick="aos.windows[window.name].close()">Cancel</button>&nbsp;&nbsp;
+    <button class="btn btn-sm btn-primary">Open File</button>
+  </footer>
+</content>
+<style>
+  content {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: stretch;
+    padding: 1em;
+    width: 100%;
+    height: 100%;
+  }
+
+  header,
+  footer {
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: 100%;
+  }
+
+  header {
+    display: flex
+  }
+
+  select {
+    flex-grow: 2;
+    width: 100%;
+    overflow: auto;
+    padding: 0;
+    font-size: smaller;
+    outline: none !important;
+  }
+
+  img {width:48px; height:48px;}
+
+  select option {
+    padding: 5px;
+  }
+</style>
+
+<script>
+  var arguments = aos.windows[window.name].arguments;
+  var path = arguments.path;
+  if (!arguments.path || !arguments.mimeType) {
+    aos.notifications.add("primary", "No path specified", "To open application \"openFile\", you need to specify file's path and it's mime type.");
+    aos.windows[window.name].close();
+  }
+  $("#mime").text(arguments.mimeType);
+  var assocs;
+  aos.file.get("/atomos/etc/associations.json", {
+    format: "json"
+  }, function(asscs) {
+    assocs = asscs;
+    var recom = "";
+    assocs.forEach(function(assoc) {
+      if(assoc.mime === arguments.mimeType) recom = assoc.app;
+    })
+    aos.files.list("/atomos/etc/apps",{sorting: "A-Z"},function(apps) {
+      apps.forEach(function(app) {
+
+          var appName = app.name.substring(0,app.name.lastIndexOf("."));
+        aos.file.get("/atomos/etc/apps/" + app.name,{format: "json"},function(ap) {
+          $("select").append("<option value='" + appName + "'>" + ap.shortName + "</option>")
+        })
+      })
+      $("option:first-child").prop("selected", "selected");
+    })
+  });
+  $(".btn-primary").click(function() {
+    assocs.push({
+      mime: $("#mime").text(),
+      app: $("select").val()
+    });
+
+    new aos.components.Window($("select").val(), {
+      path: path
+    });
+    aos.notifications.add("success", "New association added", "The next time you open files like this, you won't get that dialog again.");
+    aos.file.write("/atomos/etc/associations.json", JSON.stringify(assocs), true);
+    aos.windows[window.name].close();
+  })
+</script>

@@ -1,0 +1,56 @@
+-- Version 0.4-dev15 -- 22/10/2017
+
+ - 70% of code rewritten
+ - Using Electron's WebView instead of <iframe>'s
+ - atomOS API is now unavailable
+ - Node.JS is available in all applications
+
+-- Version 0.3.3 -- 07/10/2017
+
+ - Ability to create files and folders in aos-cabinet
+
+ - Frameless modals
+ - Filesystem links are now supported
+ - z-index fixes
+ - Fully functional FileClipboard API
+ - Context menus in aos-typewriter
+ - Hidden files toggle in aos-cabinet
+ - TooLargeFile warning in aos-typewriter
+
+-- Version 0.3.2 -- 06/10/2017
+
+ - FileClipboard API
+
+ - Desktop is now generated dynamically from folder ~/Desktop
+ - Shortcut support
+ - File management commands
+ - Fixed window z-order sometimes not bringing to front
+ - Keyboard shortcuts in aos-typewriter
+
+-- Version 0.3.1 -- 05/10/2017
+
+ - Calculator application
+ - Apps list is now generated automatically
+ - Context menus are in beta and are available in some apps
+-------
+ - Ping can now be controlled using a toggle
+ - Improved app opening performance
+ - aos.components.ContextMenu and Point were added to API
+ - Cabinet now has sorting and icon size settings
+ - Some OFD bugs were resolved
+ - More deep Node.JS integration
+
+-- Version 0.3 -- 03/10/2017
+
+ - Proton Web Browser
+ - Improved About dialog
+ - Movement from v2.3.2 to v4-beta Bootstrap framework
+ - Updated jQuery
+ - Components API beta
+ - Change Font styles
+ - Clock sidebar
+ - Network settings
+ - Autoping on the sidebar
+ - Rebuilt Start menu
+ - Ability to exit X Window System
+ - fs, network, wireless-api Node.JS libraries are used

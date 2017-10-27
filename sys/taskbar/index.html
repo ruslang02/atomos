@@ -1,0 +1,8 @@
+<nav-bar class="navbar navbar-expand-xs navbar-light bg-light navbar navbar-default fixed-bottom dropup">
+  <button class="btn btn-primary btn-sm dropdown-toggle" onclick="require('electron').ipcRenderer.send('toggleStart')" type="button">Start <span class="caret"></span></button>
+  <tasks class="mr-auto ml-2"></tasks>
+  <tray class="form-inline"><button name="network" onclick="require('electron').ipcRenderer.send('toggleNet')"><img src="/atomos/icons/Online.png"></button></tray>
+  <button data-value="clock" onclick="require('electron').ipcRenderer.send('toggleClock')" class="navbar-brand navbar-right navbar-button btn btn-link p-0 mr-0"></button>
+</nav-bar>
+<link rel="stylesheet" href="index.css" />
+<script src="index.js"></script>

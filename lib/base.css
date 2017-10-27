@@ -1,0 +1,7 @@
+
+button {
+  outline: none !important
+}
+.hide {display: none !important}
+*:not(input):not(textarea) {user-select:none}
+textarea {outline: none}

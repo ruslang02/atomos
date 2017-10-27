@@ -1,0 +1,34 @@
+<header>
+  <img src="/atomos/icons/Hang.png" />
+  <p>Application "<application></application>" has hung. It probably entered an infinite loop or executed an illegal operation.</p>
+</header>
+<footer><button class="btn btn-secondary btn-sm mr-2">Wait</button><button class="btn btn-danger btn-sm">Terminate app</button></footer>
+
+<script>
+  const {remote} = require("electron");
+  var app = remote.getCurrentWindow();
+  if(!window.arguments["wid"]) app.close();
+  window.onload = function() {
+    $("application").text(remote.BrowserWindow.fromId(window.arguments["wid"]).getTitle());
+    $(".btn").click(function() {
+      app.close();
+    })
+    $(".btn-primary").click(function() {
+      remote.BrowserWindow.fromId(window.arguments["wid"]).destroy();
+    })
+  }
+</script>
+
+<style>
+  body {
+    padding: 0.5rem;
+    display:flex;
+    flex-direction:column;
+  }
+  header {
+    display:flex;
+  }
+  header img {width:48px;height:48px;}
+  header input {margin:0.5rem;margin-right:0}
+  footer {position:fixed;bottom:0.5rem;right:0.5rem;}
+</style>

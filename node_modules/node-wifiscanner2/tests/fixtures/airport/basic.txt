@@ -1,0 +1,2 @@
+                            SSID BSSID             RSSI CHANNEL HT CC SECURITY (auth/unicast/group)
+                          testap 40:16:7e:5f:ca:70 0    1       Y  -- WPA2(PSK/AES/AES)  

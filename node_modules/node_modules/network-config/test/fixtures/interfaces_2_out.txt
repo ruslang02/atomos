@@ -1,0 +1,8 @@
+auto lo
+iface lo inet loopback
+
+auto eth1
+iface eth1 inet static
+    address 1.1.1.77
+    netmask 1.1.1.1
+    gateway 10.10.10.10

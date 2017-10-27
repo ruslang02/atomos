@@ -1,0 +1,18 @@
+eth0      Link encap:Ethernet  HWaddr aa:aa:aa:aa:aa:aa
+          inet adr:1.1.1.77  Bcast:1.1.1.255  Masque:1.1.1.0
+          adr inet6: fe80::aaaa:aaaa:aaaa:aaaa/64 Scope:Lien
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1642521330 errors:12 dropped:0 overruns:0 frame:12
+          TX packets:1675689934 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 lg file transmission:1000
+          RX bytes:665753846167 (620.0 GiB)  TX bytes:541087855109 (503.9 GiB)
+          Interruption:28 Mémoire:feae0000-feb00000
+
+lo        Link encap:Boucle locale
+          inet adr:127.0.0.1  Masque:255.0.0.0
+          adr inet6: ::1/128 Scope:Hôte
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:4242243891 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4242243891 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 lg file transmission:0
+          RX bytes:2721719725543 (2.4 TiB)  TX bytes:2721719725543 (2.4 TiB)

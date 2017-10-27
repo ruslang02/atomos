@@ -1,0 +1,28 @@
+@import "/atomos/node_modules/material-design-icons/iconfont/material-icons.css";
+@import "/atomos/lib/bootstrap.css";
+@import "/atomos/lib/font.css";
+tasks img {
+  height: 100%;
+}
+
+nav-bar tasks button.btn {
+  border: 0;
+}
+nav-bar {height:100%;}
+
+tasks button.active {
+  box-shadow: inset 0px -2px 0px 0px #286090 !important;
+  border-radius:0
+}
+
+
+tray button {
+  border: 0;
+  margin: 0;
+  background: none;
+  height: 100%;
+}
+
+tray button img {
+  height: 24px;
+}

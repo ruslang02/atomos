@@ -1,0 +1,36 @@
+<section>
+	<img src="atom.png" style="width:64px;margin-right: 1em;">
+</section>
+<main style="flex-grow: 2;">
+	<p>This PC runs <b data-name="name"></b></p>
+	<p><b>Release</b> <span data-name="version"></span></p>
+	<p><b>CodeName</b> <span data-name="codename"></span></p>
+	<p><b>Build</b> <span data-name="build"></span></p>
+	<p>Based on Ubuntu 16</p>
+	<button class="btn btn-sm btn-primary float-right" onclick="window.close()">Close</button>
+</main>
+<style>
+	body {
+		padding: 1em;
+		display:flex;
+	}
+	p {margin:0;line-height:2;}
+</style>
+
+<script defer>
+	var version = 0.22;
+	require('fs').readFile("/atomos/etc/aos-release.json", function(err,data) {
+		build = $.parseJSON(data);
+			$("#checkUpd").click(function() {
+				$.get("http://atomos.org.uk/downloads/latest-release.txt", function(a) {
+					if (a >= version) {
+						parent.location.replace("update.html");
+					}
+				});
+			});
+			$("[data-name=name]").text(build.name);
+			$("[data-name=version]").text(build.version);
+			$("[data-name=codename]").text(build.codename);
+			$("[data-name=build]").text(build.build);
+	})
+</script>

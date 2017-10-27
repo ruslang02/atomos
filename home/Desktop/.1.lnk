@@ -1,0 +1,6 @@
+{
+  "title": "My Documents",
+  "arguments": {"path": "/atomos/home/Documents/"},
+  "app": "aos-cabinet",
+  "icon": "/atomos/icons/Documents Folder.png"
+}

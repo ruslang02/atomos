@@ -1,0 +1,19 @@
+lo        Link encap:Local Loopback
+          inet addr:1.1.1.1  Mask:1.1.1.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:20 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:20 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:1588 (1.5 KiB)  TX bytes:1588 (1.5 KiB)
+
+venet0    Link encap:UNSPEC  HWaddr 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+          inet addr:1.1.1.2  P-t-P:1.1.1.2  Bcast:1.1.1.0  Mask:1.1.1.255
+          UP BROADCAST POINTOPOINT RUNNING NOARP  MTU:1500  Metric:1
+          RX packets:80543 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:37205 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:75134815 (1.6 MiB)  TX bytes:1588795 (1.5 MiB)
+
+venet0:0  Link encap:UNSPEC  HWaddr 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+          inet addr:1.1.1.102  P-t-P:1.1.1.102  Bcast:1.1.1.102  Mask:1.1.1.255
+          UP BROADCAST POINTOPOINT RUNNING NOARP  MTU:1500  Metric:1

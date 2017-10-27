@@ -1,0 +1,51 @@
+<header>
+  <file-image />
+  <input class="form-control" placeholder="Untitled" required/>
+</header>
+<footer class="text-right"><button class="btn btn-secondary mr-2">Cancel</button><button disabled class="btn btn-primary">Create File</button></footer>
+
+<script>
+  var app = aos.windows[window.name];
+  if(!app.arguments["path"]) {
+    aos.notifications.add({
+      head: "No path specified",
+      body: "Application aos-cabinet-createFile was not given any arguments.",
+      type: "warning"
+    });
+    app.close();
+  } else {
+    $(".btn").click(function() {
+      aos.windows[window.name].close();
+    })
+    $(".btn-primary").click(function() {
+      parent.fs.closeSync(parent.fs.openSync(app.arguments["path"] + "/" + $("input").val(), 'w'));
+      app.arguments["callback"](app.arguments["path"] + "/" + $("input").val());
+    })
+    $("input").on("input", function() {
+      if(parent.fs.existsSync(app.arguments["path"] + $("input").val())) {
+        $(this).addClass("is-invalid");
+        $(".btn-primary").attr("disabled", "disabled");
+      } else {
+        $(".btn-primary").removeAttr("disabled");
+        $(this).removeClass("is-invalid");
+      }
+
+      if(parent.fs.existsSync("/atomos/icons/file-types/" + $("input").val().substring($("input").val().lastIndexOf(".") + 1).toUpperCase() + ".png")) {
+        $("file-image").css("background-image","url('/atomos/icons/file-types/" + $("input").val().substring($("input").val().lastIndexOf(".") + 1).toUpperCase() + ".png')");
+      } else $("file-image").css("background-image", "url('/atomos/icons/file-types/Add File.png')");
+    })
+  }
+</script>
+
+<style>
+  app {
+    padding: 1rem;
+    display:flex;
+    flex-direction:column;
+  }
+  header {
+    display:flex;
+  }
+  header file-image {width:48px;height:48px;background-image: url("/atomos/icons/file-types/Add File.png"); flex-shrink: 0; background-size:100%;transition:all .2s ease}
+  header input {margin:0.5rem;margin-right:0}
+</style>

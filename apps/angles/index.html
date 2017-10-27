@@ -1,0 +1,159 @@
+<div class="btn-toolbar bg-light">
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      File
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="fileMenu">
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="new aos.components.Window('notepad')">New Window</button>
+      <button class="dropdown-item" data-key="Ctrl+N" data-description="Creates a new tab" onclick="newTab()">New Tab</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file" onclick="save()">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+S" data-description="Saves opened file with specific name and extension">Save as...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
+    </div>
+  </div>
+  <div class="spacer" style="flex-grow:2"></div>
+  <div class="btn-group btn-group-sm">
+    <button class="btn btn-outline-info">Build</button>
+    <button class="btn btn-outline-success">Run</button>
+  </div>
+</div>
+<ul class="nav nav-tabs bg-light"></ul>
+<tabs></tabs>
+<script src="/atomos/node_modules/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/atomos/node_modules/ace-builds/src-min/mode-pascal.js" type="text/javascript" charset="utf-8"></script>
+<script src="/atomos/node_modules/ace-builds/src-min/theme-chrome.js" type="text/javascript" charset="utf-8"></script>
+<script>
+  var editors = [];
+  const fs = require('fs');
+  const {
+    ipcRenderer,
+    remote
+  } = require('electron');
+
+  window.onload = function() {
+
+    if (window.arguments.path) {
+      loadFile(window.arguments.path, newTab());
+    } else newTab();
+
+    $("[data-key=Ctrl+O]").click(function() {
+      window.new("aos-cabinet", {
+        action: "ofd",
+        path: "/atomos/home/Documents/",
+        title: "Choose a text file to open..."
+      }, {
+        parent: win,
+        modal: true
+      });
+    })
+  }
+
+  function newTab() {
+    var tabNum = $('tab').length;
+    $(".nav-tabs").append("<li class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
+    $("tabs").append("<tab id='" + tabNum + "'></tab>");
+    editors[tabNum] = ace.edit(tabNum.toString());
+    editors[tabNum].setTheme("ace/theme/chrome");
+    editors[tabNum].encoding = "utf-8";
+    return $('tab').length - 1;
+  }
+
+  function loadFile(path, tabNumber) {
+    fs.readFile(path, editors[tabNumber].encoding, function(err, data) {
+      if(!err) {
+        editors[tabNumber].setValue(data);
+        editors[tabNumber].session.setMode("ace/mode/pascal");
+      }
+    })
+  }
+</script>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .btn-group>button {
+    border: 0 !important;
+  }
+
+  tabs>tab[id] {
+    flex-grow: 2;
+    display: flex;
+    flex-direction: column;
+  }
+  tabs {
+    display: flex;
+flex-grow: 2;
+  }
+
+  .ace_editor {
+    margin: 0;
+    flex-grow: 2;
+    font: 13px/normal 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace
+  }
+
+  textarea {
+    border-radius: 0;
+    background: white;
+    border: 0;
+    box-shadow: none !important;
+    resize: none;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  #menuDescription {
+    flex-grow: 2;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .dropdown-item::after {
+    content: attr(data-key);
+    color: grey;
+    float: right;
+  }
+
+  .nav .nav-link {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .nav {
+    padding: 2px 5px;
+    padding-bottom: 0;
+  }
+  .nav name {
+    flex-grow: 2;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav .nav-link button {
+    display: none
+  }
+
+  .nav .nav-link.active button {
+    padding: 1px;
+display: inline-block;
+vertical-align: sub;
+margin-left: 0.5rem;
+border:0;
+  }
+
+  .dropdown-menu {
+    min-width: 220px !important;
+  }
+</style>

@@ -1,0 +1,8 @@
+auto eth1
+iface eth1 inet static
+    address 1.1.1.165
+    netmask 1.1.1.0
+    gateway 1.1.1.1
+    bridge_ports eth0
+    bridge_stp off
+    bridge_fd 0

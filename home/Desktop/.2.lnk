@@ -1,0 +1,6 @@
+{
+  "title": "My Computer",
+  "arguments": {"path": "/atomos/home/"},
+  "app": "aos-cabinet",
+  "icon": "/atomos/icons/Computer.png"
+}
