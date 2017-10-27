@@ -24,11 +24,6 @@
     </div>
 </div>
 <webview preload="/atomos/apps/preload.js" nodeintegration="true" src="/atomos/apps/ash/index.html"></webview>
-<script>
-window.onload = function() {
-  $("webview")[0].openDevTools();
-}
-</script>
 <style>
   .dropdown-item::after {
     content: attr(data-key);

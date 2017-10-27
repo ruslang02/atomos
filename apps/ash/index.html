@@ -78,7 +78,7 @@
           addMessage(stdout)
         })
       } else {
-        window.new($("input").val().substring(0,$("input").val().indexOf(" ")).trim(), $("input").val().substring($("input").val().indexOf(" ")).trim())
+        window.new($("input").val().substring(0,($("input").val().indexOf(" ") !== -1 ? $("input").val().indexOf(" ") : Infinity)).trim(), $("input").val().substring($("input").val().indexOf(" ")).trim())
       }
     })
   }
