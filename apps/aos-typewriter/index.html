@@ -123,6 +123,9 @@
     ipcRenderer.on("return-file", function(event, file) {
       loadFile(file);
     })
+    ipcRenderer.on("save-file", function(event, file) {
+      save(file);
+    })
 
     $("textarea").on("contextmenu", function(e) {
       e.preventDefault();

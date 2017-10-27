@@ -167,7 +167,8 @@
 
 	function submitFile() {
 		var arguments = window.arguments;
-		fm.window.getParentWindow().webContents.send("return-file", $("#path").val() + $("#ofdFile").val())
+		var channel = (fm.action == "ofd" ? "return-file" : "save-file");
+		fm.window.getParentWindow().webContents.send(channel, $("#path").val() + "/" + $("#ofdFile").val())
 		fm.window.close();
 	}
 

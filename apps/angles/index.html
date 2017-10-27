@@ -10,8 +10,9 @@
       <div class="dropdown-divider"></div>
       <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file" onclick="save()">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file">Save</button>
       <button class="dropdown-item" data-key="Ctrl+Shift+S" data-description="Saves opened file with specific name and extension">Save as...</button>
+      <button class="dropdown-item" data-key="Ctrl+L" data-description="Saves all opened files">Save all</button>
       <div class="dropdown-divider"></div>
       <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
     </div>
@@ -34,14 +35,22 @@
     ipcRenderer,
     remote
   } = require('electron');
+  const win = remote.getCurrentWindow()
 
   window.onload = function() {
+    $(window).keypress(function(event) {
+      if (event.ctrlKey && event.shiftKey && event.key == "N") window.new('angles');
+      if (event.ctrlKey && event.key == "n") newTab();
+      if (event.ctrlKey && event.key == "o") $("[data-key='Ctrl+O']").click();
+      if (event.ctrlKey && event.key == "s") $("[data-key='Ctrl+S']").click();
+      if (event.ctrlKey && event.shiftKey && event.key == "S") $("[data-key='Ctrl+Shift+S']").click();
+    });
 
     if (window.arguments.path) {
-      loadFile(window.arguments.path, newTab());
+      loadFile(window.arguments.path, newTab(false));
     } else newTab();
 
-    $("[data-key=Ctrl+O]").click(function() {
+    $("[data-key='Ctrl+O']").click(function() {
       window.new("aos-cabinet", {
         action: "ofd",
         path: "/atomos/home/Documents/",
@@ -50,26 +59,125 @@
         parent: win,
         modal: true
       });
+    });
+    $("[data-key='Ctrl+S']").click(function() {
+      saveFile($('tab[active]').attr("id"));
+    })
+    $("[data-key='Ctrl+Shift+S']").click(function() {
+      openSaveDialog($('tab[active]').attr("id"));
+    })
+    $("[data-key='Ctrl+L']").click(function() {
+      $('tab').each(function() {
+        saveFile($(this).attr("id"))
+      })
+    })
+    $("body").on("click", ".nav-link button", function(e) {
+      e.stopPropagation();
+      closeTab($(this).parents('.nav-link').attr("to"))
+    })
+    ipcRenderer.on('return-file', function(event, arg) {
+      loadFile(arg, newTab());
+    })
+    ipcRenderer.on('save-file', function(event, arg) {
+      writeFile($('tab[active]').attr("id"), arg);
+    })
+    $("body").on("click", ".nav-tabs .nav-link[to]", function() {
+      activateTab($(this).attr("to"));
     })
   }
 
-  function newTab() {
-    var tabNum = $('tab').length;
-    $(".nav-tabs").append("<li class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
-    $("tabs").append("<tab id='" + tabNum + "'></tab>");
+  function activateTab(tabNum) {
+    console.log(tabNum)
+    $("tab").removeAttr("active");
+    $(".nav-tabs .nav-link").removeClass("active");
+    $("tab#" + tabNum).attr("active", "");
+    $(".nav-link[to=" + tabNum + "]").addClass("active");
+  }
+
+  function closeTab(tabNum) {
+    console.log(tabNum)
+    $("tab#" + tabNum).remove();
+    $(".nav-link[to=" + tabNum + "]").remove();
+    editors[tabNum] = null;
+    activateTab($('tab').attr("id"))
+    if($("tab").length === 0) newTab();
+  }
+
+  var totalTabs = 0;
+
+  function newTab(setEvents = true) {
+    var tabNum = totalTabs;
+    $("tab").removeAttr("active");
+    $(".nav-tabs .nav-link").removeClass("active");
+    $(".nav-tabs").append("<li to='" + tabNum + "' class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
+    $("tabs").append("<tab active id='" + tabNum + "'></tab>");
     editors[tabNum] = ace.edit(tabNum.toString());
     editors[tabNum].setTheme("ace/theme/chrome");
     editors[tabNum].encoding = "utf-8";
-    return $('tab').length - 1;
+    editors[tabNum].isRemote = false;
+    editors[tabNum].url = "";
+    editors[tabNum].eventNum = 0;
+    reEvent(tabNum)
+    totalTabs++;
+    return totalTabs - 1;
   }
 
   function loadFile(path, tabNumber) {
     fs.readFile(path, editors[tabNumber].encoding, function(err, data) {
-      if(!err) {
+      if (!err) {
+        $("[to=" + tabNumber + "] name").text(path.substring(path.lastIndexOf("/") + 1))
         editors[tabNumber].setValue(data);
+        editors[tabNumber].url = path;
+        editors[tabNumber].isRemote = true;
         editors[tabNumber].session.setMode("ace/mode/pascal");
+        $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
+        reEvent(tabNumber)
+        win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Angles");
       }
     })
+  }
+
+  function writeFile(tabNumber, url) {
+    var editor = editors[tabNumber];
+    fs.writeFile(url, editor.getValue(), editor.encoding, function(err) {
+      if (err) console.error(err);
+      else {
+        console.log("OK");
+        loadFile(url, tabNumber);
+      }
+    })
+  }
+
+  function reEvent(tabNumber) {
+    editors[tabNumber].eventNum++;
+    var len = editors[tabNumber].getValue().length
+    var currentEvent = editors[tabNumber].eventNum;
+    editors[tabNumber].on('change', function() {
+      console.log(editors[tabNumber].eventNum, currentEvent)
+      if(editors[tabNumber].eventNum == currentEvent) {
+        console.log(editors[tabNumber].getValue().length, len)
+        if (editors[tabNumber].getValue().length !== len) $(".nav-link[to='" + tabNumber + "']").addClass("edited");
+        else $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
+      }
+    })
+  }
+
+  function saveFile(tabNumber) {
+    var editor = editors[tabNumber];
+    if (editor.isRemote) writeFile(tabNumber, editor.url); else openSaveDialog(tabNumber);
+  }
+
+  function openSaveDialog(tabNumber, path) {
+    var editor = editors[tabNumber];
+    window.new("aos-cabinet", {
+      action: "sfd",
+      path: path || editor.url.substring(0,editor.url.lastIndexOf("/")) || "/atomos/home/Documents",
+      title: "Where to save the code?"
+    }, {
+      parent: win,
+      modal: true
+    });
+
   }
 </script>
 
@@ -86,12 +194,17 @@
 
   tabs>tab[id] {
     flex-grow: 2;
-    display: flex;
     flex-direction: column;
+    display: none;
   }
+
+  tabs>tab[id][active] {
+    display: flex;
+  }
+
   tabs {
     display: flex;
-flex-grow: 2;
+    flex-grow: 2;
   }
 
   .ace_editor {
@@ -128,12 +241,18 @@ flex-grow: 2;
 
   .nav .nav-link {
     padding: 0.25rem 0.5rem;
+    position: relative
   }
 
   .nav {
     padding: 2px 5px;
     padding-bottom: 0;
+    user-select: none;
+    cursor: default;
+    white-space:nowrap;
+    overflow:hidden;
   }
+
   .nav name {
     flex-grow: 2;
     max-width: 100px;
@@ -141,16 +260,25 @@ flex-grow: 2;
     text-overflow: ellipsis;
   }
 
-  .nav .nav-link button {
-    display: none
+  .nav .nav-link button {display: none;}
+  .nav .nav-link:only-child button {display:none !important}
+
+  .nav .nav-link.edited::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    right: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #568af2;
   }
 
   .nav .nav-link.active button {
     padding: 1px;
-display: inline-block;
-vertical-align: sub;
-margin-left: 0.5rem;
-border:0;
+    display: inline-block;
+    vertical-align: sub;
+    margin-left: 0.5rem;
+    border: 0;
   }
 
   .dropdown-menu {
