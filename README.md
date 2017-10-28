@@ -2,7 +2,7 @@
 
 ![alt text](https://pp.userapi.com/c841636/v841636258/2ec95/7cDypn8Pu4I.jpg)
 
-Latest version: 0.4-dev25. 0.3.3 is available only inside the [atomOS itself]: https://drive.google.com/drive/folders/0B_VomIpGvKyvU0RPUnVxM2pOeDg.
+Latest version: 0.4-dev25. 0.3.3 is available only inside the [atomOS itself](https://drive.google.com/drive/folders/0B_VomIpGvKyvU0RPUnVxM2pOeDg).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
@@ -28,7 +28,7 @@ electron /atomos
 
 ## Changelog
 
-Changelog is available [here]: https://github.com/ruslang02/atomos/home/Documents/CHANGE.log
+Changelog is available [here](https://github.com/ruslang02/atomos/home/Documents/CHANGE.log).
 
 ## Hacking
 You can edit your desktop envionment in real-time, adding features and modifying the look and feel.
