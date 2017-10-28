@@ -71,6 +71,7 @@
   var win = remote.getCurrentWindow();
   const fs = require('fs');
   window.onload = function() {
+    if(window.arguments.path) file = window.arguments.path;
     $("#image")[0].src = file;
     initCropper();
     ipcRenderer.on("return-file", function(event, arg) {

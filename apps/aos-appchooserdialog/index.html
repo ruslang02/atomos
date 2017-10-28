@@ -9,7 +9,7 @@
   </select>
 
   <footer class="text-right mt-2">
-    <button class="btn btn-sm btn-secondary" onclick="aos.windows[window.name].close()">Cancel</button>&nbsp;&nbsp;
+    <button class="btn btn-sm btn-secondary" onclick="win.close()">Cancel</button>&nbsp;&nbsp;
     <button class="btn btn-sm btn-primary">Open File</button>
   </footer>
 </content>
@@ -43,7 +43,10 @@
     outline: none !important;
   }
 
-  img {width:48px; height:48px;}
+  img {
+    width: 48px;
+    height: 48px;
+  }
 
   select option {
     padding: 5px;
@@ -51,44 +54,65 @@
 </style>
 
 <script>
-  var arguments = aos.windows[window.name].arguments;
+  var arguments = window.arguments;
   var path = arguments.path;
+  const {
+    remote
+  } = require('electron');
+  const fs = require('fs');
+  var win = remote.getCurrentWindow();
   if (!arguments.path || !arguments.mimeType) {
-    aos.notifications.add("primary", "No path specified", "To open application \"openFile\", you need to specify file's path and it's mime type.");
-    aos.windows[window.name].close();
+    //aos.notifications.add("primary", "No path specified", "To open application \"openFile\", you need to specify file's path and it's mime type.");
+    win.close();
   }
-  $("#mime").text(arguments.mimeType);
   var assocs;
-  aos.file.get("/atomos/etc/associations.json", {
-    format: "json"
-  }, function(asscs) {
-    assocs = asscs;
+  fs.readFile("/atomos/etc/associations.json", "utf-8", function(err, asscs) {
+    if (err) {
+      console.log(err);
+      exit;
+    }
+    assocs = $.parseJSON(asscs);
     var recom = "";
     assocs.forEach(function(assoc) {
-      if(assoc.mime === arguments.mimeType) recom = assoc.app;
+      if (assoc.mime === arguments.mimeType) recom = assoc.app;
     })
-    aos.files.list("/atomos/etc/apps",{sorting: "A-Z"},function(apps) {
+    fs.readdir("/atomos/etc/apps", function(err, apps) {
+      if (err) {
+        console.log(err);
+        exit;
+      }
       apps.forEach(function(app) {
-
-          var appName = app.name.substring(0,app.name.lastIndexOf("."));
-        aos.file.get("/atomos/etc/apps/" + app.name,{format: "json"},function(ap) {
-          $("select").append("<option value='" + appName + "'>" + ap.shortName + "</option>")
+        var appName = app.substring(0, app.lastIndexOf("."));
+        fs.readFile("/atomos/etc/apps/" + app, "utf-8", function(err, ap) {
+          if (err) {
+            console.log(err);
+            exit;
+          }
+          ap = $.parseJSON(ap);
+          if(!ap.hidden) $("select").append("<option value='" + appName + "'>" + ap.shortName + "</option>")
         })
       })
       $("option:first-child").prop("selected", "selected");
     })
   });
-  $(".btn-primary").click(function() {
-    assocs.push({
-      mime: $("#mime").text(),
-      app: $("select").val()
-    });
+  window.onload = function() {
+    $("#mime").text(window.arguments.mimeType);
+    $(".btn-primary").click(function() {
+      var fass = assocs.find(o => o.mime == $("#mime").text());
+      if(fass) assocs[assocs.indexOf(fass)].app = $("select").val();
+      else assocs.push({
+        mime: $("#mime").text(),
+        app: $("select").val()
+      });
 
-    new aos.components.Window($("select").val(), {
-      path: path
-    });
-    aos.notifications.add("success", "New association added", "The next time you open files like this, you won't get that dialog again.");
-    aos.file.write("/atomos/etc/associations.json", JSON.stringify(assocs), true);
-    aos.windows[window.name].close();
-  })
+      window.new($("select").val(), {
+        path: path
+      });
+      //aos.notifications.add("success", "New association added", "The next time you open files like this, you won't get that dialog again.");
+      fs.writeFile("/atomos/etc/associations.json", JSON.stringify(assocs), function(err) {
+        if (err) console.log(err);
+        window.close();
+      });
+    })
+  }
 </script>

@@ -15,7 +15,7 @@
   "dependencies": {
     "ace-builds": "^1.2.9",
     "ace-code-editor": "^1.2.3",
-    "atomos-framework": "^0.4.20",
+    "atomos-framework": "^0.4.26",
     "blob-to-buffer": "^1.2.6",
     "bootstrap": "^4.0.0-beta.2",
     "cropperjs": "^1.1.3",

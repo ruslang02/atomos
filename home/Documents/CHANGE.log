@@ -1,3 +1,10 @@
+-- Version 0.4-dev26 -- 28/10/2017
+ - aos-photoframe was removed, brush replaced it
+ - aos-appchooserdialog was updated to work in the 0.4
+ - brush now can open files via path
+ - proton now can open local files
+ - framework update
+
 -- Version 0.4-dev25 -- 28/10/2017
  - Zooming is now available in all apps using Ctrl + and Ctrl -
  - Angles was given the ability to change syntax highlighting and theme settings
