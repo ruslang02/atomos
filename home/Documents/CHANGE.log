@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 -- Version 0.4-dev25 -- 28/10/2017
  - Zooming is now available in all apps using Ctrl + and Ctrl -
  - Angles was given the ability to change syntax highlighting and theme settings
@@ -6,6 +7,8 @@
  - Changed all connections with that package
  - Small fixes is "index.js"
 
+=======
+>>>>>>> 6b7f7386b77a0043e6a520f50e42c9b95f6407f4
 -- Version 0.4-dev23 -- 28/10/2017
 
  - New applications:
@@ -19,7 +22,10 @@
  - Improved context menu integration
  - 'cropperjs' npm package was integrated
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6b7f7386b77a0043e6a520f50e42c9b95f6407f4
 -- Version 0.4-dev15 -- 22/10/2017
 
  - 70% of code rewritten
