@@ -4,26 +4,21 @@
       Terminal
     </button>
     <div class="dropdown-menu" aria-labelledby="terminalMenu">
-      <button class="dropdown-item" data-key="Ctrl+Shift+N" onclick="new aos.components.Window('aos-terminal')">New Window</button>
-      <button class="dropdown-item" data-key="Ctrl+N" onclick="newTab()">New Tab</button>
-      <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+S" onclick="save()">Export output...</button>
-      <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+W">Close Tab</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" onclick="window.new('aos-terminal')">New Window</button>
       <button class="dropdown-item" data-key="Alt+F4">Close Window</button>
     </div>
   </div>
-    <div class="btn-group dropdown float-right btn-group-sm" style="flex-grow: 2; flex-direction: row-reverse;">
-      <button id="terminalMenu" class="btn btn-outline-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Help
-      </button>
-      <div class="dropdown-menu" aria-labelledby="terminalMenu">
-        <button class="dropdown-item" data-key="F1" onclick="new aos.components.Window('aos-terminal/help')">Contents</button>
-        <button class="dropdown-item" data-key="Shift+F1" onclick="new aos.components.Window('aos-terminal/about')">About</button>
-      </div>
-    </div>
 </div>
 <webview preload="/atomos/apps/preload.js" nodeintegration="true" src="/atomos/apps/ash/index.html"></webview>
+<script>
+  var win = require('electron').remote.getCurrentWindow();
+  window.onload = function() {
+
+    $("[data-key='Alt+F4']").click(function() {
+      win.close();
+    })
+  }
+</script>
 <style>
   .dropdown-item::after {
     content: attr(data-key);

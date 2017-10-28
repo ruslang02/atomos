@@ -71,6 +71,9 @@
         saveFile($(this).attr("id"))
       })
     })
+    $("[data-key='Alt+F4']").click(function() {
+      win.close();
+    })
     $("body").on("click", ".nav-link button", function(e) {
       e.stopPropagation();
       closeTab($(this).parents('.nav-link').attr("to"))

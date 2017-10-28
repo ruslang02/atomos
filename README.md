@@ -1,4 +1,8 @@
 # atomOS Desktop Environment
+
+![alt text](https://pp.userapi.com/c841636/v841636258/2ec95/7cDypn8Pu4I.jpg)
+
+
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
 There is also an operating system available based on this.
@@ -20,3 +24,6 @@ And, finally, to run this monster:
 ```
 electron /atomos
 ```
+
+## Hacking
+You can edit your desktop envionment in real-time, adding features and modifying the look and feel.
