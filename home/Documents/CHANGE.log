@@ -1,11 +1,12 @@
--- Version 0.4-dev26 -- 28/10/2017
+# Changelog
+## 0.4-dev26
  - aos-photoframe was removed, brush replaced it
  - aos-appchooserdialog was updated to work in the 0.4
  - brush now can open files via path
  - proton now can open local files
  - framework update
 
--- Version 0.4-dev25 -- 28/10/2017
+## 0.4-dev25
  - Zooming is now available in all apps using Ctrl + and Ctrl -
  - Angles was given the ability to change syntax highlighting and theme settings
  - Dropdown now get a scrollbar if don't fit inside app
@@ -13,7 +14,7 @@
  - Changed all connections with that package
  - Small fixes is "index.js"
 
--- Version 0.4-dev23 -- 28/10/2017
+## 0.4-dev23
 
  - New applications:
    - ash - still in development, terminal emulator, can be used in different apps
@@ -26,14 +27,14 @@
  - Improved context menu integration
  - 'cropperjs' npm package was integrated
 
--- Version 0.4-dev15 -- 22/10/2017
+## 0.4-dev15
 
  - 70% of code rewritten
  - Using Electron's WebView instead of <iframe>'s
  - atomOS API is now unavailable
  - Node.JS is available in all applications
 
--- Version 0.3.3 -- 07/10/2017
+## 0.3.3
 
  - Ability to create files and folders in aos-cabinet
 
@@ -45,22 +46,20 @@
  - Hidden files toggle in aos-cabinet
  - TooLargeFile warning in aos-typewriter
 
--- Version 0.3.2 -- 06/10/2017
+## 0.3.2
 
  - FileClipboard API
-
  - Desktop is now generated dynamically from folder ~/Desktop
  - Shortcut support
  - File management commands
  - Fixed window z-order sometimes not bringing to front
  - Keyboard shortcuts in aos-typewriter
 
--- Version 0.3.1 -- 05/10/2017
+## 0.3.1
 
  - Calculator application
  - Apps list is now generated automatically
  - Context menus are in beta and are available in some apps
--------
  - Ping can now be controlled using a toggle
  - Improved app opening performance
  - aos.components.ContextMenu and Point were added to API
@@ -68,7 +67,7 @@
  - Some OFD bugs were resolved
  - More deep Node.JS integration
 
--- Version 0.3 -- 03/10/2017
+## 0.3
 
  - Proton Web Browser
  - Improved About dialog
