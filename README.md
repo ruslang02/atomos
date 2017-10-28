@@ -31,7 +31,7 @@ electron /atomos
 
 ## Changelog
 
-Changelog is available [here](https://github.com/ruslang02/atomos/home/Documents/CHANGE.log).
+Changelog is available [here](https://github.com/ruslang02/atomos/blob/master/home/Documents/CHANGE.log).
 
 ## Hacking
 You can edit your desktop envionment in real-time, adding features and modifying the look and feel.
