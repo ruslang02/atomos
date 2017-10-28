@@ -10,7 +10,10 @@ There is also an operating system available based on this.
 
 ## Installation
 
-Download this repository and unpack it to `/atomos`.
+Download this repository and unpack it to `/atomos` or run this command:
+```
+sudo git clone https://github.com/ruslang02/atomos.git /
+```
 
 Firstly, you should have Node.JS and NPM installed:
 ```
