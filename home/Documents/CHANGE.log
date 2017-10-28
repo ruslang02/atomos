@@ -1,3 +1,16 @@
+-- Version 0.4-dev23 -- 28/10/2017
+
+ - New applications:
+   - ash - still in development, terminal emulator, can be used in different apps
+   - aos-terminal - ash with extensions
+   - brush - image editor based on Cropper.js
+   - angles - code editor based on Ace.js
+   - properties - dialog that shows the properties of file
+
+ - Fixed menu items in aos-typewriter
+ - Improved context menu integration
+ - 'cropperjs' npm package was integrated
+
 -- Version 0.4-dev15 -- 22/10/2017
 
  - 70% of code rewritten
