@@ -24,6 +24,9 @@ app {
 }
 context-menu .dropdown-item {padding:0.25rem 1.75rem;position:relative;    margin: 0;display:block;}
 button i.material-icons {vertical-align:sub}
+.dropdown-menu {
+  overflow: auto;max-height: calc(100vh - 15px);
+}
 .dropdown-item[disabled] {pointer-events:none}
 .dropdown-submenu { position: relative }
 .dropdown-submenu>.dropdown-menu {

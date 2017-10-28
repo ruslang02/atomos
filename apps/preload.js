@@ -13,7 +13,22 @@ document.addEventListener("DOMContentLoaded", () => {
   $(window).keyup(function(e) {
     if (e.shiftKey && e.ctrlKey && e.keyCode == 73) require("electron").remote.getCurrentWindow().toggleDevTools();
     if (e.ctrlKey && e.keyCode == 82) location.reload();
+    if (e.keyCode == 122) require("electron").remote.getCurrentWindow().setFullScreen(!require("electron").remote.getCurrentWindow().isFullScreen())
+    if ((event.key == "+" || event.key == "=") && e.ctrlKey) {
+      require("electron").remote.getCurrentWebContents().getZoomFactor(function(zoomFactor) {
+        zoomFactor += 0.1;
+        console.log("Zooming to " + zoomFactor);
+        require("electron").remote.getCurrentWebContents().setZoomFactor(zoomFactor);
+      });
+    }
+    if (event.key == "-" && e.ctrlKey) {
+      require("electron").remote.getCurrentWebContents().getZoomFactor(function(zoomFactor) {
+        zoomFactor -= 0.1;
+        console.log("Zooming to " + zoomFactor);
+        require("electron").remote.getCurrentWebContents().setZoomFactor(zoomFactor);
+      });
+    }
   })
 
 });
-require('atomos');
+require('atomos-framework');

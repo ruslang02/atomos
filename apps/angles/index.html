@@ -17,6 +17,22 @@
       <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
     </div>
   </div>
+    <div class="btn-group dropdown btn-group-sm">
+      <button id="langMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Language
+        <b class="caret"></b>
+      </button>
+      <div class="dropdown-menu" aria-labelledby="langMenu">
+      </div>
+    </div>
+      <div class="btn-group dropdown btn-group-sm">
+        <button id="themeMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Theme
+          <b class="caret"></b>
+        </button>
+        <div class="dropdown-menu" aria-labelledby="themeMenu">
+        </div>
+      </div>
   <div class="spacer" style="flex-grow:2"></div>
   <div class="btn-group btn-group-sm">
     <button class="btn btn-outline-info">Build</button>
@@ -26,7 +42,7 @@
 <ul class="nav nav-tabs bg-light"></ul>
 <tabs></tabs>
 <script src="/atomos/node_modules/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="/atomos/node_modules/ace-builds/src-min/mode-pascal.js" type="text/javascript" charset="utf-8"></script>
+<script src="/atomos/node_modules/ace-builds/src-min/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
 <script src="/atomos/node_modules/ace-builds/src-min/theme-chrome.js" type="text/javascript" charset="utf-8"></script>
 <script>
   var editors = [];
@@ -38,6 +54,20 @@
   const win = remote.getCurrentWindow()
 
   window.onload = function() {
+    fs.readdir("/atomos/node_modules/ace-builds/src-min/", function(err, data) {
+      data.forEach(function(elem) {
+        if(elem.startsWith("mode"))  $("[aria-labelledby=langMenu]").append("<button class='dropdown-item'>" + elem.substring(elem.lastIndexOf("-") + 1, elem.lastIndexOf(".")).replace("_", " ") + "</button>")
+        if(elem.startsWith("theme")) $("[aria-labelledby=themeMenu]").append("<button class='dropdown-item'>" + elem.substring(elem.lastIndexOf("-") + 1, elem.lastIndexOf(".")).replace("_", " ") + "</button>")
+      })
+      $("[aria-labelledby=langMenu] .dropdown-item").click(function() {
+        $("body").append('<script src="/atomos/node_modules/ace-builds/src-min/mode-' + $(this).text().replace(" ", "_") + '.js" type="text/javascript" charset="utf-8"/>');
+        editors[$('tab[active]').attr("id")].session.setMode("ace/mode/" + $(this).text().replace(" ", "_"));
+      })
+      $("[aria-labelledby=themeMenu] .dropdown-item").click(function() {
+        $("body").append('<script src="/atomos/node_modules/ace-builds/src-min/theme-' + $(this).text().replace(" ", "_") + '.js" type="text/javascript" charset="utf-8"/>');
+        editors[$('tab[active]').attr("id")].setTheme("ace/theme/" + $(this).text().replace(" ", "_"));
+      })
+    })
     $(window).keypress(function(event) {
       if (event.ctrlKey && event.shiftKey && event.key == "N") window.new('angles');
       if (event.ctrlKey && event.key == "n") newTab();
@@ -132,7 +162,7 @@
         editors[tabNumber].setValue(data);
         editors[tabNumber].url = path;
         editors[tabNumber].isRemote = true;
-        editors[tabNumber].session.setMode("ace/mode/pascal");
+        editors[tabNumber].session.setMode("ace/mode/javascript");
         $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
         reEvent(tabNumber)
         win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Angles");

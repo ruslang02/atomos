@@ -8,8 +8,8 @@ global.windowArgs = [];
 global.windowIcons = [];
 app.commandLine.appendSwitch("disable-gpu");
 
-ipcMain.on("setArguments", function(event, arguments) {
-  global.windowArgs[arguments.wid] = arguments.arguments || {};
+ipcMain.on("setArguments", function(event, args) {
+  global.windowArgs[args.wid] = args.arguments || {};
 })
 ipcMain.on("getArguments", function(event, wid) {
   event.returnValue = global.windowArgs[wid] || {};

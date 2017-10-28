@@ -1,5 +1,5 @@
 window.jQuery = window.$ = require("jquery");
-require("atomos");
+require("atomos-framework");
 
 
 setInterval(function() {
