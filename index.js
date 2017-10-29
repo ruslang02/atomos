@@ -165,7 +165,6 @@ app.on('ready', function(event) {
     show: false,
     type: "dock"
   })
-  startMenu.toggleDevTools();
 
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
 
@@ -186,7 +185,6 @@ app.on('ready', function(event) {
     })
 
     menu.loadURL("file:///atomos/sys/menu/index.html")
-    menu.toggleDevTools();
 });
 ipcMain.on("spawn-menu", function(event, data) {menu.webContents.send("spawn-menu", data)});
 ipcMain.on("close-any-menu", function(event) {menu.webContents.send("close-menu")});
