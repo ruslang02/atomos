@@ -165,6 +165,28 @@ app.on('ready', function(event) {
     show: false,
     type: "dock"
   })
+  startMenu.toggleDevTools();
 
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
+
+    menu = new BrowserWindow({
+      x: 100,
+      y: 100,
+      width: 150,
+      height: 200,
+      frame: false,
+      closable: false,
+      minimizable: false,
+      maximizable: false,
+      alwaysOnTop: true,
+      resizable: false,
+      movable: false,
+      show: false,
+      type: "dock"
+    })
+
+    menu.loadURL("file:///atomos/sys/menu/index.html")
+    menu.toggleDevTools();
 });
+ipcMain.on("spawn-menu", function(event, data) {menu.webContents.send("spawn-menu", data)});
+ipcMain.on("close-any-menu", function(event) {menu.webContents.send("close-menu")});

@@ -29,6 +29,28 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   })
+  ipcRenderer.on("return-menu", function(event, action) {
+    switch (action) {
+      case "__undo":
+        remote.getCurrentWebContents().undo();
+        break;
+      case "__redo":
+        remote.getCurrentWebContents().redo();
+        break;
+      case "__copy":
+        remote.getCurrentWebContents().copy();
+        break;
+      case "__cut":
+        remote.getCurrentWebContents().cut();
+        break;
+      case "__paste":
+        remote.getCurrentWebContents().paste();
+        break;
+      case "__select all":
+        remote.getCurrentWebContents().selectAll();
+        break;
+    }
+  })
 
 });
 require('atomos-framework');

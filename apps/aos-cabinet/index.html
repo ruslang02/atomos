@@ -42,12 +42,13 @@
 	var fm = {};
 	const {
 		clipboard,
-		remote
+		remote,
+		ipcRenderer
 	} = require('electron')
 	const {
 		Menu
-	} = remote;
-	var fs = require("fs");
+	} = require("atomos-framework");
+	var fs = require("fs-extra");
 	fm.elements = [];
 	fm.folders = [];
 	fm.files = [];
@@ -116,6 +117,7 @@
 
 	function navigate(path, historymode) {
 		$(".files").html("");
+		$(".files *").remove();
 		$("#ofdFile").val("");
 		$(".ofdBar button.btn-primary").prop("disabled", "disabled");
 		if (path === undefined) path = "/";
@@ -207,7 +209,7 @@
 				else if (stat.isSymbolicLink()) {
 					fileRes.link = true;
 					var link = fs.readlinkSync(path + file);
-					var statLink = fs.statSync((link.startsWith("/") ? link : path+link));
+					var statLink = fs.statSync((link.startsWith("/") ? link : path + link));
 					if (statLink.isFile()) {
 						fileRes.type = "file";
 						fileRes.mimeType = window.getMimeType(link.substring(link.lastIndexOf(".") + 1));
@@ -274,13 +276,13 @@
 					return 0;
 				});
 			}
-			if(fm.foldersFirst) {
+			if (fm.foldersFirst) {
 				var newResult = [];
 				result.forEach(function(item) {
-					if(item.type == "folder") newResult.push(item);
+					if (item.type == "folder") newResult.push(item);
 				})
 				result.forEach(function(item) {
-					if(item.type == "file") newResult.push(item);
+					if (item.type == "file") newResult.push(item);
 				})
 				console.log(newResult);
 				callback(newResult)
@@ -290,147 +292,150 @@
 	}
 
 	function initContextMenus() {
+		ipcRenderer.on("return-menu", function(event, action, params) {
+			console.log("folder")
+			switch (action) {
+				case "list":
+					$(".files").attr("viewMode", "list");
+					navigate(fm.path, "reload")
+					break;
+				case "small icons":
+					$(".files").attr("viewMode", "smalltiles");
+					navigate(fm.path, "reload")
+					break;
+				case "medium icons":
+					$(".files").attr("viewMode", "midtiles");
+					navigate(fm.path, "reload")
+					break;
+				case "large icons":
+					$(".files").attr("viewMode", "bigtiles");
+					navigate(fm.path, "reload")
+					break;
+				case "a to z":
+					fm.sorting = "A-Z";
+					navigate(fm.path, "reload")
+					break;
+				case "z to a":
+					fm.sorting = "Z-A";
+					navigate(fm.path, "reload")
+					break;
+				case "folders first":
+					fm.foldersFirst = !fm.foldersFirst;
+					navigate(fm.path, "reload")
+					break;
+				case "refresh":
+					navigate(fm.path, "reload")
+					break;
+				case "paste":
+					window.fileClipboard.flush(fm.path);
+						navigate(fm.path, "reload")
+					break;
+				case "file":
+					window.new("aos-cabinet/createFile", {
+						path: fm.path
+					})
+					break;
+				case "folder":
+					window.new("aos-cabinet/createFolder", {
+						path: fm.path
+					})
+					break;
+				case "properties":
+					window.new("properties", {
+						path: fm.path
+					});
+					break;
+						case "propertiesf":
+							window.new("properties", {
+								path: params.file
+							});
+							break;
+						case "delete":
+							fs.remove(params.file, function(err) {
+								if (!err) reNavigate();
+							})
+							break;
+						case "copy":
+							window.fileClipboard.copyMode = "copy";
+							window.fileClipboard.clear();
+							window.fileClipboard.add(params.file);
+							break;
+						case "cut":
+							window.fileClipboard.copyMode = "cut";
+							window.fileClipboard.clear();
+							window.fileClipboard.add(params.file);
+							break;
+						case "openin":
+							window.new("aos-appchooserdialog", {
+								path: params.file,
+								mimeType: params.mime
+							})
+							break;
+						case "open":
+							params.$this.trigger("dblclick");
+							break;
+			}
+		})
 		$("body").on("contextmenu", "div.files", function(event) {
+
 			const fmMenu = [{
-				label: "View",
-				type: "submenu",
-				submenu: [{
-					label: "List",
-					type: "radio",
-					checked: (fm.viewMode == "list" ? true : false),
-					click() {
-						$(".files").attr("viewMode", "list");
-						navigate(fm.path, "reload")
-					}
-				}, {
-					label: "Small icons",
-					type: "radio",
-					checked: (fm.viewMode == "smalltiles" ? true : false),
-					click() {
-						$(".files").attr("viewMode", "smalltiles");
-						navigate(fm.path, "reload")
-					}
-				}, {
-					label: "Medium icons",
-					type: "radio",
-					checked: (fm.viewMode == "midtiles" ? true : false),
-					click() {
-						$(".files").attr("viewMode", "midtiles");
-						navigate(fm.path, "reload")
-					}
-				}, {
-					label: "Large icons",
-					type: "radio",
-					checked: (fm.viewMode == "bigtiles" ? true : false),
-					click() {
-						$(".files").attr("viewMode", "bigtiles");
-						navigate(fm.path, "reload")
-					}
-				}]
-			}, {
-				label: "Sort by",
-				type: "submenu",
-				submenu: [{
-					label: "A to Z",
-					type: "radio",
-					checked: (fm.sorting == "A-Z" ? true : false),
-					click() {
-						fm.sorting = "A-Z";
-						navigate(fm.path, "reload")
-					}
-				}, {
-					label: "Z to A",
-					type: "radio",
-					checked: (fm.sorting == "Z-A" ? true : false),
-					click() {
-						fm.sorting = "Z-A";
-						navigate(fm.path, "reload")
-					}
-				}, {
-					type: "separator"
-				}, {
-					label: "Folders first",
-					type: "checkbox",
-					checked: (fm.foldersFirst),
-					click() {
-						if (fm.foldersFirst) fm.foldersFirst = false;
-						else fm.foldersFirst = true;
-						navigate(fm.path, "reload")
-					}
-				}]
-			}, {
-				type: "separator"
-			}, {
 				label: "Refresh",
-				accelerator: "F5",
-				click() {navigate(fm.path, "reload")}
+				accelerator: "F5"
 			}, {
 				label: "Paste",
 				accelerator: "CmdOrCtrl+V",
-				click() {
-					window.fileClipboard.flush(fm.path)
-				},
-				enabled: window.fileClipboard.isFilled
+				disabled: !window.fileClipboard.isFilled
 			}, {
 				type: "separator"
 			}, {
-				label: "Properties",
-				disabled: true
+				label: "Properties"
 			}]
-			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
-			fm.filesMenu.popup(fm.window);
+			fm.filesMenu = new Menu(fmMenu);
+			fm.filesMenu.popup({
+				x: event.pageX,
+				y: event.pageY
+			}, fm.window);
 		});
 
-		$("body").on("contextmenu", ".file-item[type=file]", function(e) {
+		$("body").on("contextmenu", ".file-item[type]", function(e) {
 			e.stopPropagation();
 			var mime = $(this).attr("data-mime");
 			var file = fm.path + $(this).find(".file-title").text()
 			var $this = $(this);
 			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
-				if(!err) var assocs = $.parseJSON(data);
+				if (!err) var assocs = $.parseJSON(data);
 				console.log(data);
 				var appName = assocs.find(o => o.mime == mime);
-				if(appName) appName = appName["app"];
+				if (appName) appName = appName["app"];
 				const menu = [{
 					label: "Open in " + (!err ? appName : "default application"),
-					visible: (appName !== undefined),
-					click() {
-						$this.trigger("dblclick");
-					}
+					action: "open",
+					visible: (appName !== undefined) && $this.attr("type") == "file"
 				}, {
 					label: "Open using...",
-					click() {
-						window.new("aos-appchooserdialog",{path: file, mimeType: mime})
-					}
-				}, {type: "separator"}, {
-					label: "Cut",
-					click() {
-						window.fileClipboard.copyMode = "cut";
-						window.fileClipboard.clear();
-						console.log()
-						window.fileClipboard.add(file);
-					}
+					action: "openin",
+					visible: $this.attr("type") == "file"
 				}, {
-					label: "Copy",
-					click() {
-						window.fileClipboard.copyMode = "copy";
-						window.fileClipboard.clear();
-						window.fileClipboard.add(file);
-					}
-				}, {type: "separator"}, {
-					label: "Delete",
-					click() {
-						fs.unlink(file, function(err) {
-							if(!err) reNavigate();
-						})
-					}
+					type: "separator"
+				}, {
+					label: "Cut"
+				}, {
+					label: "Copy"
+				}, {
+					type: "separator"
+				}, {
+					label: "Delete"
 				}, {
 					label: "Properties",
-					click() {
-						window.new("properties", {path: file});
-					}
+					action: "propertiesf"
 				}]
-				Menu.buildFromTemplate(menu).popup(fm.window);
+				var fileMenu = new Menu(menu)
+				fileMenu.popup({
+					x: e.pageX,
+					y: e.pageY
+				}, fm.window, {mime: mime, $this: $this, file: file});
+
+
 			})
 		})
 	}

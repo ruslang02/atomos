@@ -12,25 +12,54 @@
 <style>
 	body {
 		padding: 1em;
-		display:flex;
+		display: flex;
 	}
-	p {margin:0;line-height:2;}
+
+	p {
+		margin: 0;
+		line-height: 2;
+	}
 </style>
 
 <script defer>
 	var version = 0.22;
-	require('fs').readFile("/atomos/etc/aos-release.json", function(err,data) {
+	const {
+		Menu
+	} = require("atomos-framework");
+	const {remote} = require("electron")
+	var cmenu = new Menu([{
+		label: "Go to website",
+		action: "website"
+	}, {
+		label: "Dropdown",
+		type: "submenu",
+		items: [{
+			label: "Button 1"
+		}, {
+			label: "Button 2"
+		}]
+	}]);
+	require('fs').readFile("/atomos/etc/aos-release.json", function(err, data) {
 		build = $.parseJSON(data);
-			$("#checkUpd").click(function() {
-				$.get("http://atomos.org.uk/downloads/latest-release.txt", function(a) {
-					if (a >= version) {
-						parent.location.replace("update.html");
-					}
-				});
+		$("#checkUpd").click(function() {
+			$.get("http://atomos.org.uk/downloads/latest-release.txt", function(a) {
+				if (a >= version) {
+					parent.location.replace("update.html");
+				}
 			});
-			$("[data-name=name]").text(build.name);
-			$("[data-name=version]").text(build.version);
-			$("[data-name=codename]").text(build.codename);
-			$("[data-name=build]").text(build.build);
+		});
+		$("[data-name=name]").text(build.name);
+		$("[data-name=version]").text(build.version);
+		$("[data-name=codename]").text(build.codename);
+		$("[data-name=build]").text(build.build);
 	})
+	window.onload = function() {
+		$("body").on("contextmenu", function(event) {
+			event.preventDefault();
+			cmenu.popup({
+				x: event.pageX,
+				y: event.pageY
+			});
+		})
+	}
 </script>

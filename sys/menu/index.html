@@ -1,0 +1,83 @@
+<link href="/atomos/lib/atomos.css" rel="stylesheet">
+<div class="dropdown-menu">
+  <button class="dropdown-item">Button</button>
+</div>
+<style>
+  .dropdown-menu {
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    display: inline-block;
+    top: 0;
+    max-height: none;
+  }
+</style>
+<script>
+  window.$ = window.jQuery = require("jquery");
+  const {
+    remote,
+    ipcRenderer
+  } = require("electron");
+  const {BrowserWindow} = remote;
+  const app = remote.getCurrentWindow();
+  var options;
+  ipcRenderer.on("spawn-menu", function(event, data) {
+    options = data;
+    $(".dropdown-menu *").remove();
+    console.log(data);
+    data.items.forEach(function(item) {
+      if(item.type == "separator") {
+        $(".dropdown-menu").append("<div class='dropdown-divider'></div>")
+      } else if(item.type == "submenu") {
+        $(".dropdown-menu").append("<button class='dropdown-item dropdown-submenu'>" + item.label + "</button>")
+        var submenu = new BrowserWindow({
+          x: 100,
+          y: 100,
+          width: 150,
+          height: 200,
+          frame: false,
+          closable: false,
+          minimizable: false,
+          maximizable: false,
+          alwaysOnTop: true,
+          resizable: false,
+          movable: false,
+          show: false,
+          type: "dock"
+        })
+
+        submenu.loadURL("file:///atomos/sys/menu/index.html")
+        submenu.webContents.on("did-finish-load", function() {
+          submenu.webContents.send("spawn-menu", {
+            x: app.getPosition()[0] + app.getSize()[0],
+            y: app.getPosition()[1] + $(".dropdown-item").last().position().top,
+            items: item.items,
+            win: app,
+            params: {},
+            show: false
+          })
+          $(".dropdown-submenu").last().mouseenter(function() {
+            submenu.show()
+          }).mouseleave(function() {submenu.hide();})
+        })
+      } else {
+        $(".dropdown-menu").append("<button " + (item.disabled ? "disabled" : "") + " action='" + (item.action === undefined ? item.label.toLowerCase() : item.action) + "' class='dropdown-item'>" + item.label + "</button>");
+      }
+    })
+    $(".dropdown-item").off().click(function() {
+      remote.BrowserWindow.fromId(options.win).webContents.send("return-menu", $(this).attr("action"), options.params || {});
+        closeMenu();
+    })
+    app.setPosition(data.x, data.y);
+    app.setSize(Math.ceil($(".dropdown-menu").outerWidth()), Math.ceil($(".dropdown-menu").outerHeight()));
+    if(options.show !== false) app.show();
+  })
+  app.on("blur", function() {
+    closeMenu();
+  })
+  ipcRenderer.on("close-menu", closeMenu);
+  function closeMenu() {
+    app.hide();
+    $(".dropdown-menu *").remove();
+  }
+</script>

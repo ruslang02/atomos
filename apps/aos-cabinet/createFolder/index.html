@@ -5,43 +5,59 @@
 <footer class="text-right"><button class="btn btn-secondary mr-2">Cancel</button><button disabled class="btn btn-primary">Create Folder</button></footer>
 
 <script>
-  var app = aos.windows[window.name];
-  if(!app.arguments["path"]) {
-    aos.notifications.add({
+  const {
+    remote,
+    ipcRenderer
+  } = require('electron');
+  const fs = require('fs');
+  const app = remote.getCurrentWindow();
+  if (!window.arguments.path) {
+    /*aos.notifications.add({
       head: "No path specified",
       body: "Application aos-cabinet-createFolder was not given any arguments.",
       type: "warning"
-    });
+    });*/
     app.close();
   } else {
-    $(".btn").click(function() {
-      aos.windows[window.name].close();
-    })
-    $(".btn-primary").click(function() {
-      parent.fs.mkdirSync(app.arguments["path"] + "/" + $("input").val());
-      app.arguments["callback"](app.arguments["path"] + "/" + $("input").val());
-    })
-    $("input").on("input", function() {
-      if(parent.fs.existsSync(app.arguments["path"] + $("input").val())) {
-        $(this).addClass("is-invalid");
-        $(".btn-primary").attr("disabled", "disabled");
-      } else {
-        $(".btn-primary").removeAttr("disabled");
-        $(this).removeClass("is-invalid");
-      }
-    })
+    window.onload = function() {
+      $(".btn").click(function() {
+        app.close();
+      })
+      $(".btn-primary").click(function() {
+        fs.mkdirSync(window.arguments.path + "/" + $("input").val());
+        ipcRenderer.send("create-file", window.arguments.path + "/" + $("input").val());
+      })
+      $("input").on("input", function() {
+        if (fs.existsSync(window.arguments.path + $("input").val())) {
+          $(this).addClass("is-invalid");
+          $(".btn-primary").attr("disabled", "disabled");
+        } else {
+          $(".btn-primary").removeAttr("disabled");
+          $(this).removeClass("is-invalid");
+        }
+      })
+    }
   }
 </script>
 
 <style>
-  app {
+  body {
     padding: 1rem;
-    display:flex;
-    flex-direction:column;
+    display: flex;
+    flex-direction: column;
   }
+
   header {
-    display:flex;
+    display: flex;
   }
-  header img {width:48px;height:48px;}
-  header input {margin:0.5rem;margin-right:0}
+
+  header img {
+    width: 48px;
+    height: 48px;
+  }
+
+  header input {
+    margin: 0.5rem;
+    margin-right: 0
+  }
 </style>

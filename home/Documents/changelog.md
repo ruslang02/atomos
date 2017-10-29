@@ -1,4 +1,10 @@
 # Changelog
+## 0.4-dev30
+ - Context menus are now unlinked from Electron API, fully Bootstrapish generation
+ - Very unstable menus
+ - Desktop is now working again
+ - aos-cabinet-createFolder and aos-cabinet-createFile are restored, but no entry in menus again
+
 ## 0.4-dev26
  - aos-photoframe was removed, brush replaced it
  - aos-appchooserdialog was updated to work in the 0.4

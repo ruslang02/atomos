@@ -1,11 +1,9 @@
 global.fs = require('fs');
-global.wifi = require('wifi-control');
-global.network = require('network-config');
-global.exec = require('child_process').spawn;
 global.ipc = require('electron').ipcRenderer;
 	const {
 		BrowserWindow
 	} = require("electron").remote;
+	require('atomos-framework');
 var toPing = false;
 var aos = {
 	"debug": (location.search.includes("debug") ? true : false),
@@ -118,53 +116,8 @@ var aos = {
 		}
 	},
 	"file": {
-		"choose": function (wid, options) {
-			options = options || {};
-
-			var path = options.path || "/atomos/home/";
-			new aos.components.Window("aos-cabinet", {
-				path: path,
-				action: "ofd",
-				callback: options.callback,
-				okText: options.okText || "Open",
-				cancelText: options.cancelText || "Cancel",
-				titleText: options.title || "Choose a file to open..."
-			}, {
-				modal: true,
-				parent: wid
-			});
-		},
-		"save": function (wid, options) {
-			options = options || {};
-
-			var path = options.path || "/atomos/home/";
-			new aos.components.Window("aos-cabinet", {
-				path: path,
-				action: "sfd",
-				callback: options.callback,
-				okText: options.okText || "Save",
-				cancelText: options.cancelText || "Cancel",
-				titleText: options.title || "Choose where to save the file..."
-			}, {
-				modal: true,
-				parent: wid
-			});
-		},
-		"open": function (path, mime) {
-			aos.file.get("/atomos/etc/associations.json", {
-				format: "json"
-			}, function (assocs) {
-				assocs = assocs.filter(function (obj) {
-					return obj.mime == mime
-				})
-				if (assocs.length > 0) new aos.components.Window(assocs[0].app, {
-					path: path
-				});
-				else new aos.components.Window("aos-appchooserdialog", {
-					path: path,
-					mimeType: mime
-				});
-			});
+		"open": function (path) {
+			window.fileOpen(path);
 		},
 		"get": function (path, options, callback) {
 			var result = "";
@@ -178,7 +131,7 @@ var aos = {
 		},
 		"write": function (path, contents, callback) {
 			fs.writeFile(path, contents, function (err) {
-				if (err) aos.notifications.add("danger", "node-fs error", err);
+				//if (err) aos.notifications.add("danger", "node-fs error", err);
 				try {
 					callback(err)
 				} catch (e) {}
@@ -198,7 +151,7 @@ var aos = {
 								shrt = $.parseJSON(shrt);
 								$(".files").append("<button type='shortcut' realname='" + item + "' class='file-item'><img src='" + shrt.icon + "'><div class='file-title'>" + shrt.title + "</div></button>")
 								$(".files .file-item").last().on("dblclick", function () {
-									new aos.components.Window(shrt.app, shrt.arguments || {});
+									window.new(shrt.app, shrt.arguments || {});
 								})
 							} else {
 								if (!item.startsWith(".")) {
@@ -221,10 +174,6 @@ var aos = {
 		}
 	},
 	"utils": {
-		"getMimeType": function (ext) {
-			if (!aos.vars.mimeList.find(o => o.extension === ext) || !ext) return "text/plain";
-			else return aos.vars.mimeList.find(o => o.extension === ext)["mime"]
-		},
 		"initMimes": function () {
 
 			fs.readFile("/etc/mime.types", "utf8", function (errno, mimeList) {
@@ -249,36 +198,3 @@ var aos = {
 	}
 }
 aos.core.init()
-
-function createWindow(app, args) {
-	$.getJSON("/atomos/etc/apps/" + app + ".json", function (settings) {
-		let win = new BrowserWindow({
-			width: settings.width || 400,
-			height: settings.height || 300,
-			minWidth: settings.minWidth || 350,
-			minHeight: settings.minHeight || 250,
-			resizable: (settings.resizable === undefined ? true : settings.resizable),
-			minimizable: (settings.minimizable === undefined ? true : settings.minimizable),
-			maximizable: (settings.maximizable === undefined ? true : settings.maximizable),
-			closable: (settings.closable === undefined ? true : settings.closable),
-			title: settings.name || "New Application",
-			icon: settings.icon || "/atomos/icons/Application.png",
-			acceptFirstMouse: true,
-			webPreferences: {
-				preload: "/atomos/apps/preload.js",
-				defaultEncoding: "utf-8"
-			}
-		});
-		win.setMenuBarVisibility(false);
-		win.setAutoHideMenuBar(true);
-		win.setMenu(null);
-		global.ipc.send("setArguments",{
-			wid: win.id,
-			arguments: args
-		})
-		win.loadURL("file:///atomos/apps/" + app + "/index.html");
-		win.webContents.on("did-finish-load", function () {
-			win.show()
-		});
-	})
-}
