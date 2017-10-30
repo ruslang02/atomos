@@ -98,7 +98,6 @@
 
   var win = remote.getCurrentWindow();
   var fileName = undefined;
-  initContextMenus();
 
   window.onload = function() {
     $(window).keypress(function(event) {
@@ -125,11 +124,6 @@
     })
     ipcRenderer.on("save-file", function(event, file) {
       save(file);
-    })
-
-    $("textarea").on("contextmenu", function(e) {
-      e.preventDefault();
-      taMenu.popup(win);
     })
 
     $(".dropdown-toggle").dropdown();
@@ -293,39 +287,5 @@
         })
       }
     })
-  }
-
-  function initContextMenus() {
-    const taTemplate = [{
-      label: "Undo",
-      click () {$("[data-key='Ctrl+Z']").click()},
-      accelerator: "CmdOrCtrl+Z"
-    }, {
-      label: "Redo",
-      click () {$("[data-key='Ctrl+Shift+Z']").click()},
-      accelerator: "CmdOrCtrl+Shift+Z"
-    }, {type: "separator"}, {
-      label: "Cut",
-      click () {$("[data-key='Ctrl+X']").click()},
-      accelerator: "CmdOrCtrl+X"
-    }, {
-      label: "Copy",
-      click () {$("[data-key='Ctrl+C']").click()},
-      accelerator: "CmdOrCtrl+C"
-    }, {
-      label: "Paste",
-      click () {$("[data-key='Ctrl+V']").click()},
-      accelerator: "CmdOrCtrl+V"
-    }, {
-      label: "Delete",
-      click () {$("[data-key='Delete']").click()},
-      accelerator: "Delete"
-    }, {type: "separator"}, {
-      label: "Select All",
-      click () {$("[data-key='Ctrl+A']").click()},
-      accelerator: "CmdOrCtrl+A"
-    }];
-
-    taMenu = Menu.buildFromTemplate(taTemplate);
   }
 </script>

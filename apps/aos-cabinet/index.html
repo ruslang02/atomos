@@ -3,12 +3,13 @@
 		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateBack" onclick="goBack()">arrow_back</button>
 		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateForward" onclick="goForward()">arrow_forward</button>
 	</div>
-	<div class="btn-group mr-1 btn-group-sm">
+	<div class="btn-group btn-group-sm">
 		<button class="btn btn-outline-primary material-icons" onclick="reNavigate()">refresh</button>
 	</div>
-	<div class="input-group" style="
-    flex-grow: 2;
-"><input class="form-control form-control-sm" type="text" id="path"></div>
+	<div class="input-group mx-1" style="flex-grow: 2"><input class="form-control form-control-sm" type="text" id="path"></div>
+	<div class="btn-group btn-group-sm">
+		<button class="btn btn-outline-primary material-icons" id="menu" onclick="openMenu()">reorder</button>
+	</div>
 </div>
 
 <section>
@@ -295,19 +296,19 @@
 		ipcRenderer.on("return-menu", function(event, action, params) {
 			console.log("folder")
 			switch (action) {
-				case "list":
+				case "tiny":
 					$(".files").attr("viewMode", "list");
 					navigate(fm.path, "reload")
 					break;
-				case "small icons":
+				case "small":
 					$(".files").attr("viewMode", "smalltiles");
 					navigate(fm.path, "reload")
 					break;
-				case "medium icons":
+				case "medium":
 					$(".files").attr("viewMode", "midtiles");
 					navigate(fm.path, "reload")
 					break;
-				case "large icons":
+				case "large":
 					$(".files").attr("viewMode", "bigtiles");
 					navigate(fm.path, "reload")
 					break;
@@ -319,7 +320,11 @@
 					fm.sorting = "Z-A";
 					navigate(fm.path, "reload")
 					break;
-				case "folders first":
+				case "show hidden files":
+					fm.showHidden = !fm.showHidden;
+					navigate(fm.path, "reload")
+					break;
+				case "show folders first":
 					fm.foldersFirst = !fm.foldersFirst;
 					navigate(fm.path, "reload")
 					break;
@@ -328,7 +333,7 @@
 					break;
 				case "paste":
 					window.fileClipboard.flush(fm.path);
-						navigate(fm.path, "reload")
+					navigate(fm.path, "reload")
 					break;
 				case "file":
 					window.new("aos-cabinet/createFile", {
@@ -345,35 +350,35 @@
 						path: fm.path
 					});
 					break;
-						case "propertiesf":
-							window.new("properties", {
-								path: params.file
-							});
-							break;
-						case "delete":
-							fs.remove(params.file, function(err) {
-								if (!err) reNavigate();
-							})
-							break;
-						case "copy":
-							window.fileClipboard.copyMode = "copy";
-							window.fileClipboard.clear();
-							window.fileClipboard.add(params.file);
-							break;
-						case "cut":
-							window.fileClipboard.copyMode = "cut";
-							window.fileClipboard.clear();
-							window.fileClipboard.add(params.file);
-							break;
-						case "openin":
-							window.new("aos-appchooserdialog", {
-								path: params.file,
-								mimeType: params.mime
-							})
-							break;
-						case "open":
-							params.$this.trigger("dblclick");
-							break;
+				case "propertiesf":
+					window.new("properties", {
+						path: params.file
+					});
+					break;
+				case "delete":
+					fs.remove(params.file, function(err) {
+						if (!err) reNavigate();
+					})
+					break;
+				case "copy":
+					window.fileClipboard.copyMode = "copy";
+					window.fileClipboard.clear();
+					window.fileClipboard.add(params.file);
+					break;
+				case "cut":
+					window.fileClipboard.copyMode = "cut";
+					window.fileClipboard.clear();
+					window.fileClipboard.add(params.file);
+					break;
+				case "openin":
+					window.new("aos-appchooserdialog", {
+						path: params.file,
+						mimeType: params.mime
+					})
+					break;
+				case "open":
+					params.$this.trigger("dblclick");
+					break;
 			}
 		})
 		$("body").on("contextmenu", "div.files", function(event) {
@@ -410,7 +415,7 @@
 				const menu = [{
 					label: "Open in " + (!err ? appName : "default application"),
 					action: "open",
-					visible: (appName !== undefined) && $this.attr("type") == "file"
+					hidden: (appName === undefined) || $this.attr("type") == "folder"
 				}, {
 					label: "Open using...",
 					action: "openin",
@@ -433,10 +438,71 @@
 				fileMenu.popup({
 					x: e.pageX,
 					y: e.pageY
-				}, fm.window, {mime: mime, $this: $this, file: file});
+				}, fm.window, {
+					mime: mime,
+					$this: $this,
+					file: file
+				});
 
 
 			})
+		})
+	}
+
+	function openMenu() {
+		const menu = [{
+			label: "Show hidden files",
+			type: "checkbox",
+			checked: fm.showHidden
+		}, {
+			label: "Show folders first",
+			type: "checkbox",
+			checked: fm.foldersFirst
+		}, {type: "separator"}, {
+			label: "Sorting",
+			type: "header"
+		}, {
+			label: "A to Z",
+			type: "radio",
+			group: "sorting",
+			checked: fm.sorting == "A-Z"
+		}, {
+			label: "Z to A",
+			type: "radio",
+			group: "sorting",
+			checked: fm.sorting == "Z-A"
+		}, {type: "separator"}, {
+			label: "Icon size",
+			type: "header"
+		}, {
+			label: "Tiny (16)",
+			action: "tiny",
+			type: "radio",
+			group: "size",
+			checked: fm.viewMode == "list"
+		}, {
+			label: "Small (32)",
+			action: "small",
+			type: "radio",
+			group: "size",
+			checked: fm.viewMode == "smalltiles"
+		}, {
+			label: "Medium (48)",
+			action: "medium",
+			type: "radio",
+			group: "size",
+			checked: fm.viewMode == "midtiles"
+		}, {
+			label: "Large (64)",
+			action: "large",
+			type: "radio",
+			group: "size",
+			checked: fm.viewMode == "bigtiles"
+		}]
+		var mmenu = new Menu(menu);
+		mmenu.popup({
+			x: $("#menu").offset().left,
+			y: $("#menu").offset().top + $("#menu").height() + 10
 		})
 	}
 </script>
@@ -446,6 +512,10 @@
 		text-align: center;
 	}
 
+.btn-toolbar .btn.material-icons {
+	font-size: 19px;
+  padding: 0 0.3rem;
+}
 
 	#sidebar {
 		min-width: 150px;
@@ -508,16 +578,6 @@
 	section {
 		flex-grow: 2;
 		display: flex;
-	}
-
-	#navigateBack:not(:disabled)::after {
-		content: " Back";
-		font-family: "Source Sans Pro", sans-serif;
-		font-size: 12px;
-		display: inline-block;
-		padding-top: 2px;
-		vertical-align: middle;
-		padding-left: 5px;
 	}
 
 	.files:empty::before {

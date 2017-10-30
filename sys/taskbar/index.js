@@ -74,6 +74,7 @@ remote.app.on('browser-window-created', function(event, win) {
   })
   win.on('close', function(e) {
     $task.addClass("btn-light").removeClass("btn-danger").fadeOut("200", function() {$task.remove()});
+    ipcRenderer.send("close-any-menu")
     clearInterval(dangerFlash);
   });
   win.on('responsive', function() {
@@ -95,9 +96,11 @@ remote.app.on('browser-window-created', function(event, win) {
   })
   win.on('blur', function() {
     $task.removeClass("active");
+    ipcRenderer.send("close-any-menu")
   })
   win.on('focus', function() {
     $task.addClass("active");
+    ipcRenderer.send("close-any-menu")
   })
   win.on('show', function() {
     $task.css("opacity", "1");
