@@ -1,6 +1,6 @@
 # atomOS Desktop Environment
 
-![alt text](https://pp.userapi.com/c841636/v841636258/2ec95/7cDypn8Pu4I.jpg)
+![alt text](http://pp.userapi.com/c841636/v841636258/2ec95/7cDypn8Pu4I.jpg)
 
 Latest version: 0.4-dev32. 0.3.3 is available only inside the [atomOS itself](https://drive.google.com/drive/folders/0B_VomIpGvKyvU0RPUnVxM2pOeDg).
 
