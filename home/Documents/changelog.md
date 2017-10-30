@@ -1,9 +1,13 @@
 # Changelog
+## 0.4-dev33
+ - aos-typewriter is now using new menus
+ - Deleted debug commands
+
 ## 0.4-dev32
  - Menus are a bit stabilized and are replaced in some apps
  - Submenus are disabled for now
  - aos-cabinet was given view preferences
- 
+
 ## 0.4-dev30
  - Context menus are now unlinked from Electron API, fully Bootstrapish generation
  - Very unstable menus
