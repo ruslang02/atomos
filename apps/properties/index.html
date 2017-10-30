@@ -43,8 +43,6 @@
         <dt data="fexec">unknown</dt>
       </dl>
 
-      You can change permissions using <code>chmod</code> command in Terminal.
-
     </permissions>
 
     <associations class="p-1">
@@ -73,9 +71,6 @@
       require('electron').clipboard.writeText(window.arguments.path);
     })
     var mime = window.getMimeType(window.arguments.path.substring(window.arguments.path.lastIndexOf(".") + 1));
-    if(mime == "inode/directory") {
-      $("button:contains('Association')").remove();
-    }
     $("[data=fmime]").text(mime);
     fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
       data = JSON.parse(data);
@@ -89,7 +84,7 @@
     fs.stat(window.arguments.path, function(err, stat) {
       if (!err) {
         console.log(stat);
-        $("[data=fname]").text(window.arguments.path.substring(window.arguments.path.lastIndexOf("/", window.arguments.path.length - 2) + 1).replace("/",""));
+        $("[data=fname]").text(window.arguments.path.substring(window.arguments.path.lastIndexOf("/") + 1));
         $("[data=fsize]").text(stat.size + " bytes");
         $("[data=fatime]").text(stat.atime.toDateString());
         $("[data=fmtime]").text(stat.mtime.toDateString());

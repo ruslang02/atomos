@@ -3,13 +3,12 @@
 		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateBack" onclick="goBack()">arrow_back</button>
 		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateForward" onclick="goForward()">arrow_forward</button>
 	</div>
-	<div class="btn-group btn-group-sm">
+	<div class="btn-group mr-1 btn-group-sm">
 		<button class="btn btn-outline-primary material-icons" onclick="reNavigate()">refresh</button>
 	</div>
-	<div class="input-group mx-1" style="flex-grow: 2"><input class="form-control form-control-sm" type="text" id="path"></div>
-	<div class="btn-group btn-group-sm">
-		<button class="btn btn-outline-primary material-icons" id="menu" onclick="openMenu()">reorder</button>
-	</div>
+	<div class="input-group" style="
+    flex-grow: 2;
+"><input class="form-control form-control-sm" type="text" id="path"></div>
 </div>
 
 <section>
@@ -43,13 +42,12 @@
 	var fm = {};
 	const {
 		clipboard,
-		remote,
-		ipcRenderer
+		remote
 	} = require('electron')
 	const {
 		Menu
-	} = require("atomos-framework");
-	var fs = require("fs-extra");
+	} = remote;
+	var fs = require("fs");
 	fm.elements = [];
 	fm.folders = [];
 	fm.files = [];
@@ -118,7 +116,6 @@
 
 	function navigate(path, historymode) {
 		$(".files").html("");
-		$(".files *").remove();
 		$("#ofdFile").val("");
 		$(".ofdBar button.btn-primary").prop("disabled", "disabled");
 		if (path === undefined) path = "/";
@@ -210,7 +207,7 @@
 				else if (stat.isSymbolicLink()) {
 					fileRes.link = true;
 					var link = fs.readlinkSync(path + file);
-					var statLink = fs.statSync((link.startsWith("/") ? link : path + link));
+					var statLink = fs.statSync((link.startsWith("/") ? link : path+link));
 					if (statLink.isFile()) {
 						fileRes.type = "file";
 						fileRes.mimeType = window.getMimeType(link.substring(link.lastIndexOf(".") + 1));
@@ -277,13 +274,13 @@
 					return 0;
 				});
 			}
-			if (fm.foldersFirst) {
+			if(fm.foldersFirst) {
 				var newResult = [];
 				result.forEach(function(item) {
-					if (item.type == "folder") newResult.push(item);
+					if(item.type == "folder") newResult.push(item);
 				})
 				result.forEach(function(item) {
-					if (item.type == "file") newResult.push(item);
+					if(item.type == "file") newResult.push(item);
 				})
 				console.log(newResult);
 				callback(newResult)
@@ -293,216 +290,148 @@
 	}
 
 	function initContextMenus() {
-		ipcRenderer.on("return-menu", function(event, action, params) {
-			console.log("folder")
-			switch (action) {
-				case "tiny":
-					$(".files").attr("viewMode", "list");
-					navigate(fm.path, "reload")
-					break;
-				case "small":
-					$(".files").attr("viewMode", "smalltiles");
-					navigate(fm.path, "reload")
-					break;
-				case "medium":
-					$(".files").attr("viewMode", "midtiles");
-					navigate(fm.path, "reload")
-					break;
-				case "large":
-					$(".files").attr("viewMode", "bigtiles");
-					navigate(fm.path, "reload")
-					break;
-				case "a to z":
-					fm.sorting = "A-Z";
-					navigate(fm.path, "reload")
-					break;
-				case "z to a":
-					fm.sorting = "Z-A";
-					navigate(fm.path, "reload")
-					break;
-				case "show hidden files":
-					fm.showHidden = !fm.showHidden;
-					navigate(fm.path, "reload")
-					break;
-				case "show folders first":
-					fm.foldersFirst = !fm.foldersFirst;
-					navigate(fm.path, "reload")
-					break;
-				case "refresh":
-					navigate(fm.path, "reload")
-					break;
-				case "paste":
-					window.fileClipboard.flush(fm.path);
-					navigate(fm.path, "reload")
-					break;
-				case "file":
-					window.new("aos-cabinet/createFile", {
-						path: fm.path
-					})
-					break;
-				case "folder":
-					window.new("aos-cabinet/createFolder", {
-						path: fm.path
-					})
-					break;
-				case "properties":
-					window.new("properties", {
-						path: fm.path
-					});
-					break;
-				case "propertiesf":
-					window.new("properties", {
-						path: params.file
-					});
-					break;
-				case "delete":
-					fs.remove(params.file, function(err) {
-						if (!err) reNavigate();
-					})
-					break;
-				case "copy":
-					window.fileClipboard.copyMode = "copy";
-					window.fileClipboard.clear();
-					window.fileClipboard.add(params.file);
-					break;
-				case "cut":
-					window.fileClipboard.copyMode = "cut";
-					window.fileClipboard.clear();
-					window.fileClipboard.add(params.file);
-					break;
-				case "openin":
-					window.new("aos-appchooserdialog", {
-						path: params.file,
-						mimeType: params.mime
-					})
-					break;
-				case "open":
-					params.$this.trigger("dblclick");
-					break;
-			}
-		})
 		$("body").on("contextmenu", "div.files", function(event) {
-
 			const fmMenu = [{
-				label: "Refresh",
-				accelerator: "F5"
+				label: "View",
+				type: "submenu",
+				submenu: [{
+					label: "List",
+					type: "radio",
+					checked: (fm.viewMode == "list" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "list");
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Small icons",
+					type: "radio",
+					checked: (fm.viewMode == "smalltiles" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "smalltiles");
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Medium icons",
+					type: "radio",
+					checked: (fm.viewMode == "midtiles" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "midtiles");
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Large icons",
+					type: "radio",
+					checked: (fm.viewMode == "bigtiles" ? true : false),
+					click() {
+						$(".files").attr("viewMode", "bigtiles");
+						navigate(fm.path, "reload")
+					}
+				}]
 			}, {
-				label: "Paste",
-				accelerator: "CmdOrCtrl+V",
-				disabled: !window.fileClipboard.isFilled
+				label: "Sort by",
+				type: "submenu",
+				submenu: [{
+					label: "A to Z",
+					type: "radio",
+					checked: (fm.sorting == "A-Z" ? true : false),
+					click() {
+						fm.sorting = "A-Z";
+						navigate(fm.path, "reload")
+					}
+				}, {
+					label: "Z to A",
+					type: "radio",
+					checked: (fm.sorting == "Z-A" ? true : false),
+					click() {
+						fm.sorting = "Z-A";
+						navigate(fm.path, "reload")
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Folders first",
+					type: "checkbox",
+					checked: (fm.foldersFirst),
+					click() {
+						if (fm.foldersFirst) fm.foldersFirst = false;
+						else fm.foldersFirst = true;
+						navigate(fm.path, "reload")
+					}
+				}]
 			}, {
 				type: "separator"
 			}, {
-				label: "Properties"
+				label: "Refresh",
+				accelerator: "F5",
+				click() {navigate(fm.path, "reload")}
+			}, {
+				label: "Paste",
+				accelerator: "CmdOrCtrl+V",
+				click() {
+					window.fileClipboard.flush(fm.path)
+				},
+				enabled: window.fileClipboard.isFilled
+			}, {
+				type: "separator"
+			}, {
+				label: "Properties",
+				disabled: true
 			}]
-			fm.filesMenu = new Menu(fmMenu);
-			fm.filesMenu.popup({
-				x: event.pageX,
-				y: event.pageY
-			}, fm.window);
+			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
+			fm.filesMenu.popup(fm.window);
 		});
 
-		$("body").on("contextmenu", ".file-item[type]", function(e) {
+		$("body").on("contextmenu", ".file-item[type=file]", function(e) {
 			e.stopPropagation();
 			var mime = $(this).attr("data-mime");
 			var file = fm.path + $(this).find(".file-title").text()
 			var $this = $(this);
 			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
-				if (!err) var assocs = $.parseJSON(data);
+				if(!err) var assocs = $.parseJSON(data);
 				console.log(data);
 				var appName = assocs.find(o => o.mime == mime);
-				if (appName) appName = appName["app"];
+				if(appName) appName = appName["app"];
 				const menu = [{
 					label: "Open in " + (!err ? appName : "default application"),
-					action: "open",
-					hidden: (appName === undefined) || $this.attr("type") == "folder"
+					visible: (appName !== undefined),
+					click() {
+						$this.trigger("dblclick");
+					}
 				}, {
 					label: "Open using...",
-					action: "openin",
-					visible: $this.attr("type") == "file"
+					click() {
+						window.new("aos-appchooserdialog",{path: file, mimeType: mime})
+					}
+				}, {type: "separator"}, {
+					label: "Cut",
+					click() {
+						window.fileClipboard.copyMode = "cut";
+						window.fileClipboard.clear();
+						console.log()
+						window.fileClipboard.add(file);
+					}
 				}, {
-					type: "separator"
-				}, {
-					label: "Cut"
-				}, {
-					label: "Copy"
-				}, {
-					type: "separator"
-				}, {
-					label: "Delete"
+					label: "Copy",
+					click() {
+						window.fileClipboard.copyMode = "copy";
+						window.fileClipboard.clear();
+						window.fileClipboard.add(file);
+					}
+				}, {type: "separator"}, {
+					label: "Delete",
+					click() {
+						fs.unlink(file, function(err) {
+							if(!err) reNavigate();
+						})
+					}
 				}, {
 					label: "Properties",
-					action: "propertiesf"
+					click() {
+						window.new("properties", {path: file});
+					}
 				}]
-				var fileMenu = new Menu(menu)
-				fileMenu.popup({
-					x: e.pageX,
-					y: e.pageY
-				}, fm.window, {
-					mime: mime,
-					$this: $this,
-					file: file
-				});
-
-
+				Menu.buildFromTemplate(menu).popup(fm.window);
 			})
-		})
-	}
-
-	function openMenu() {
-		const menu = [{
-			label: "Show hidden files",
-			type: "checkbox",
-			checked: fm.showHidden
-		}, {
-			label: "Show folders first",
-			type: "checkbox",
-			checked: fm.foldersFirst
-		}, {type: "separator"}, {
-			label: "Sorting",
-			type: "header"
-		}, {
-			label: "A to Z",
-			type: "radio",
-			group: "sorting",
-			checked: fm.sorting == "A-Z"
-		}, {
-			label: "Z to A",
-			type: "radio",
-			group: "sorting",
-			checked: fm.sorting == "Z-A"
-		}, {type: "separator"}, {
-			label: "Icon size",
-			type: "header"
-		}, {
-			label: "Tiny (16)",
-			action: "tiny",
-			type: "radio",
-			group: "size",
-			checked: fm.viewMode == "list"
-		}, {
-			label: "Small (32)",
-			action: "small",
-			type: "radio",
-			group: "size",
-			checked: fm.viewMode == "smalltiles"
-		}, {
-			label: "Medium (48)",
-			action: "medium",
-			type: "radio",
-			group: "size",
-			checked: fm.viewMode == "midtiles"
-		}, {
-			label: "Large (64)",
-			action: "large",
-			type: "radio",
-			group: "size",
-			checked: fm.viewMode == "bigtiles"
-		}]
-		var mmenu = new Menu(menu);
-		mmenu.popup({
-			x: $("#menu").offset().left,
-			y: $("#menu").offset().top + $("#menu").height() + 10
 		})
 	}
 </script>
@@ -512,10 +441,6 @@
 		text-align: center;
 	}
 
-.btn-toolbar .btn.material-icons {
-	font-size: 19px;
-  padding: 0 0.3rem;
-}
 
 	#sidebar {
 		min-width: 150px;
@@ -578,6 +503,16 @@
 	section {
 		flex-grow: 2;
 		display: flex;
+	}
+
+	#navigateBack:not(:disabled)::after {
+		content: " Back";
+		font-family: "Source Sans Pro", sans-serif;
+		font-size: 12px;
+		display: inline-block;
+		padding-top: 2px;
+		vertical-align: middle;
+		padding-left: 5px;
 	}
 
 	.files:empty::before {

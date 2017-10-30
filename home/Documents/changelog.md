@@ -1,4 +1,7 @@
 # Changelog
+## 0.4-dev40
+ - Repository reverted back to 0.4-dev26 with some edits from 0.4-dev30 because of full unstabillity of whole system and problems with opening any menus in some systems.
+
 ## 0.4-dev33
  - aos-typewriter is now using new menus
  - Deleted debug commands

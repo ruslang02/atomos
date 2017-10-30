@@ -167,24 +167,4 @@ app.on('ready', function(event) {
   })
 
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
-//startMenu.toggleDevTools();
-    menu = new BrowserWindow({
-      x: 100,
-      y: 100,
-      width: 150,
-      height: 200,
-      frame: false,
-      closable: false,
-      minimizable: false,
-      maximizable: false,
-      alwaysOnTop: true,
-      resizable: false,
-      movable: false,
-      show: false,
-      type: "dock"
-    })
-    //menu.toggleDevTools();
-    menu.loadURL("file:///atomos/sys/menu/index.html")
 });
-ipcMain.on("spawn-menu", function(event, data) {menu.webContents.send("spawn-menu", data)});
-ipcMain.on("close-any-menu", function(event) {menu.webContents.send("close-menu")});
