@@ -1,20 +1,24 @@
 {
   "name": "atomos",
-  "version": "0.4",
+  "version": "0.4.42",
   "description": "",
   "main": "index.js",
   "directories": {
     "lib": "lib"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruslang02/atomos.git"
+  },
+  "readme": "./README.md",
   "scripts": {
     "start": "electron /atomos",
-    "test": "electron /atomos --test"
+    "build": "kdesudo 'php ../../build.php'"
   },
   "author": "Ruslan",
-  "license": "ISC",
+  "license": "GNU GPL",
   "dependencies": {
     "ace-builds": "^1.2.9",
-    "ace-code-editor": "^1.2.3",
     "atomos-framework": "^0.4.30",
     "blob-to-buffer": "^1.2.6",
     "bootstrap": "^4.0.0-beta.2",
@@ -22,14 +26,10 @@
     "engine.io": "^3.1.3",
     "fs-extra": "^4.0.2",
     "gritty": "^1.4.23",
-    "hyper": "0.0.5",
     "jquery": "^3.2.1",
     "network": "^0.4.0",
     "popper.js": "^1.12.5",
     "terminal.js": "^1.0.10",
-    "tty.js": "^0.2.15",
-    "wifi-control": "^2.0.1",
-    "wireless-tools": "^0.19.0",
-    "xterm": "^2.9.2"
+    "wireless-tools": "^0.19.0"
   }
 }

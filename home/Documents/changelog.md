@@ -1,27 +1,40 @@
 # Changelog
+## 0.4-beta2
+ - Keyboard shortcuts were added to some apps
+ - _angles_ now autodetects file type and applies specific syntax highlighting
+ - _aos-cabinet_ was given some keyboard shortcuts and hidden files toggler
+ - Desktop was given a minimal context menu
+ - _aos-cabinet-createFolder_ and _aos-cabinet-createFile_ are updated
+ - --disable-gpu flag is not appended by default, do it by yourself
+ - Little bug/feature fixes globally
+ - _aos-terminal_ removed due to uselessness
+ - _ash_ made non-hidden
+ - _ace-code-editor_ and _wifi-control_ npm packages removed due to uselessness
+ - package.json was updated for npm to like it :)
+
 ## 0.4-dev40
  - Repository reverted back to 0.4-dev26 with some edits from 0.4-dev30 because of full unstabillity of whole system and problems with opening any menus in some systems.
 
 ## 0.4-dev33
- - aos-typewriter is now using new menus
+ - _aos-typewriter_ is now using new menus
  - Deleted debug commands
 
 ## 0.4-dev32
  - Menus are a bit stabilized and are replaced in some apps
  - Submenus are disabled for now
- - aos-cabinet was given view preferences
+ - _aos-cabinet_ was given view preferences
 
 ## 0.4-dev30
  - Context menus are now unlinked from Electron API, fully Bootstrapish generation
  - Very unstable menus
  - Desktop is now working again
- - aos-cabinet-createFolder and aos-cabinet-createFile are restored, but no entry in menus again
+ - _aos-cabinet-createFolder_ and _aos-cabinet-createFile_ are restored, but no entry in menus again
 
 ## 0.4-dev26
- - aos-photoframe was removed, brush replaced it
- - aos-appchooserdialog was updated to work in the 0.4
- - brush now can open files via path
- - proton now can open local files
+ - _aos-photoframe_ was removed, brush replaced it
+ - _aos-appchooserdialog_ was updated to work in the 0.4
+ - _brush_ now can open files via path
+ - _proton_ now can open local files
  - framework update
 
 ## 0.4-dev25

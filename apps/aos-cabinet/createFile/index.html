@@ -1,5 +1,5 @@
 <header>
-  <file-image />
+  <file-image></file-image>
   <input class="form-control" placeholder="Untitled" required/>
 </header>
 <footer class="text-right"><button class="btn btn-secondary mr-2">Cancel</button><button disabled class="btn btn-primary">Create File</button></footer>
@@ -11,21 +11,16 @@
   } = require('electron');
   const fs = require('fs');
   const app = remote.getCurrentWindow();
-  if (!window.arguments.path) {
-    /*aos.notifications.add({
-      head: "No path specified",
-      body: "Application aos-cabinet-createFile was not given any arguments.",
-      type: "warning"
-    });*/
-    app.close();
-  } else {
+  if (!window.arguments.path) app.close();
+  else {
     window.onload = function() {
-      $(".btn").click(function() {
+      $(".btn-secondary").click(function() {
         app.close();
       })
       $(".btn-primary").click(function() {
         fs.closeSync(fs.openSync(window.arguments.path + "/" + $("input").val(), 'w'));
-        ipcRenderer.send("create-file", window.arguments.path + "/" + $("input").val());
+        app.getParentWindow().webContents.send("create-file", window.arguments.path + "/" + $("input").val());
+        app.close();
       })
       $("input").on("input", function() {
         if (fs.existsSync(window.arguments.path + $("input").val())) {

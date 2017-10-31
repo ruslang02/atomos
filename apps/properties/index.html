@@ -2,7 +2,7 @@
   <div class="dropdown-menu mr-2 d-block" style="position:static">
     <button class="dropdown-item active" onclick="$('*').removeAttr('active').removeClass('active');$('properties').attr('active','active');$(this).addClass('active');"><i class="material-icons">list</i> General</button>
     <button class="dropdown-item" onclick="$('*').removeAttr('active').removeClass('active');$('permissions').attr('active','active');$(this).addClass('active');"><i class="material-icons">supervisor_account</i> Permissions</button>
-    <button class="dropdown-item" onclick="$('*').removeAttr('active').removeClass('active');$('associations').attr('active','active');$(this).addClass('active');"><i class="material-icons">launch</i> Association</button>
+    <button class="dropdown-item hide" onclick="$('*').removeAttr('active').removeClass('active');$('associations').attr('active','active');$(this).addClass('active');"><i class="material-icons">launch</i> Association</button>
   </div>
   <section style="flex-grow:2;display:flex;flex-direction:column;">
     <properties class="p-1" active>
@@ -45,7 +45,7 @@
 
     </permissions>
 
-    <associations class="p-1">
+    <associations class="p-1 hide ">
       <dl>
         <dd>File mimetype:</dd>
         <dt data="fmime">none</dt>
@@ -88,7 +88,10 @@
         $("[data=fsize]").text(stat.size + " bytes");
         $("[data=fatime]").text(stat.atime.toDateString());
         $("[data=fmtime]").text(stat.mtime.toDateString());
-        if (stat.isFile()) $("[data=ftype]").text("File");
+        if (stat.isFile()) {
+          $("[data=ftype]").text("File");
+          $("associations, .dropdown-item:contains('Association')").removeClass("hide");
+        }
         else
         if (stat.isDirectory()) $("[data=ftype]").text("Folder");
         else

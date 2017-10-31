@@ -42,7 +42,7 @@
 <ul class="nav nav-tabs bg-light"></ul>
 <tabs></tabs>
 <script src="/atomos/node_modules/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
-<script src="/atomos/node_modules/ace-builds/src-min/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+<script src="/atomos/node_modules/ace-builds/src-min/mode-js.js" type="text/javascript" charset="utf-8"></script>
 <script src="/atomos/node_modules/ace-builds/src-min/theme-chrome.js" type="text/javascript" charset="utf-8"></script>
 <script>
   var editors = [];
@@ -162,7 +162,8 @@
         editors[tabNumber].setValue(data);
         editors[tabNumber].url = path;
         editors[tabNumber].isRemote = true;
-        editors[tabNumber].session.setMode("ace/mode/javascript");
+        var mode;
+        editors[tabNumber].session.setMode("ace/mode/" + path.substring(path.lastIndexOf(".") + 1));
         $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
         reEvent(tabNumber)
         win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Angles");
@@ -176,7 +177,8 @@
       if (err) console.error(err);
       else {
         console.log("OK");
-        loadFile(url, tabNumber);
+        $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
+        reEvent(tabNumber);
       }
     })
   }
@@ -243,7 +245,7 @@
   .ace_editor {
     margin: 0;
     flex-grow: 2;
-    font: 13px/normal 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace
+    font: 15px/normal 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace
   }
 
   textarea {

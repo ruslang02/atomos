@@ -1,8 +1,15 @@
 global.fs = require('fs');
 global.ipc = require('electron').ipcRenderer;
+window.jQuery = window.$ = require("jquery");
+window.Popper = require('popper.js');
+require('bootstrap');
+const {
+	remote
+} = require('electron')
 	const {
+		Menu,
 		BrowserWindow
-	} = require("electron").remote;
+	} = remote;
 	require('atomos-framework');
 var toPing = false;
 var aos = {
@@ -169,7 +176,30 @@ var aos = {
 		},
 		"init": function () {
 			aos.core.reloadDesktop();
-
+			$(window).keydown(function(e) {
+				if(e.key == "F1") window.new("aos-about");
+				//if(e.key == "v" && e.ctrlKey) window.fileClipboard.flush("/atomos/home/Desktop/");
+				if(e.key == "F5") aos.core.reloadDesktop()
+			})
+				var desktopmenu = [{
+					label: "Refresh",
+					accelerator: "F5",
+					click() {aos.core.reloadDesktop()}
+				}, {
+					label: "Paste",
+					accelerator: "CmdOrCtrl+V",
+					enabled: window.fileClipboard.isFilled,
+					visible: false,
+					click() {window.fileClipboard.flush("/atomos/home/Desktop/")}
+				}, {type: "separator"}, {
+					label: "About the system",
+					accelerator: "F1",
+					click() {window.new("aos-about")}
+				}]
+				var cmenu = Menu.buildFromTemplate(desktopmenu);
+			$(".files").contextmenu(function(e) {
+				cmenu.popup(remote.getCurrentWindow());
+			})
 
 		}
 	},

@@ -31,7 +31,7 @@
 
 <div class="ofdBar input-group p-1 bg-light hide" style="flex-shrink:0;border-top:1px solid lightgray;">
 	<span class="input-group-btn">
-	<button class="btn btn-sm btn-secondary btn-block" onclick="aos.windows[window.name].close()">Cancel</button>
+	<button class="btn btn-sm btn-secondary btn-block" onclick="window.close()">Cancel</button>
 </span>
 	<input type="text" class="form-control form-control-sm" id="ofdFile" readonly>
 	<span class="input-group-btn">
@@ -42,12 +42,13 @@
 	var fm = {};
 	const {
 		clipboard,
-		remote
+		remote,
+		ipcRenderer
 	} = require('electron')
 	const {
 		Menu
 	} = remote;
-	var fs = require("fs");
+	var fs = require("fs-extra");
 	fm.elements = [];
 	fm.folders = [];
 	fm.files = [];
@@ -65,6 +66,7 @@
 	window.addEventListener("load", function() {
 		navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
 		initContextMenus();
+		initShortcuts();
 		$("#sidebar [data-location]").click(function() {
 			$("#sidebar>.nav>li").removeClass("active");
 			$(this).parent("li").addClass("active");
@@ -180,17 +182,6 @@
 		navigate(fm.nHistory[fm.historyNow + 1], "forward");
 	}
 
-	var deleteFolderRecursive = function(path) {
-		if (fs.existsSync(path)) {
-			fs.readdirSync(path).forEach(function(file, index) {
-				var curPath = path + "/" + file;
-				if (fs.lstatSync(curPath).isDirectory()) deleteFolderRecursive(curPath);
-				else fs.unlinkSync(curPath);
-			});
-			fs.rmdirSync(path);
-		}
-	};
-
 	function list(path, callback) {
 		var result = [];
 		fs.readdir(path, function(errno, files) {
@@ -207,7 +198,7 @@
 				else if (stat.isSymbolicLink()) {
 					fileRes.link = true;
 					var link = fs.readlinkSync(path + file);
-					var statLink = fs.statSync((link.startsWith("/") ? link : path+link));
+					var statLink = fs.statSync((link.startsWith("/") ? link : path + link));
 					if (statLink.isFile()) {
 						fileRes.type = "file";
 						fileRes.mimeType = window.getMimeType(link.substring(link.lastIndexOf(".") + 1));
@@ -274,19 +265,98 @@
 					return 0;
 				});
 			}
-			if(fm.foldersFirst) {
+			if (fm.foldersFirst) {
 				var newResult = [];
 				result.forEach(function(item) {
-					if(item.type == "folder") newResult.push(item);
+					if (item.type == "folder") newResult.push(item);
 				})
 				result.forEach(function(item) {
-					if(item.type == "file") newResult.push(item);
+					if (item.type == "file") newResult.push(item);
 				})
 				console.log(newResult);
 				callback(newResult)
 			} else callback(result)
 
 		})
+	}
+
+	function initShortcuts() {
+		$(window).keydown(function(event) {
+			console.log(event);
+			if (event.ctrlKey && event.key == "c") {
+				if($(".file-item:focus").length !== 0) doAction("copy",{file: fm.path + $(".file-item:focus .file-title").text()});
+			}
+			if (event.ctrlKey && event.key == "v") doAction("paste");
+			if (event.ctrlKey && event.key == "x") {
+				if($(".file-item:focus").length !== 0) doAction("cut",{file: fm.path + $(".file-item:focus .file-title").text()});
+			}
+			if (event.key == "Delete") {
+				if($(".file-item:focus").length !== 0) doAction("delete",{file: fm.path + $(".file-item:focus .file-title").text()});
+			}
+			if (event.ctrlKey && event.key == "n") {
+				$("#menuDescription").text("Tab functions are not implemented yet.")
+				setTimeout(function() {
+					$("#menuDescription").text("")
+				}, 1000);
+			}
+			if (event.ctrlKey && event.key == "o") $("[data-key='Ctrl+O']").click();
+			if (event.ctrlKey && event.key == "s") $("[data-key='Ctrl+S']").click();
+			if (event.ctrlKey && event.shiftKey && event.key == "S") $("[data-key='Ctrl+Shift+S']").click();
+		});
+	}
+
+	function doAction(action, options) {
+		switch (action) {
+			case "vmlist":
+				$(".files").attr("viewMode", "list");
+				break;
+			case "vmsmall":
+				$(".files").attr("viewMode", "smalltiles");
+				break;
+			case "vmmid":
+				$(".files").attr("viewMode", "midtiles");
+				break;
+			case "vmlarge":
+				$(".files").attr("viewMode", "bigtiles");
+				break;
+			case "sortaz":
+				fm.sorting = "A-Z";
+				break;
+			case "sortza":
+				fm.sorting = "Z-A";
+				break;
+			case "toggleff":
+				fm.foldersFirst = !fm.foldersFirst;
+				break;
+			case "togglesh":
+				fm.showHidden = !fm.showHidden;
+				break;
+			case "paste":
+				window.fileClipboard.flush(fm.path)
+				break;
+			case "copy":
+			console.log(options.file)
+				window.fileClipboard.copyMode = "copy";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(options.file);
+				break;
+			case "cut":
+				window.fileClipboard.copyMode = "cut";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(options.file);
+				break;
+			case "delete":
+				fs.remove(options.file, function(err) {
+					if (!err) reNavigate();
+				})
+				break;
+			case "properties":
+				window.new("properties", {
+					path: (options.file ? options.file : fm.path)
+				})
+				break;
+		}
+		reNavigate();
 	}
 
 	function initContextMenus() {
@@ -297,34 +367,30 @@
 				submenu: [{
 					label: "List",
 					type: "radio",
-					checked: (fm.viewMode == "list" ? true : false),
+					checked: fm.viewMode == "list",
 					click() {
-						$(".files").attr("viewMode", "list");
-						navigate(fm.path, "reload")
+						doAction("vmlist")
 					}
 				}, {
 					label: "Small icons",
 					type: "radio",
-					checked: (fm.viewMode == "smalltiles" ? true : false),
+					checked: fm.viewMode == "smalltiles",
 					click() {
-						$(".files").attr("viewMode", "smalltiles");
-						navigate(fm.path, "reload")
+						doAction("vmsmall")
 					}
 				}, {
 					label: "Medium icons",
 					type: "radio",
-					checked: (fm.viewMode == "midtiles" ? true : false),
+					checked: fm.viewMode == "midtiles",
 					click() {
-						$(".files").attr("viewMode", "midtiles");
-						navigate(fm.path, "reload")
+						doAction("vmmid")
 					}
 				}, {
 					label: "Large icons",
 					type: "radio",
-					checked: (fm.viewMode == "bigtiles" ? true : false),
+					checked: fm.viewMode == "bigtiles",
 					click() {
-						$(".files").attr("viewMode", "bigtiles");
-						navigate(fm.path, "reload")
+						doAction("vmlarge")
 					}
 				}]
 			}, {
@@ -333,29 +399,32 @@
 				submenu: [{
 					label: "A to Z",
 					type: "radio",
-					checked: (fm.sorting == "A-Z" ? true : false),
+					checked: fm.sorting == "A-Z",
 					click() {
-						fm.sorting = "A-Z";
-						navigate(fm.path, "reload")
+						doAction("sortaz")
 					}
 				}, {
 					label: "Z to A",
 					type: "radio",
-					checked: (fm.sorting == "Z-A" ? true : false),
+					checked: fm.sorting == "Z-A",
 					click() {
-						fm.sorting = "Z-A";
-						navigate(fm.path, "reload")
+						doAction("sortza")
 					}
 				}, {
 					type: "separator"
 				}, {
 					label: "Folders first",
 					type: "checkbox",
-					checked: (fm.foldersFirst),
+					checked: fm.foldersFirst,
 					click() {
-						if (fm.foldersFirst) fm.foldersFirst = false;
-						else fm.foldersFirst = true;
-						navigate(fm.path, "reload")
+						doAction("toggleff")
+					}
+				}, {
+					label: "Hidden files",
+					type: "checkbox",
+					checked: fm.showHidden,
+					click() {
+						doAction("togglesh")
 					}
 				}]
 			}, {
@@ -363,71 +432,94 @@
 			}, {
 				label: "Refresh",
 				accelerator: "F5",
-				click() {navigate(fm.path, "reload")}
+				click() {
+					reNavigate()
+				}
 			}, {
 				label: "Paste",
 				accelerator: "CmdOrCtrl+V",
 				click() {
-					window.fileClipboard.flush(fm.path)
+					doAction("paste")
 				},
 				enabled: window.fileClipboard.isFilled
 			}, {
 				type: "separator"
 			}, {
+				label: "Create",
+				submenu: [{
+					label: "File",
+					click() {
+						window.new("aos-cabinet/createFile", {path: fm.path},{modal: true, parent: fm.window});
+						ipcRenderer.on('create-file', reNavigate)
+					}
+				}, {
+					label: "Folder",
+					click() {
+						window.new("aos-cabinet/createFolder", {path: fm.path},{modal: true, parent: fm.window});
+						ipcRenderer.on('create-folder', reNavigate)
+					}
+				}]
+			}, {
 				label: "Properties",
-				disabled: true
+				disabled: true,
+				click() {doAction("properties")}
 			}]
 			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
 			fm.filesMenu.popup(fm.window);
 		});
 
-		$("body").on("contextmenu", ".file-item[type=file]", function(e) {
+		$("body").on("contextmenu", ".file-item[type]", function(e) {
 			e.stopPropagation();
 			var mime = $(this).attr("data-mime");
 			var file = fm.path + $(this).find(".file-title").text()
 			var $this = $(this);
 			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
-				if(!err) var assocs = $.parseJSON(data);
+				if (!err) var assocs = $.parseJSON(data);
 				console.log(data);
 				var appName = assocs.find(o => o.mime == mime);
-				if(appName) appName = appName["app"];
+				if (appName) appName = appName["app"];
 				const menu = [{
-					label: "Open in " + (!err ? appName : "default application"),
-					visible: (appName !== undefined),
+					label: "Open" + (($this.attr("type") == "folder") ? "" : (!err ? " " + appName : " in default application")),
+					visible: (appName !== undefined) || ($this.attr("type") == "folder"),
 					click() {
 						$this.trigger("dblclick");
 					}
 				}, {
 					label: "Open using...",
+					visible: !($this.attr("type") == "folder"),
 					click() {
-						window.new("aos-appchooserdialog",{path: file, mimeType: mime})
-					}
-				}, {type: "separator"}, {
-					label: "Cut",
-					click() {
-						window.fileClipboard.copyMode = "cut";
-						window.fileClipboard.clear();
-						console.log()
-						window.fileClipboard.add(file);
-					}
-				}, {
-					label: "Copy",
-					click() {
-						window.fileClipboard.copyMode = "copy";
-						window.fileClipboard.clear();
-						window.fileClipboard.add(file);
-					}
-				}, {type: "separator"}, {
-					label: "Delete",
-					click() {
-						fs.unlink(file, function(err) {
-							if(!err) reNavigate();
+						window.new("aos-appchooserdialog", {
+							path: file,
+							mimeType: mime
 						})
 					}
 				}, {
-					label: "Properties",
+					type: "separator"
+				}, {
+					label: "Cut",
+					accelerator: "CmdOrCtrl+X",
 					click() {
-						window.new("properties", {path: file});
+						doAction("cut", {file: file})
+					}
+				}, {
+					label: "Copy",
+					accelerator: "CmdOrCtrl+C",
+					click() {
+						doAction("copy", {file: file})
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Delete",
+					accelerator: "Delete",
+					click() {
+						doAction("delete", {file: file})
+					}
+				}, {
+					label: "Properties",
+					accelerator: "Alt+Enter",
+					click() {
+						doAction("properties", {file: file})
 					}
 				}]
 				Menu.buildFromTemplate(menu).popup(fm.window);

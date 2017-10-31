@@ -25,7 +25,7 @@
       })
       $(".btn-primary").click(function() {
         fs.mkdirSync(window.arguments.path + "/" + $("input").val());
-        ipcRenderer.send("create-file", window.arguments.path + "/" + $("input").val());
+        app.getParentWindow().webContents.send("create-file", window.arguments.path + "/" + $("input").val());
       })
       $("input").on("input", function() {
         if (fs.existsSync(window.arguments.path + $("input").val())) {

@@ -6,7 +6,6 @@ const {
 
 global.windowArgs = [];
 global.windowIcons = [];
-app.commandLine.appendSwitch("disable-gpu");
 
 ipcMain.on("setArguments", function(event, args) {
   global.windowArgs[args.wid] = args.arguments || {};
@@ -82,16 +81,6 @@ app.on('ready', function(event) {
     })
     win.loadURL("file:///atomos/sys/init/index.html?debug")
   }
-  win.webContents.session.webRequest.onHeadersReceived({}, (d, c) => {
-    if (d.responseHeaders['x-frame-options'] || d.responseHeaders['X-Frame-Options']) {
-      delete d.responseHeaders['x-frame-options'];
-      delete d.responseHeaders['X-Frame-Options'];
-    }
-    c({
-      cancel: false,
-      responseHeaders: d.responseHeaders
-    });
-  });
   win.on('close', function(e) {
     win = null
   })
@@ -165,6 +154,5 @@ app.on('ready', function(event) {
     show: false,
     type: "dock"
   })
-
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
 });
