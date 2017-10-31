@@ -1,4 +1,5 @@
 const fs = require('fs');
+const proc = require('child_process');
 fs.readdir("/atomos/etc/apps", function (err, data) {
   if(err) console.log("readdir error.");
   else data.forEach(function (item) {
@@ -16,3 +17,12 @@ fs.readdir("/atomos/etc/apps", function (err, data) {
     require('electron').remote.getCurrentWindow().hide();
   })
 })
+function shutdown() {
+  proc.spawn("poweroff")
+}
+function reboot() {
+  proc.spawn("reboot")
+}
+function stopx() {
+  proc.spawn("killall", ["xinit", "electron", "node"]);
+}
