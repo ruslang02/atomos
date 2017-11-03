@@ -3,56 +3,26 @@ require("atomos-framework");
 
 
 setInterval(function() {
-  $("[data-value=clock]").text(new Date().toTimeString().split(' ')[0].substring(0, 5))
-  var month = new Date().getMonth();
-  switch (month) {
-    case 0:
-      month = "January";
-      break;
-    case 1:
-      month = "February";
-      break;
-    case 2:
-      month = "March";
-      break;
-    case 3:
-      month = "April";
-      break;
-    case 4:
-      month = "May";
-      break;
-    case 5:
-      month = "June";
-      break;
-    case 6:
-      month = "July";
-      break;
-    case 7:
-      month = "August";
-      break;
-    case 8:
-      month = "September";
-      break;
-    case 9:
-      month = "October";
-      break;
-    case 10:
-      month = "November";
-      break;
-    case 11:
-      month = "December";
-      break;
-  }
-  $("[data-value=date]").text(new Date().getDate() + " " + month + " " + new Date().getFullYear());
-}, 100);
-
+  $("[name=clock]").text(new Date().toLocaleTimeString({}, {hour: '2-digit', minute: '2-digit'}))
+}, 1000);
 const {
   remote,
   ipcRenderer
 } = require("electron")
 const {
-  BrowserWindow
+  BrowserWindow,
+  Menu
 } = remote;
+BrowserWindow.fromId(4).on('show', function() {
+  $("tray [name=network]").addClass('active')
+}).on('hide', function() {
+  $("tray [name=network]").removeClass('active')
+})
+BrowserWindow.fromId(3).on('show', function() {
+  $("tray [name=clock]").addClass('active')
+}).on('hide', function() {
+  $("tray [name=clock]").removeClass('active')
+})
 remote.app.on('browser-window-created', function(event, win) {
   var dangerFlash;
   var warningFlash;

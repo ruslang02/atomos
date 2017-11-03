@@ -1,9 +1,13 @@
-<header>
-  <img src="/atomos/icons/Add Folder.png" />
-  <input class="form-control" placeholder="New Folder" required/>
-</header>
-<footer class="text-right"><button class="btn btn-secondary mr-2">Cancel</button><button disabled class="btn btn-primary">Create Folder</button></footer>
-
+<form>
+    <header>
+        <img src="/atomos/icons/Add Folder.png" />
+        <input class="form-control" placeholder="New Folder" required/>
+    </header>
+    <footer class="text-right">
+        <button type="button" class="btn btn-secondary mr-2">Cancel</button>
+        <button disabled type="submit" class="btn btn-primary">Create Folder</button>
+    </footer>
+</form>
 <script>
   const {
     remote,
@@ -20,12 +24,13 @@
     app.close();
   } else {
     window.onload = function() {
-      $(".btn").click(function() {
-        app.close();
+      $(".btn-secondary").click(function() {
+          app.close();
       })
-      $(".btn-primary").click(function() {
+      $(".btn-primary").click(function(e) {
         fs.mkdirSync(window.arguments.path + "/" + $("input").val());
         app.getParentWindow().webContents.send("create-file", window.arguments.path + "/" + $("input").val());
+        app.close();
       })
       $("input").on("input", function() {
         if (fs.existsSync(window.arguments.path + $("input").val())) {
@@ -46,6 +51,8 @@
     display: flex;
     flex-direction: column;
   }
+  
+  form {margin:0;}
 
   header {
     display: flex;

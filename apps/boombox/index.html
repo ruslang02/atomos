@@ -1,0 +1,325 @@
+<div class="bg-light btn-menu">
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      File
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="fileMenu">
+      <button class="dropdown-item" data-key="Ctrl+O">Open Music File...</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+O">Open Playlist...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Alt+F4">Exit</button>
+    </div>
+  </div>
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="playerMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Player
+        <b class="caret"></b>
+      </button>
+    <div class="dropdown-menu" aria-labelledby="playerMenu">
+      <button class="dropdown-item custom-control custom-checkbox">
+        <input type="checkbox" name="autoplay" checked class="custom-control-input">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">Autoplay</span>
+      </button>
+      <button class="dropdown-item custom-control custom-checkbox">
+          <input type="checkbox" name="loop" class="custom-control-input">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description">Loop</span>
+        </button>
+      <button class="dropdown-item custom-control custom-checkbox">
+            <input type="checkbox" name="mute" class="custom-control-input">
+            <span class="custom-control-indicator"></span>
+            <span class="custom-control-description">Mute</span>
+          </button>
+    </div>
+  </div>
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="speedMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Speed
+        <b class="caret"></b>
+      </button>
+    <div class="dropdown-menu" aria-labelledby="speedMenu">
+      <button class="dropdown-item">0.25</button>
+      <button class="dropdown-item">0.5</button>
+      <button class="dropdown-item active">1</button>
+      <button class="dropdown-item">1.25</button>
+      <button class="dropdown-item">1.5</button>
+    </div>
+  </div>
+  <div style="flex-grow:2"></div>
+  <button class="btn btn-outline-primary btn-sm">About</button>
+</div>
+<section class="row">
+  <section id="cover" class="col-12 col-sm-8 col-lg-9"><img></section>
+
+  <section id="playlist" class="dropdown-menu d-none d-sm-block col-sm-4 col-lg-3 bg-light"></section>
+</section>
+<footer class="bg-light border border-left-0 border-right-0 border-bottom-0 d-flex">
+  <progress max="100" value="100"></progress>
+  <div class="media">
+    <div class="media-body">
+      <h5 class="mb-1">Media heading</h5>
+      <artist>Artist</artist>
+    </div>
+  </div>
+  <div id="player">
+    <button class="btn btn-sm btn-light material-icons">skip_previous</button>
+    <button class="btn btn-sm btn-primary material-icons">play_arrow</button>
+    <button class="btn btn-sm btn-light material-icons">skip_next</button>
+  </div>
+</footer>
+<audio></audio>
+<script>
+  const fs = require('fs');
+  const path = require('path')
+  const xml2js = require('xml2js');
+  let renderID3 = require('musicmetadata');
+  var player = document.querySelector("audio");
+  const {
+    remote,
+    ipcRenderer
+  } = require('electron');
+  const win = remote.getCurrentWindow();
+
+  ipcRenderer.on("return-file", function(e, path) {
+    load(path);
+  })
+
+  player.ontimeupdate = function() {
+    $("progress").attr('value', player.currentTime).attr('max', player.duration)
+  }
+  player.onended = playNext;
+  player.onplay = function() {$("footer .btn-primary").text("pause")}
+  player.onpause = function() {$("footer .btn-primary").text("play_arrow")}
+
+  window.onload = function() {
+    if (arguments.path) load(arguments.path);
+    $("[data-key='Ctrl+O']").click(function() {
+      window.new("aos-cabinet", {
+        action: "ofd",
+        path: "/atomos/home/Music",
+        title: "Find your music",
+        okText: "Play",
+        cancelText: "Close"
+      }, {
+        modal: true,
+        parent: win
+      });
+    })
+    $("footer .btn-primary").click(function() {
+      console.log("click");
+      if($("#playlist .dropdown-item.active").length === 0) playNext();
+      else if(player.paused) player.play(); else player.pause();
+    })
+    $('[aria-labelledby="speedMenu"] .dropdown-item').click(function() {
+      player.playbackRate = $(this).text().trim();
+      $('[aria-labelledby="speedMenu"] .dropdown-item').removeClass("active");
+      $(this).addClass("active")
+    })
+    $("body").on("click", "#playlist .dropdown-item:not(.active)", function() {
+
+    })
+    $('[name=autoplay]').click(function() {
+      if(player.autoplay) {
+        player.autoplay = false;
+        $(this).find("input")[0].checked = false;
+      } else {
+        player.autoplay = true;
+        $(this).find("input")[0].checked = true;
+      }
+    })
+    $('[name=loop]').click(function() {
+      if(player.loop) {
+        player.loop = false;
+        $(this).find("input")[0].checked = false;
+      } else {
+        player.loop = true;
+        $(this).find("input")[0].checked = true;
+      }
+    })
+    $('[name=mute]').click(function() {
+      if(player.mute) {
+        player.mute = false;
+        $(this).find("input")[0].checked = false;
+      } else {
+        player.mute = true;
+        $(this).find("input")[0].checked = true;
+      }
+    })
+  }
+
+  function load(file) {
+    if (path.extname(file) == ".xspf") {
+      fs.readFile(file, "utf8", function(err, data) {
+        if (!err) xml2js.parseString(data, function(err, list) {
+          if (!err) {
+            $("#playlist *").remove();
+            list.playlist.trackList[0].track.forEach(function(track) {
+              $("#playlist").append("<button class='dropdown-item' location='" + track.identifier + "' creator='" + track.creator + "'>" + track.title + "</button>")
+            });
+            if ($("[name=autoplay]")[0].checked) playNext()
+          } else console.error("Error parsing playlist file (" + file + "). Error: " + err)
+        });
+        else console.error("Error reading playlist file (" + file + "). Error: " + err)
+      })
+    }
+  }
+  var buffers
+  function playNext() {
+    console.log($("#playlist .dropdown-item"));
+    $("#playlist .dropdown-item.active").first().removeClass("active");
+    if($("#playlist .dropdown-item.active").length !== 0) $("#playlist .dropdown-item.active + #playlist .dropdown-item").addClass("active");
+    else $("#playlist .dropdown-item").first().addClass("active");
+    var file = decodeURIComponent($("#playlist .dropdown-item.active").attr('location')).substring(7);
+    console.log(file);
+      renderID3(fs.createReadStream(file), function(err, tags) {
+        $(".media artist").text(tags.artist[0] || $("#playlist .dropdown-item.active").attr('creator'));
+        $(".media h5").text(tags.title || $("#playlist .dropdown-item.active").text());
+        if(tags.picture[0])
+          $("#cover img")[0].src = "data:image/" + tags.picture[0].format + ";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data))
+      })
+    player.src = $("#playlist .dropdown-item.active").attr('location');
+    player.play();
+  }
+</script>
+<style>
+  footer {
+    position: relative;
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid lightgray;
+    height: calc(3.5rem + 4px);
+    padding-top: calc(0.25rem + 4px);
+  }
+  #cover img {
+    max-height: 100%;
+max-width: 100%;
+position: absolute;
+top: 0;
+left: 0;
+bottom: 0;
+right: 0;
+margin: auto;
+  }
+
+  progress {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 4px;
+    border: 0;
+    left: 0;
+    -webkit-appearance: none;
+  }
+
+  progress[value]::-webkit-progress-value {
+    background: darkorange;
+  }
+
+  footer .media {
+    flex-grow: 2;
+  }
+
+  footer #player {
+    flex-shrink: 0;
+    line-height: 2.6rem;
+
+  }
+
+  footer #player button {
+    font-size: 1.5rem;
+  }
+
+  section.row {
+    flex-grow: 2;
+    margin: 0
+  }
+
+  body {
+    display: flex;
+    flex-direction: column
+  }
+
+  #playlist .dropdown-item.playing::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: attr(value);
+    background: hsl(33, 100%, 50%);
+  }
+
+  .dropdown-item {
+    position: relative;
+  }
+
+  section#cover::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    content: "music_note";
+    font-family: 'Material Icons';
+    width: 6rem;
+    height: 6rem;
+    font-size: 6rem;
+    line-height: 1em;
+    color: orangered;
+  }
+
+  #playlist {
+    border: 0;
+    border-left: 1px solid #e9ecef;
+    position: static;
+    margin: 0;
+    border-radius: 0
+  }
+
+  .btn-primary {
+    background-color: hsl(33, 100%, 50%);
+    border-color: hsl(33, 100%, 50%);
+  }
+
+  .btn-primary:active,
+  .btn-primary.active,
+  .show>.btn-primary.dropdown-toggle {
+    background-color: hsla(33, 100%, 43%, 1);
+    border-color: hsla(33, 100%, 40%, 1);
+  }
+
+  .btn-primary:hover {
+    background-color: hsla(33, 100%, 43%, 1);
+    border-color: hsla(33, 100%, 40%, 1);
+  }
+
+  .btn-primary:focus,
+  .btn-primary.focus {
+    box-shadow: 0 0 0 3px hsla(33, 100%, 50%, 0.5);
+  }
+
+  .btn-outline-primary {
+    color: hsla(33, 100%, 50%, 1);
+    border-color: hsla(33, 100%, 50%, 1);
+  }
+
+  .btn-outline-primary:hover {
+    background-color: hsla(33, 100%, 50%, 1);
+    border-color: hsla(33, 100%, 50%, 1);
+  }
+
+  .dropdown-item.active,
+  .dropdown-item:active {
+    background-color: hsla(33, 100%, 50%, 1);
+  }
+
+  .btn-outline-primary:active,
+  .btn-outline-primary.active,
+  .show>.btn-outline-primary.dropdown-toggle {
+    color: #fff;
+    background-color: hsla(33, 100%, 50%, 1);
+    border-color: hsla(33, 100%, 56%, 1);
+  }
+</style>

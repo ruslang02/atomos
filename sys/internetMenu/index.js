@@ -19,7 +19,9 @@ var wpa_cli = require('wireless-tools/wpa_cli');
 var wpa_supplicant = require('wireless-tools/wpa_supplicant');
 var wifiConnected = false;
 var toPing = false;
-
+win.on('blur', function(){
+  win.hide();
+})
 $("body").on("click", "#wifi a[href].list-item", function() {
   connectToWiFi($(this).find("name").text())
 })

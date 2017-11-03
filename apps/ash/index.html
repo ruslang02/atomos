@@ -1,7 +1,7 @@
 <kbd>
   <center><img src="/atomos/apps/aos-about/atom.png" style="height: 40vh;margin: 1em 0;filter: brightness(1000%);"><br><h3>atomOS Terminal</h3>The first next-gen web terminal.</center>
 </kbd>
-<cwd>/atomos/home</cwd>
+<cwd><input type="text" value="/atomos/home"></cwd>
 <cmd><input type="text"></cmd>
 <suggestions></suggestions>
 <script>
@@ -11,7 +11,10 @@
     $("input")
     .on("input", autocomplete)
     .on("keydown", function(e) {
-      if (event.keyCode == 13) execute();
+      if (event.keyCode == 13) {
+        execute();
+        $(this).val("")
+      }
     })
 
     $("body").on('click','suggestions button', function() {
@@ -41,7 +44,7 @@
 
   function autocomplete() {
     $("suggestions").html("");
-    var value = $("input").val();
+    var value = $("cmd input").val();
     var sugCount = 0;
     commands.forEach(function(sug) {
       if (sug.indexOf(value) !== -1 && value !== sug && value.trim() !== "") {
@@ -62,23 +65,24 @@
     }
     text = text.replace(/\n/gi, "<br>")
     $("kbd").append("<div " + (text.length > 1000 ? "class='expander'" : "") + ">" + text + "</div>")
-
+    $("kbd")[0].scrollTop = $("kbd")[0].scrollHeight;
 
   }
 
   function execute() {
-    addMessage(" > " + $("input").val())
-    fs.access("/atomos/apps/" + $("input").val().substring(0,($("input").val().indexOf(" ") !== -1 ? $("input").val().indexOf(" ") : Infinity)).trim(), function(err) {
+    var command = $("cmd input").val();
+    addMessage(" > " + command)
+    fs.access("/atomos/apps/" + command.substring(0,(command.indexOf(" ") !== -1 ? command.indexOf(" ") : Infinity)).trim(), function(err) {
       if(err) {
-        require('child_process').exec($("input").val(), {
-          cwd: $("cwd").text().trim()
+        require('child_process').exec(command, {
+          cwd: $("cwd").val().trim()
         }, function(err, stdout, stderr) {
           if(err) addMessage("<error>" + err + "</error>")
           else if(stderr) addMessage("<error>" + stderr + "</error>")
           addMessage(stdout)
         })
       } else {
-        window.new($("input").val().substring(0,($("input").val().indexOf(" ") !== -1 ? $("input").val().indexOf(" ") : Infinity)).trim(), $("input").val().substring($("input").val().indexOf(" ")).trim())
+        window.new(command.substring(0,(command.indexOf(" ") !== -1 ? command.indexOf(" ") : Infinity)).trim(), command.substring(command.indexOf(" ")).trim())
       }
     })
   }
@@ -185,8 +189,10 @@
     content: "working directory";
     color: darkgrey;
     font-size: smaller;
-    float: right;
+    position:absolute;
     line-height: 19px;
+    right:0;
+    margin-right:5px;
   }
 
   cmd::before {
@@ -194,12 +200,13 @@
     padding: 0 5px;
   }
 
-  cmd input {
+  cmd input, cwd input {
     background: none;
     border: none;
     outline: 0;
     color: white;
     flex-grow: 2;
     font-size: smaller;
+    width:100%;
   }
 </style>

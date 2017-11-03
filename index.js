@@ -6,6 +6,9 @@ const {
 
 global.windowArgs = [];
 global.windowIcons = [];
+global.clipboards = {
+    file: []
+};
 
 ipcMain.on("setArguments", function(event, args) {
   global.windowArgs[args.wid] = args.arguments || {};
@@ -88,7 +91,7 @@ app.on('ready', function(event) {
   var bounds = win.getBounds();
   taskbar = new BrowserWindow({
     x: bounds.x,
-    y: bounds.y + bounds.height - 47,
+    y: bounds.y + bounds.height - 46,
     width: win.getContentSize()[0],
     height: 47,
     frame: false,
@@ -105,7 +108,7 @@ app.on('ready', function(event) {
 
   clockMenu = new BrowserWindow({
     x: bounds.x + bounds.width - 10 - 350,
-    y: bounds.y + bounds.height - 57 - 252,
+    y: bounds.y + bounds.height - 37 - 252,
     width: 350,
     height: 252,
     frame: false,
@@ -123,7 +126,7 @@ app.on('ready', function(event) {
 
   internetMenu = new BrowserWindow({
     x: bounds.x + bounds.width - 10 - 350,
-    y: bounds.y + bounds.height - 407,
+    y: bounds.y + bounds.height - 387,
     width: 350,
     height: 350,
     frame: false,

@@ -1,4 +1,14 @@
 # Changelog
+## 0.4-beta3
+ - Multiple fixes in _aos-cabinet_
+ - Fixed element's name in _properties_
+ - Added sorting to Start Menu
+ - _aos-cabinet-createFolder_'s and _aos-cabinet-createFile_'s keyboard navigation improved
+ - FileClipboard API rewritten using Electron's globals
+ - Full file management in Desktop
+ - Taskbar edits
+ - And other bug fixes and feature additions were made
+
 ## 0.4-beta2
  - Keyboard shortcuts were added to some apps
  - _angles_ now autodetects file type and applies specific syntax highlighting
@@ -11,6 +21,7 @@
  - _ash_ made non-hidden
  - _ace-code-editor_ and _wifi-control_ npm packages removed due to uselessness
  - package.json was updated for npm to like it :)
+ - Quick Places were fixed and you can shutdown, reboot or enter to CLI from it
 
 ## 0.4-dev40
  - Repository reverted back to 0.4-dev26 with some edits from 0.4-dev30 because of full unstabillity of whole system and problems with opening any menus in some systems.

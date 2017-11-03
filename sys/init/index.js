@@ -13,7 +13,6 @@ const {
 	require('atomos-framework');
 var toPing = false;
 var aos = {
-	"debug": (location.search.includes("debug") ? true : false),
 	"vars": {
 		"mimeList": []
 	},
@@ -39,7 +38,7 @@ var aos = {
 						var statLink = fs.statSync("/" + link);
 						if (statLink.isFile()) {
 							fileRes.type = "file";
-							fileRes.mimeType = aos.utils.getMimeType(link.lastIndexOf(".") + 1);
+							fileRes.mimeType = aos.utils.getMimeType(link.lastIndexOf(".")  + 1);
 						} else if (statLink.isDirectory()) fileRes.type = "folder";
 					}
 					fileRes.atime = stat.atime;
@@ -164,7 +163,7 @@ var aos = {
 								if (!item.startsWith(".")) {
 									var icon = '/atomos/icons/file-types/' + item.substring(item.lastIndexOf(".") + 1) + ".png"
 									if (!fs.existsSync(icon)) icon = '/atomos/icons/file-types/Unknown.png';
-									$(".files").append("<button realname='" + item + "' class='file-item'><img src='" + icon + "'><div class='file-title'>" + item + "</div></button>");
+									$(".files").append("<button realname='" + item + "' type='file' data-mime='" + window.getMimeType(item.substring(item.lastIndexOf("."))) + "' class='file-item'><img src='" + icon + "'><div class='file-title'>" + item + "</div></button>");
 								}
 							}
 						} else if (stat.isDirectory()) {
@@ -178,9 +177,10 @@ var aos = {
 			aos.core.reloadDesktop();
 			$(window).keydown(function(e) {
 				if(e.key == "F1") window.new("aos-about");
-				//if(e.key == "v" && e.ctrlKey) window.fileClipboard.flush("/atomos/home/Desktop/");
+				if(e.key == "v" && e.ctrlKey) window.fileClipboard.flush("/atomos/home/Desktop/");
 				if(e.key == "F5") aos.core.reloadDesktop()
 			})
+			$("body").on("contextmenu",".files", function(e) {
 				var desktopmenu = [{
 					label: "Refresh",
 					accelerator: "F5",
@@ -189,17 +189,85 @@ var aos = {
 					label: "Paste",
 					accelerator: "CmdOrCtrl+V",
 					enabled: window.fileClipboard.isFilled,
-					visible: false,
-					click() {window.fileClipboard.flush("/atomos/home/Desktop/")}
+					click() {
+					    window.fileClipboard.flush("/atomos/home/Desktop/");
+					    aos.core.reloadDesktop();
+					}
 				}, {type: "separator"}, {
 					label: "About the system",
 					accelerator: "F1",
 					click() {window.new("aos-about")}
 				}]
 				var cmenu = Menu.buildFromTemplate(desktopmenu);
-			$(".files").contextmenu(function(e) {
 				cmenu.popup(remote.getCurrentWindow());
 			})
+			
+		$("body").on("contextmenu", ".file-item[type]", function(e) {
+			e.stopImmediatePropagation();
+			e.preventDefault();
+			var mime = $(this).attr("data-mime");
+			var file = "/atomos/home/Desktop/" + $(this).attr("realname")
+			var $this = $(this);
+			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
+				if (!err) var assocs = $.parseJSON(data);
+				console.log(data);
+				var appName = assocs.find(o => o.mime == mime);
+				if (appName) appName = appName["app"];
+				const menu = [{
+					label: "Open" + (($this.attr("type") == "folder") ? "" : (!err ? " " + appName : " in default application")),
+					visible: (appName !== undefined) || ($this.attr("type") == "folder"),
+					click() {
+						$this.trigger("dblclick");
+					}
+				}, {
+					label: "Open using...",
+					visible: !($this.attr("type") == "folder"),
+					click() {
+						window.new("aos-appchooserdialog", {
+							path: file,
+							mimeType: mime
+						})
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Cut",
+					accelerator: "CmdOrCtrl+X",
+					click() {
+				window.fileClipboard.copyMode = "cut";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(file);
+						
+					}
+				}, {
+					label: "Copy",
+					accelerator: "CmdOrCtrl+C",
+					click() {
+				window.fileClipboard.copyMode = "copy";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(file);
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Delete",
+					accelerator: "Delete",
+					click() {
+				        fs.remove(options.file)
+					}
+				}, {
+					label: "Properties",
+					accelerator: "Alt+Enter",
+					click() {
+				window.new("properties", {
+					path: file
+				})
+					}
+				}]
+				Menu.buildFromTemplate(menu).popup(remote.getCurrentWindow());
+			})
+		})
+			fs.watch("/atomos/home/Desktop", aos.core.reloadDesktop);
 
 		}
 	},

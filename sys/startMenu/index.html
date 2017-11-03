@@ -40,17 +40,17 @@
       </div>
       <div role="tabpanel" class="tab-pane" id="applications"></div>
       <div role="tabpanel" class="tab-pane" id="logout">
-        <a href="#" onclick="stopx()" class="list-item btn btn-light">
+        <a href="#" onclick="atomos.stopx()" class="list-item btn btn-light">
         <img src="/atomos/icons/Change User.png">
         <name>Log out</name><br>
         <description>Close all apps and exit system</description>
       </a>
-        <a href="#" onclick="restart()" class="list-item btn btn-light">
+        <a href="#" onclick="atomos.reboot()" class="list-item btn btn-light">
           <img src="/atomos/icons/Restart.png">
           <name>Reboot</name><br>
           <description>Close all apps, turn off, and then turn on the AtomPC again</description>
         </a>
-        <a href="#" onclick="shutdown()" class="list-item btn btn-light">
+        <a href="#" onclick="atomos.shutdown()" class="list-item btn btn-light">
             <img src="/atomos/icons/Shutdown.png">
             <name>Shutdown</name><br>
             <description>Close all apps and turn off AtomPC</description>
@@ -70,5 +70,6 @@
   window.Popper = require("popper.js");
   require("bootstrap");
   require("atomos-framework")
-  require("./index")
+  const atomos = require("./index")
+  console.log(atomos);
 </script>

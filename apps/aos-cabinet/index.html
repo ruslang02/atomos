@@ -293,15 +293,8 @@
 			if (event.key == "Delete") {
 				if($(".file-item:focus").length !== 0) doAction("delete",{file: fm.path + $(".file-item:focus .file-title").text()});
 			}
-			if (event.ctrlKey && event.key == "n") {
-				$("#menuDescription").text("Tab functions are not implemented yet.")
-				setTimeout(function() {
-					$("#menuDescription").text("")
-				}, 1000);
-			}
-			if (event.ctrlKey && event.key == "o") $("[data-key='Ctrl+O']").click();
-			if (event.ctrlKey && event.key == "s") $("[data-key='Ctrl+S']").click();
-			if (event.ctrlKey && event.shiftKey && event.key == "S") $("[data-key='Ctrl+Shift+S']").click();
+			if (event.key == "F5") reNavigate();
+			if (event.altKey && event.key == "Enter") doAction("properties", {file: fm.path + $(".file-item:focus .file-title").text()});
 		});
 	}
 

@@ -84,7 +84,7 @@
     fs.stat(window.arguments.path, function(err, stat) {
       if (!err) {
         console.log(stat);
-        $("[data=fname]").text(window.arguments.path.substring(window.arguments.path.lastIndexOf("/") + 1));
+        $("[data=fname]").text(window.arguments.path.substring(window.arguments.path.lastIndexOf("/",window.arguments.path.length - 2) + 1).replace("/", ""));
         $("[data=fsize]").text(stat.size + " bytes");
         $("[data=fatime]").text(stat.atime.toDateString());
         $("[data=fmtime]").text(stat.mtime.toDateString());

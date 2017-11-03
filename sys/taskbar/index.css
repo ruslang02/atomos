@@ -4,6 +4,7 @@
 tasks img {
   height: 100%;
 }
+* {user-select:none; cursor: default !important;}
 
 nav-bar tasks button.btn {
   border: 0;
@@ -12,15 +13,25 @@ nav-bar {height:100%;}
 
 tasks button.active {
   box-shadow: inset 0px -2px 0px 0px #286090 !important;
-  border-radius:0
+  border-radius:0;
+}
+tray button.active {
+  background: #007bff;
+  color:white;
+}
+tray button.active img {
+  filter: brightness(1000%)
 }
 
 
 tray button {
   border: 0;
-  margin: 0;
-  background: none;
-  height: 100%;
+background: none;
+border-radius: 0 0 5px 5px;
+height: 100%;
+outline: 0 !important;
+font-size: 1.25rem;
+padding: 0px 5px;
 }
 
 tray button img {

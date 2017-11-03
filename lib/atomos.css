@@ -25,7 +25,7 @@ app {
 context-menu .dropdown-item {padding:0.25rem 1.75rem;position:relative;    margin: 0;display:block;}
 button i.material-icons {vertical-align:sub}
 .dropdown-menu {
-  overflow: auto;max-height: calc(100vh - 15px);
+  max-height: calc(100vh - 15px);
 }
 .dropdown-item.custom-control {margin:0!important;overflow:hidden;}
 .dropdown-item[disabled] {pointer-events:none}
@@ -170,7 +170,8 @@ button i.material-icons {vertical-align:sub}
 .files[viewMode*=tiles] .file-item {
   margin: 1em;
   width: 85px;
-  text-align:center
+  text-align:center;
+  word-break: break-word;
 }
 
 .files[viewMode=list] {
