@@ -5,8 +5,7 @@
       <b class="caret"></b>
     </button>
     <div class="dropdown-menu" aria-labelledby="fileMenu">
-      <button class="dropdown-item" data-key="Ctrl+O">Open Music File...</button>
-      <button class="dropdown-item" data-key="Ctrl+Shift+O">Open Playlist...</button>
+      <button class="dropdown-item" data-key="Ctrl+O">Open...</button>
       <div class="dropdown-divider"></div>
       <button class="dropdown-item" data-key="Alt+F4">Exit</button>
     </div>
@@ -47,8 +46,6 @@
       <button class="dropdown-item">1.5</button>
     </div>
   </div>
-  <div style="flex-grow:2"></div>
-  <button class="btn btn-outline-primary btn-sm">About</button>
 </div>
 <section class="row">
   <section id="cover" class="col-12 col-sm-8 col-lg-9"><img></section>
@@ -59,14 +56,14 @@
   <progress max="100" value="100"></progress>
   <div class="media">
     <div class="media-body">
-      <h5 class="mb-1">Media heading</h5>
-      <artist>Artist</artist>
+      <h5 class="mb-1"></h5>
+      <artist></artist>
     </div>
   </div>
   <div id="player">
-    <button class="btn btn-sm btn-light material-icons">skip_previous</button>
+    <button class="btn btn-sm btn-light material-icons" onclick="playPrevious()">skip_previous</button>
     <button class="btn btn-sm btn-primary material-icons">play_arrow</button>
-    <button class="btn btn-sm btn-light material-icons">skip_next</button>
+    <button class="btn btn-sm btn-light material-icons" onclick="playNext()">skip_next</button>
   </div>
 </footer>
 <audio></audio>
@@ -90,8 +87,12 @@
     $("progress").attr('value', player.currentTime).attr('max', player.duration)
   }
   player.onended = playNext;
-  player.onplay = function() {$("footer .btn-primary").text("pause")}
-  player.onpause = function() {$("footer .btn-primary").text("play_arrow")}
+  player.onplay = function() {
+    $("footer .btn-primary").text("pause")
+  }
+  player.onpause = function() {
+    $("footer .btn-primary").text("play_arrow")
+  }
 
   window.onload = function() {
     if (arguments.path) load(arguments.path);
@@ -109,8 +110,9 @@
     })
     $("footer .btn-primary").click(function() {
       console.log("click");
-      if($("#playlist .dropdown-item.active").length === 0) playNext();
-      else if(player.paused) player.play(); else player.pause();
+      if ($("#playlist .dropdown-item.active").length === 0) playNext();
+      else if (player.paused) player.play();
+      else player.pause();
     })
     $('[aria-labelledby="speedMenu"] .dropdown-item').click(function() {
       player.playbackRate = $(this).text().trim();
@@ -118,10 +120,22 @@
       $(this).addClass("active")
     })
     $("body").on("click", "#playlist .dropdown-item:not(.active)", function() {
+      $("#playlist .dropdown-item.active").first().removeClass("active");
+      $(this).addClass("active");
+      var file = decodeURIComponent($(this).attr('location'));
+      renderID3(fs.createReadStream(file), function(err, tags) {
+        $(".media artist").text(tags.artist[0] || $("#playlist .dropdown-item.active").attr('creator') || "No artist");
+        $(".media h5").text(tags.title || $("#playlist .dropdown-item.active").text());
+        if (tags.picture[0])
+          $("#cover img")[0].src = "data:image/" + tags.picture[0].format + ";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
+          else $("#cover img").removeAttr("src");
+      })
+      player.src = $("#playlist .dropdown-item.active").attr('location');
+      player.play();
 
     })
     $('[name=autoplay]').click(function() {
-      if(player.autoplay) {
+      if (player.autoplay) {
         player.autoplay = false;
         $(this).find("input")[0].checked = false;
       } else {
@@ -130,7 +144,7 @@
       }
     })
     $('[name=loop]').click(function() {
-      if(player.loop) {
+      if (player.loop) {
         player.loop = false;
         $(this).find("input")[0].checked = false;
       } else {
@@ -139,7 +153,7 @@
       }
     })
     $('[name=mute]').click(function() {
-      if(player.mute) {
+      if (player.mute) {
         player.mute = false;
         $(this).find("input")[0].checked = false;
       } else {
@@ -156,32 +170,31 @@
           if (!err) {
             $("#playlist *").remove();
             list.playlist.trackList[0].track.forEach(function(track) {
-              $("#playlist").append("<button class='dropdown-item' location='" + track.identifier + "' creator='" + track.creator + "'>" + track.title + "</button>")
+              $("#playlist").append("<button class='dropdown-item' location='" + track.identifier.substring(7) + "' creator='" + track.creator + "'>" + track.title + "</button>")
             });
             if ($("[name=autoplay]")[0].checked) playNext()
           } else console.error("Error parsing playlist file (" + file + "). Error: " + err)
         });
         else console.error("Error reading playlist file (" + file + "). Error: " + err)
       })
+    } else {
+      renderID3(fs.createReadStream(file), function(err, tags) {
+        $("#playlist").append("<button class='dropdown-item' location='" + file + "' creator='" + tags.artist[0] + "'>" + (tags.title || file.substring(file.lastIndexOf("/") + 1)) + "</button>");
+      })
     }
   }
   var buffers
+
   function playNext() {
-    console.log($("#playlist .dropdown-item"));
-    $("#playlist .dropdown-item.active").first().removeClass("active");
-    if($("#playlist .dropdown-item.active").length !== 0) $("#playlist .dropdown-item.active + #playlist .dropdown-item").addClass("active");
-    else $("#playlist .dropdown-item").first().addClass("active");
-    var file = decodeURIComponent($("#playlist .dropdown-item.active").attr('location')).substring(7);
-    console.log(file);
-      renderID3(fs.createReadStream(file), function(err, tags) {
-        $(".media artist").text(tags.artist[0] || $("#playlist .dropdown-item.active").attr('creator'));
-        $(".media h5").text(tags.title || $("#playlist .dropdown-item.active").text());
-        if(tags.picture[0])
-          $("#cover img")[0].src = "data:image/" + tags.picture[0].format + ";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data))
-      })
-    player.src = $("#playlist .dropdown-item.active").attr('location');
-    player.play();
+    if ($("#playlist .dropdown-item.active").length !== 0)
+      $("#playlist .dropdown-item.active").next().click();
+    else
+      $("#playlist .dropdown-item").first().click();
   }
+    function playPrevious() {
+      if ($("#playlist .dropdown-item.active").length !== 0)
+        $("#playlist .dropdown-item.active").prev().click();
+    }
 </script>
 <style>
   footer {
@@ -191,15 +204,16 @@
     height: calc(3.5rem + 4px);
     padding-top: calc(0.25rem + 4px);
   }
+
   #cover img {
     max-height: 100%;
-max-width: 100%;
-position: absolute;
-top: 0;
-left: 0;
-bottom: 0;
-right: 0;
-margin: auto;
+    max-width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
   }
 
   progress {
@@ -273,7 +287,7 @@ margin: auto;
   #playlist {
     border: 0;
     border-left: 1px solid #e9ecef;
-    position: static;
+    position: relative;
     margin: 0;
     border-radius: 0
   }
@@ -322,4 +336,19 @@ margin: auto;
     background-color: hsla(33, 100%, 50%, 1);
     border-color: hsla(33, 100%, 56%, 1);
   }
+
+  #playlist:empty::before {
+    content: "Playlist is empty. Add more songs from your local storage.";
+    position: absolute;
+    width: 80%;
+    font-size: 16px;
+    color: grey;
+    height: 50px;
+    text-align: center;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
 </style>

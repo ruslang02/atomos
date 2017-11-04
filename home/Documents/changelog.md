@@ -1,4 +1,17 @@
 # Changelog
+## Updates from 0.3.3 to 0.4
+ - API removal
+ - New apps _boombox_, _angles_, _ash_, _brush_
+ - Improved stability and fixed lots of bugs
+ - Absolutely rewritten window system
+ - 40% performance boost
+ - WebGL support
+ - Wi-Fi support
+ - Node.JS, Electron and RequireJS integration
+ 
+## 0.4 RTM
+ - _boombox_ was added to system (music player with playlist support)
+
 ## 0.4-beta3
  - Multiple fixes in _aos-cabinet_
  - Fixed element's name in _properties_
