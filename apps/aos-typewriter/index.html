@@ -211,55 +211,83 @@
     });
     else if (path) {
       fs.open(path, 'w', function(err, fd) {
-        /*if (err) aos.notifications.add({
-          head: "We're unable to save the file",
-          body: "Here is a library output: " + err,
-          type: "warning"
-        });*/
-        fs.write(fd, contents, function(err) {
-          if (err)
-            /*aos.notifications.add({
-                       head: "We're unable to save the file",
-                       body: "Here is a library output: " + err,
-                       type: "warning"
-                     });
-                     else aos.notifications.add({
-                       head: "File was successfully saved",
-                       body: 'It is located here: ' + path +
-                         '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="new aos.components.Window(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
-                           "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
-                       type: "success"
-                     })*/
-            console.log(err);
-        });
+        if (err) {
+          var tray = new Tray("cancel");
+          tray.on('click', function() {
+            win.toggleDevTools();
+          })
+          tray.on('notificationClick', function() {
+            win.toggleDevTools();
+          })
+          tray.show();
+          tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+        } else {
+          fs.write(fd, contents, function(err) {
+            if (err) {
+              var tray = new Tray("cancel");
+              tray.on('click', function() {
+                win.toggleDevTools();
+              })
+              tray.on('notificationClick', function() {
+                win.toggleDevTools();
+              })
+              tray.show();
+              tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+            } else {
+              var tray = new Tray("done");
+              tray.on('click', function() {
+                win.toggleDevTools();
+              })
+              tray.on('notificationClick', function() {
+                win.toggleDevTools();
+              })
+              tray.show();
+              tray.notify("File was successfully saved", 'It is located here: ' + path +
+                '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+                  "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>', "success");
+            }
+          });
+        }
 
       })
       fileName = path;
     } else {
       path = fileName;
       fs.open(fileName, 'w', function(err, fd) {
-        if (err)
-          /*aos.notifications.add({
-                   head: "We're unable to save the file",
-                   body: "Here is a library output: " + err,
-                   type: "warning"
-                 });*/
-          console.log(err);
-        fs.write(fd, contents, function(err) {
-          if (err)
-            /*aos.notifications.add({
-                       head: "We're unable to save the file",
-                       body: "Here is a library output: " + err,
-                       type: "warning"
-                     });
-                     else aos.notifications.add({
-                       head: "File was successfully saved",
-                       body: 'It is located here: ' + path +
-                         '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="new aos.components.Window(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
-                           "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
-                       type: "success"
-                     })*/
-            console.log(err);
+        if (err) {
+          var tray = new Tray("cancel");
+          tray.on('click', function() {
+            win.toggleDevTools();
+          })
+          tray.on('notificationClick', function() {
+            win.toggleDevTools();
+          })
+          tray.show();
+          tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+        } else fs.write(fd, contents, function(err) {
+          if (err) {
+            var tray = new Tray("cancel");
+            tray.on('click', function() {
+              win.toggleDevTools();
+            })
+            tray.on('notificationClick', function() {
+              win.toggleDevTools();
+            })
+            tray.show();
+            tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+          } else {
+            var tray = new Tray("done");
+            tray.on('click', function() {
+              win.toggleDevTools();
+            })
+            tray.on('notificationClick', function() {
+              win.toggleDevTools();
+            })
+            tray.show();
+            tray.notify("File was successfully saved", 'It is located here: ' + path +
+              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+                "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>', "success");
+          }
         });
 
       })
@@ -297,31 +325,49 @@
   function initContextMenus() {
     const taTemplate = [{
       label: "Undo",
-      click () {$("[data-key='Ctrl+Z']").click()},
+      click() {
+        $("[data-key='Ctrl+Z']").click()
+      },
       accelerator: "CmdOrCtrl+Z"
     }, {
       label: "Redo",
-      click () {$("[data-key='Ctrl+Shift+Z']").click()},
+      click() {
+        $("[data-key='Ctrl+Shift+Z']").click()
+      },
       accelerator: "CmdOrCtrl+Shift+Z"
-    }, {type: "separator"}, {
+    }, {
+      type: "separator"
+    }, {
       label: "Cut",
-      click () {$("[data-key='Ctrl+X']").click()},
+      click() {
+        $("[data-key='Ctrl+X']").click()
+      },
       accelerator: "CmdOrCtrl+X"
     }, {
       label: "Copy",
-      click () {$("[data-key='Ctrl+C']").click()},
+      click() {
+        $("[data-key='Ctrl+C']").click()
+      },
       accelerator: "CmdOrCtrl+C"
     }, {
       label: "Paste",
-      click () {$("[data-key='Ctrl+V']").click()},
+      click() {
+        $("[data-key='Ctrl+V']").click()
+      },
       accelerator: "CmdOrCtrl+V"
     }, {
       label: "Delete",
-      click () {$("[data-key='Delete']").click()},
+      click() {
+        $("[data-key='Delete']").click()
+      },
       accelerator: "Delete"
-    }, {type: "separator"}, {
+    }, {
+      type: "separator"
+    }, {
       label: "Select All",
-      click () {$("[data-key='Ctrl+A']").click()},
+      click() {
+        $("[data-key='Ctrl+A']").click()
+      },
       accelerator: "CmdOrCtrl+A"
     }];
 

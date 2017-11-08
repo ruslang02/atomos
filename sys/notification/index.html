@@ -1,0 +1,49 @@
+<div class="alert">
+  <div><strong>Alert title</strong></div>
+  <small></small>
+</div>
+<link href="/atomos/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<script>
+  const {
+    remote,
+    ipcRenderer,
+    screen
+  } = require('electron');
+  const app = remote.getCurrentWindow();
+  const {width, height} = screen.getPrimaryDisplay().bounds
+
+  window.$ = window.jQuery = require('jquery');
+  require('atomos-framework');
+  window.Popper = require('popper.js')
+  require('bootstrap')
+
+  ipcRenderer.on('spawn-notification', function(e, options) {
+    console.log(options)
+    $(".alert > div > strong").text(options.title);
+    $(".alert > small").html(options.html);
+    $(".alert").removeClass("alert-* border-*").addClass("alert-" + options.state + " border-" + options.state)
+    $(window).mouseup(function() {
+      BrowserWindow.fromId(options.win).webContents.send("notification-click");
+    })
+    remote.BrowserWindow.fromId(2).webContents.send("activate-tray", {win: options.win, state: options.state})
+    var alertHeight = $(".alert").outerHeight();
+    app.setSize(350, Math.ceil(alertHeight));
+    console.log(width - 10 - 350, height - 37 - Math.ceil(alertHeight));
+    app.setPosition(width - 10 - 350, height - 37 - Math.ceil(alertHeight));
+    app.show();
+    app.setAlwaysOnTop(true);
+    setTimeout(function() {
+      if(options.after == "REMOVE")
+        remote.BrowserWindow.fromId(2).webContents.send("remove-tray", {win: options.win});
+        else remote.BrowserWindow.fromId(2).webContents.send("deactivate-tray", {win: options.win});
+      app.hide();
+    },options.timeout)
+  })
+</script>
+<style>
+  html, body, div.alert {
+    width:100vw;
+    margin:0;
+    border-radius:0
+  }
+</style>

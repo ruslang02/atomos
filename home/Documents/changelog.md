@@ -8,7 +8,13 @@
  - WebGL support
  - Wi-Fi support
  - Node.JS, Electron and RequireJS integration
- 
+
+## 0.4.1
+ - Multiple bug fixes
+ - Notifcations API
+ - _aos-typewriter_ was added some notification interaction
+ - End disk image Linux updated
+
 ## 0.4 RTM
  - _boombox_ was added to system (music player with playlist support)
 

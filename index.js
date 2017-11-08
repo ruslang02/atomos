@@ -4,10 +4,19 @@ const {
   ipcMain
 } = require('electron');
 
+/* System Components IDs
+ * 1 - Desktop
+ * 2 - Taskbar
+ * 3 - Clock Menu
+ * 4 - Internet Menu
+ * 5 - Start Menu
+ * 6 - Notifications
+*/
+
 global.windowArgs = [];
 global.windowIcons = [];
 global.clipboards = {
-    file: []
+  file: []
 };
 
 ipcMain.on("setArguments", function(event, args) {
@@ -22,6 +31,7 @@ let taskbar
 let startMenu
 let internetMenu;
 let clockMenu;
+let notification;
 ipcMain.on("toggleStart", function() {
   if (startMenu.isVisible()) startMenu.hide();
   else startMenu.show();
@@ -45,53 +55,38 @@ app.on('ready', function(event) {
   const {
     width,
     height
-  } = require('electron').screen.getPrimaryDisplay().workAreaSize
-  if (process.argv[2] !== "--test") {
-    win = new BrowserWindow({
-      frame: false,
-      resizable: false,
-      movable: false,
-      minimizable: false,
-      maximizable: false,
-      closable: false,
-      type: "desktop",
-      x: 0,
-      y: 0,
-      width: width + 2,
-      height: height + 2,
-      webPreferences: {
-        webSecurity: false,
-        allowRunningInsecureContent: true
-      },
-      backgroundColor: '#bbd8e8'
-    })
-    win.loadURL("file:///atomos/sys/init/index.html")
-    win.onbeforeunload = function() {
-      return false;
-    };
-  } else {
-    win = new BrowserWindow({
-      x: 100,
-      y: 240,
-      width: 1024,
-      frame: false,
-      height: 600,
-      webPreferences: {
-        webSecurity: false,
-        allowRunningInsecureContent: true
-      },
-      backgroundColor: '#bbd8e8'
-    })
-    win.loadURL("file:///atomos/sys/init/index.html?debug")
-  }
+  } = require('electron').screen.getPrimaryDisplay().bounds
+  win = new BrowserWindow({
+    frame: false,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    closable: false,
+    type: "desktop",
+    x: 0,
+    y: 0,
+    width: width,
+    height: height,
+    webPreferences: {
+      webSecurity: false,
+      allowRunningInsecureContent: true
+    },
+    backgroundColor: '#bbd8e8'
+  })
+  win.loadURL("file:///atomos/sys/init/index.html")
+  win.onbeforeunload = function() {
+    return false;
+  };
   win.on('close', function(e) {
     win = null
   })
   win.show();
+  win.setSize(width, height)
   var bounds = win.getBounds();
   taskbar = new BrowserWindow({
-    x: bounds.x,
-    y: bounds.y + bounds.height - 46,
+    x: 0,
+    y: bounds.height - 46,
     width: win.getContentSize()[0],
     height: 47,
     frame: false,
@@ -158,4 +153,29 @@ app.on('ready', function(event) {
     type: "dock"
   })
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
+
+  notification = new BrowserWindow({
+    x: bounds.width - 10 - 350,
+    y: bounds.height - 37 - 150,
+    width: 350,
+    height: 150,
+    frame: false,
+    closable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    resizable: false,
+    movable: false,
+    show: false,
+    type: "notification"
+  })
+  notification.loadURL("file:///atomos/sys/notification/index.html")
+  if (process.argv[2] == "--test") {
+    //startMenu.toggleDevTools();
+    //internetMenu.toggleDevTools();
+    //clockMenu.toggleDevTools();
+    taskbar.toggleDevTools();
+    win.toggleDevTools();
+    //notification.toggleDevTools();
+  }
 });

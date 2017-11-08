@@ -13,6 +13,31 @@ const {
   BrowserWindow,
   Menu
 } = remote;
+ipcRenderer.on('create-tray', function(e, options) {
+  console.log(options)
+  if($("tray button[name=" + options.win + "]").length === 0) {
+    $("tray").prepend('<button name="' + options.win + '" title="' + options.title + '"><i class="material-icons">' + options.glyph + '</i>')
+    $("tray button[name=" + options.win + "]").click(function() {
+      BrowserWindow.fromId(options.win).webContents.send("tray-click");
+    })
+    $("tray button[name=" + options.win + "]").contextmenu(function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      BrowserWindow.fromId(options.win).webContents.send("tray-context-click");
+    })
+  }
+})
+
+ipcRenderer.on('activate-tray', function(e, options) {
+  console.log(options);
+  $("tray button[name=" + options.win + "]").addClass("bg-" + options.state + " active");
+})
+ipcRenderer.on('deactivate-tray', function(e, options) {
+  $("tray button[name=" + options.win + "]").removeClass("bg-* active");
+})
+ipcRenderer.on('remove-tray', function(e, options) {
+  $("tray button[name=" + options.win + "]").remove();
+})
 BrowserWindow.fromId(4).on('show', function() {
   $("tray [name=network]").addClass('active')
 }).on('hide', function() {

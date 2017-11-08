@@ -140,12 +140,13 @@
 
   function newTab(setEvents = true) {
     var tabNum = totalTabs;
+    var $activeTab = $("tab[active]");
     $("tab").removeAttr("active");
     $(".nav-tabs .nav-link").removeClass("active");
     $(".nav-tabs").append("<li to='" + tabNum + "' class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
     $("tabs").append("<tab active id='" + tabNum + "'></tab>");
     editors[tabNum] = ace.edit(tabNum.toString());
-    editors[tabNum].setTheme("ace/theme/chrome");
+    editors[tabNum].setTheme((editors[$activeTab.attr("id")] ? editors[$activeTab.attr("id")].getTheme() : "/ace/theme/chrome"));
     editors[tabNum].encoding = "utf-8";
     editors[tabNum].isRemote = false;
     editors[tabNum].url = "";

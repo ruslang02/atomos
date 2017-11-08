@@ -170,7 +170,8 @@
           if (!err) {
             $("#playlist *").remove();
             list.playlist.trackList[0].track.forEach(function(track) {
-              $("#playlist").append("<button class='dropdown-item' location='" + track.identifier.substring(7) + "' creator='" + track.creator + "'>" + track.title + "</button>")
+                console.log(track);
+              $("#playlist").append("<button class='dropdown-item' location='" + track.identifier[0].substring(7) + "' creator='" + track.creator + "'>" + track.title + "</button>")
             });
             if ($("[name=autoplay]")[0].checked) playNext()
           } else console.error("Error parsing playlist file (" + file + "). Error: " + err)
