@@ -19,8 +19,8 @@ tray button.active {
   background: #007bff;
   color:white;
 }
-tray button.active img {
-  filter: brightness(1000%)
+tray button.active i {
+  color: white
 }
 
 

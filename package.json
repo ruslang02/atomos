@@ -13,7 +13,8 @@
   "readme": "./README.md",
   "scripts": {
     "start": "electron /atomos",
-    "build": "kdesudo 'php ../../build.php'"
+    "test": "electron /atomos --test",
+    "disk": "kdesudo 'php ../../build.php'"
   },
   "author": "Ruslan",
   "license": "GNU GPL",

@@ -1,18 +1,19 @@
-<form class="btn-toolbar">
+<ul class="nav nav-tabs bg-light"><button class="btn btn-sm btn-secondary material-icons" onclick="newTab()">add</button><div class="spacer"></div></ul>
+<div class="btn-toolbar">
 	<div class="btn-group mr-1 btn-group-sm" style="flex-shrink:0">
-		<button class="btn btn-outline-primary material-icons" type="button" action="back">arrow_back</button>
-		<button class="btn btn-outline-primary material-icons" type="button" action="forward">arrow_forward</button>
+		<button class="btn btn-outline-primary material-icons" action="back">arrow_back</button>
+		<button class="btn btn-outline-primary material-icons" action="forward">arrow_forward</button>
 	</div>
 	<div class="btn-group mr-1 btn-group-sm">
-		<button class="btn btn-outline-primary material-icons" type="button" action="refresh">refresh</button>
+		<button class="btn btn-outline-primary material-icons" action="refresh">refresh</button>
 	</div>
 	<div class="input-group mr-1" style="
     flex-grow: 2;
 "><input class="form-control form-control-sm" name="path" type="text" value="http://atomos.org.uk/home" id="path"></div>
 	<div class="btn-group btn-group-sm">
-		<button class="btn btn-primary material-icons" action="navigate" type="submit">arrow_forward</button>
+		<button class="btn btn-primary material-icons" action="navigate">arrow_forward</button>
 	</div>
-</form>
+</div>
 <div class="alert alert-warning fixed-bottom m-0 rounded-0" style="display:none" role="alert">
 	<button type="button" class="close" data-dismiss="alert" onclick="$(this).parent().fadeOut(200)" aria-label="Close">
     <span aria-hidden="true">&times;</span>
@@ -20,10 +21,9 @@
 	<b>Maybe, the page is not working</b>
 	<div>Try to toggle JavaScript and reload the page</div>
 </div>
-<webview src="http://atomos.org.uk/home"></webview>
+<tabs></tabs>
 
 <script>
-	var browser = document.querySelector('webview');
 	var win = require('electron').remote.getCurrentWindow();
 	window.addEventListener("load", function() {
 		$("button").click(function(e) {
@@ -31,16 +31,15 @@
 		})
 		if (window.arguments["path"]) {
 			$("#path").val(window.arguments["path"] || "http://atomos.org.uk/home");
-			navigate();
+			newTab(window.arguments["path"] || "http://atomos.org.uk/home");
 		}
 		init();
 	});
 
 	function init() {
 		var oldTitle = "";
-		$("form").submit(function(e) {
-		    e.preventDefault();
-		    $("[action=navigate]").click();
+		$("[name=path]").keydown(function(e) {
+		    if(e.key == "Enter") navigate();
 		})
 		$("[action=back]").mouseup(function() {
 			browser.goBack()
@@ -50,21 +49,55 @@
 		});
 		$("[action=refresh]").mouseup(reNavigate);
 		$("[action=navigate]").mouseup(navigate);
-		browser.addEventListener("page-title-updated", function(event) {
+        $("body").on("click", ".nav-tabs .nav-link[to]", function() {
+            activateTab($(this).attr("to"));
+        })
+    $("body").on("click", ".nav-link button", function(e) {
+      e.stopPropagation();
+      closeTab($(this).parents('.nav-link').attr("to"))
+    })
+	}
+	var totalTabs = 0;
+	function newTab(url = "http://atomos.org.uk/home") {
+        var tabNum = totalTabs;
+        var $activeTab = $("tab[active]");
+        $("tab").removeAttr("active");
+        $(".nav-tabs .nav-link").removeClass("active");
+        $(".nav-tabs").append("<li to='" + tabNum + "' class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
+        $("tabs").append("<tab active id='" + tabNum + "'><webview src='" + url + "'></webview></tab>");
+	    totalTabs++;
+		$("tab[active] webview")[0].addEventListener("page-title-updated", function(event) {
 			win.setTitle(event.title + " - Proton Web Browser")
+			$(".nav-link.active name").text(event.title);
 		});
-		browser.addEventListener("did-navigate", function(event) {
+		$("tab[active] webview")[0].addEventListener("did-navigate", function(event) {
 			$("#path").val(event.url);
 		});
-		browser.addEventListener("new-window", function(event) {
+		$("tab[active] webview")[0].addEventListener("new-window", function(event) {
 			console.log(event);
 			if ((event.disposition == "foreground-tab" || event.disposition == "background-tab") && event.frameName === "") {
-				window.new("proton", {
-					path: event.url
-				})
+				newTab(event.url)
 			}
 		})
 	}
+
+  function activateTab(tabNum) {
+    $("tab").removeAttr("active");
+    $(".nav-tabs .nav-link").removeClass("active");
+    $("tab#" + tabNum).attr("active", "");
+    $(".nav-link[to=" + tabNum + "]").addClass("active");
+      var browser = $("tab[active] webview")[0];
+    $("#path").val(browser.getURL())
+    win.setTitle(browser.getTitle() + " - Proton Web Browser")
+  }
+
+  function closeTab(tabNum) {
+    console.log(tabNum)
+    $("tab#" + tabNum).remove();
+    $(".nav-link[to=" + tabNum + "]").remove();
+    activateTab($('tab').last().attr("id"))
+    if($("tab").length === 0) newTab();
+  }
 
 	function reNavigate() {
 		browser.reload();
@@ -82,7 +115,7 @@
 		else {
 			link = "http://" + link;
 		}
-		browser.loadURL(link);
+		$("tab[active] webview")[0].loadURL(link);
 		$(".alert-warning").fadeOut(200);
 	}
 
@@ -99,5 +132,55 @@
 		width: 100%;
 		border: 0
 	}
+
+  tabs>tab[id] {
+    flex-grow: 2;
+    flex-direction: column;
+    display: none;
+  }
+
+  tabs>tab[id][active] {
+    display: flex;
+  }
+
+  tabs {
+    display: flex;
+    flex-grow: 2;
+  }
+  .nav .nav-link {
+    padding: 0.25rem 0.5rem;
+    position: relative
+  }
+
+  .nav {
+    padding: 2px 5px;
+    padding-bottom: 0;
+    user-select: none;
+    cursor: default;
+    white-space:nowrap;
+  }
+  .nav .btn-secondary {
+          order: 999;
+    font-size: 18px;
+    margin: 3px;
+    padding: 2px;
+  }
+  .nav name {
+    flex-grow: 2;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav .nav-link button {display: none;}
+  .nav .nav-link:only-child button {display:none !important}
+
+  .nav .nav-link.active button {
+    padding: 1px;
+    display: inline-block;
+    vertical-align: sub;
+    margin-left: 0.5rem;
+    border: 0;
+  }
 
 </style>
