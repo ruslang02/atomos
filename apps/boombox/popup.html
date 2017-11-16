@@ -1,0 +1,90 @@
+<script>require('atomos-framework')</script>
+
+<link href="/atomos/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="/atomos/node_modules/material-design-icons/iconfont/material-icons.css" rel="stylesheet">
+
+<div class="dropdown-menu"></div>
+<center>
+  <button action="previous" class="btn btn-link material-icons">skip_previous</button>
+  <button action="play" class="btn btn-primary material-icons">play_arrow</button>
+  <button action="next" class="btn btn-link disabled material-icons">skip_next</button></center>
+  <script>
+
+    const {
+      remote,
+      ipcRenderer,
+      screen
+    } = require('electron');
+    const {
+      BrowserWindow
+    } = remote;
+    const app = remote.getCurrentWindow();
+    const {
+      width,
+      height
+    } = screen.getPrimaryDisplay().bounds;
+    window.$ = window.jQuery = require('jquery');
+    window.Popper = require('popper.js')
+    require('bootstrap')
+
+    setInterval(function() {
+      console.log($("body").innerHeight(), $("body").height(), $("body").outerHeight())
+      app.setContentSize(450, Math.ceil($("body").outerHeight()));
+      app.setPosition(width - 10 - 450, height - 37 - Math.ceil($("body").outerHeight()));
+    }, 100);
+
+    ipcRenderer.on("getMusicData", function(event, options) {
+      $(".dropdown-menu *").remove();
+      if(options.isPlaying) $("[action=play]").text("pause"); else $("[action=play]").text("play_arrow");
+      if(options.canPrevious) $("[action=previous]").removeAttr("disabled"); else $("[action=previous]").attr("disabled", "disabled");
+      if(options.canNext) $("[action=next]").removeAttr("disabled"); else $("[action=next]").attr("disabled", "disabled");
+      options.playlist.forEach(function(play) {
+        $(".dropdown-menu").append("<div class='dropdown-item'>" + play.title + "</div>")
+      })
+    })
+
+    </script>
+<style>
+  body {
+    border: 1px solid hsl(33, 100%, 50%);
+    padding: 0.5rem;
+    display: inline-block;
+width: 100%;
+  }
+
+  .dropdown-menu {
+    background: none;
+    border: none;
+    outline: none;
+    border-radius: none;
+    margin: 0;
+    position: static;
+    width: 100%;
+    display: inline-block
+  }
+    .dropdown-item.active,
+    .dropdown-item:active {
+      background-color: hsla(33, 100%, 50%, 1);
+    }
+      .btn-primary {
+        background-color: hsl(33, 100%, 50%);
+        border-color: hsl(33, 100%, 50%);
+      }
+
+      .btn-primary:active,
+      .btn-primary.active,
+      .show>.btn-primary.dropdown-toggle {
+        background-color: hsla(33, 100%, 43%, 1);
+        border-color: hsla(33, 100%, 40%, 1);
+      }
+
+      .btn-primary:hover {
+        background-color: hsla(33, 100%, 43%, 1);
+        border-color: hsla(33, 100%, 40%, 1);
+      }
+
+      .btn-primary:focus,
+      .btn-primary.focus {
+        box-shadow: 0 0 0 3px hsla(33, 100%, 50%, 0.5);
+      }
+</style>

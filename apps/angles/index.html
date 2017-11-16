@@ -1,3 +1,4 @@
+<script>require('atomos-framework')</script>
 <div class="btn-toolbar bg-light">
   <div class="btn-group dropdown btn-group-sm">
     <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -5,16 +6,16 @@
       <b class="caret"></b>
     </button>
     <div class="dropdown-menu" aria-labelledby="fileMenu">
-      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="new aos.components.Window('notepad')">New Window</button>
-      <button class="dropdown-item" data-key="Ctrl+N" data-description="Creates a new tab" onclick="newTab()">New Tab</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" onclick="new aos.components.Window('notepad')">New Window</button>
+      <button class="dropdown-item" data-key="Ctrl+N" onclick="newTab()">New Tab</button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
+      <button class="dropdown-item" data-key="Ctrl+O">Open...</button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file">Save</button>
-      <button class="dropdown-item" data-key="Ctrl+Shift+S" data-description="Saves opened file with specific name and extension">Save as...</button>
-      <button class="dropdown-item" data-key="Ctrl+L" data-description="Saves all opened files">Save all</button>
+      <button class="dropdown-item" data-key="Ctrl+S">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+S">Save as...</button>
+      <!-- Not implemented properly! <button class="dropdown-item" data-key="Ctrl+L">Save all</button> !-->
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
+      <button class="dropdown-item" data-key="Alt+F4">Exit</button>
     </div>
   </div>
     <div class="btn-group dropdown btn-group-sm">
@@ -33,10 +34,28 @@
         <div class="dropdown-menu" aria-labelledby="themeMenu">
         </div>
       </div>
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="viewMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      View
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="viewMenu">
+      <button class="dropdown-item custom-control custom-checkbox">
+        <input type="checkbox" name="showtoolbar" checked class="custom-control-input">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">Show toolbar</span>
+      </button>
+      <button class="dropdown-item custom-control custom-checkbox">
+        <input type="checkbox" name="showtabs" checked class="custom-control-input">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">Show tabs</span>
+      </button>
+    </div>
+  </div>
   <div class="spacer" style="flex-grow:2"></div>
   <div class="btn-group btn-group-sm">
-    <button class="btn btn-outline-info">Build</button>
-    <button class="btn btn-outline-success">Run</button>
+    <button class="btn btn-outline-info" onclick="window.new('angles/nocommand')">Build</button>
+    <button class="btn btn-outline-success" onclick="window.new('angles/nocommand')">Run</button>
   </div>
 </div>
 <ul class="nav nav-tabs bg-light"></ul>
@@ -49,8 +68,12 @@
   const fs = require('fs');
   const {
     ipcRenderer,
-    remote
+    remote,
+    clipboard
   } = require('electron');
+  const {
+    Menu
+  } = remote
   const win = remote.getCurrentWindow()
 
   window.onload = function() {
@@ -90,6 +113,26 @@
         modal: true
       });
     });
+    $("[name=showtabs]").click(function(e) {
+      e.stopImmediatePropagation();
+      if($(".nav-tabs").hasClass("hide")) {
+        $(".nav-tabs").removeClass("hide");
+        $("[name=showtabs]").find("input").removeAttr("checked");
+      } else {
+        $(".nav-tabs").addClass("hide");
+        $("[name=showtabs]").find("input").attr("checked", "checked");
+      }
+    })
+    $("[name=showtoolbar]").click(function(e) {
+      e.stopImmediatePropagation();
+      if($(".btn-toolbar").hasClass("hide")) {
+        $(".btn-toolbar").removeClass("hide");
+        $("[name=showtoolbar]").find("input").removeAttr("checked");
+      } else {
+        $(".btn-toolbar").addClass("hide");
+        $("[name=showtoolbar]").find("input").attr("checked", "checked");
+      }
+    })
     $("[data-key='Ctrl+S']").click(function() {
       saveFile($('tab[active]').attr("id"));
     })
@@ -104,12 +147,83 @@
     $("[data-key='Alt+F4']").click(function() {
       win.close();
     })
+    $("body").on("contextmenu", "tab", function(e) {
+      e.preventDefault();
+      var $this = editors[this.id];
+      console.log($this.session.getUndoManager().hasUndo())
+      var cmenu = [{
+        label: "Undo",
+        accelerator: "CmdOrCtrl+Z",
+        click() {
+          $this.undo()
+        },
+        enabled: $this.session.getUndoManager().hasUndo()
+      }, {
+        label: "Redo",
+        accelerator: "CmdOrCtrl+Shift+Z",
+        click() {
+          $this.redo()
+        },
+        enabled: $this.session.getUndoManager().hasRedo()
+      }, {
+        type: "separator"
+      }, {
+        label: "Cut",
+        accelerator: "CmdOrCtrl+X",
+        click() {
+          var text = $this.getCopyText();
+          $this.removeLines();
+          clipboard.writeText(text);
+        },
+        enabled: !$this.selection.isEmpty()
+      }, {
+        label: "Copy",
+        accelerator: "CmdOrCtrl+C",
+        click() {
+          var text = $this.getCopyText();
+          clipboard.writeText(text);
+        },
+        enabled: !$this.selection.isEmpty()
+      }, {
+        label: "Paste",
+        accelerator: "CmdOrCtrl+V",
+        click() {
+          $this.insert(clipboard.readText());
+        },
+        enabled: clipboard.readText() != false
+      }, {
+        type: "separator"
+      }, {
+        label: "Select all",
+        accelerator: "CmdOrCtrl+A",
+        click() {
+          $this.selectAll();
+        }
+      }, {
+        type: 'separator'
+      }, {
+        label: "Show Toolbar",
+        type: "checkbox",
+        checked: !$(".btn-toolbar").hasClass("hide"),
+        click() {
+          $("[name=showtoolbar]").click()
+        }
+      }, {
+        label: "Show Tabs",
+        type: "checkbox",
+        checked: !$(".nav-tabs").hasClass("hide"),
+        click() {
+          $("[name=showtabs]").click()
+        }
+      }];
+      var menu = new Menu.buildFromTemplate(cmenu).popup(win)
+    })
     $("body").on("click", ".nav-link button", function(e) {
       e.stopPropagation();
       closeTab($(this).parents('.nav-link').attr("to"))
     })
     ipcRenderer.on('return-file', function(event, arg) {
-      loadFile(arg, newTab());
+      if($(".nav-link.active").find("name").text() == "untitled" && !$(".nav-link.active").hasClass("edited")) loadFile(arg, $(".nav-link.active").attr("to")); else loadFile(arg, newTab());
     })
     ipcRenderer.on('save-file', function(event, arg) {
       writeFile($('tab[active]').attr("id"), arg);
@@ -269,10 +383,9 @@
     white-space: nowrap;
   }
 
-  .dropdown-item::after {
-    content: attr(data-key);
-    color: grey;
-    float: right;
+  .dropdown-menu {
+      overflow:auto;
+      max-height:calc(100vh - 10px);
   }
 
   .nav .nav-link {
@@ -287,6 +400,16 @@
     cursor: default;
     white-space:nowrap;
     overflow:hidden;
+  }
+  tab .ace_searchbtn.prev,
+  tab .ace_searchbtn.next {
+    padding: 8.5px;
+  }
+  tab .ace_search {
+    background: #f8f9fa !important;
+border-color: #ddd;
+font-family: 'Source Sans Pro';
+font-size: 14px;
   }
 
   .nav name {
@@ -316,8 +439,8 @@
     margin-left: 0.5rem;
     border: 0;
   }
-
-  .dropdown-menu {
-    min-width: 220px !important;
+  .dropdown-item .custom-control-indicator {
+    margin: 0.1rem 0.5rem;
   }
+  .custom-control {padding-left: 2rem;}
 </style>

@@ -14,26 +14,32 @@ const {
   Menu
 } = remote;
 ipcRenderer.on('create-tray', function(e, options) {
-  console.log(options)
   if($("tray button[name=" + options.win + "]").length === 0) {
-    $("tray").prepend('<button name="' + options.win + '" title="' + options.title + '"><i class="material-icons">' + options.glyph + '</i>')
-    $("tray button[name=" + options.win + "]").click(function() {
+    $("tray").prepend('<button name="' + options.win + '" style="color: ' + options.color + '" title="' + options.title + '"><i class="material-icons">' + options.glyph + '</i>')
+    $("tray button[name=" + options.win + "]").click(function(event) {
       BrowserWindow.fromId(options.win).webContents.send("tray-click");
     })
     $("tray button[name=" + options.win + "]").contextmenu(function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
       BrowserWindow.fromId(options.win).webContents.send("tray-context-click");
     })
   }
 })
 
 ipcRenderer.on('activate-tray', function(e, options) {
-  console.log(options);
-  $("tray button[name=" + options.win + "]").addClass("bg-" + options.state + " active");
+  $("tray button[name=" + options.win + "]").css("background-color", $("tray button[name=" + options.win + "]").css("color")).addClass("active");
 })
+
+ipcRenderer.on('close-tray', function(e, options) {
+  console.log('remove', options.win)
+  $("tray button[name=" + options.win + "]").remove();
+})
+
+ipcRenderer.on('change-tray-color', function(e, options) {
+  $("tray button[name=" + options.win + "]").css("color", options.color);
+})
+
 ipcRenderer.on('deactivate-tray', function(e, options) {
-  $("tray button[name=" + options.win + "]").removeClass("bg-* active");
+  $("tray button[name=" + options.win + "]").css("background-color", "").removeClass("active");
 })
 ipcRenderer.on('remove-tray', function(e, options) {
   $("tray button[name=" + options.win + "]").remove();
@@ -98,9 +104,9 @@ remote.app.on('browser-window-created', function(event, win) {
     ipcRenderer.send("close-any-menu")
   })
   win.on('show', function() {
-    $task.css("opacity", "1");
+    try {$task.css("opacity", "1");} catch(e) {}
   })
   win.on('hide', function() {
-    $task.css("opacity", "0.8");
+    try {$task.css("opacity", "1");} catch(e) {}
   })
 })

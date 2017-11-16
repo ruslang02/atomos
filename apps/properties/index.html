@@ -1,3 +1,4 @@
+<script>require('atomos-framework')</script>
 <app class="bg-light d-flex p-1 h-100">
   <div class="dropdown-menu mr-2 d-block" style="position:static">
     <button class="dropdown-item active" onclick="$('*').removeAttr('active').removeClass('active');$('properties').attr('active','active');$(this).addClass('active');"><i class="material-icons">list</i> General</button>
@@ -121,10 +122,8 @@
   }
 </script>
 <style>
-  .dropdown-item>i {
-    position: absolute;
-    left: 0;
-    margin: 0.25em 0.8em;
+  .dropdown-item>i {    position: absolute;
+    left: 0.55rem;
   }
 
   properties,

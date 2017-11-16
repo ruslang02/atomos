@@ -1,0 +1,108 @@
+<script>require('atomos-framework')</script>
+<center class="btn-menu bg-light">
+  <button class="btn btn-outline-primary btn-sm material-icons">keyboard_arrow_left</button>
+  <b>Control Center / Desktop Preferences</b>
+  <button class="btn btn-outline-primary btn-sm material-icons">reorder</button>
+</center>
+<section data-location="Control Center" class="p-2">
+  <p><b>Appearance</b></p>
+  <a class="btn btn-link text-center" href="#">
+    <img src="/atomos/icons/Desktop.png" class="mb-2">
+    <div class="text-center text-dark" style="width: 100%;white-space: normal;">Desktop Preferences</div>
+  </a>
+</section>
+
+<section active data-location="Control Center / Desktop Preferences" class="p-2 d-flex flex-column">
+  <div id="image"></div>
+  <button class="btn btn-secondary btn-sm btn-block my-2">Choose another...</button>
+  <div class="text-right"><button class="btn btn-primary btn-sm">Apply</button>
+</section>
+
+<section data-location="Control Center / Manage Apps">
+
+</section>
+
+<script>
+const fs = require('fs');
+const {
+  ipcRenderer,
+  remote
+} = require('electron');
+const app = remote.getCurrentWindow();
+window.onload = function() {
+  ipcRenderer.on("return-file", function(event, path) {
+    $("#image").css("background-image", "url(" + path + ")");
+  })
+  $(".btn-primary").click(function() {
+    fs.writeFileSync("/atomos/resources/wallpaper.jpg", fs.readFileSync($("#image").css("background-image").substring(12,$("#image").css("background-image").length - 2)));
+  })
+  $(".btn-secondary").click(function() {
+    window.new("aos-cabinet", {
+      path: "/atomos/home/Pictures/",
+      action: "ofd",
+      okText: "Select",
+      cancelText: "Cancel",
+      title: "Choose a wallpaper..."
+    }, {modal: true, parent: app})
+  })
+
+}
+</script>
+<style>
+  p {
+    margin: 0;
+  }
+
+  section {
+    display: none;
+    flex-grow: 2;
+    overflow: auto;
+  }
+
+  section[active] {
+    display: inline-block;
+  }
+
+  b {
+    font-variant: small-caps;
+    text-transform: lowercase;
+    color: #333;
+    font-size: 1em;
+  }
+
+  body {
+    display: flex;
+flex-direction: column;
+overflow: hidden;
+  }
+
+  #image {
+    background-image: url(/atomos/resources/wallpaper.jpg);
+flex-grow: 2;
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center center;
+border: 1px solid dimgray;
+  }
+
+  .btn-menu b {
+    flex-grow: 2;
+    line-height: 28px;
+  }
+
+  .btn-link {
+    width: 100px;
+    font-size: 1em;
+  }
+
+  * {
+    font-size: 1em
+  }
+
+  .btn-menu .material-icons {
+    font-size: 24px;
+    width: 30px;
+    height: 30px;
+    padding: 0 !important
+  }
+</style>

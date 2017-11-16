@@ -25,6 +25,10 @@ ipcMain.on("setArguments", function(event, args) {
 ipcMain.on("getArguments", function(event, wid) {
   event.returnValue = global.windowArgs[wid] || {};
 })
+ipcMain.on("pipe", function(event, args) {
+  console.log(args.options)
+  BrowserWindow.fromId(args.window).webContents.send(args.options);
+})
 const path = require('path')
 let win
 let taskbar
@@ -35,14 +39,17 @@ let notification;
 ipcMain.on("toggleStart", function() {
   if (startMenu.isVisible()) startMenu.hide();
   else startMenu.show();
+    startMenu.setAlwaysOnTop(true);
 })
 ipcMain.on("toggleNet", function() {
   if (internetMenu.isVisible()) internetMenu.hide();
   else internetMenu.show();
+    internetMenu.setAlwaysOnTop(true);
 })
 ipcMain.on("toggleClock", function() {
   if (clockMenu.isVisible()) clockMenu.hide();
   else clockMenu.show();
+    clockMenu.setAlwaysOnTop(true);
 })
 ipcMain.on("icon-change", function(event, args) {
   global.windowIcons[args.wid] = args.icon;
@@ -70,11 +77,12 @@ app.on('ready', function(event) {
     height: height,
     webPreferences: {
       webSecurity: false,
-      allowRunningInsecureContent: true
+      allowRunningInsecureContent: true,
+      preload: "file:///atomos/node_modules/atomos-framework/preload.js"
     },
     backgroundColor: '#bbd8e8'
   })
-  win.loadURL("file:///atomos/sys/init/index.html")
+  win.loadURL("file:///atomos/apps/aos-cabinet/index.html")
   win.onbeforeunload = function() {
     return false;
   };
@@ -114,7 +122,7 @@ app.on('ready', function(event) {
     resizable: false,
     movable: false,
     show: false,
-    type: "dock"
+    type: "notification"
   })
 
   clockMenu.loadURL("file:///atomos/sys/clockMenu/index.html")
@@ -132,7 +140,7 @@ app.on('ready', function(event) {
     resizable: false,
     movable: false,
     show: false,
-    type: "dock"
+    type: "notification"
   })
 
   internetMenu.loadURL("file:///atomos/sys/internetMenu/index.html")
@@ -150,15 +158,14 @@ app.on('ready', function(event) {
     resizable: false,
     movable: false,
     show: false,
-    type: "dock"
+    type: "notification"
   })
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
-
   notification = new BrowserWindow({
     x: bounds.width - 10 - 350,
     y: bounds.height - 37 - 150,
-    width: 350,
-    height: 150,
+    width: 450,
+    height: 450,
     frame: false,
     closable: false,
     minimizable: false,
@@ -170,12 +177,17 @@ app.on('ready', function(event) {
     type: "notification"
   })
   notification.loadURL("file:///atomos/sys/notification/index.html")
+
+  clockMenu.on('blur', clockMenu.hide)
+    internetMenu.on('blur', internetMenu.hide)
+      startMenu.on('blur', startMenu.hide)
+
   if (process.argv[2] == "--test") {
     //startMenu.toggleDevTools();
     //internetMenu.toggleDevTools();
     //clockMenu.toggleDevTools();
     taskbar.toggleDevTools();
-    win.toggleDevTools();
-    //notification.toggleDevTools();
+    //win.toggleDevTools();
+    notification.toggleDevTools();
   }
 });

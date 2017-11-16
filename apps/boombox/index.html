@@ -1,3 +1,4 @@
+<script>require('atomos-framework')</script>
 <div class="bg-light btn-menu">
   <div class="btn-group dropdown btn-group-sm">
     <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -65,6 +66,11 @@
     <button class="btn btn-sm btn-primary material-icons">play_arrow</button>
     <button class="btn btn-sm btn-light material-icons" onclick="playNext()">skip_next</button>
   </div>
+  <style>
+    .alert {
+      background: white !important
+    }
+  </style>
 </footer>
 <audio></audio>
 <script>
@@ -77,10 +83,71 @@
     remote,
     ipcRenderer
   } = require('electron');
+  const {
+    Menu,
+    BrowserWindow
+  } = remote;
+    const {
+      width,
+      height
+    } = require('electron').screen.getPrimaryDisplay().bounds
+
+  var popup = new BrowserWindow({
+    x: width - 10 - 450,
+    y: height - 37 - 450,
+    width: 450,
+    height: 450,
+    frame: false,
+    closable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    resizable: false,
+    movable: false,
+    show: false,
+    type: "notification"
+  })
+  popup.loadURL("file:///atomos/apps/boombox/popup.html");
+
+  var tray = new Tray("music_note", "Boombox is running", "hsl(33, 100%, 50%)");
+  tray.on("contextClick", function(event) {
+    Menu.buildFromTemplate([{
+      label: 'Exit',
+      click() {
+        win.close()
+      }
+    }]).popup()
+  })
+  tray.on("click", function(event) {
+    console.log("click")
+    popup.show();
+    popup.setAlwaysOnTop(true)
+    popup.on('blur', function() {
+      popup.hide();
+    })
+  })
+  tray.show();
+
   const win = remote.getCurrentWindow();
+  window.addEventListener('beforeunload', function() {
+    tray.close();
+  })
 
   ipcRenderer.on("return-file", function(e, path) {
     load(path);
+  })
+  ipcRenderer.on("getData", function(e) {
+    BrowserWindow.fromId(6).webContents.send("getMusicData", JSON.stringify({
+      canNext: $('#player button:contains("skip_next")').attr("disabled") == true,
+      canPrevious: $('#player button:contains("skip_previous")').attr("disabled") == true,
+      isPlaying: !player.paused,
+      playlist: $('#playlist .dropdown-item').map(function() {
+        return {
+          play: $(this).text()
+        }
+      }).get()
+    }));
+
   })
 
   player.ontimeupdate = function() {
@@ -96,6 +163,8 @@
 
   window.onload = function() {
     if (arguments.path) load(arguments.path);
+
+
     $("[data-key='Ctrl+O']").click(function() {
       window.new("aos-cabinet", {
         action: "ofd",
@@ -128,7 +197,7 @@
         $(".media h5").text(tags.title || $("#playlist .dropdown-item.active").text());
         if (tags.picture[0])
           $("#cover img")[0].src = "data:image/" + tags.picture[0].format + ";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
-          else $("#cover img").removeAttr("src");
+        else $("#cover img").removeAttr("src");
       })
       player.src = $("#playlist .dropdown-item.active").attr('location');
       player.play();
@@ -170,7 +239,7 @@
           if (!err) {
             $("#playlist *").remove();
             list.playlist.trackList[0].track.forEach(function(track) {
-                console.log(track);
+              console.log(track);
               $("#playlist").append("<button class='dropdown-item' location='" + track.identifier[0].substring(7) + "' creator='" + track.creator + "'>" + track.title + "</button>")
             });
             if ($("[name=autoplay]")[0].checked) playNext()
@@ -192,12 +261,14 @@
     else
       $("#playlist .dropdown-item").first().click();
   }
-    function playPrevious() {
-      if ($("#playlist .dropdown-item.active").length !== 0)
-        $("#playlist .dropdown-item.active").prev().click();
-    }
+
+  function playPrevious() {
+    if ($("#playlist .dropdown-item.active").length !== 0)
+      $("#playlist .dropdown-item.active").prev().click();
+  }
 </script>
 <style>
+  body {height:100%;}
   footer {
     position: relative;
     padding: 0.25rem 0.5rem;
@@ -290,7 +361,9 @@
     border-left: 1px solid #e9ecef;
     position: relative;
     margin: 0;
-    border-radius: 0
+    border-radius: 0;
+    max-height:unset !important;
+    overflow:auto;
   }
 
   .btn-primary {
@@ -351,5 +424,5 @@
     right: 0;
     bottom: 0;
     margin: auto;
-}
+  }
 </style>

@@ -1,7 +1,8 @@
-<content>
-  <header>
-    <img src="/atomos/icons/Ask Question.png" />
-    <small style="padding:2px">File with mime type "<span id="mime"></span>" doesn't have an association with atomOS apps. Choose application, which can probably open this type of file.</small>
+<script>require('atomos-framework')</script>
+<content class="p-2 d-flex flex-column h-100">
+  <header class="d-flex">
+    <img class="mr-2" src="/atomos/icons/Ask Question.png" />
+    <div>We do not know how to open file with mime type "<span id="mime"></span>". Please specify an app that could open it:</div>
   </header>
 
   <select size="10">
@@ -14,32 +15,11 @@
   </footer>
 </content>
 <style>
-  content {
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: stretch;
-    padding: 1em;
-    width: 100%;
-    height: 100%;
-  }
-
-  header,
-  footer {
-    flex-shrink: 0;
-    flex-grow: 0;
-    width: 100%;
-  }
-
-  header {
-    display: flex
-  }
 
   select {
     flex-grow: 2;
-    width: 100%;
     overflow: auto;
-    padding: 0;
-    font-size: smaller;
+    font-size: small;
     outline: none !important;
   }
 
@@ -49,7 +29,7 @@
   }
 
   select option {
-    padding: 5px;
+    padding: 0.25rem;
   }
 </style>
 
@@ -61,8 +41,8 @@
   } = require('electron');
   const fs = require('fs');
   var win = remote.getCurrentWindow();
-  if (!arguments.path || !arguments.mimeType) {
-    //aos.notifications.add("primary", "No path specified", "To open application \"openFile\", you need to specify file's path and it's mime type.");
+  if (!(arguments.path && arguments.mimeType)) {
+    Notification("No path specified", "To open application \"openFile\", you need to specify file's path and it's mime type.");
     win.close();
   }
   var assocs;
@@ -78,14 +58,14 @@
     })
     fs.readdir("/atomos/etc/apps", function(err, apps) {
       if (err) {
-        console.log(err);
+        Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "danger");
         exit;
       }
       apps.forEach(function(app) {
         var appName = app.substring(0, app.lastIndexOf("."));
         fs.readFile("/atomos/etc/apps/" + app, "utf-8", function(err, ap) {
           if (err) {
-            console.log(err);
+            Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "danger");
             exit;
           }
           ap = $.parseJSON(ap);
@@ -108,11 +88,21 @@
       window.new($("select").val(), {
         path: path
       });
-      //aos.notifications.add("success", "New association added", "The next time you open files like this, you won't get that dialog again.");
+        Notification("New association added", "The next time you open files like this, you won't get that dialog again.", "done", "success");
       fs.writeFile("/atomos/etc/associations.json", JSON.stringify(assocs), function(err) {
-        if (err) console.log(err);
+        if (err)
+          Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "danger");
         window.close();
       });
     })
+  }
+
+  function Notification(title, err, icon = "help", state = "warning") {
+    var tray = new Tray(icon, "", "#ffc107");
+    tray.show();
+    tray.notify({
+      title: title,
+      html: err
+    });
   }
 </script>

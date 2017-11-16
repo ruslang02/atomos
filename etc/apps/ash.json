@@ -2,7 +2,7 @@
   "name": "Terminal",
   "shortName": "Terminal",
   "icon": "/atomos/icons/Console.png",
-  "description": "Your atomOS CLI over here.",
+  "description": "Gain low-level access to the system",
   "width": 450,
   "height": 250
 }
