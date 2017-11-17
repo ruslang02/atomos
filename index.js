@@ -95,7 +95,7 @@ app.on('ready', function(event) {
   taskbar = new BrowserWindow({
     x: 0,
     y: bounds.height - 46,
-    width: win.getContentSize()[0],
+    width: width,
     height: 47,
     frame: false,
     closable: false,
@@ -110,8 +110,8 @@ app.on('ready', function(event) {
   taskbar.show();
 
   clockMenu = new BrowserWindow({
-    x: bounds.x + bounds.width - 10 - 350,
-    y: bounds.y + bounds.height - 37 - 252,
+    x: width - 10 - 350,
+    y: height - 37 - 252,
     width: 350,
     height: 252,
     frame: false,
@@ -128,8 +128,8 @@ app.on('ready', function(event) {
   clockMenu.loadURL("file:///atomos/sys/clockMenu/index.html")
 
   internetMenu = new BrowserWindow({
-    x: bounds.x + bounds.width - 10 - 350,
-    y: bounds.y + bounds.height - 387,
+    x: width - 10 - 350,
+    y: height - 387,
     width: 350,
     height: 350,
     frame: false,
@@ -146,8 +146,8 @@ app.on('ready', function(event) {
   internetMenu.loadURL("file:///atomos/sys/internetMenu/index.html")
 
   startMenu = new BrowserWindow({
-    x: bounds.x + 10,
-    y: bounds.y + bounds.height - 57 - 315,
+    x: 10,
+    y: height - 57 - 315,
     width: 350,
     height: 315,
     frame: false,
@@ -162,8 +162,8 @@ app.on('ready', function(event) {
   })
   startMenu.loadURL("file:///atomos/sys/startMenu/index.html")
   notification = new BrowserWindow({
-    x: bounds.width - 10 - 350,
-    y: bounds.height - 37 - 150,
+    x: width - 10 - 350,
+    y: height - 37 - 150,
     width: 450,
     height: 450,
     frame: false,

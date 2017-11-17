@@ -1,4 +1,3 @@
-<script>require('atomos-framework')</script>
 <content class="p-2 d-flex flex-column h-100">
   <header class="d-flex">
     <img class="mr-2" src="/atomos/icons/Ask Question.png" />
@@ -34,12 +33,14 @@
 </style>
 
 <script>
-  var arguments = window.arguments;
+
+  var arguments = require('atomos-framework').arguments;
   var path = arguments.path;
   const {
     remote
   } = require('electron');
   const fs = require('fs');
+  window.$ = window.jQuery = require('jquery');
   var win = remote.getCurrentWindow();
   if (!(arguments.path && arguments.mimeType)) {
     Notification("No path specified", "To open application \"openFile\", you need to specify file's path and it's mime type.");
@@ -58,14 +59,14 @@
     })
     fs.readdir("/atomos/etc/apps", function(err, apps) {
       if (err) {
-        Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "danger");
+        Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "#dc3545");
         exit;
       }
       apps.forEach(function(app) {
         var appName = app.substring(0, app.lastIndexOf("."));
         fs.readFile("/atomos/etc/apps/" + app, "utf-8", function(err, ap) {
           if (err) {
-            Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "danger");
+            Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "#dc3545");
             exit;
           }
           ap = $.parseJSON(ap);
@@ -88,17 +89,17 @@
       window.new($("select").val(), {
         path: path
       });
-        Notification("New association added", "The next time you open files like this, you won't get that dialog again.", "done", "success");
+        Notification("New association added", "The next time you open files like this, you won't get that dialog again.", "done", "#28a745");
       fs.writeFile("/atomos/etc/associations.json", JSON.stringify(assocs), function(err) {
         if (err)
-          Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "danger");
+          Notification("<i>aos-appchooserdialog</i> has encountered an error", err, "error", "#dc3545");
         window.close();
       });
     })
   }
 
-  function Notification(title, err, icon = "help", state = "warning") {
-    var tray = new Tray(icon, "", "#ffc107");
+  function Notification(title, err, icon = "help", state = "#dc3545") {
+    var tray = new Tray(icon, "", state);
     tray.show();
     tray.notify({
       title: title,

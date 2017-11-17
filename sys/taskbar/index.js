@@ -55,23 +55,23 @@ BrowserWindow.fromId(3).on('show', function() {
   $("tray [name=clock]").removeClass('active')
 })
 remote.app.on('browser-window-created', function(event, win) {
+  if(!win.isFullScreenable()) return;
   var dangerFlash;
   var warningFlash;
   var hangWin;
   var alreadyHung = false;
-  var alreadyOpened = false;
-  var $task;
+  var icon;
+  $("tasks").append("<button id='" + win.id + "' class='btn btn-light btn-sm loading'><img src='/atomos/icons/Loader.png'></button>");
+  var $task = $("tasks #" + win.id);
+  $task.on('mousedown', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    win.show();
+  })
   win.webContents.on('did-stop-loading', function() {
-    if(alreadyOpened) exit;
-    alreadyOpened = true;
-    var icon = ipcRenderer.sendSync("icon-get", win.id);
-    $("tasks").append("<button id='" + win.id + "' class='btn btn-light btn-sm'><img src='" + icon + "'></button>");
-    $task = $("tasks #" + win.id);
-    $task.on('mousedown', function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      win.show();
-    })
+    icon = ipcRenderer.sendSync("icon-get", win.id);
+    $task.removeClass("loading")
+    $task.find("img")[0].src = icon;
   })
   win.on('close', function(e) {
     $task.addClass("btn-light").removeClass("btn-danger").fadeOut("200", function() {$task.remove()});

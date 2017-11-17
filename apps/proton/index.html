@@ -1,4 +1,4 @@
-<script>require('atomos-framework')</script>
+<script></script>
 <ul class="nav nav-tabs bg-light"><button class="btn btn-sm btn-secondary material-icons" onclick="newTab()">add</button>
 	<div class="spacer"></div>
 </ul>
@@ -20,14 +20,19 @@
 <tabs></tabs>
 
 <script>
+    var args = require('atomos-framework').arguments;
+    
 	var win = require('electron').remote.getCurrentWindow();
+  window.jQuery = window.$ = require("jquery")
+  window.Popper = require("popper.js");
+  require("bootstrap")
 	window.addEventListener("load", function() {
 		$("button").click(function(e) {
 			e.preventDefault();
 		})
-		if (window.arguments["path"]) {
-			$("#path").val(window.arguments["path"] || "http://atomos.org.uk/home");
-			newTab(window.arguments["path"] || "http://atomos.org.uk/home");
+		if (args["path"]) {
+			$("#path").val(args["path"] || "http://atomos.org.uk/home");
+			newTab(args["path"] || "http://atomos.org.uk/home");
 		}
 		init();
 	});

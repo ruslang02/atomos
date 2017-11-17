@@ -1,4 +1,4 @@
-<script>require('atomos-framework')</script>
+<link rel="stylesheet" href="/atomos/lib/atomos.css" />
 <div class="btn-toolbar">
 	<div class="btn-group mr-1 btn-group-sm" style="flex-shrink:0">
 		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateBack" onclick="goBack()">arrow_back</button>
@@ -28,7 +28,6 @@
 
 	</div>
 </section>
-
 <div class="ofdBar input-group p-1 bg-light hide" style="flex-shrink:0;border-top:1px solid lightgray;">
 	<span class="input-group-btn">
 	<button class="btn btn-sm btn-secondary btn-block" onclick="window.close()">Cancel</button>
@@ -49,6 +48,11 @@
 		Menu
 	} = remote;
 	var fs = require("fs-extra");
+	window.$ = window.jQuery = require('jquery');
+	require('atomos-framework');
+	window.arguments = ipcRenderer.sendSync("getArguments", remote.getCurrentWindow().id);
+	window.Popper = require("popper.js");
+	require("bootstrap");
 
 	fm.elements = [];
 	fm.folders = [];
@@ -56,82 +60,80 @@
 	fm.nHistory = [];
 	fm.historyNow = -1;
 	fm.sorting = "A-Z";
-	fm.path = document.querySelector("#path").value;
-	if(!window.fileClipboard) {
+	fm.window = remote.getCurrentWindow();
+	if (fm.window.id < 5) {
 		fm.desktop = true;
-		window.$ = window.jQuery = require('jquery');
-		require('atomos-framework');
-		window.arguments = ipcRenderer.sendSync("getArguments", remote.getCurrentWindow().id);
-	  document.body.innerHTML = '<link rel="stylesheet" href="/atomos/lib/atomos.css" />' + document.body.innerHTML;
-	  window.Popper = require("popper.js");
-	  require("bootstrap");
 		$("#sidebar").remove();
 		$(".btn-toolbar").hide();
 		$("body").addClass("desktop");
 		$(".files").attr("viewMode", "gigtiles")
-		fm.path = "/atomos/home/Desktop/"
+		fm.path = "/atomos/home/Desktop/";
 		fm.showHidden = true;
 		fm.foldersFirst = false;
+		fm.arguments = {path: fm.path};
+		$("#path").val(fm.path)
+		navigate("/atomos/home/Desktop/");
+		$.getJSON("/atomos/etc/aos-release.json", function(info) {
+			$("body").append("<copyright style='position:fixed;bottom:46px;font-family:monospace;right:0;z-index:-1;color:white;text-align:right; margin:0.5rem'>" + info.name + " " + info.version + "_" + info.build + "<br>Code name: \"" + info.codename + "\"</copyright>")
+		})
 	} else {
+		fm.desktop = false;
 		fm.foldersFirst = true;
 		fm.showHidden = false;
+		fm.arguments = window.arguments;
+		fm.path = "/atomos/home/";
+		$("#path").val(fm.path)
+		fm.arguments.path ? 1 + 1 : fm.arguments.path = fm.path;
+		fm.action = fm.arguments["action"];
+		navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
+	}
+	initContextMenus();
+	initShortcuts();
+	$("body").on("click", "#sidebar [data-location]", function() {
+		$("#sidebar>.nav>li").removeClass("active");
+		$(this).parent("li").addClass("active");
+		navigate($(this).attr("data-location"));
+	}).on("dblclick", "[type=folder]", function() {
+		if (!fm.desktop) navigate($(this).attr("data-location"));
+		else window.new("aos-cabinet", {
+			path: $(this).attr("data-location")
+		})
+	}).on("mouseup", "[type]", function() {
+		if ($(this).attr("type") == "file") {
+			$("#ofdFile").val($(this).children(".file-title").text());
+			$(".ofdBar button.btn-primary").removeAttr("disabled");
+		} else {
+			$(".ofdBar button.btn-primary").attr("disabled", "disabled");
+			$("#ofdFile").val("");
+		}
+	}).on("dblclick", "[type=file]", function() {
+		if (fm.action) submitFile();
+		else
+			window.fileOpen(fm.path + $(this).children(".file-title").text());
+	});
+
+	if (fm.action) {
+		$("#sidebar").hide();
+		fm.window.setMinimumSize(500, 250);
+		fm.window.setSize(500, 250);
+		fm.window.setMaximizable(false);
+		fm.window.setResizable(false);
+		$(".ofdBar .btn-primary").text(fm.arguments.okText || "Open");
+		$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
+		fm.window.setTitle(fm.arguments.title);
+		if (fm.action == "sfd") {
+			$(".ofdBar .btn-primary").text(fm.arguments.okText || "Save");
+			$("#ofdFile").removeAttr("readonly");
+			$("#ofdFile").on("input change", function() {
+				if ($(this).val() == "") $(".ofdBar button.btn-primary").attr("disabled", "disabled");
+				else $(".ofdBar button.btn-primary").removeAttr("disabled");
+			})
+		}
+		$(".ofdBar").removeClass("hide");
 	}
 
-	fm.window = remote.getCurrentWindow();
-	fm.arguments = window.arguments;
-	fm.arguments.path ? 1 + 1 : fm.arguments.path = "/atomos/home/Desktop/";
-	fm.action = fm.arguments["action"];
-	console.log(fm.arguments);window.addEventListener("load", function() {
-		navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
-		initContextMenus();
-		initShortcuts();
-		$("#sidebar [data-location]").click(function() {
-			$("#sidebar>.nav>li").removeClass("active");
-			$(this).parent("li").addClass("active");
-			navigate($(this).attr("data-location"));
-
-		});
-		if (fm.action) {
-			$("#sidebar").hide();
-			fm.window.setMinimumSize(500, 250);
-			fm.window.setSize(500, 250);
-			fm.window.setMaximizable(false);
-			fm.window.setResizable(false);
-			$(".ofdBar .btn-primary").text(fm.arguments.okText || "Open");
-			$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
-			fm.window.setTitle(fm.arguments.title);
-			if (fm.action == "sfd") {
-				$(".ofdBar .btn-primary").text(fm.arguments.okText || "Save");
-				$("#ofdFile").removeAttr("readonly");
-				$("#ofdFile").on("input change", function() {
-					if ($(this).val() == "") $(".ofdBar button.btn-primary").attr("disabled", "disabled");
-					else $(".ofdBar button.btn-primary").removeAttr("disabled");
-				})
-			}
-			$(".ofdBar").removeClass("hide");
-		}
-
-		$(".files").on("dblclick", "[type=folder]", function() {
-			if(!fm.desktop) navigate($(this).attr("data-location")); else window.new("aos-cabinet", {path: $(this).attr("data-location")})
-		});
-		$(".files").on("mouseup", "[type]", function() {
-			if ($(this).attr("type") == "file") {
-				$("#ofdFile").val($(this).children(".file-title").text());
-				$(".ofdBar button.btn-primary").removeAttr("disabled");
-			} else {
-				$(".ofdBar button.btn-primary").attr("disabled", "disabled");
-				$("#ofdFile").val("");
-			}
-		})
-		$(".files").on("dblclick", "[type=file]", function() {
-			if (fm.action) submitFile();
-			else
-				window.fileOpen(fm.path + $(this).children(".file-title").text());
-		});
-	})
-
 	function reNavigate() {
-		navigate($("#path").val(), "reload");
+		navigate(fm.path, "reload");
 	}
 
 	function navigate(path, historymode) {
@@ -160,24 +162,22 @@
 		list(path, (data) => {
 			if (fm.action) {
 				if (fm.viewMode == "list") $('div.files').prepend('<button data-location="' + path.substring(0, path.lastIndexOf("/", path.length - 2)) +
-					'/" class="dropdown-item file-item" type="folder"><i class="material-icons">folder_open</i><div class="file-title">..</div></button>')
+					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/folders-small/Folder.png"><div class="file-title">..</div></button>')
 				else $('div.files').prepend('<button data-location="' + path.substring(0, path.lastIndexOf("/", path.length - 2)) +
-					'/" class="dropdown-item file-item" type="folder"><i class="material-icons">folder_open</i><div class="file-title">..</div></button>')
+					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/Extensions Folder.png"><div class="file-title">..</div></button>')
 			}
 
 			data.forEach(function(item) {
 				if (item.type == "folder") $("div.files").append('<button data-mime="' + item.mimeType + '" data-location="' + path + item.name + '/" class="dropdown-item file-item" type="' + item.type +
 					'"><img src="' + item.icon + '"><div class="file-title">' + item.name + '</div></button>')
-					else if (item.name.endsWith(".lnk")) {
-						var shrt = fs.readFileSync(fm.path + item.name, "utf8");
-						console.log(shrt)
-						shrt = $.parseJSON(shrt);
-						$(".files").append("<button type='shortcut' realname='" + item.name + "' class='file-item'><img src='" + shrt.icon + "'><div class='file-title'>" + shrt.title + "</div></button>")
-						$(".files .file-item").last().on("dblclick", function () {
-							window.new(shrt.app, shrt.arguments || {});
-						})
-					}
-				else $("div.files").append('<button data-mime="' + item.mimeType + '" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon +
+				else if (item.name.endsWith(".lnk")) {
+					var shrt = fs.readFileSync(fm.path + item.name, "utf8");
+					shrt = $.parseJSON(shrt);
+					$(".files").append("<button type='shortcut' realname='" + item.name + "' class='file-item'><img src='" + shrt.icon + "'><div class='file-title'>" + shrt.title + "</div></button>")
+					$(".files .file-item").last().on("dblclick", function() {
+						window.new(shrt.app, shrt.arguments || {});
+					})
+				} else $("div.files").append('<button data-mime="' + item.mimeType + '" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon +
 					'"></i><div class="file-title">' + item.name + '</div></button>')
 			});
 			if (nohistory && historymode) $("button:contains('" + historymode + "')").focus();
@@ -299,7 +299,6 @@
 				result.forEach(function(item) {
 					if (item.type == "file") newResult.push(item);
 				})
-				console.log(newResult);
 				callback(newResult)
 			} else callback(result)
 
@@ -308,7 +307,6 @@
 
 	function initShortcuts() {
 		$(window).keydown(function(event) {
-			console.log(event);
 			if (event.ctrlKey && event.key == "c") {
 				if ($(".file-item:focus").length !== 0) doAction("copy", {
 					file: fm.path + $(".file-item:focus .file-title").text()
@@ -362,7 +360,6 @@
 				window.fileClipboard.flush(fm.path)
 				break;
 			case "copy":
-				console.log(options.file)
 				window.fileClipboard.copyMode = "copy";
 				window.fileClipboard.clear();
 				window.fileClipboard.add(options.file);
@@ -510,11 +507,16 @@
 				click() {
 					doAction("properties")
 				}
-			}, {type: 'separator'}, {
+			}, {
+				type: (!fm.desktop ? 'normal' : 'separator'),
+				visible: fm.desktop
+			}, {
 				label: "Desktop Preferences",
 				disabled: true,
 				visible: fm.desktop,
-				click() {window.new("control")}
+				click() {
+					window.new("control")
+				}
 			}]
 			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
 			fm.filesMenu.popup(fm.window);
@@ -594,7 +596,7 @@
 		padding: 0;
 		border: 0;
 		margin: 0;
-		border-radius:0;
+		border-radius: 0;
 	}
 
 	div.files {
@@ -605,137 +607,149 @@
 		margin: 0;
 		display: inline-block;
 		position: static;
-		background:none
+		background: none
 	}
 
 	.files .file-item {
-	  display: inline-block;
-	  background: none;
-	  border: none;
-	  color: black;
-	  vertical-align: top;
-			padding: 0.25rem .5rem;
-			border-radius: 3px;
-			flex-shrink:0;
+		display: inline-block;
+		background: none;
+		border: none;
+		color: black;
+		vertical-align: top;
+		padding: 0.25rem .5rem .4rem;
+		border-radius: 3px;
+		flex-shrink: 0;
 	}
 
 	.files .file-title {
 
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			margin-left: 0.25rem;
-			vertical-align: text-top
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		margin-left: 0.25rem;
+		vertical-align: text-top
 	}
 
 	.files[viewMode*=tiles] .file-item {
-	  margin: 0.3em;
-	  width: 85px;
-	  text-align: center;
-	  word-break: break-word;
+		margin: 0.3em;
+		width: 85px;
+		text-align: center;
+		word-break: break-word;
 	}
 
 	.files[viewMode=list],
 	.files[viewMode=gigtiles] {
 		display: flex;
-    flex-direction: column;
-    align-content: flex-start;
+		flex-direction: column;
+		align-content: flex-start;
 	}
+
 	.files[viewMode=gigtiles] {
-	flex-wrap: wrap;}
+		flex-wrap: wrap;
+	}
 
 	.files {
-	  padding: 0.25rem
+		padding: 0.25rem
 	}
 
 	[viewMode=list] button.active .material-icons,
 	[viewMode=list] button:active .material-icons,
 	[viewMode=list] button:focus .material-icons {
-	  color: white !important;
+		color: white !important;
 	}
 
-		[viewMode=list].files button.active,
-		[viewMode=list].files button:active,
-		[viewMode=list].files button:focus {
-			color: #fff;
-			text-decoration: none;
-			background-color: #007bff;
-		}
-	body.desktop .file-item {color:white;
-	  color: white !important;
-	  text-shadow: 0 0px 4px rgb(0, 0, 0), 0 0px 7px rgb(0, 0, 0) !important;
-	  width:100px !important}
-		body.desktop .file-title {word-break: break-word}
+	[viewMode=list].files button.active,
+	[viewMode=list].files button:active,
+	[viewMode=list].files button:focus {
+		color: #fff;
+		text-decoration: none;
+		background-color: #007bff;
+	}
+
+	body.desktop .file-item {
+		color: white;
+		color: white !important;
+		text-shadow: 0 0px 4px rgb(0, 0, 0), 0 0px 7px rgb(0, 0, 0) !important;
+		width: 110px !important
+	}
+	body.desktop .file-item:hover {
+    box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255,255,255,0.5);
+	}
+
+	body.desktop .file-title {
+		word-break: break-word;
+		line-height:1.5 !important
+	}
 
 	[viewMode=list] .file-item {
-	  width: 100%;
-	  text-align: left;
-	  padding: 0.1rem 0.25rem;
-	  margin-bottom: 5px;
-	  line-height: 20px;
+		width: 100%;
+		text-align: left;
+		padding: 0.1rem 0.25rem;
+		margin-bottom: 5px;
+		line-height: 20px;
 	}
 
 	[viewMode=list] .file-item img {
-	  width: 16px;
-	  vertical-align: inherit;
-	  margin: 2px 4px;
+		width: 16px;
+		vertical-align: inherit;
+		margin: 2px 4px;
 	}
 
 	[viewMode=list] .file-title {
-	  display: inline-block;
+		display: inline-block;
 	}
 
 	[viewMode=smalltiles] .file-item .material-icons {
-	  font-size: 24px;
+		font-size: 24px;
 	}
 
 	[viewMode=midtiles] .file-item .material-icons {
-	  font-size: 32px;
+		font-size: 32px;
 	}
 
 	[viewMode=bigtiles] .file-item .material-icons {
-	  font-size: 48px;
+		font-size: 48px;
 	}
 
-		[viewMode=gigtiles] .file-item .material-icons {
-		  font-size: 64px;
-		}
+	[viewMode=gigtiles] .file-item .material-icons {
+		font-size: 64px;
+	}
 
 	[viewMode=smalltiles] .file-item img {
-	  width: 24px;
+		width: 24px;
 	}
 
 	[viewMode=midtiles] .file-item img {
-	  width: 32px;
+		width: 32px;
 	}
 
 	[viewMode=bigtiles] .file-item img {
-	  width: 48px;
+		width: 48px;
 	}
 
 	[viewMode=gigtiles] .file-item img {
-	  width: 64px;
+		width: 64px;
 	}
 
 	[viewMode*=tiles] .file-item .file-title {
 
-			height: 2rem;
-	    vertical-align: text-top;
-	    word-break: break-all;
-			white-space: pre-wrap;
-	    line-height: 1;
+		max-height: 2rem;
+		vertical-align: text-top;
+		word-break: break-all;
+		white-space: pre-wrap;
+		line-height: 1;
 	}
 
 	.file-item:hover {
-	  box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.3);
-	  outline: 1px solid rgba(0, 129, 194, 0.6);
+		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.3);
+		outline: 1px solid rgba(0, 129, 194, 0.6);
 	}
 
 	.file-item:active,
 	.file-item:focus,
 	.file-item:focus:active {
-	  box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.5);
-	  outline: 1px solid rgba(0, 129, 194, 1);
+		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.5);
+		outline: 1px solid rgba(0, 129, 194, 1);
 	}
 
 	section {
@@ -768,5 +782,11 @@
 		display: flex;
 		flex-direction: column;
 	}
-	body.desktop {background:url(/atomos/resources/wallpaper.jpg); background-repeat: no-repeat; background-size: cover; background-position: center;}
+
+	body.desktop {
+		background: url(/atomos/resources/wallpaper.jpg);
+		background-repeat: no-repeat;
+		background-size: cover;
+		background-position: center;
+	}
 </style>

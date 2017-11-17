@@ -28,12 +28,15 @@
     require('bootstrap')
 
     setInterval(function() {
-      console.log($("body").innerHeight(), $("body").height(), $("body").outerHeight())
+      app.getParentWindow().webContents.send("getData");
       app.setContentSize(450, Math.ceil($("body").outerHeight()));
       app.setPosition(width - 10 - 450, height - 37 - Math.ceil($("body").outerHeight()));
-    }, 100);
+
+    }, 1000);
 
     ipcRenderer.on("getMusicData", function(event, options) {
+      options = $.parseJSON(options)
+      console.log(options);
       $(".dropdown-menu *").remove();
       if(options.isPlaying) $("[action=play]").text("pause"); else $("[action=play]").text("play_arrow");
       if(options.canPrevious) $("[action=previous]").removeAttr("disabled"); else $("[action=previous]").attr("disabled", "disabled");

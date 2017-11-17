@@ -45,7 +45,7 @@ $wconnect.find(".btn-primary").click(function() {
     height: 350,
     width: 350,
     x: scr.width - 350 - 10,
-    y: scr.height - 47 - 350 - 10
+    y: scr.height - 387
   })
   connectToWiFi($("wifi-name").text(), $wconnect.find("input").val());
 })
@@ -57,7 +57,7 @@ $wconnect.find(".btn-secondary").click(function() {
     height: 350,
     width: 350,
     x: scr.width - 350 - 10,
-    y: scr.height - 47 - 350 - 10
+    y: scr.height - 387
   })
 })
 
