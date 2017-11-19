@@ -1,5 +1,3 @@
-<link href="/atomos/node_modules/cropperjs/dist/cropper.min.css" rel="stylesheet">
-<script src="/atomos/node_modules/cropperjs/dist/cropper.min.js"></script>
 <div class="btn-toolbar">
   <div class="btn-group dropdown btn-group-sm">
     <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -57,11 +55,15 @@
   <img id="image" src="">
 </cropper>
 <script>
-  var image = document.getElementById('image');
+  var args = require('atomos-framework').arguments
   const {
     remote,
     ipcRenderer
   } = require("electron")
+  const fs = require('fs');
+  window.jQuery = window.$ = require("jquery");
+  window.Popper = require("popper.js");
+  require("bootstrap")
   var saveState;
   var file = "";
   var cropper;
@@ -69,126 +71,121 @@
   var guides = true;
   var background = true;
   var win = remote.getCurrentWindow();
-  const fs = require('fs');
+  ipcRenderer.on("return-file", function(event, arg) {
+    loadFile(arg);
+  })
+  ipcRenderer.on("save-file", function(event, arg) {
+    saveFile(arg);
+  })
   window.onload = function() {
-    if(window.arguments.path) file = window.arguments.path;
-    $("#image")[0].src = file;
     initCropper();
-    ipcRenderer.on("return-file", function(event, arg) {
-      loadFile(arg);
-    })
-    ipcRenderer.on("save-file", function(event, arg) {
-      saveFile(arg);
-    })
-    $("[data-key='Ctrl+O']").click(function() {
-      window.new("aos-cabinet", {
-        action: "ofd",
-        path: "/atomos/home/Pictures/",
-        title: "Choose an image..."
-      }, {
-        parent: win,
-        modal: true
-      });
-    })
-    $("[data-key='Ctrl+S']").click(function() {
-      saveFile(file);
-    })
-    $("[data-key='Ctrl+Shift+S']").click(function() {
-      openSaveDialog(file);
-    })
-    $("[data-key='Alt+F4']").click(function() {
-      win.close();
-    })
-    $("[action=crop]").click(function() {
-      $("[action=move]").removeClass("btn-primary").addClass("btn-secondary");
-      $(this).addClass("btn-primary").removeClass("btn-secondary");
-      cropper.crop()
-      $("#applyButtons").show();
-    })
-    $("[action=move]").click(function() {
-      $("[action=crop]").removeClass("btn-primary").addClass("btn-secondary");
-      $(this).addClass("btn-primary").removeClass("btn-secondary");
-      cropper.clear()
-    })
-    $("[action='rotate_-90']").click(function() {
-      cropper.rotate(-90);
-      $("#applyButtons").show();
-    })
-    $("[action='rotate_90']").click(function() {
-      cropper.rotate(90);
-      $("#applyButtons").show();
-    })
-    $("[action=grid]").click(function() {
-      guides = (guides ? false : true)
-      $(this).toggleClass("btn-primary").toggleClass("btn-secondary")
-      cropper.destroy();
-      initCropper();
-    })
-    $("[action=texture]").click(function() {
-      background = (background ? false : true)
-      $(this).toggleClass("btn-primary").toggleClass("btn-secondary")
-      cropper.destroy();
-      initCropper();
-    })
-    $("#applyButtons .btn-success").click(function() {
-      saveState = cropper.getCroppedCanvas().toDataURL();
-      $("#image")[0].src = cropper.getCroppedCanvas().toDataURL();
-      cropper.destroy();
-      initCropper();
-      $("#applyButtons").hide();
-    })
-    $("#applyButtons .btn-danger").click(function() {
-      cropper.destroy();
-      $("#image")[0].src = saveState;
-      initCropper();
-
-    })
-    $("[action*='crop_']").click(function() {
-      $("[action*='crop_']").removeClass("active").removeClass("btn-primary");
-      $("button[action*='crop_']").addClass("btn-secondary")
-      $("button[action=" + $(this).attr("action") + "]").addClass("btn-primary").removeClass("btn-secondary")
-      $(".dropdown-item[action=" + $(this).attr("action") + "]").addClass("active");
-    })
-    $("[action='crop_1_1']").click(function() {
-      cropper.setAspectRatio(1);
-    })
-    $("[action='crop_5_4']").click(function() {
-      cropper.setAspectRatio(5 / 4);
-    })
-    $("[action='crop_4_5']").click(function() {
-      cropper.setAspectRatio(4 / 5);
-    })
-    $("[action='crop_16_9']").click(function() {
-      cropper.setAspectRatio(16 / 9);
-    })
-    $("[action='crop_3_2']").click(function() {
-      cropper.setAspectRatio(3 / 2);
-    })
-    $("[action='crop_7_5']").click(function() {
-      cropper.setAspectRatio(7 / 5);
-    })
-    $("[action='crop_free']").click(function() {
-      cropper.setAspectRatio(0);
-    })
-  }
-
+    console.log(args.path)
+  if (args.path) loadFile(args.path);
+  $("[data-key='Ctrl+O']").click(function() {
+    window.new("aos-cabinet", {
+      action: "ofd",
+      path: "/atomos/home/Pictures/",
+      title: "Choose an image..."
+    }, {
+      parent: win,
+      modal: true
+    });
+  })
+  $("[data-key='Ctrl+S']").click(function() {
+    saveFile(file);
+  })
+  $("[data-key='Ctrl+Shift+S']").click(function() {
+    openSaveDialog(file);
+  })
+  $("[data-key='Alt+F4']").click(function() {
+    win.close();
+  })
+  $("[action=crop]").click(function() {
+    $("[action=move]").removeClass("btn-primary").addClass("btn-secondary");
+    $(this).addClass("btn-primary").removeClass("btn-secondary");
+    cropper.crop()
+    $("#applyButtons").show();
+  })
+  $("[action=move]").click(function() {
+    $("[action=crop]").removeClass("btn-primary").addClass("btn-secondary");
+    $(this).addClass("btn-primary").removeClass("btn-secondary");
+    cropper.clear()
+  })
+  $("[action='rotate_-90']").click(function() {
+    cropper.rotate(-90);
+    $("#applyButtons").show();
+  })
+  $("[action='rotate_90']").click(function() {
+    cropper.rotate(90);
+    $("#applyButtons").show();
+  })
+  $("[action=grid]").click(function() {
+    guides = (guides ? false : true)
+    $(this).toggleClass("btn-primary").toggleClass("btn-secondary")
+    cropper.destroy();
+    initCropper();
+  })
+  $("[action=texture]").click(function() {
+    background = (background ? false : true)
+    $(this).toggleClass("btn-primary").toggleClass("btn-secondary")
+    cropper.destroy();
+    initCropper();
+  })
+  $("#applyButtons .btn-success").click(function() {
+    saveState = cropper.getCroppedCanvas().toDataURL();
+    $("#image")[0].src = cropper.getCroppedCanvas().toDataURL();
+    cropper.destroy();
+    initCropper();
+    $("#applyButtons").hide();
+  })
+  $("#applyButtons .btn-danger").click(function() {
+    cropper.destroy();
+    $("#image")[0].src = saveState;
+    initCropper();
+  })
+  $("[action*='crop_']").click(function() {
+    $("[action*='crop_']").removeClass("active").removeClass("btn-primary");
+    $("button[action*='crop_']").addClass("btn-secondary")
+    $("button[action=" + $(this).attr("action") + "]").addClass("btn-primary").removeClass("btn-secondary")
+    $(".dropdown-item[action=" + $(this).attr("action") + "]").addClass("active");
+  })
+  $("[action='crop_1_1']").click(function() {
+    cropper.setAspectRatio(1);
+  })
+  $("[action='crop_5_4']").click(function() {
+    cropper.setAspectRatio(5 / 4);
+  })
+  $("[action='crop_4_5']").click(function() {
+    cropper.setAspectRatio(4 / 5);
+  })
+  $("[action='crop_16_9']").click(function() {
+    cropper.setAspectRatio(16 / 9);
+  })
+  $("[action='crop_3_2']").click(function() {
+    cropper.setAspectRatio(3 / 2);
+  })
+  $("[action='crop_7_5']").click(function() {
+    cropper.setAspectRatio(7 / 5);
+  })
+  $("[action='crop_free']").click(function() {
+    cropper.setAspectRatio(0);
+  })
+}
   function loadFile(path) {
     saveState = "";
     file = path;
     cropper.destroy();
     $("#image")[0].src = path;
     initCropper();
-
   }
 
   function saveFile(path) {
     cropper.getCroppedCanvas().toBlob(function(blob) {
       toBuffer(blob, function(err, buffer) {
-        if (err) console.log("toBuffer failed");
+        if (err) console.log("toBuffer failed" + err);
         else {
           fs.writeFile((path ? path : file), buffer, function(err) {
-            if (!err) console.log("saved!");
-            else console.error(err);
+            if (!err) console.error(err);
           })
 
         }
@@ -209,20 +206,10 @@
   }
 
   function initCropper() {
-
-    cropper = new Cropper(image, {
+    cropper = new Cropper($("img")[0], {
       autoCrop: false,
       dragMode: "move",
       aspectRatio: 16 / 9,
-      crop: function(e) {
-        console.log(e.detail.x);
-        console.log(e.detail.y);
-        console.log(e.detail.width);
-        console.log(e.detail.height);
-        console.log(e.detail.rotate);
-        console.log(e.detail.scaleX);
-        console.log(e.detail.scaleY);
-      },
       background: background,
       guides: guides,
       cropstart: function(e) {
@@ -243,6 +230,8 @@
     });
   }
 </script>
+<link href="/atomos/node_modules/cropperjs/dist/cropper.min.css" rel="stylesheet">
+<script src="/atomos/node_modules/cropperjs/dist/cropper.min.js"></script>
 <style>
   cropper {
     flex-grow: 2;

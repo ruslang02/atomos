@@ -54,13 +54,17 @@
         <dd>Default application:</dd>
         <dt data="fapp">none</dt>
       </dl>
-      <button class="btn btn-sm btn-info"><i class="material-icons"></i> Assign default application...</button>
+      <button class="btn btn-sm btn-info"><i class="material-icons">link</i> Assign default application...</button>
 
     </associations>
-    <div class="text-right mt-2"><button class="btn btn-sm btn-secondary"><i class="material-icons">content_paste</i> Copy link</button> <button class="btn btn-sm btn-primary" onclick="window.close()">Close</button></div>
+    <div class="text-right mt-2"><button class="btn btn-sm btn-secondary"><i class="material-icons">bookmark</i> Copy link</button> <button class="btn btn-sm btn-primary" onclick="window.close()">Close</button></div>
   </section>
 </app>
 <script>
+  var args = require('atomos-framework').arguments;
+  window.jQuery = window.$ = require("jquery");
+  window.Popper = require("popper.js");
+  require("bootstrap")
   const fs = require('fs');
   window.onload = function() {
     $(".btn-secondary").tooltip({
@@ -68,9 +72,9 @@
       trigger: "click"
     })
     $(".btn-secondary").click(function() {
-      require('electron').clipboard.writeText(window.arguments.path);
+      require('electron').clipboard.writeText(args.path);
     })
-    var mime = window.getMimeType(window.arguments.path.substring(window.arguments.path.lastIndexOf(".") + 1));
+    var mime = window.getMimeType(args.path.substring(args.path.lastIndexOf(".") + 1));
     $("[data=fmime]").text(mime);
     fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
       data = JSON.parse(data);
@@ -80,11 +84,11 @@
     })
   }
 
-  if (window.arguments.path) {
-    fs.stat(window.arguments.path, function(err, stat) {
+  if (args.path) {
+    fs.stat(args.path, function(err, stat) {
       if (!err) {
         console.log(stat);
-        $("[data=fname]").text(window.arguments.path.substring(window.arguments.path.lastIndexOf("/",window.arguments.path.length - 2) + 1).replace("/", ""));
+        $("[data=fname]").text(args.path.substring(args.path.lastIndexOf("/",args.path.length - 2) + 1).replace("/", ""));
         $("[data=fsize]").text(stat.size + " bytes");
         $("[data=fatime]").text(stat.atime.toDateString());
         $("[data=fmtime]").text(stat.mtime.toDateString());
@@ -106,25 +110,23 @@
           $("[data=ftype]").text("Unknown");
       }
     })
-    fs.access(window.arguments.path, fs.constants.R_OK, function(err) {
+    fs.access(args.path, fs.constants.R_OK, function(err) {
       if (err) $("[data=fread]").text("no");
       else $("[data=fread]").text("yes")
     })
-    fs.access(window.arguments.path, fs.constants.W_OK, function(err) {
+    fs.access(args.path, fs.constants.W_OK, function(err) {
       if (err) $("[data=fwrite]").text("no");
       else $("[data=fwrite]").text("yes")
     })
-    fs.access(window.arguments.path, fs.constants.X_OK, function(err) {
+    fs.access(args.path, fs.constants.X_OK, function(err) {
       if (err) $("[data=fexec]").text("no");
       else $("[data=fexec]").text("yes")
     })
   }
 </script>
 <style>
-  .dropdown-item>i {
-    position: absolute;
-    left: 0;
-    margin: 0.25em 0.8em;
+  .dropdown-item>i {    position: absolute;
+    left: 0.55rem;
   }
 
   properties,

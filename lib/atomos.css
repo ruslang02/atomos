@@ -1,7 +1,6 @@
 @import "/atomos/lib/bootstrap.css";
 @import "/atomos/lib/jquery-ui.min.css";
 @import "/atomos/node_modules/material-design-icons/iconfont/material-icons.css";
-@import "/atomos/lib/font.css";
 @import "/atomos/lib/base.css";
 .files {
   height: 100%;
@@ -12,67 +11,127 @@ app {
   display: inline-block;
   width: 100%;
 }
+
 .btn-menu button.btn {
-    border-radius: 0 !important;
-    padding: 0.25rem 0.75rem;
-    box-shadow: none;
-    border:0;
+  border-radius: 0 !important;
+  padding: 0.25rem 0.75rem;
+  box-shadow: none;
+  border: 0;
 }
 
 .btn-menu ::after {
-    display: none;
+  display: none;
 }
-context-menu .dropdown-item {padding:0.25rem 1.75rem;position:relative;    margin: 0;display:block;}
-button i.material-icons {vertical-align:sub}
+
+context-menu .dropdown-item {
+  padding: 0.25rem 1.75rem;
+  position: relative;
+  margin: 0;
+  display: block;
+}
+
+button.btn {
+  position: relative;
+overflow: hidden;
+z-index: 0;
+}
+
+button.btn i.material-icons {
+  font-size: 18px;
+    vertical-align: middle;
+    margin-top: -2px;
+}
+
 .dropdown-menu {
   max-height: calc(100vh - 15px);
 }
-.dropdown-item.custom-control {margin:0!important;overflow:hidden;}
-.dropdown-item[disabled] {pointer-events:none}
-.dropdown-submenu { position: relative }
+
+.dropdown-item.custom-control {
+  margin: 0!important;
+  overflow: hidden;
+}
+
+.dropdown-item[disabled] {
+  pointer-events: none
+}
+
+.dropdown-submenu {
+  position: relative
+}
+
 .dropdown-submenu>.dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-    margin-left: -1px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
 }
-.dropdown-submenu:hover>.dropdown-menu { display: block }
-.dropdown-submenu:after  {
-    display: block;
-    content: " ";
-    float: right;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px 0 5px 5px;
-    border-left-color: #ccc;
-    margin-top: 5px;
-    margin-right: -10px;
+
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block
 }
-.dropdown-submenu:hover:after { border-left-color: #ccc }
-.dropdown-submenu.pull-left { float: none }
+
+.dropdown-submenu:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #ccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+
+.dropdown-submenu:hover:after {
+  border-left-color: #ccc
+}
+
+.dropdown-submenu.pull-left {
+  float: none
+}
+
 .dropdown-submenu.pull-left>.dropdown-menu {
-    left: -100%;
-    margin-left: 10px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
+  left: -100%;
+  margin-left: 10px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
 }
+
 .dropdown-item .custom-control-indicator {
-      margin: 0.1rem 0.25rem;
+  margin: 0.1rem 0.25rem;
 }
+
 .dropdown-item .custom-control-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
+
+.dropdown-item:not(.file-item)::after {
+  content: attr(data-key);
+  color: grey;
+  flex-grow: 2;
+  text-align: right;
+  margin-left: 0.5rem;
+}
+
+.dropdown-item {
+  display:flex;
+  align-items: center;
+}
+.dropdown-item .material-icons {
+  font-size:18px;
+}
+
 
 .btn-menu {
   padding: 0;
@@ -80,7 +139,7 @@ button i.material-icons {vertical-align:sub}
   border-bottom: 1px solid #ddd;
   flex-shrink: 0;
   flex-grow: 0;
-  margin:0;
+  margin: 0;
 }
 
 .btn-toolbar {
@@ -89,7 +148,7 @@ button i.material-icons {vertical-align:sub}
   border-bottom: 1px solid #ddd;
   flex-shrink: 0;
   flex-grow: 0;
-  margin:0;
+  margin: 0;
 }
 
 .nav-header {
@@ -157,63 +216,4 @@ button i.material-icons {vertical-align:sub}
   border-radius: 0 0 5px 5px;
   border: 1px solid #ddd;
   border-top: none;
-}
-
-.files .file-item {
-  display: inline-block;
-  background: none;
-  border: none;
-  color: black;
-  vertical-align: top;
-}
-
-.files[viewMode*=tiles] .file-item {
-  margin: 1em;
-  width: 85px;
-  text-align:center;
-  word-break: break-word;
-}
-
-.files[viewMode=list] {
-  padding: 5px
-}
-
-.files[viewMode=list] .file-item {
-  width: 100%;
-  text-align: left;
-  padding: 2px;
-  margin-bottom: 5px;
-  line-height: 18px;
-}
-
-.files[viewMode=list] .file-item img {
-  width: 16px;
-  vertical-align: inherit;
-  margin: 2px 4px;
-}
-
-.files[viewMode=list] .file-title {
-  display: inline-block;
-}
-
-.files[viewMode=smalltiles] .file-item img {
-  width: 32px;
-}
-
-.files[viewMode=midtiles] .file-item img {
-  width: 48px;
-}
-
-.files[viewMode=bigtiles] .file-item img {
-  width: 64px;
-}
-
-.files .file-item:hover {
-  box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.3);
-  outline: 1px solid rgba(0, 129, 194, 0.6);
-}
-
-.files .file-item:active, .files .file-item:focus, .files .file-item:focus:active {
-  box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.5);
-  outline: 1px solid rgba(0, 129, 194, 1);
 }

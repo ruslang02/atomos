@@ -69,19 +69,10 @@
     overflow: hidden;
     white-space: nowrap;
   }
-
-  .dropdown-item::after {
-    content: attr(data-key);
-    color: grey;
-    float: right;
-  }
-
-  .dropdown-menu {
-    min-width: 220px !important;
-  }
 </style>
 
 <script defer>
+  require('atomos-framework')
   const ipcRenderer = require('electron').ipcRenderer;
   const fs = require('fs');
   const {
@@ -92,6 +83,9 @@
     MenuItem
   } = remote;
   const MAX_SIZE = 51240;
+  window.jQuery = window.$ = require("jquery")
+  window.Popper = require("popper.js");
+  require("bootstrap")
 
   var taMenu;
 
@@ -143,7 +137,9 @@
     $("[data-description]").mouseleave(function() {
       $("#menuDescription").text("")
     });
-    $("[data-key]").mouseup($("textarea").focus)
+    $("[data-key]").mouseup(function() {
+      $("textarea").focus();
+    })
     $("[data-key]").click(function() {
       switch ($(this).attr("data-key")) {
         case 'Alt+F4':
@@ -203,48 +199,33 @@
 
   function save(path) {
     var contents = $("textarea").val();
-    if (!path && !fileName) window.new("aos-cabinet", {
-      action: "sfd"
-    }, {
-      modal: true,
-      parent: win
-    });
+    if (!path && !fileName)
+      window.new("aos-cabinet", {
+        action: "sfd",
+        path: "/atomos/home/Documents/",
+        title: "Choose the location to save the file"
+      }, {
+        parent: win,
+        modal: true
+      });
     else if (path) {
       fs.open(path, 'w', function(err, fd) {
         if (err) {
-          var tray = new Tray("cancel");
-          tray.on('click', function() {
-            win.toggleDevTools();
-          })
-          tray.on('notificationClick', function() {
-            win.toggleDevTools();
-          })
+          var tray = new Tray("cancel", "", "#dc3545");
           tray.show();
-          tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+          tray.notify({title: "We're unable to save the file", html: "Here is a library output: " + err});
         } else {
           fs.write(fd, contents, function(err) {
             if (err) {
-              var tray = new Tray("cancel");
-              tray.on('click', function() {
-                win.toggleDevTools();
-              })
-              tray.on('notificationClick', function() {
-                win.toggleDevTools();
-              })
-              tray.show();
-              tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+          var tray = new Tray("cancel", "", "#dc3545");
+          tray.show();
+          tray.notify({title: "We're unable to save the file", html: "Here is a library output: " + err});
             } else {
-              var tray = new Tray("done");
-              tray.on('click', function() {
-                win.toggleDevTools();
-              })
-              tray.on('notificationClick', function() {
-                win.toggleDevTools();
-              })
+              var tray = new Tray("done", "", "#28a745");
               tray.show();
-              tray.notify("File was successfully saved", 'It is located here: ' + path +
+              tray.notify({title: "File was successfully saved", html: 'It is located here: ' + path +
                 '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
-                  "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>', "success");
+                  "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>'});
             }
           });
         }
@@ -255,38 +236,26 @@
       path = fileName;
       fs.open(fileName, 'w', function(err, fd) {
         if (err) {
-          var tray = new Tray("cancel");
-          tray.on('click', function() {
-            win.toggleDevTools();
-          })
-          tray.on('notificationClick', function() {
-            win.toggleDevTools();
-          })
+          var tray = new Tray("cancel", "", "#dc3545");
           tray.show();
-          tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+          tray.notify({
+            title: "We're unable to save the file",
+            html: "Here is a library output: " + err
+          });
         } else fs.write(fd, contents, function(err) {
           if (err) {
-            var tray = new Tray("cancel");
-            tray.on('click', function() {
-              win.toggleDevTools();
-            })
-            tray.on('notificationClick', function() {
-              win.toggleDevTools();
-            })
-            tray.show();
-            tray.notify("We're unable to save the file", "Here is a library output: " + err, "danger");
+          var tray = new Tray("cancel", "", "#dc3545");
+          tray.show();
+          tray.notify({title: "We're unable to save the file", html: "Here is a library output: " + err});
           } else {
-            var tray = new Tray("done");
-            tray.on('click', function() {
-              win.toggleDevTools();
-            })
-            tray.on('notificationClick', function() {
-              win.toggleDevTools();
-            })
+            var tray = new Tray("done", "", "#28a745");
             tray.show();
-            tray.notify("File was successfully saved", 'It is located here: ' + path +
-              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
-                "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>', "success");
+            tray.notify({
+              title: "File was successfully saved",
+              html: 'It is located here: ' + path +
+                '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+                  "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>'
+            });
           }
         });
 

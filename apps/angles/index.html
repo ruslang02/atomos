@@ -5,69 +5,96 @@
       <b class="caret"></b>
     </button>
     <div class="dropdown-menu" aria-labelledby="fileMenu">
-      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="new aos.components.Window('notepad')">New Window</button>
-      <button class="dropdown-item" data-key="Ctrl+N" data-description="Creates a new tab" onclick="newTab()">New Tab</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" onclick="new aos.components.Window('notepad')">New Window</button>
+      <button class="dropdown-item" data-key="Ctrl+N" onclick="newTab()">New Tab</button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
+      <button class="dropdown-item" data-key="Ctrl+O">Open...</button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file">Save</button>
-      <button class="dropdown-item" data-key="Ctrl+Shift+S" data-description="Saves opened file with specific name and extension">Save as...</button>
-      <button class="dropdown-item" data-key="Ctrl+L" data-description="Saves all opened files">Save all</button>
+      <button class="dropdown-item" data-key="Ctrl+S">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+S">Save as...</button>
+      <!-- Not implemented properly! <button class="dropdown-item" data-key="Ctrl+L">Save all</button> !-->
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
+      <button class="dropdown-item" data-key="Alt+F4">Exit</button>
     </div>
   </div>
-    <div class="btn-group dropdown btn-group-sm">
-      <button id="langMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="langMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Language
         <b class="caret"></b>
       </button>
-      <div class="dropdown-menu" aria-labelledby="langMenu">
-      </div>
+    <div class="dropdown-menu" aria-labelledby="langMenu">
     </div>
-      <div class="btn-group dropdown btn-group-sm">
-        <button id="themeMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  </div>
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="themeMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Theme
           <b class="caret"></b>
         </button>
-        <div class="dropdown-menu" aria-labelledby="themeMenu">
-        </div>
-      </div>
+    <div class="dropdown-menu" aria-labelledby="themeMenu">
+    </div>
+  </div>
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="viewMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      View
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="viewMenu">
+      <button class="dropdown-item custom-control custom-checkbox">
+        <input type="checkbox" name="showtoolbar" checked class="custom-control-input">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">Show toolbar</span>
+      </button>
+      <button class="dropdown-item custom-control custom-checkbox">
+        <input type="checkbox" name="showtabs" checked class="custom-control-input">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">Show tabs</span>
+      </button>
+    </div>
+  </div>
   <div class="spacer" style="flex-grow:2"></div>
   <div class="btn-group btn-group-sm">
-    <button class="btn btn-outline-info">Build</button>
-    <button class="btn btn-outline-success">Run</button>
+    <button class="btn btn-outline-info" onclick="window.new('angles/nocommand')">Build</button>
+    <button class="btn btn-outline-success" onclick="window.new('angles/nocommand')">Run</button>
   </div>
 </div>
-<ul class="nav nav-tabs bg-light"></ul>
+<ul class="nav nav-tabs bg-light"><button class="btn btn-sm btn-secondary material-icons" onclick="newTab()">add</button></ul>
 <tabs></tabs>
 <script src="/atomos/node_modules/ace-builds/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="/atomos/node_modules/ace-builds/src-min/mode-js.js" type="text/javascript" charset="utf-8"></script>
 <script src="/atomos/node_modules/ace-builds/src-min/theme-chrome.js" type="text/javascript" charset="utf-8"></script>
 <script>
+  window.arguments = require('atomos-framework').arguments
   var editors = [];
   const fs = require('fs');
   const {
     ipcRenderer,
-    remote
+    remote,
+    clipboard
   } = require('electron');
-  const win = remote.getCurrentWindow()
-
-  window.onload = function() {
-    fs.readdir("/atomos/node_modules/ace-builds/src-min/", function(err, data) {
-      data.forEach(function(elem) {
-        if(elem.startsWith("mode"))  $("[aria-labelledby=langMenu]").append("<button class='dropdown-item'>" + elem.substring(elem.lastIndexOf("-") + 1, elem.lastIndexOf(".")).replace("_", " ") + "</button>")
-        if(elem.startsWith("theme")) $("[aria-labelledby=themeMenu]").append("<button class='dropdown-item'>" + elem.substring(elem.lastIndexOf("-") + 1, elem.lastIndexOf(".")).replace("_", " ") + "</button>")
-      })
-      $("[aria-labelledby=langMenu] .dropdown-item").click(function() {
-        $("body").append('<script src="/atomos/node_modules/ace-builds/src-min/mode-' + $(this).text().replace(" ", "_") + '.js" type="text/javascript" charset="utf-8"/>');
-        editors[$('tab[active]').attr("id")].session.setMode("ace/mode/" + $(this).text().replace(" ", "_"));
-      })
-      $("[aria-labelledby=themeMenu] .dropdown-item").click(function() {
-        $("body").append('<script src="/atomos/node_modules/ace-builds/src-min/theme-' + $(this).text().replace(" ", "_") + '.js" type="text/javascript" charset="utf-8"/>');
-        editors[$('tab[active]').attr("id")].setTheme("ace/theme/" + $(this).text().replace(" ", "_"));
-      })
+  const {
+    Menu
+  } = remote
+  const win = remote.getCurrentWindow();
+  window.jQuery = window.$ = require("jquery")
+  window.Popper = require("popper.js");
+  require("bootstrap")
+  var totalTabs = 0;
+  fs.readdir("/atomos/node_modules/ace-builds/src-min/", function(err, data) {
+    data.forEach(function(elem) {
+      if (elem.startsWith("mode")) $("[aria-labelledby=langMenu]").append("<button class='dropdown-item'>" + elem.substring(elem.lastIndexOf("-") + 1, elem.lastIndexOf(".")).replace("_", " ") + "</button>")
+      if (elem.startsWith("theme")) $("[aria-labelledby=themeMenu]").append("<button class='dropdown-item'>" + elem.substring(elem.lastIndexOf("-") + 1, elem.lastIndexOf(".")).replace("_", " ") + "</button>")
     })
+    $("[aria-labelledby=langMenu] .dropdown-item").click(function() {
+      $("body").append('<script src="/atomos/node_modules/ace-builds/src-min/mode-' + $(this).text().replace(" ", "_") + '.js" type="text/javascript" charset="utf-8"/>');
+      editors[$('tab[active]').attr("id")].session.setMode("ace/mode/" + $(this).text().replace(" ", "_"));
+    })
+    $("[aria-labelledby=themeMenu] .dropdown-item").click(function() {
+      $("body").append('<script src="/atomos/node_modules/ace-builds/src-min/theme-' + $(this).text().replace(" ", "_") + '.js" type="text/javascript" charset="utf-8"/>');
+      editors[$('tab[active]').attr("id")].setTheme("ace/theme/" + $(this).text().replace(" ", "_"));
+    })
+  })
+  window.onload = function() {
+
     $(window).keypress(function(event) {
       if (event.ctrlKey && event.shiftKey && event.key == "N") window.new('angles');
       if (event.ctrlKey && event.key == "n") newTab();
@@ -78,7 +105,7 @@
 
     if (window.arguments.path) {
       loadFile(window.arguments.path, newTab(false));
-    } else newTab();
+    } else newTab()
 
     $("[data-key='Ctrl+O']").click(function() {
       window.new("aos-cabinet", {
@@ -90,6 +117,26 @@
         modal: true
       });
     });
+    $("[name=showtabs]").click(function(e) {
+      e.stopImmediatePropagation();
+      if ($(".nav-tabs").hasClass("hide")) {
+        $(".nav-tabs").removeClass("hide");
+        $("[name=showtabs]").find("input").removeAttr("checked");
+      } else {
+        $(".nav-tabs").addClass("hide");
+        $("[name=showtabs]").find("input").attr("checked", "checked");
+      }
+    })
+    $("[name=showtoolbar]").click(function(e) {
+      e.stopImmediatePropagation();
+      if ($(".btn-toolbar").hasClass("hide")) {
+        $(".btn-toolbar").removeClass("hide");
+        $("[name=showtoolbar]").find("input").removeAttr("checked");
+      } else {
+        $(".btn-toolbar").addClass("hide");
+        $("[name=showtoolbar]").find("input").attr("checked", "checked");
+      }
+    })
     $("[data-key='Ctrl+S']").click(function() {
       saveFile($('tab[active]').attr("id"));
     })
@@ -104,23 +151,93 @@
     $("[data-key='Alt+F4']").click(function() {
       win.close();
     })
+    $("body").on("contextmenu", "tab", function(e) {
+      e.preventDefault();
+      var $this = editors[this.id];
+      var cmenu = [{
+        label: "Undo",
+        accelerator: "CmdOrCtrl+Z",
+        click() {
+          $this.undo()
+        },
+        enabled: $this.session.getUndoManager().hasUndo()
+      }, {
+        label: "Redo",
+        accelerator: "CmdOrCtrl+Shift+Z",
+        click() {
+          $this.redo()
+        },
+        enabled: $this.session.getUndoManager().hasRedo()
+      }, {
+        type: "separator"
+      }, {
+        label: "Cut",
+        accelerator: "CmdOrCtrl+X",
+        click() {
+          var text = $this.getCopyText();
+          $this.removeLines();
+          clipboard.writeText(text);
+        },
+        enabled: !$this.selection.isEmpty()
+      }, {
+        label: "Copy",
+        accelerator: "CmdOrCtrl+C",
+        click() {
+          var text = $this.getCopyText();
+          clipboard.writeText(text);
+        },
+        enabled: !$this.selection.isEmpty()
+      }, {
+        label: "Paste",
+        accelerator: "CmdOrCtrl+V",
+        click() {
+          $this.insert(clipboard.readText());
+        },
+        enabled: clipboard.readText() != false
+      }, {
+        type: "separator"
+      }, {
+        label: "Select all",
+        accelerator: "CmdOrCtrl+A",
+        click() {
+          $this.selectAll();
+        }
+      }, {
+        type: 'separator'
+      }, {
+        label: "Show Toolbar",
+        type: "checkbox",
+        checked: !$(".btn-toolbar").hasClass("hide"),
+        click() {
+          $("[name=showtoolbar]").click()
+        }
+      }, {
+        label: "Show Tabs",
+        type: "checkbox",
+        checked: !$(".nav-tabs").hasClass("hide"),
+        click() {
+          $("[name=showtabs]").click()
+        }
+      }];
+      var menu = new Menu.buildFromTemplate(cmenu).popup(win)
+    })
     $("body").on("click", ".nav-link button", function(e) {
       e.stopPropagation();
       closeTab($(this).parents('.nav-link').attr("to"))
-    })
-    ipcRenderer.on('return-file', function(event, arg) {
-      loadFile(arg, newTab());
-    })
-    ipcRenderer.on('save-file', function(event, arg) {
-      writeFile($('tab[active]').attr("id"), arg);
     })
     $("body").on("click", ".nav-tabs .nav-link[to]", function() {
       activateTab($(this).attr("to"));
     })
   }
+  ipcRenderer.on('return-file', function(event, arg) {
+    if ($(".nav-link.active").find("name").text() == "untitled" && !$(".nav-link.active").hasClass("edited")) loadFile(arg, $(".nav-link.active").attr("to"));
+    else loadFile(arg, newTab());
+  })
+  ipcRenderer.on('save-file', function(event, arg) {
+    writeFile($('tab[active]').attr("id"), arg);
+  })
 
   function activateTab(tabNum) {
-    console.log(tabNum)
     $("tab").removeAttr("active");
     $(".nav-tabs .nav-link").removeClass("active");
     $("tab#" + tabNum).attr("active", "");
@@ -128,15 +245,13 @@
   }
 
   function closeTab(tabNum) {
-    console.log(tabNum)
     $("tab#" + tabNum).remove();
     $(".nav-link[to=" + tabNum + "]").remove();
     editors[tabNum] = null;
     activateTab($('tab').attr("id"))
-    if($("tab").length === 0) newTab();
+    if ($("tab").length === 0) newTab();
   }
 
-  var totalTabs = 0;
 
   function newTab(setEvents = true) {
     var tabNum = totalTabs;
@@ -175,11 +290,22 @@
   function writeFile(tabNumber, url) {
     var editor = editors[tabNumber];
     fs.writeFile(url, editor.getValue(), editor.encoding, function(err) {
-      if (err) console.error(err);
-      else {
-        console.log("OK");
+      if (err) {
+              var tray = new Tray("code", "", "#dc3545");
+              tray.show();
+              tray.notify({title: "Angles unable to save the file", html: err});
+      } else {
         $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
         reEvent(tabNumber);
+              var tray = new Tray("code", "", "#28a745");
+              tray.show();
+              tray.notify({
+              title: "File was successfully saved",
+              html: 'It is located here: ' + url +
+                '. <hr class="mt-2 mb-2"> <div class="text-right"><button onclick="onTimeout()" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + url.substring(0, url.lastIndexOf(
+                  "/")) + '\', selectFile: \'' + url.substring(url.lastIndexOf("/") + 1) + '\'});onTimeout()" class="btn btn-sm btn-success">Show in Cabinet</button></div>'
+                  
+              });
       }
     })
   }
@@ -189,9 +315,7 @@
     var len = editors[tabNumber].getValue().length
     var currentEvent = editors[tabNumber].eventNum;
     editors[tabNumber].on('change', function() {
-      console.log(editors[tabNumber].eventNum, currentEvent)
-      if(editors[tabNumber].eventNum == currentEvent) {
-        console.log(editors[tabNumber].getValue().length, len)
+      if (editors[tabNumber].eventNum == currentEvent) {
         if (editors[tabNumber].getValue().length !== len) $(".nav-link[to='" + tabNumber + "']").addClass("edited");
         else $(".nav-link[to='" + tabNumber + "']").removeClass("edited")
       }
@@ -200,14 +324,15 @@
 
   function saveFile(tabNumber) {
     var editor = editors[tabNumber];
-    if (editor.isRemote) writeFile(tabNumber, editor.url); else openSaveDialog(tabNumber);
+    if (editor.isRemote) writeFile(tabNumber, editor.url);
+    else openSaveDialog(tabNumber);
   }
 
   function openSaveDialog(tabNumber, path) {
     var editor = editors[tabNumber];
     window.new("aos-cabinet", {
       action: "sfd",
-      path: path || editor.url.substring(0,editor.url.lastIndexOf("/")) || "/atomos/home/Documents",
+      path: path || editor.url.substring(0, editor.url.lastIndexOf("/")) || "/atomos/home/Documents",
       title: "Where to save the code?"
     }, {
       parent: win,
@@ -218,6 +343,13 @@
 </script>
 
 <style>
+  .nav .btn-secondary {
+    order: 999;
+    font-size: 18px;
+    margin: 3px;
+    padding: 2px;
+  }
+
   body {
     display: flex;
     flex-direction: column;
@@ -241,6 +373,20 @@
   tabs {
     display: flex;
     flex-grow: 2;
+    position: relative
+  }
+
+  tabs:empty::before {
+    content: "Open a new tab from the menu";
+    color: grey;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    text-align: center;
+    height: 1em;
   }
 
   .ace_editor {
@@ -269,10 +415,9 @@
     white-space: nowrap;
   }
 
-  .dropdown-item::after {
-    content: attr(data-key);
-    color: grey;
-    float: right;
+  .dropdown-menu {
+    overflow: auto;
+    max-height: calc(100vh - 10px);
   }
 
   .nav .nav-link {
@@ -285,8 +430,20 @@
     padding-bottom: 0;
     user-select: none;
     cursor: default;
-    white-space:nowrap;
-    overflow:hidden;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  tab .ace_searchbtn.prev,
+  tab .ace_searchbtn.next {
+    padding: 8.5px;
+  }
+
+  tab .ace_search {
+    background: #f8f9fa !important;
+    border-color: #ddd;
+    font-family: 'Source Sans Pro';
+    font-size: 14px;
   }
 
   .nav name {
@@ -296,8 +453,13 @@
     text-overflow: ellipsis;
   }
 
-  .nav .nav-link button {display: none;}
-  .nav .nav-link:only-child button {display:none !important}
+  .nav .nav-link button {
+    display: none;
+  }
+
+  .nav .nav-link:only-child button {
+    display: none !important
+  }
 
   .nav .nav-link.edited::after {
     content: "";
@@ -317,7 +479,11 @@
     border: 0;
   }
 
-  .dropdown-menu {
-    min-width: 220px !important;
+  .dropdown-item .custom-control-indicator {
+    margin: 0.1rem 0.5rem;
+  }
+
+  .custom-control {
+    padding-left: 2rem;
   }
 </style>

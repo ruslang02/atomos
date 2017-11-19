@@ -1,3 +1,4 @@
+<script>require('atomos-framework')</script>
 <kbd>
   <center><img src="/atomos/apps/aos-about/atom.png" style="height: 40vh;margin: 1em 0;filter: brightness(1000%);"><br><h3>atomOS Terminal</h3>The first next-gen web terminal.</center>
 </kbd>
@@ -8,7 +9,7 @@
   const fs = require('fs');
   var commands = [];
   window.onload = function() {
-    $("input")
+    $("cmd input")
     .on("input", autocomplete)
     .on("keydown", function(e) {
       if (event.keyCode == 13) {
@@ -16,6 +17,11 @@
         $(this).val("")
       }
     })
+    if(window.arguments.path) {
+      $("cmd input").val(window.arguments.path);
+      execute();
+      $("cmd input").val("")
+    }
 
     $("body").on('click','suggestions button', function() {
       $("input").val($(this).text());
@@ -71,11 +77,12 @@
 
   function execute() {
     var command = $("cmd input").val();
+    $("kbd").append("<hr />")
     addMessage(" > " + command)
     fs.access("/atomos/apps/" + command.substring(0,(command.indexOf(" ") !== -1 ? command.indexOf(" ") : Infinity)).trim(), function(err) {
       if(err) {
         require('child_process').exec(command, {
-          cwd: $("cwd").val().trim()
+          cwd: $("cwd input").val().trim()
         }, function(err, stdout, stderr) {
           if(err) addMessage("<error>" + err + "</error>")
           else if(stderr) addMessage("<error>" + stderr + "</error>")
@@ -97,7 +104,7 @@
     border: 0;
     overflow:auto;
   }
-
+hr {border-color:grey}
   error {
     color: orangered;
   }
@@ -176,9 +183,9 @@
     padding: 2px 5px;
     margin: 3px 0;
 }
+kbd * {word-break: break-all;}
 
 .expander button::after {
-    content: attr(caret);
     font-family: "Material Icons";
     font-size: 17px;
     float: right;

@@ -1,8 +1,8 @@
 # atomOS Desktop Environment
 
-![alt text](http://pp.userapi.com/c841636/v841636258/2ec95/7cDypn8Pu4I.jpg)
+![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
 
-Latest version: 0.4.1 (build 93). 0.3.3 is available only inside the [atomOS itself](https://drive.google.com/drive/folders/0B_VomIpGvKyvU0RPUnVxM2pOeDg).
+Latest version: 0.4.2 (build 100). [Download .iso](https://github.com/ruslang02/atomos/blob/master/home/Documents/changelog.md).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.

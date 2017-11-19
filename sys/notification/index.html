@@ -3,47 +3,75 @@
   <small></small>
 </div>
 <link href="/atomos/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="/atomos/node_modules/material-design-icons/iconfont/material-icons.css" rel="stylesheet">
 <script>
   const {
     remote,
     ipcRenderer,
     screen
   } = require('electron');
+  const {
+    BrowserWindow
+  } = remote;
   const app = remote.getCurrentWindow();
-  const {width, height} = screen.getPrimaryDisplay().bounds
-
+  const {
+    width,
+    height
+  } = screen.getPrimaryDisplay().bounds
+  const Color = require('color');
+  var options = [];
   window.$ = window.jQuery = require('jquery');
   require('atomos-framework');
   window.Popper = require('popper.js')
   require('bootstrap')
-
+  setInterval(function() {
+    var alertHeight = $(".alert").outerHeight();
+    app.setContentSize(350, Math.ceil(alertHeight));
+    app.setPosition(width - 10 - 350, height - 37 - Math.ceil(alertHeight));
+  }, 1)
+  ipcRenderer.on('blur', function(e) {
+    if (options.dismissable) onTimeout()
+  })
+  var timeout;
   ipcRenderer.on('spawn-notification', function(e, options) {
-    console.log(options)
+     onTimeout();
+    window.options = options;
+    console.log(options.color)
+    var color = new Color(options.color);
     $(".alert > div > strong").text(options.title);
     $(".alert > small").html(options.html);
-    $(".alert").removeClass("alert-* border-*").addClass("alert-" + options.state + " border-" + options.state)
+    $(".alert").css("border-color", options.color);
     $(window).mouseup(function() {
       BrowserWindow.fromId(options.win).webContents.send("notification-click");
     })
-    remote.BrowserWindow.fromId(2).webContents.send("activate-tray", {win: options.win, state: options.state})
-    var alertHeight = $(".alert").outerHeight();
-    app.setSize(350, Math.ceil(alertHeight));
-    console.log(width - 10 - 350, height - 37 - Math.ceil(alertHeight));
-    app.setPosition(width - 10 - 350, height - 37 - Math.ceil(alertHeight));
-    app.show();
+    remote.BrowserWindow.fromId(2).webContents.send("activate-tray", {
+      win: options.win
+    })
+    app.showInactive();
     app.setAlwaysOnTop(true);
-    setTimeout(function() {
-      if(options.after == "REMOVE")
-        remote.BrowserWindow.fromId(2).webContents.send("remove-tray", {win: options.win});
-        else remote.BrowserWindow.fromId(2).webContents.send("deactivate-tray", {win: options.win});
-      app.hide();
-    },options.timeout)
+    timeout = setTimeout(onTimeout, options.timeout)
   })
+
+  function onTimeout() {
+    if (options.after == "REMOVE")
+      remote.BrowserWindow.fromId(2).webContents.send("remove-tray", {
+        win: options.win
+      });
+    else remote.BrowserWindow.fromId(2).webContents.send("deactivate-tray", {
+      win: options.win
+    });
+    app.hide();
+    clearTimeout(timeout);
+  }
 </script>
 <style>
-  html, body, div.alert {
-    width:100vw;
-    margin:0;
-    border-radius:0
+  html,
+  body,
+  div.alert {
+    width: 100vw;
+    margin: 0;
+    border-radius: 0;
+    overflow:hidden;
+    background:white;
   }
 </style>

@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/atomos/lib/atomos.css" />
 <div class="btn-toolbar">
 	<div class="btn-group mr-1 btn-group-sm" style="flex-shrink:0">
 		<button class="btn btn-outline-primary material-icons" disabled="disabled" id="navigateBack" onclick="goBack()">arrow_back</button>
@@ -12,23 +13,21 @@
 </div>
 
 <section>
-	<ul class="dropdown-menu" style="display:block;" viewMode="list" id="sidebar">
+	<ul class="dropdown-menu border border-left-0 border-top-0 border-bottom-0" style="display:block;" viewMode="list" id="sidebar">
 		<div class="dropdown-header">Favorites</div>
-		<button class='dropdown-item active' data-location="/atomos/home/"><img src="/atomos/icons/folders-small/User Folder.png"> Home</button>
-		<button class="dropdown-item"><img src="/atomos/icons/folders-small/Trash.png"> Trash</button>
-		<button class="dropdown-item" data-location="/"><img src="/atomos/icons/folders-small/Binder.png"> Root</button>
+		<button class='dropdown-item active' data-location="/atomos/home/"><i class="material-icons mr-1 text-primary">home</i> Home</button>
+		<button class="dropdown-item" data-location="/"><i class="material-icons mr-1 text-primary">dns</i> Root</button>
 		<div class="dropdown-header">Libraries</div>
-		<button class="dropdown-item" data-location="/atomos/home/Documents/"><img src="/atomos/icons/folders-small/Documents Folder.png"> Documents</button>
-		<button class="dropdown-item" data-location="/atomos/home/Music/"><img src="/atomos/icons/folders-small/Music Folder.png"> Music</button>
-		<button class="dropdown-item" data-location="/atomos/home/Pictures/"><img src="/atomos/icons/folders-small/Pictures Folder.png"> Pictures</button>
-		<button class="dropdown-item" data-location="/atomos/home/Videos/"><img src="/atomos/icons/folders-small/Movies Folder.png"> Videos</button>
+		<button class="dropdown-item" data-location="/atomos/home/Documents/"><i class="material-icons mr-1 text-info">insert_drive_file</i> Documents</button>
+		<button class="dropdown-item" data-location="/atomos/home/Music/"><i class="material-icons mr-1" style="color: orangered">music_note</i> Music</button>
+		<button class="dropdown-item" data-location="/atomos/home/Pictures/"><i class="material-icons mr-1 text-success">image</i> Pictures</button>
+		<button class="dropdown-item" data-location="/atomos/home/Videos/"><i class="material-icons text-danger mr-1">movie</i> Videos</button>
 	</ul>
 
-	<div class="files dropdown-menu" viewMode="list">
+	<div class="files dropdown-menu" viewMode="bigtiles">
 
 	</div>
 </section>
-
 <div class="ofdBar input-group p-1 bg-light hide" style="flex-shrink:0;border-top:1px solid lightgray;">
 	<span class="input-group-btn">
 	<button class="btn btn-sm btn-secondary btn-block" onclick="window.close()">Cancel</button>
@@ -49,71 +48,97 @@
 		Menu
 	} = remote;
 	var fs = require("fs-extra");
+	window.$ = window.jQuery = require('jquery');
+	require('atomos-framework');
+	window.arguments = ipcRenderer.sendSync("getArguments", remote.getCurrentWindow().id);
+	window.Popper = require("popper.js");
+	require("bootstrap");
+
 	fm.elements = [];
 	fm.folders = [];
 	fm.files = [];
 	fm.nHistory = [];
 	fm.historyNow = -1;
 	fm.sorting = "A-Z";
-	fm.path = document.querySelector("#path").value;
 	fm.window = remote.getCurrentWindow();
-	fm.arguments = window.arguments;
-	fm.arguments.path ? 1 + 1 : fm.arguments.path = "/atomos/home/";
-	fm.action = fm.arguments["action"];
-	fm.showHidden = false;
-	fm.foldersFirst = true;
-	console.log(fm.arguments);
-	window.addEventListener("load", function() {
-		navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
-		initContextMenus();
-		initShortcuts();
-		$("#sidebar [data-location]").click(function() {
-			$("#sidebar>.nav>li").removeClass("active");
-			$(this).parent("li").addClass("active");
-			navigate($(this).attr("data-location"));
-
-		});
-		if (fm.action) {
-			$("#sidebar").hide();
-			fm.window.setMinimumSize(500, 250);
-			fm.window.setSize(500, 250);
-			fm.window.setMaximizable(false);
-			fm.window.setResizable(false);
-			$(".ofdBar .btn-primary").text(fm.arguments.okText || "Open");
-			$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
-			fm.window.setTitle(fm.arguments.title);
-			if (fm.action == "sfd") {
-				$(".ofdBar .btn-primary").text(fm.arguments.okText || "Save");
-				$("#ofdFile").removeAttr("readonly");
-				$("#ofdFile").on("input change", function() {
-					if ($(this).val() == "") $(".ofdBar button.btn-primary").attr("disabled", "disabled");
-					else $(".ofdBar button.btn-primary").removeAttr("disabled");
-				})
-			}
-			$(".ofdBar").removeClass("hide");
-		}
-
-		$(".files").on("dblclick", "[type=folder]", function() {
-			navigate($(this).attr("data-location"));
-		});
-		$(".files").on("mouseup", "[type]", function() {
-			if ($(this).attr("type") == "file") {
-				$("#ofdFile").val($(this).children(".file-title").text());
-				$(".ofdBar button.btn-primary").removeAttr("disabled");
-			} else {
-				$(".ofdBar button.btn-primary").attr("disabled", "disabled");
-				$("#ofdFile").val("");
-			}
+	if (fm.window.id < 5) {
+		fm.desktop = true;
+		$("#sidebar").remove();
+		$(".btn-toolbar").hide();
+		$("body").addClass("desktop");
+		$(".files").attr("viewMode", "gigtiles")
+		fm.path = "/atomos/home/Desktop/";
+		fm.showHidden = true;
+		fm.foldersFirst = false;
+		fm.arguments = {path: fm.path};
+		$("#path").val(fm.path)
+		navigate("/atomos/home/Desktop/");
+		$.getJSON("/atomos/etc/aos-release.json", function(info) {
+			$("body").append("<copyright style='position:fixed;bottom:46px;font-family:monospace;right:0;z-index:-1;color:white;text-align:right; margin:0.5rem'>" + info.name + " " + info.version + "_" + info.build + "<br>Code name: \"" + info.codename + "\"</copyright>")
 		})
-		$(".files").on("dblclick", "[type=file]", function() {
-			if (fm.action) submitFile();
-			else
-				window.fileOpen(fm.path + $(this).children(".file-title").text());
-		});
-	})
+	} else {
+		fm.desktop = false;
+		fm.foldersFirst = true;
+		fm.showHidden = false;
+		fm.arguments = window.arguments;
+		fm.path = "/atomos/home/";
+		$("#path").val(fm.path)
+		fm.arguments.path ? 1 + 1 : fm.arguments.path = fm.path;
+		fm.action = fm.arguments["action"];
+		navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
+	}
+	initContextMenus();
+	initShortcuts();
+	$("body").on("click", "#sidebar [data-location]", function() {
+		$("#sidebar>.nav>li").removeClass("active");
+		$(this).parent("li").addClass("active");
+		navigate($(this).attr("data-location"));
+	}).on("dblclick", "[type=folder]", function() {
+		if (!fm.desktop) navigate($(this).attr("data-location"));
+		else window.new("aos-cabinet", {
+			path: $(this).attr("data-location")
+		})
+	}).on("mouseup", "[type]", function() {
+		if ($(this).attr("type") == "file" || $(this).attr("type") == "shortcut") {
+			$("#ofdFile").val($(this).attr("realname") || $(this).children(".file-title").text());
+			$(".ofdBar button.btn-primary").removeAttr("disabled");
+		} else {
+			$(".ofdBar button.btn-primary").attr("disabled", "disabled");
+			$("#ofdFile").val("");
+		}
+	}).on("dblclick", "[type=file]", function() {
+		if (fm.action) submitFile();
+		else
+			window.fileOpen(fm.path + $(this).children(".file-title").text());
+	}).on("dblclick", "[type=shortcut]", function() {
+		if (fm.action) submitFile();
+		else
+			window.fileOpen(fm.path + $(this).attr("realname"));
+	});
+
+
+	if (fm.action) {
+		$("#sidebar").hide();
+		fm.window.setMinimumSize(500, 250);
+		fm.window.setSize(500, 250);
+		fm.window.setMaximizable(false);
+		fm.window.setResizable(false);
+		$(".ofdBar .btn-primary").text(fm.arguments.okText || "Open");
+		$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
+		fm.window.setTitle(fm.arguments.title);
+		if (fm.action == "sfd") {
+			$(".ofdBar .btn-primary").text(fm.arguments.okText || "Save");
+			$("#ofdFile").removeAttr("readonly");
+			$("#ofdFile").on("input change", function() {
+				if ($(this).val() == "") $(".ofdBar button.btn-primary").attr("disabled", "disabled");
+				else $(".ofdBar button.btn-primary").removeAttr("disabled");
+			})
+		}
+		$(".ofdBar").removeClass("hide");
+	}
 
 	function reNavigate() {
-		navigate($("#path").val(), "reload");
+		navigate(fm.path, "reload");
 	}
 
 	function navigate(path, historymode) {
@@ -142,17 +167,24 @@
 		list(path, (data) => {
 			if (fm.action) {
 				if (fm.viewMode == "list") $('div.files').prepend('<button data-location="' + path.substring(0, path.lastIndexOf("/", path.length - 2)) +
-					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/folders-small/Extensions Folder.png"><div class="file-title">..</div></button>')
+					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/folders-small/Folder.png"><div class="file-title">..</div></button>')
 				else $('div.files').prepend('<button data-location="' + path.substring(0, path.lastIndexOf("/", path.length - 2)) +
 					'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/Extensions Folder.png"><div class="file-title">..</div></button>')
 			}
 
 			data.forEach(function(item) {
-				if (item.type == "folder") $("div.files").append('<button data-mime="' + item.mimeType + '" data-location="' + path + item.name + '/" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon +
-					'"><div class="file-title">' +
-					item.name +
-					'</div></button>')
-				else $("div.files").append('<button data-mime="' + item.mimeType + '" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon + '"><div class="file-title">' + item.name + '</div></button>')
+				if (item.type == "folder") $("div.files").append('<button data-mime="' + item.mimeType + '" data-location="' + path + item.name + '/" class="dropdown-item file-item" type="' + item.type +
+					'"><img src="' + item.icon + '"><div class="file-title">' + item.name + '</div></button>')
+				else if (item.name.endsWith(".lnk")) {
+					var shrt = fs.readFileSync(fm.path + item.name, "utf8");
+					shrt = $.parseJSON(shrt);
+					$(".files").append("<button type='shortcut' realname='" + item.name + "' class='file-item'><img src='" + shrt.icon + "'><div class='file-title'>" + shrt.title + "</div></button>")
+					$(".files .file-item").last().on("dblclick", function(e) {
+					    if(!fm.action) e.stopImmediatePropagation();
+						window.new(shrt.app, shrt.arguments || {});
+					})
+				} else $("div.files").append('<button data-mime="' + item.mimeType + '" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon +
+					'"></i><div class="file-title">' + item.name + '</div></button>')
 			});
 			if (nohistory && historymode) $("button:contains('" + historymode + "')").focus();
 		});
@@ -197,12 +229,13 @@
 				} else if (stat.isDirectory()) fileRes.type = "folder";
 				else if (stat.isSymbolicLink()) {
 					fileRes.link = true;
+					try {
 					var link = fs.readlinkSync(path + file);
 					var statLink = fs.statSync((link.startsWith("/") ? link : path + link));
 					if (statLink.isFile()) {
 						fileRes.type = "file";
 						fileRes.mimeType = window.getMimeType(link.substring(link.lastIndexOf(".") + 1));
-					} else if (statLink.isDirectory()) fileRes.type = "folder";
+					} else if (statLink.isDirectory()) fileRes.type = "folder";} catch(e){}
 				} else return;
 				fileRes.atime = stat.atime;
 				fileRes.mtime = stat.mtime;
@@ -273,7 +306,6 @@
 				result.forEach(function(item) {
 					if (item.type == "file") newResult.push(item);
 				})
-				console.log(newResult);
 				callback(newResult)
 			} else callback(result)
 
@@ -282,19 +314,26 @@
 
 	function initShortcuts() {
 		$(window).keydown(function(event) {
-			console.log(event);
 			if (event.ctrlKey && event.key == "c") {
-				if($(".file-item:focus").length !== 0) doAction("copy",{file: fm.path + $(".file-item:focus .file-title").text()});
+				if ($(".file-item:focus").length !== 0) doAction("copy", {
+					file: fm.path + $(".file-item:focus .file-title").text()
+				});
 			}
 			if (event.ctrlKey && event.key == "v") doAction("paste");
 			if (event.ctrlKey && event.key == "x") {
-				if($(".file-item:focus").length !== 0) doAction("cut",{file: fm.path + $(".file-item:focus .file-title").text()});
+				if ($(".file-item:focus").length !== 0) doAction("cut", {
+					file: fm.path + $(".file-item:focus .file-title").text()
+				});
 			}
 			if (event.key == "Delete") {
-				if($(".file-item:focus").length !== 0) doAction("delete",{file: fm.path + $(".file-item:focus .file-title").text()});
+				if ($(".file-item:focus").length !== 0) doAction("delete", {
+					file: fm.path + $(".file-item:focus .file-title").text()
+				});
 			}
 			if (event.key == "F5") reNavigate();
-			if (event.altKey && event.key == "Enter") doAction("properties", {file: fm.path + $(".file-item:focus .file-title").text()});
+			if (event.altKey && event.key == "Enter") doAction("properties", {
+				file: fm.path + $(".file-item:focus .file-title").text()
+			});
 		});
 	}
 
@@ -312,6 +351,9 @@
 			case "vmlarge":
 				$(".files").attr("viewMode", "bigtiles");
 				break;
+			case "vmgig":
+				$(".files").attr("viewMode", "gigtiles");
+				break;
 			case "sortaz":
 				fm.sorting = "A-Z";
 				break;
@@ -328,7 +370,6 @@
 				window.fileClipboard.flush(fm.path)
 				break;
 			case "copy":
-			console.log(options.file)
 				window.fileClipboard.copyMode = "copy";
 				window.fileClipboard.clear();
 				window.fileClipboard.add(options.file);
@@ -345,7 +386,7 @@
 				break;
 			case "properties":
 				window.new("properties", {
-					path: (options.file ? options.file : fm.path)
+					path: (options ? options.file : fm.path)
 				})
 				break;
 		}
@@ -360,6 +401,7 @@
 				submenu: [{
 					label: "List",
 					type: "radio",
+					visible: !fm.desktop,
 					checked: fm.viewMode == "list",
 					click() {
 						doAction("vmlist")
@@ -367,23 +409,32 @@
 				}, {
 					label: "Small icons",
 					type: "radio",
+					visible: !fm.desktop,
 					checked: fm.viewMode == "smalltiles",
 					click() {
 						doAction("vmsmall")
 					}
 				}, {
-					label: "Medium icons",
+					label: (fm.desktop ? "Small icons" : "Medium icons"),
 					type: "radio",
 					checked: fm.viewMode == "midtiles",
 					click() {
 						doAction("vmmid")
 					}
 				}, {
-					label: "Large icons",
+					label: (fm.desktop ? "Medium icons" : "Large icons"),
 					type: "radio",
 					checked: fm.viewMode == "bigtiles",
 					click() {
 						doAction("vmlarge")
+					}
+				}, {
+					label: "Large icons",
+					type: "radio",
+					visible: fm.desktop,
+					checked: fm.viewMode == "gigtiles",
+					click() {
+						doAction("vmgig")
 					}
 				}]
 			}, {
@@ -442,29 +493,51 @@
 				submenu: [{
 					label: "File",
 					click() {
-						window.new("aos-cabinet/createFile", {path: fm.path},{modal: true, parent: fm.window});
+						window.new("aos-cabinet/createFile", {
+							path: fm.path
+						}, {
+							modal: true,
+							parent: fm.window
+						});
 						ipcRenderer.on('create-file', reNavigate)
 					}
 				}, {
 					label: "Folder",
 					click() {
-						window.new("aos-cabinet/createFolder", {path: fm.path},{modal: true, parent: fm.window});
+						window.new("aos-cabinet/createFolder", {
+							path: fm.path
+						}, {
+							modal: true,
+							parent: fm.window
+						});
 						ipcRenderer.on('create-folder', reNavigate)
 					}
 				}]
 			}, {
 				label: "Properties",
+				click() {
+					doAction("properties")
+				}
+			}, {
+				type: (!fm.desktop ? 'normal' : 'separator'),
+				visible: fm.desktop
+			}, {
+				label: "Desktop Preferences",
 				disabled: true,
-				click() {doAction("properties")}
+				visible: fm.desktop,
+				click() {
+					window.new("control")
+				}
 			}]
 			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
-			fm.filesMenu.popup(fm.window);
+			fm.filesMenu.popup(fm.window, {async: true});
 		});
 
 		$("body").on("contextmenu", ".file-item[type]", function(e) {
 			e.stopPropagation();
-			var mime = $(this).attr("data-mime");
-			var file = fm.path + $(this).find(".file-title").text()
+			var mime = $(this).attr("data-mime") || "text/plain";
+			var file = fm.path + ($(this).attr("realname") ? $(this).attr("realname") : $(this).find(".file-title").text())
+			console.log(file);
 			var $this = $(this);
 			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
 				if (!err) var assocs = $.parseJSON(data);
@@ -472,7 +545,7 @@
 				var appName = assocs.find(o => o.mime == mime);
 				if (appName) appName = appName["app"];
 				const menu = [{
-					label: "Open" + (($this.attr("type") == "folder") ? "" : (!err ? " " + appName : " in default application")),
+					label: ($this.attr("realname") === undefined ? "Open" + (($this.attr("type") == "folder") ? "" : (!err ? " " + appName : " in default application")) : "Execute"),
 					visible: (appName !== undefined) || ($this.attr("type") == "folder"),
 					click() {
 						$this.trigger("dblclick");
@@ -492,13 +565,17 @@
 					label: "Cut",
 					accelerator: "CmdOrCtrl+X",
 					click() {
-						doAction("cut", {file: file})
+						doAction("cut", {
+							file: file
+						})
 					}
 				}, {
 					label: "Copy",
 					accelerator: "CmdOrCtrl+C",
 					click() {
-						doAction("copy", {file: file})
+						doAction("copy", {
+							file: file
+						})
 					}
 				}, {
 					type: "separator"
@@ -506,59 +583,32 @@
 					label: "Delete",
 					accelerator: "Delete",
 					click() {
-						doAction("delete", {file: file})
+						doAction("delete", {
+							file: file
+						})
 					}
 				}, {
 					label: "Properties",
 					accelerator: "Alt+Enter",
 					click() {
-						doAction("properties", {file: file})
+						doAction("properties", {
+							file: file
+						})
 					}
 				}]
-				Menu.buildFromTemplate(menu).popup(fm.window);
+				Menu.buildFromTemplate(menu).popup(fm.window, {async: true});
 			})
 		})
 	}
 </script>
 <style>
-	#sidebar a>i.fa {
-		width: 20px;
-		text-align: center;
-	}
-
-
 	#sidebar {
 		min-width: 150px;
 		position: static;
 		padding: 0;
 		border: 0;
 		margin: 0;
-		font-size: 14px;
-		border-right: 1px solid lightgray;
-	}
-
-	[viewMode=list].dropdown-menu img {
-		vertical-align: sub;
-		height: 16px;
-		filter: invert() sepia() saturate(1000%) brightness(50%) hue-rotate(140deg)
-	}
-
-	[viewMode=list].dropdown-menu button:hover img {
-		filter: invert() sepia() saturate(1000%) brightness(30%) hue-rotate(140deg)
-	}
-
-	[viewMode=list].dropdown-menu button.active img,
-	[viewMode=list].dropdown-menu button:active img,
-	[viewMode=list].dropdown-menu button:focus img {
-		filter: invert(100%) drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.2));
-	}
-
-	[viewMode=list].dropdown-menu button.active,
-	[viewMode=list].dropdown-menu button:active,
-	[viewMode=list].dropdown-menu button:focus {
-		color: #fff;
-		text-decoration: none;
-		background-color: #007bff;
+		border-radius: 0;
 	}
 
 	div.files {
@@ -569,20 +619,153 @@
 		margin: 0;
 		display: inline-block;
 		position: static;
-		padding: 0.25rem !important;
+		background: none
 	}
 
-	div.files>button {
-		padding: 0.25rem .5rem;
+	.files .file-item {
+		display: inline-block;
+		background: none;
+		border: none;
+		color: black;
+		vertical-align: top;
+		padding: 0.25rem .5rem .4rem;
 		border-radius: 3px;
+		flex-shrink: 0;
 	}
 
-	div.files>button>div {
+	.files .file-title {
+
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		margin-left: 0.25rem;
 		vertical-align: text-top
+	}
+
+	.files[viewMode*=tiles] .file-item {
+		margin: 0.3em;
+		width: 85px;
+		text-align: center;
+		word-break: break-word;
+	}
+
+	.files[viewMode=list],
+	.files[viewMode=gigtiles] {
+		display: flex;
+		flex-direction: column;
+		align-content: flex-start;
+	}
+
+	.files[viewMode=gigtiles] {
+		flex-wrap: wrap;
+	}
+
+	.files {
+		padding: 0.25rem
+	}
+
+	[viewMode=list] button.active .material-icons,
+	[viewMode=list] button:active .material-icons,
+	[viewMode=list] button:focus .material-icons {
+		color: white !important;
+	}
+
+	[viewMode=list].files button.active,
+	[viewMode=list].files button:active,
+	[viewMode=list].files button:focus {
+		color: #fff;
+		text-decoration: none;
+		background-color: #007bff;
+	}
+
+	body.desktop .file-item {
+		color: white !important;
+		text-shadow: 0 0px 4px rgb(0, 0, 0), 0 0px 7px rgb(0, 0, 0) !important;
+		width: 110px !important
+	}
+	body.desktop .file-item:hover {
+        box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255,255,255,0.5);
+	}
+
+	body.desktop .file-title {
+		word-break: break-word;
+		line-height:1.5 !important;
+		max-height:3rem !important;
+	}
+
+	body.desktop .file-item:active,
+	body.desktop .file-item:focus,
+	body.desktop .file-item:focus:active {
+        box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.5), 0 0 0 1px rgba(255,255,255,0.5);
+	}
+
+	[viewMode=list] .file-item {
+		width: 100%;
+		text-align: left;
+		padding: 0.1rem 0.25rem;
+		margin-bottom: 5px;
+		line-height: 20px;
+	}
+
+	[viewMode=list] .file-item img {
+		width: 16px;
+		vertical-align: inherit;
+		margin: 2px 4px;
+	}
+
+	[viewMode=list] .file-title {
+		display: inline-block;
+	}
+
+	[viewMode=smalltiles] .file-item .material-icons {
+		font-size: 24px;
+	}
+
+	[viewMode=midtiles] .file-item .material-icons {
+		font-size: 32px;
+	}
+
+	[viewMode=bigtiles] .file-item .material-icons {
+		font-size: 48px;
+	}
+
+	[viewMode=gigtiles] .file-item .material-icons {
+		font-size: 64px;
+	}
+
+	[viewMode=smalltiles] .file-item img {
+		width: 24px;
+	}
+
+	[viewMode=midtiles] .file-item img {
+		width: 32px;
+	}
+
+	[viewMode=bigtiles] .file-item img {
+		width: 48px;
+	}
+
+	[viewMode=gigtiles] .file-item img {
+		width: 64px;
+	}
+
+	[viewMode*=tiles] .file-item .file-title {
+
+		max-height: 2rem;
+		vertical-align: text-top;
+		word-break: break-all;
+		white-space: pre-wrap;
+		line-height: 1;
+	}
+
+	.file-item:hover {
+		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.3);
+	}
+
+	.file-item:active,
+	.file-item:focus,
+	.file-item:focus:active {
+		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.5);
 	}
 
 	section {
@@ -614,5 +797,12 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
+	}
+
+	body.desktop {
+		background: url(/atomos/resources/wallpaper.jpg);
+		background-repeat: no-repeat;
+		background-size: cover;
+		background-position: center;
 	}
 </style>
