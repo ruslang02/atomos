@@ -79,7 +79,7 @@ article, aside, dialog, figcaption, figure, footer, header, hgroup, main, nav, s
 }
 body {
   margin: 0;
-  font-family: 'Source Sans Pro';
+  font-family: 'Source Sans Pro' !important;
   font-size: 14px;
   font-weight: normal;
   line-height: 1.5;

@@ -1,17 +1,19 @@
 <center class="btn-menu bg-light">
-  <button class="btn btn-outline-primary btn-sm material-icons">keyboard_arrow_left</button>
-  <b>Control Center / Desktop Preferences</b>
-  <button class="btn btn-outline-primary btn-sm material-icons">reorder</button>
+  <button action="up" class="btn btn-outline-primary btn-sm material-icons">keyboard_arrow_left</button>
+  <b action="path">Control Center / Desktop Preferences</b>
+  <button action="menu" class="btn btn-outline-primary btn-sm material-icons">reorder</button>
 </center>
-<section data-location="Control Center" class="p-2">
-  <p><b>Appearance</b></p>
-  <a class="btn btn-link text-center" href="#">
-    <img src="/atomos/icons/Desktop.png" class="mb-2">
-    <div class="text-center text-dark" style="width: 100%;white-space: normal;">Desktop Preferences</div>
-  </a>
+<section data-location="Control Center" class="p-2 flex-column">
+  <group>
+    <p><b>Appearance</b></p>
+    <a class="btn btn-link text-center" href="#" data-to="Control Center / Desktop Preferences">
+      <img src="/atomos/icons/Desktop.png" class="mb-2">
+      <div class="text-center text-dark" style="width: 100%;white-space: normal;">Desktop Preferences</div>
+    </a>
+  </group>
 </section>
 
-<section active data-location="Control Center / Desktop Preferences" class="p-2 d-flex flex-column">
+<section active data-location="Control Center / Desktop Preferences" class="p-2 flex-column">
   <div id="image"></div>
   <button class="btn btn-secondary btn-sm btn-block my-2">Choose another...</button>
   <div class="text-right"><button class="btn btn-primary btn-sm">Apply</button>
@@ -26,13 +28,14 @@
   }
 
   section {
-    display: none;
+    display: none !important;
     flex-grow: 2;
     overflow: auto;
   }
+  .btn-link img {max-width:48px}
 
   section[active] {
-    display: inline-block;
+    display: flex !important;
   }
 
   b {
@@ -79,23 +82,28 @@
   }
 </style>
 <script>
-require('atomos-framework');
+  require('atomos-framework');
   const fs = require('fs');
   const {
     ipcRenderer,
     remote
   } = require('electron');
+  const {
+    Menu
+  } = remote;
   const app = remote.getCurrentWindow();
   window.$ = require("jquery");
   ipcRenderer.on("return-file", function(event, path) {
     $("#image").css("background-image", "url(" + path + ")");
   })
   window.onload = function() {
-    $(".btn-primary").click(function() {
-      fs.writeFileSync("/atomos/resources/wallpaper.jpg", fs.readFileSync($("#image").css("background-image").substring(12, $("#image").css("background-image").length - 2)));
-    
+    $("[data-location='Control Center / Desktop Preferences'] .btn-primary").click(function() {
+      fs.writeFileSync("/atomos/resources/wallpaper.jpg",
+        fs.readFileSync($("[data-location='Control Center / Desktop Preferences'] #image").css("background-image")
+          .substring(12, $("#image").css("background-image").length - 2))
+      );
     })
-    $(".btn-secondary").click(function() {
+    $("[data-location='Control Center / Desktop Preferences'] .btn-secondary").click(function() {
       window.new("aos-cabinet", {
         path: "/atomos/home/Pictures/",
         action: "ofd",
@@ -106,6 +114,31 @@ require('atomos-framework');
         modal: true,
         parent: app
       })
+    })
+    $("[action=up]").click(function() {
+      var path = $("b[action=path]").text();
+      if(!path.includes("/")) return;
+      $("section").removeAttr("active");
+      $("[data-location='" + path.substring(0, path.lastIndexOf("/")).trim() + "']").attr("active", "active");
+      $("b[action=path]").text(path.substring(0, path.lastIndexOf("/")).trim())
+      app.setTitle(path.substring(0, path.lastIndexOf("/") - 1).trim())
+    })
+    $("[action=menu]").click(function() {
+      const cm = [{
+        label: "About PC",
+        click() {window.new("aos-about")}
+      }, {type: 'separator'}, {
+        label: "Exit",
+        click() {app.close()}
+      }]
+      Menu.buildFromTemplate(cm).popup(app, {async: true})
+    })
+    $('[data-location="Control Center"] .btn-link').click(function(e) {
+        e.preventDefault();
+      $("section").removeAttr("active");
+      $("[data-location='" + $(this).attr("data-to") + "']").attr("active", "active");
+      $("b[action=path]").text($(this).attr("data-to"))
+      app.setTitle($(this).attr("data-to").substring($(this).attr("data-to").lastIndexOf("/") + 1).trim())
     })
   };
 </script>

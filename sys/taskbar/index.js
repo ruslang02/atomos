@@ -74,6 +74,9 @@ remote.app.on('browser-window-created', function(event, win) {
     $task.find("img")[0].src = icon;
   })
   win.on('close', function(e) {
+    $task.hide();
+  })
+  win.on('closed', function(e) {
     $task.addClass("btn-light").removeClass("btn-danger").fadeOut("200", function() {$task.remove()});
     ipcRenderer.send("close-any-menu")
     clearInterval(dangerFlash);
@@ -104,6 +107,7 @@ remote.app.on('browser-window-created', function(event, win) {
     ipcRenderer.send("close-any-menu")
   })
   win.on('show', function() {
+    $task.show();
     try {$task.css("opacity", "1");} catch(e) {}
   })
   win.on('hide', function() {

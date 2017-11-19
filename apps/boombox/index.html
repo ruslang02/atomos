@@ -1,3 +1,29 @@
+<script>
+const {
+  remote,
+  ipcRenderer
+} = require('electron');
+const {
+  Menu,
+  BrowserWindow
+} = remote;
+
+var app = remote.getCurrentWindow();
+var appURL = app.webContents.getURL();
+var args = ipcRenderer.sendSync("getArguments", remote.getCurrentWindow().id);
+BrowserWindow.getAllWindows().forEach(function(win) {
+  if(win.webContents.getURL() === appURL && win.id !== app.id) {
+    if (args.path) {}
+      win.webContents.send("return-file", args.path);
+    win.focus();
+    app.destroy();
+  }
+})
+const {
+  width,
+  height
+} = require('electron').screen.getPrimaryDisplay().bounds
+</script>
 <div class="bg-light btn-menu">
   <div class="btn-group dropdown btn-group-sm">
     <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -7,7 +33,7 @@
     <div class="dropdown-menu" aria-labelledby="fileMenu">
       <button class="dropdown-item" data-key="Ctrl+O">Open...</button>
       <div class="dropdown-divider"></div>
-      <button class="dropdown-item" data-key="Alt+F4">Exit</button>
+      <button class="dropdown-item" data-key="Alt+F4" onclick="app.destroy()">Exit</button>
     </div>
   </div>
   <div class="btn-group dropdown btn-group-sm">
@@ -73,27 +99,21 @@
 </footer>
 <audio></audio>
 <script>
+  var isChanged = false;
   var args = require('atomos-framework').arguments;
   const fs = require('fs');
   const path = require('path')
   const xml2js = require('xml2js');
   let renderID3 = require('musicmetadata');
   var player = document.querySelector("audio");
-  const {
-    remote,
-    ipcRenderer
-  } = require('electron');
-  const {
-    Menu,
-    BrowserWindow
-  } = remote;
-    const {
-      width,
-      height
-    } = require('electron').screen.getPrimaryDisplay().bounds
-    window.Popper = require('popper.js')
-    require('bootstrap')
-var app = remote.getCurrentWindow();
+  window.Popper = require('popper.js')
+  require('bootstrap')
+
+  window.onbeforeunload = function(e) {
+    app.hide();
+    e.returnValue = false;
+  };
+
   var popup = new BrowserWindow({
     x: width - 10 - 450,
     y: height - 37 - 450,
@@ -121,11 +141,33 @@ var app = remote.getCurrentWindow();
   var tray = new Tray("music_note", "Boombox is running", "hsl(33, 100%, 50%)");
   tray.on("contextClick", function(event) {
     Menu.buildFromTemplate([{
+      label: ($("#player .btn-primary").text() == "play_arrow" ? 'Pause' : 'Play'),
+      click() {
+        $("#player .btn-primary").click();
+      }
+    }, {type: 'separator'}, {
+      label: 'Previous Track',
+      click() {
+        playPrevious()
+      }
+    }, {
+      label: 'Next Track',
+      click() {
+        playNext()
+      }
+    }, {type: 'separator'}, {
+      label: 'Show UI',
+      click() {
+        app.show()
+      }
+    }, {
       label: 'Exit',
       click() {
-        win.close()
+        app.destroy()
       }
-    }]).popup()
+    }]).popup(BrowserWindow.fromId(1), {
+      async: true
+    })
   })
   tray.on("click", function(event) {
     BrowserWindow.fromId(2).webContents.send("activate-tray", {
@@ -135,10 +177,9 @@ var app = remote.getCurrentWindow();
     popup.setAlwaysOnTop(true)
   })
   tray.show();
-
-  const win = remote.getCurrentWindow();
-  window.addEventListener('beforeunload', function() {
+  app.on('closed', function() {
     tray.close();
+    popup.destroy();
   })
 
   ipcRenderer.on("return-file", function(e, path) {
@@ -146,16 +187,30 @@ var app = remote.getCurrentWindow();
   })
   ipcRenderer.on("getData", function(e) {
     popup.webContents.send("getMusicData", JSON.stringify({
-      canNext: $('#player button:contains("skip_next")').attr("disabled") == true,
-      canPrevious: $('#player button:contains("skip_previous")').attr("disabled") == true,
+      canNext: true,
+      canPrevious: true,
       isPlaying: !player.paused,
+      duration: player.duration,
+      time: player.currentTime,
+      isChanged: isChanged,
       playlist: $('#playlist .dropdown-item').map(function() {
         return {
-          play: $(this).text()
+          play: $(this).text(),
+          location: $(this).attr("location"),
+          active: $(this).hasClass("active")
         }
       }).get()
     }));
+    isChanged = false;
 
+  })
+
+  ipcRenderer.on("changeTrack", function(e, options) {
+    if (options.offset == -1) playPrevious();
+    if (options.offset == 1) playNext();
+    if (options.location) $(".dropdown-item[location='" + options.location + "']").click();
+    if (options.action == "toggle") $("#player .btn-primary").click();
+    console.log(options)
   })
 
   player.ontimeupdate = function() {
@@ -171,6 +226,16 @@ var app = remote.getCurrentWindow();
 
   window.onload = function() {
     if (args.path) load(args.path);
+    MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+    var observer = new MutationObserver(function(mutations, observer) {
+      isChanged = true;
+      console.log(isChanged)
+    });
+    observer.observe(document.getElementById("playlist"), {
+      subtree: true,
+      attributes: true
+    });
 
 
     $("[data-key='Ctrl+O']").click(function() {
@@ -182,7 +247,7 @@ var app = remote.getCurrentWindow();
         cancelText: "Close"
       }, {
         modal: true,
-        parent: win
+        parent: app
       });
     })
     $("footer .btn-primary").click(function() {
@@ -246,7 +311,6 @@ var app = remote.getCurrentWindow();
           if (!err) {
             $("#playlist *").remove();
             list.playlist.trackList[0].track.forEach(function(track) {
-              console.log(track);
               $("#playlist").append("<button class='dropdown-item' location='" + track.identifier[0].substring(7) + "' creator='" + track.creator + "'>" + track.title + "</button>")
             });
             if ($("[name=autoplay]")[0].checked) playNext()
@@ -257,6 +321,7 @@ var app = remote.getCurrentWindow();
     } else {
       renderID3(fs.createReadStream(file), function(err, tags) {
         $("#playlist").append("<button class='dropdown-item' location='" + file + "' creator='" + tags.artist[0] + "'>" + (tags.title || file.substring(file.lastIndexOf("/") + 1)) + "</button>");
+        if ($("[name=autoplay]")[0].checked && player.paused) playNext()
       })
     }
   }
@@ -275,7 +340,10 @@ var app = remote.getCurrentWindow();
   }
 </script>
 <style>
-  body {height:100%;}
+  body {
+    height: 100%;
+  }
+
   footer {
     position: relative;
     padding: 0.25rem 0.5rem;
@@ -325,7 +393,8 @@ var app = remote.getCurrentWindow();
 
   section.row {
     flex-grow: 2;
-    margin: 0
+    margin: 0;
+    flex-shrink: calc(1 / 0.0001);
   }
 
   body {
@@ -345,6 +414,10 @@ var app = remote.getCurrentWindow();
 
   .dropdown-item {
     position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
   }
 
   section#cover::before {
@@ -369,8 +442,8 @@ var app = remote.getCurrentWindow();
     position: relative;
     margin: 0;
     border-radius: 0;
-    max-height:unset !important;
-    overflow:auto;
+    max-height: unset !important;
+    overflow: auto;
   }
 
   .btn-primary {

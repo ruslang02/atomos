@@ -32,22 +32,24 @@
   ipcRenderer.on('blur', function(e) {
     if (options.dismissable) onTimeout()
   })
+  var timeout;
   ipcRenderer.on('spawn-notification', function(e, options) {
+     onTimeout();
     window.options = options;
     console.log(options.color)
     var color = new Color(options.color);
     $(".alert > div > strong").text(options.title);
     $(".alert > small").html(options.html);
-    $(".alert").css("border-color", options.color)
+    $(".alert").css("border-color", options.color);
     $(window).mouseup(function() {
       BrowserWindow.fromId(options.win).webContents.send("notification-click");
     })
     remote.BrowserWindow.fromId(2).webContents.send("activate-tray", {
       win: options.win
     })
-    app.show();
+    app.showInactive();
     app.setAlwaysOnTop(true);
-    setTimeout(onTimeout, options.timeout)
+    timeout = setTimeout(onTimeout, options.timeout)
   })
 
   function onTimeout() {
@@ -59,6 +61,7 @@
       win: options.win
     });
     app.hide();
+    clearTimeout(timeout);
   }
 </script>
 <style>

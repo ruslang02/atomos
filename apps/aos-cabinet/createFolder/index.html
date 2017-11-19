@@ -1,4 +1,3 @@
-<script>require('atomos-framework')</script>
 <form>
     <header>
         <img src="/atomos/icons/Add Folder.png" />
@@ -15,13 +14,9 @@
     ipcRenderer
   } = require('electron');
   const fs = require('fs');
+  var args = require('atomos-framework').arguments;
   const app = remote.getCurrentWindow();
-  if (!window.arguments.path) {
-    /*aos.notifications.add({
-      head: "No path specified",
-      body: "Application aos-cabinet-createFolder was not given any arguments.",
-      type: "warning"
-    });*/
+  if (!args.path) {
     app.close();
   } else {
     window.onload = function() {
@@ -29,12 +24,12 @@
           app.close();
       })
       $(".btn-primary").click(function(e) {
-        fs.mkdirSync(window.arguments.path + "/" + $("input").val());
-        app.getParentWindow().webContents.send("create-file", window.arguments.path + "/" + $("input").val());
+        fs.mkdirSync(args.path + "/" + $("input").val());
+        app.getParentWindow().webContents.send("create-folder", args.path + "/" + $("input").val());
         app.close();
       })
       $("input").on("input", function() {
-        if (fs.existsSync(window.arguments.path + $("input").val())) {
+        if (fs.existsSync(args.path + $("input").val())) {
           $(this).addClass("is-invalid");
           $(".btn-primary").attr("disabled", "disabled");
         } else {

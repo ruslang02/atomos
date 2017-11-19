@@ -1,7 +1,7 @@
-<script></script>
-<ul class="nav nav-tabs bg-light"><button class="btn btn-sm btn-secondary material-icons" onclick="newTab()">add</button>
-	<div class="spacer"></div>
-</ul>
+<div class="nav nav-tabs bg-light">
+    <tablist></tablist>
+    <button class="btn btn-sm btn-secondary material-icons" onclick="newTab()">add</button>
+</div>
 <div class="btn-toolbar">
 	<div class="btn-group mr-1 btn-group-sm" style="flex-shrink:0">
 		<button class="btn btn-outline-primary material-icons" action="back">arrow_back</button>
@@ -14,7 +14,7 @@
     flex-grow: 2;
 "><input class="form-control form-control-sm" name="path" type="text" value="http://atomos.org.uk/home" id="path"></div>
 	<div class="btn-group btn-group-sm">
-		<button class="btn btn-primary material-icons" action="navigate">arrow_forward</button>
+		<button class="btn btn-primary material-icons" type="submit" action="navigate">arrow_forward</button>
 	</div>
 </div>
 <tabs></tabs>
@@ -23,9 +23,10 @@
     var args = require('atomos-framework').arguments;
     
 	var win = require('electron').remote.getCurrentWindow();
-  window.jQuery = window.$ = require("jquery")
-  window.Popper = require("popper.js");
-  require("bootstrap")
+    window.jQuery = window.$ = require("jquery")
+    window.Popper = require("popper.js");
+    require("bootstrap")
+    require("jquery-mousewheel")($);
 	window.addEventListener("load", function() {
 		$("button").click(function(e) {
 			e.preventDefault();
@@ -33,9 +34,16 @@
 		if (args["path"]) {
 			$("#path").val(args["path"] || "http://atomos.org.uk/home");
 			newTab(args["path"] || "http://atomos.org.uk/home");
-		}
+		} else newTab()
 		init();
 	});
+	win.on('resize', function() {
+	    setTimeout(function() {
+	    $("webview").width($(document).width() - 1);
+	    $("webview").height($(document).height() - $(".btn-toolbar").height() - $(".nav").height() - 1);
+	        
+	    },100)
+	})
 
 	function init() {
 		var oldTitle = "";
@@ -53,6 +61,10 @@
 		$("body").on("click", ".nav-tabs .nav-link[to]", function() {
 			activateTab($(this).attr("to"));
 		})
+		$("tablist").mousewheel(function(e) {
+		    var scroll = $("tablist");
+		    if(e.deltaY > 0) scroll.scrollLeft(scroll.scrollLeft()-10); else scroll.scrollLeft(scroll.scrollLeft()+10);
+		})
 		$("body").on("click", ".nav-link button", function(e) {
 			e.stopPropagation();
 			closeTab($(this).parents('.nav-link').attr("to"))
@@ -65,16 +77,10 @@
 		var $activeTab = $("tab[active]");
 		$("tab").removeAttr("active");
 		$(".nav-tabs .nav-link").removeClass("active");
-		$(".nav-tabs").append("<li to='" + tabNum + "' class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
+		$(".nav-tabs tablist").append("<li to='" + tabNum + "' class='nav-item nav-link active'><name>untitled</name><button action='close' class='material-icons btn btn-outline-danger'>close</button></li>")
 		$("tabs").append("<tab active id='" + tabNum + "'><webview></webview></tab>");
+		$("#path").focus()
 		totalTabs++;
-		$(window).on('resize', function() {
-			$("webview").each(function() {
-			$(this).width($(document).width())
-			$(this).height($(document).height())
-
-			})
-		})
 		$("tab[active] webview")[0].addEventListener("did-navigate", function(event) {
 			$("#path").val(event.url);
 			if ($(this).parent().attr("active") !== undefined) win.setTitle(this.getTitle() + " - Proton Web Browser")
@@ -108,6 +114,10 @@
 		$(browser).height($(document).height())
 		$("#path").val(browser.getURL())
 		win.setTitle(browser.getTitle() + " - Proton Web Browser")
+	    setTimeout(function() {
+	        $("webview").width($(document).width() - 1);
+	        $("webview").height($(document).height() - $(".btn-toolbar").height() - $(".nav").height() - 1);
+	    },100)
 	}
 
 	function closeTab(tabNum) {
@@ -135,7 +145,6 @@
 			link = "http://" + link;
 		}
 		$("tab[active] webview")[0].loadURL(link);
-		$(".alert-warning").fadeOut(200);
 	}
 </script>
 <style>
@@ -172,8 +181,11 @@
 
 	.nav .nav-link {
 		padding: 0.25rem 0.5rem;
-		position: relative
+		position: relative;
+		max-width:300px;
+		display:flex;
 	}
+	.spacer {flex-grow:2}
 
 	.nav {
 		padding: 2px 5px;
@@ -182,24 +194,26 @@
 		cursor: default;
 		white-space: nowrap;
 		flex-shrink: 0;
+		flex-wrap:nowrap;
 	}
-
-	.nav .btn-secondary {
-		order: 999;
+	
+	tablist {display:flex; overflow:hidden;}
+	.nav > .btn {
 		font-size: 18px;
 		margin: 3px;
 		padding: 2px;
+		flex-shrink:0;
 	}
 
 	.nav name {
 		flex-grow: 2;
-		max-width: 100px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
 	.nav .nav-link button {
 		display: none;
+		flex-shrink:0;
 	}
 
 	.nav .nav-link:only-child button {

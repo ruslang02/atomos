@@ -1,58 +1,95 @@
-<script>require('atomos-framework')</script>
+<script>
+  require('atomos-framework')
+</script>
 
 <link href="/atomos/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="/atomos/node_modules/material-design-icons/iconfont/material-icons.css" rel="stylesheet">
 
-<div class="dropdown-menu"></div>
+<div class="dropdown-menu border border-top-0 border-left-0 border-right-0"><button disabled class="dropdown-item">Playlist is empty</button></div>
 <center>
-  <button action="previous" class="btn btn-link material-icons">skip_previous</button>
-  <button action="play" class="btn btn-primary material-icons">play_arrow</button>
-  <button action="next" class="btn btn-link disabled material-icons">skip_next</button></center>
-  <script>
+  <button action="previous" class="btn btn-link material-icons" onclick='app.getParentWindow().webContents.send("changeTrack", {offset: -1});'>skip_previous</button>
+  <button action="play" class="btn btn-primary material-icons" onclick='app.getParentWindow().webContents.send("changeTrack", {action: "toggle"});'>play_arrow</button>
+  <button action="next" class="btn btn-link material-icons" onclick='app.getParentWindow().webContents.send("changeTrack", {offset: 1});'>skip_next</button></center>
+<progress max="100" value="100"></progress>
+<script>
+  const {
+    remote,
+    ipcRenderer,
+    screen
+  } = require('electron');
+  const {
+    BrowserWindow
+  } = remote;
+  const app = remote.getCurrentWindow();
+  const {
+    width,
+    height
+  } = screen.getPrimaryDisplay().bounds;
+  window.$ = window.jQuery = require('jquery');
+  window.Popper = require('popper.js')
+  require('bootstrap')
 
-    const {
-      remote,
-      ipcRenderer,
-      screen
-    } = require('electron');
-    const {
-      BrowserWindow
-    } = remote;
-    const app = remote.getCurrentWindow();
-    const {
-      width,
-      height
-    } = screen.getPrimaryDisplay().bounds;
-    window.$ = window.jQuery = require('jquery');
-    window.Popper = require('popper.js')
-    require('bootstrap')
+  setInterval(function() {
+    app.getParentWindow().webContents.send("getData");
+    app.setContentSize(450, Math.ceil($("body").outerHeight()));
+    app.setPosition(width - 10 - 450, height - 37 - Math.ceil($("body").outerHeight()));
 
-    setInterval(function() {
-      app.getParentWindow().webContents.send("getData");
-      app.setContentSize(450, Math.ceil($("body").outerHeight()));
-      app.setPosition(width - 10 - 450, height - 37 - Math.ceil($("body").outerHeight()));
+  }, 10);
 
-    }, 1000);
 
-    ipcRenderer.on("getMusicData", function(event, options) {
-      options = $.parseJSON(options)
-      console.log(options);
-      $(".dropdown-menu *").remove();
-      if(options.isPlaying) $("[action=play]").text("pause"); else $("[action=play]").text("play_arrow");
-      if(options.canPrevious) $("[action=previous]").removeAttr("disabled"); else $("[action=previous]").attr("disabled", "disabled");
-      if(options.canNext) $("[action=next]").removeAttr("disabled"); else $("[action=next]").attr("disabled", "disabled");
-      options.playlist.forEach(function(play) {
-        $(".dropdown-menu").append("<div class='dropdown-item'>" + play.title + "</div>")
-      })
+  ipcRenderer.on("getMusicData", function(event, options) {
+    options = $.parseJSON(options);
+    if (options.isPlaying) $("[action=play]").text("pause");
+    else $("[action=play]").text("play_arrow");
+    if (options.canPrevious) $("[action=previous]").removeAttr("disabled");
+    else $("[action=previous]").attr("disabled", "disabled");
+    if (options.canNext) $("[action=next]").removeAttr("disabled");
+    else $("[action=next]").attr("disabled", "disabled");
+    $("progress").attr("max", options.duration)
+    $("progress").val(options.time)
+    if (!options.isChanged) return;
+    $(".dropdown-menu *").remove();
+    options.playlist.forEach(function(play) {
+      $(".dropdown-menu").append("<button location='" + play.location + "' class='dropdown-item" + (play.active ? " active" : "") + "'>" + play.play + "</button>")
     })
-
-    </script>
+    $(".dropdown-item").off().on("click", function() {
+      if (!$(this).hasClass("active")) app.getParentWindow().webContents.send("changeTrack", {
+        location: $(this).attr("location")
+      });
+    })
+    $(".dropdown-menu").scrollTop($(".dropdown-item.active").offset().top);
+  })
+</script>
 <style>
+  progress {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 4px;
+    border: 0;
+    left: 0;
+    -webkit-appearance: none;
+  }
+
+  progress::-webkit-progress-bar {
+    background: none;
+  }
+
+  progress[value]::-webkit-progress-value {
+    background: darkorange;
+  }
+
   body {
     border: 1px solid hsl(33, 100%, 50%);
-    padding: 0.5rem;
+    padding-bottom: 4px;
     display: inline-block;
-width: 100%;
+    width: 100%;
+  }
+
+  center {
+    display: inline-block;
+    width: 100%;
+    padding: 0.5rem
   }
 
   .dropdown-menu {
@@ -63,31 +100,41 @@ width: 100%;
     margin: 0;
     position: static;
     width: 100%;
+    display: inline-block;
+    max-height: 300px;
+    overflow: auto;
+  }
+
+  .dropdown-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
     display: inline-block
   }
-    .dropdown-item.active,
-    .dropdown-item:active {
-      background-color: hsla(33, 100%, 50%, 1);
-    }
-      .btn-primary {
-        background-color: hsl(33, 100%, 50%);
-        border-color: hsl(33, 100%, 50%);
-      }
 
-      .btn-primary:active,
-      .btn-primary.active,
-      .show>.btn-primary.dropdown-toggle {
-        background-color: hsla(33, 100%, 43%, 1);
-        border-color: hsla(33, 100%, 40%, 1);
-      }
+  .dropdown-item.active,
+  .dropdown-item:active {
+    background-color: hsla(33, 100%, 50%, 1);
+  }
 
-      .btn-primary:hover {
-        background-color: hsla(33, 100%, 43%, 1);
-        border-color: hsla(33, 100%, 40%, 1);
-      }
+  .btn-primary {
+    background-color: hsl(33, 100%, 50%);
+    border-color: hsl(33, 100%, 50%);
+  }
 
-      .btn-primary:focus,
-      .btn-primary.focus {
-        box-shadow: 0 0 0 3px hsla(33, 100%, 50%, 0.5);
-      }
+  .btn-primary:active,
+  .btn-primary.active,
+  .show>.btn-primary.dropdown-toggle {
+    background-color: hsla(33, 100%, 43%, 1);
+    border-color: hsla(33, 100%, 40%, 1);
+  }
+
+  .btn-primary:hover {
+    background-color: hsla(33, 100%, 43%, 1);
+    border-color: hsla(33, 100%, 40%, 1);
+  }
+
+  .btn-primary:focus,
+  .btn-primary.focus {
+    box-shadow: 0 0 0 3px hsla(33, 100%, 50%, 0.5);
+  }
 </style>

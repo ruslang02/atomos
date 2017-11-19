@@ -1,4 +1,3 @@
-<script>require('atomos-framework')</script>
 <section>
 	<img src="atom.png" style="width:64px;margin-right: 1em;">
 </section>
@@ -8,30 +7,104 @@
 	<p><b>CodeName</b> <span data-name="codename"></span></p>
 	<p><b>Build</b> <span data-name="build"></span></p>
 	<p>Based on Ubuntu 16</p>
-	<button class="btn btn-sm btn-primary float-right" onclick="window.close()">Close</button>
+	<button class="btn btn-sm btn-primary ml-2 float-right" onclick="window.close()">Close</button>
+	<button class="btn btn-sm btn-success float-right" onclick="capture()"><i class="material-icons">camera</i> Fetch Screen</button>
 </main>
 <style>
 	body {
 		padding: 1em;
-		display:flex;
+		display: flex;
 	}
-	p {margin:0;line-height:2;}
+
+	p {
+		margin: 0;
+		line-height: 2;
+	}
 </style>
 
 <script defer>
+	require('atomos-framework')
 	var version = 0.22;
-	require('fs').readFile("/atomos/etc/aos-release.json", function(err,data) {
+	var app = require('electron').remote.getCurrentWindow();
+	require('fs').readFile("/atomos/etc/aos-release.json", function(err, data) {
 		build = $.parseJSON(data);
-			$("#checkUpd").click(function() {
-				$.get("http://atomos.org.uk/downloads/latest-release.txt", function(a) {
-					if (a >= version) {
-						parent.location.replace("update.html");
-					}
-				});
+		$("#checkUpd").click(function() {
+			$.get("http://atomos.org.uk/downloads/latest-release.txt", function(a) {
+				if (a >= version) {
+					parent.location.replace("update.html");
+				}
 			});
-			$("[data-name=name]").text(build.name);
-			$("[data-name=version]").text(build.version);
-			$("[data-name=codename]").text(build.codename);
-			$("[data-name=build]").text(build.build);
+		});
+		$("[data-name=name]").text(build.name);
+		$("[data-name=version]").text(build.version);
+		$("[data-name=codename]").text(build.codename);
+		$("[data-name=build]").text(build.build);
 	})
+	const {
+		desktopCapturer,
+		screen,
+		shell,
+		ipcRenderer,
+		clipboard,
+		remote
+	} = require('electron');
+	const {
+	nativeImage} = remote;
+	const fs = require('fs')
+	const os = require('os')
+	const path = require('path')
+
+	function capture() {
+		console.log('Gathering screens...');
+		const thumbSize = determineScreenShotSize()
+		let options = {
+			types: ['screen'],
+			thumbnailSize: thumbSize
+		}
+
+		desktopCapturer.getSources(options, function(error, sources) {
+			if (error) return console.log(error)
+
+			sources.forEach(function(source) {
+				if (source.name === 'Entire screen' || source.name === 'Screen 1') {
+					const screenshotPath = path.join(os.tmpdir(), 'screenshot.png')
+					var pth = "/atomos/home/Pictures/screenshot_" + new Date().getTime() + ".png";
+					fs.writeFile(pth, source.thumbnail.toPng(), function(error) {
+						var ni = nativeImage.createFromBuffer(source.thumbnail.toPng());
+						if (error) {
+							var tray = new Tray("camera", "Snapshot error", "#dc3545");
+							tray.show();
+							tray.notify({
+								title: "Snapshot taking was not successful",
+								html: err
+							});
+						} else {
+							var tray = new Tray("camera", "Snapshot has been successfully taken", "#28a745");
+							tray.show();
+							tray.notify({
+								title: "Snapshot has been successfully taken",
+								html: "<div class='text-right'><button class='btn btn-sm btn-secondary' onclick='require(\"electron\").remote.BrowserWindow.fromId(" + app.id +
+									").webContents.send(\"copy-image\")'><i class='material-icons'>bookmark</i>Copy to Clipboard</button> <button class='btn btn-sm btn-primary' onclick='window.new(\"aos-caninet\", {path: \"" + pth +
+									"\"})'><i class='material-icons'>folder</i> Show in Cabinet</button></div>"
+							});
+						}
+						if (error) return console.log(error);
+						ipcRenderer.on('copy-image', function(e) {
+						console.log(ni)
+							clipboard.writeImage(ni);
+						})
+					})
+				}
+			})
+		})
+	}
+
+	function determineScreenShotSize() {
+		const screenSize = screen.getPrimaryDisplay().bounds
+		const maxDimension = Math.max(screenSize.width, screenSize.height)
+		return {
+			width: maxDimension * window.devicePixelRatio,
+			height: maxDimension * window.devicePixelRatio
+		}
+	}
 </script>

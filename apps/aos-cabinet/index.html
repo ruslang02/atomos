@@ -24,7 +24,7 @@
 		<button class="dropdown-item" data-location="/atomos/home/Videos/"><i class="material-icons text-danger mr-1">movie</i> Videos</button>
 	</ul>
 
-	<div class="files dropdown-menu" viewMode="list">
+	<div class="files dropdown-menu" viewMode="bigtiles">
 
 	</div>
 </section>
@@ -99,8 +99,8 @@
 			path: $(this).attr("data-location")
 		})
 	}).on("mouseup", "[type]", function() {
-		if ($(this).attr("type") == "file") {
-			$("#ofdFile").val($(this).children(".file-title").text());
+		if ($(this).attr("type") == "file" || $(this).attr("type") == "shortcut") {
+			$("#ofdFile").val($(this).attr("realname") || $(this).children(".file-title").text());
 			$(".ofdBar button.btn-primary").removeAttr("disabled");
 		} else {
 			$(".ofdBar button.btn-primary").attr("disabled", "disabled");
@@ -110,7 +110,12 @@
 		if (fm.action) submitFile();
 		else
 			window.fileOpen(fm.path + $(this).children(".file-title").text());
+	}).on("dblclick", "[type=shortcut]", function() {
+		if (fm.action) submitFile();
+		else
+			window.fileOpen(fm.path + $(this).attr("realname"));
 	});
+
 
 	if (fm.action) {
 		$("#sidebar").hide();
@@ -174,7 +179,8 @@
 					var shrt = fs.readFileSync(fm.path + item.name, "utf8");
 					shrt = $.parseJSON(shrt);
 					$(".files").append("<button type='shortcut' realname='" + item.name + "' class='file-item'><img src='" + shrt.icon + "'><div class='file-title'>" + shrt.title + "</div></button>")
-					$(".files .file-item").last().on("dblclick", function() {
+					$(".files .file-item").last().on("dblclick", function(e) {
+					    if(!fm.action) e.stopImmediatePropagation();
 						window.new(shrt.app, shrt.arguments || {});
 					})
 				} else $("div.files").append('<button data-mime="' + item.mimeType + '" class="dropdown-item file-item" type="' + item.type + '"><img src="' + item.icon +
@@ -223,12 +229,13 @@
 				} else if (stat.isDirectory()) fileRes.type = "folder";
 				else if (stat.isSymbolicLink()) {
 					fileRes.link = true;
+					try {
 					var link = fs.readlinkSync(path + file);
 					var statLink = fs.statSync((link.startsWith("/") ? link : path + link));
 					if (statLink.isFile()) {
 						fileRes.type = "file";
 						fileRes.mimeType = window.getMimeType(link.substring(link.lastIndexOf(".") + 1));
-					} else if (statLink.isDirectory()) fileRes.type = "folder";
+					} else if (statLink.isDirectory()) fileRes.type = "folder";} catch(e){}
 				} else return;
 				fileRes.atime = stat.atime;
 				fileRes.mtime = stat.mtime;
@@ -344,6 +351,9 @@
 			case "vmlarge":
 				$(".files").attr("viewMode", "bigtiles");
 				break;
+			case "vmgig":
+				$(".files").attr("viewMode", "gigtiles");
+				break;
 			case "sortaz":
 				fm.sorting = "A-Z";
 				break;
@@ -399,6 +409,7 @@
 				}, {
 					label: "Small icons",
 					type: "radio",
+					visible: !fm.desktop,
 					checked: fm.viewMode == "smalltiles",
 					click() {
 						doAction("vmsmall")
@@ -519,13 +530,14 @@
 				}
 			}]
 			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
-			fm.filesMenu.popup(fm.window);
+			fm.filesMenu.popup(fm.window, {async: true});
 		});
 
 		$("body").on("contextmenu", ".file-item[type]", function(e) {
 			e.stopPropagation();
-			var mime = $(this).attr("data-mime");
-			var file = fm.path + $(this).find(".file-title").text()
+			var mime = $(this).attr("data-mime") || "text/plain";
+			var file = fm.path + ($(this).attr("realname") ? $(this).attr("realname") : $(this).find(".file-title").text())
+			console.log(file);
 			var $this = $(this);
 			fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
 				if (!err) var assocs = $.parseJSON(data);
@@ -533,7 +545,7 @@
 				var appName = assocs.find(o => o.mime == mime);
 				if (appName) appName = appName["app"];
 				const menu = [{
-					label: "Open" + (($this.attr("type") == "folder") ? "" : (!err ? " " + appName : " in default application")),
+					label: ($this.attr("realname") === undefined ? "Open" + (($this.attr("type") == "folder") ? "" : (!err ? " " + appName : " in default application")) : "Execute"),
 					visible: (appName !== undefined) || ($this.attr("type") == "folder"),
 					click() {
 						$this.trigger("dblclick");
@@ -584,7 +596,7 @@
 						})
 					}
 				}]
-				Menu.buildFromTemplate(menu).popup(fm.window);
+				Menu.buildFromTemplate(menu).popup(fm.window, {async: true});
 			})
 		})
 	}
@@ -667,18 +679,24 @@
 	}
 
 	body.desktop .file-item {
-		color: white;
 		color: white !important;
 		text-shadow: 0 0px 4px rgb(0, 0, 0), 0 0px 7px rgb(0, 0, 0) !important;
 		width: 110px !important
 	}
 	body.desktop .file-item:hover {
-    box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255,255,255,0.5);
+        box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255,255,255,0.5);
 	}
 
 	body.desktop .file-title {
 		word-break: break-word;
-		line-height:1.5 !important
+		line-height:1.5 !important;
+		max-height:3rem !important;
+	}
+
+	body.desktop .file-item:active,
+	body.desktop .file-item:focus,
+	body.desktop .file-item:focus:active {
+        box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.5), 0 0 0 1px rgba(255,255,255,0.5);
 	}
 
 	[viewMode=list] .file-item {
@@ -742,14 +760,12 @@
 
 	.file-item:hover {
 		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.3);
-		outline: 1px solid rgba(0, 129, 194, 0.6);
 	}
 
 	.file-item:active,
 	.file-item:focus,
 	.file-item:focus:active {
 		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.5);
-		outline: 1px solid rgba(0, 129, 194, 1);
 	}
 
 	section {

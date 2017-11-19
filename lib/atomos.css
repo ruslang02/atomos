@@ -1,7 +1,6 @@
 @import "/atomos/lib/bootstrap.css";
 @import "/atomos/lib/jquery-ui.min.css";
 @import "/atomos/node_modules/material-design-icons/iconfont/material-icons.css";
-@import "/atomos/lib/font.css";
 @import "/atomos/lib/base.css";
 .files {
   height: 100%;
@@ -31,8 +30,16 @@ context-menu .dropdown-item {
   display: block;
 }
 
-button i.material-icons {
-  vertical-align: middle
+button.btn {
+  position: relative;
+overflow: hidden;
+z-index: 0;
+}
+
+button.btn i.material-icons {
+  font-size: 18px;
+    vertical-align: middle;
+    margin-top: -2px;
 }
 
 .dropdown-menu {

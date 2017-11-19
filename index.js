@@ -18,6 +18,7 @@ global.windowIcons = [];
 global.clipboards = {
   file: []
 };
+require('child_process').spawn('xfwm4');
 
 ipcMain.on("setArguments", function(event, args) {
   global.windowArgs[args.wid] = args.arguments || {};

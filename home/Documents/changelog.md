@@ -1,5 +1,27 @@
 # Changelog
-## Updates from 0.3.3 to 0.4
+ 
+## 0.4.2
+ - _boombox_ now can work begin hiden in a tray, a popup with a playlist, controls and context menu
+ - Tray API modified
+ - Control Panel
+ - Wallpaper selection
+ - Desktop is now generated using _aos-cabinet_
+ - _proton_ was given tab functionality, history navigation
+ 
+ - Fixed _aos-typewriter_ "Save" command and "Edit" commands
+ - Fixed menu behavior
+ - _aos-appchooserdialog_ updated to today's standards, including a notification
+ - _ash_ was fixed and now can execute Linux apps
+ - Fixed bugs related to popups
+ - _angles_ opens files in an already opened tab if it is empty + show/hide tab/toolbar
+ 
+## 0.4.1
+ - Multiple bug fixes
+ - Notifcations API
+ - _aos-typewriter_ was added some notification interaction
+ - End disk image Linux updated
+
+## 0.4 RTM
  - API removal
  - New apps _boombox_, _angles_, _ash_, _brush_
  - Improved stability and fixed lots of bugs
@@ -8,92 +30,7 @@
  - WebGL support
  - Wi-Fi support
  - Node.JS, Electron and RequireJS integration
-
-## 0.4.1
- - Multiple bug fixes
- - Notifcations API
- - _aos-typewriter_ was added some notification interaction
- - End disk image Linux updated
-
-## 0.4 RTM
- - _boombox_ was added to system (music player with playlist support)
-
-## 0.4-beta3
- - Multiple fixes in _aos-cabinet_
- - Fixed element's name in _properties_
- - Added sorting to Start Menu
- - _aos-cabinet-createFolder_'s and _aos-cabinet-createFile_'s keyboard navigation improved
- - FileClipboard API rewritten using Electron's globals
- - Full file management in Desktop
- - Taskbar edits
- - And other bug fixes and feature additions were made
-
-## 0.4-beta2
- - Keyboard shortcuts were added to some apps
- - _angles_ now autodetects file type and applies specific syntax highlighting
- - _aos-cabinet_ was given some keyboard shortcuts and hidden files toggler
- - Desktop was given a minimal context menu
- - _aos-cabinet-createFolder_ and _aos-cabinet-createFile_ are updated
- - --disable-gpu flag is not appended by default, do it by yourself
- - Little bug/feature fixes globally
- - _aos-terminal_ removed due to uselessness
- - _ash_ made non-hidden
- - _ace-code-editor_ and _wifi-control_ npm packages removed due to uselessness
- - package.json was updated for npm to like it :)
- - Quick Places were fixed and you can shutdown, reboot or enter to CLI from it
-
-## 0.4-dev40
- - Repository reverted back to 0.4-dev26 with some edits from 0.4-dev30 because of full unstabillity of whole system and problems with opening any menus in some systems.
-
-## 0.4-dev33
- - _aos-typewriter_ is now using new menus
- - Deleted debug commands
-
-## 0.4-dev32
- - Menus are a bit stabilized and are replaced in some apps
- - Submenus are disabled for now
- - _aos-cabinet_ was given view preferences
-
-## 0.4-dev30
- - Context menus are now unlinked from Electron API, fully Bootstrapish generation
- - Very unstable menus
- - Desktop is now working again
- - _aos-cabinet-createFolder_ and _aos-cabinet-createFile_ are restored, but no entry in menus again
-
-## 0.4-dev26
- - _aos-photoframe_ was removed, brush replaced it
- - _aos-appchooserdialog_ was updated to work in the 0.4
- - _brush_ now can open files via path
- - _proton_ now can open local files
- - framework update
-
-## 0.4-dev25
- - Zooming is now available in all apps using Ctrl + and Ctrl -
- - Angles was given the ability to change syntax highlighting and theme settings
- - Dropdown now get a scrollbar if don't fit inside app
- - npm package "atomos" now renamed to "atomos-framework" to reserve the name
- - Changed all connections with that package
- - Small fixes is "index.js"
-
-## 0.4-dev23
-
- - New applications:
-   - ash - still in development, terminal emulator, can be used in different apps
-   - aos-terminal - ash with extensions
-   - brush - image editor based on Cropper.js
-   - angles - code editor based on Ace.js
-   - properties - dialog that shows the properties of file
-
- - Fixed menu items in aos-typewriter
- - Improved context menu integration
- - 'cropperjs' npm package was integrated
-
-## 0.4-dev15
-
- - 70% of code rewritten
- - Using Electron's WebView instead of <iframe>'s
- - atomOS API is now unavailable
- - Node.JS is available in all applications
+ - Full stack optimization
 
 ## 0.3.3
 
