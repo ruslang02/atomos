@@ -38,5 +38,6 @@
     "name": "Videos",
     "icon": "/atomos/icons/folders-small/Movies Folder.png",
     "location": "/atomos/home/Videos/"
-  }]
+  }],
+  "fillMode": "fill"
 }

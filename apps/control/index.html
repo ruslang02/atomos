@@ -454,7 +454,7 @@
 					let bg = $("[data-location='Control Center / Desktop Preferences'] #image").css("background-image");
 					let url = new URL(bg.substring(5, bg.length - 2));
 					console.log(url);
-					fs.readFile(url.pathname.substring(1))
+					fs.readFile(url.pathname)
 							.then(function (bin) {
 								fs.writeFile(app.getPath("appData") + "/wallpaper.jpg", bin)
 										.then(function () {

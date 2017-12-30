@@ -109,6 +109,7 @@
 		fm.action = fm.arguments["action"];
 		loadAccessBar();
 		loadDeviceBar();
+		if(process.platform !== "win32") fs.watch("/dev/disk/by-uuid", loadDeviceBar)
 	}
 	if (!(fm.desktop || fm.files.attr("viewMode") === "gigtiles")) {
 		window.addEventListener("beforeunload", function (e) {
@@ -848,6 +849,7 @@
 		display: inline-block;
 		overflow-y: auto;
 		z-index: 0;
+		max-width:350px;
 	}
 
 	#sidebar section {

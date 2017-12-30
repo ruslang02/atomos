@@ -38,7 +38,7 @@
         if (stderr.includes("incorrect password"))
           $(".text-danger").css("opacity", 1);
         else {
-          if (args.win) {
+          if (args.win && BrowserWindow.fromId(args.win)) {
             BrowserWindow.fromId(args.win).webContents.send("return-sudo", {
               error: error,
               stdout: stdout,
