@@ -1,0 +1,44 @@
+<section>
+	<img src="atom.png" style="width:64px;margin-right: 1em;">
+</section>
+<main style="flex-grow: 2;">
+	<p>This PC runs <b data-name="name"></b></p>
+	<p><b>Release</b> <span data-name="version"></span></p>
+	<p><b>CodeName</b> <span data-name="codename"></span></p>
+	<p><b>Build</b> <span data-name="build"></span></p>
+	<p>Based on Ubuntu 16</p>
+	<button class="btn btn-sm btn-primary ml-2 float-right" onclick="window.close()">Close</button>
+</main>
+<style>
+	body {
+		padding: 1em;
+		display: flex;
+	}
+
+	p {
+		margin: 0;
+		line-height: 2;
+	}
+	* {
+		transition: none !important
+	}
+</style>
+
+<script defer>
+	require('atomos-framework');
+	const fs = require('fs-extra');
+	const win = require("electron").remote.getCurrentWindow();
+	window.onload = function() {
+		setTimeout(function() {
+			win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+		}, 100);
+	};
+
+	fs.readJson("/atomos/RELEASE.json", function(err, build) {
+		document.querySelector("[data-name=name]").innerText = build.name;
+		document.querySelector("[data-name=version]").innerText = build.version;
+		document.querySelector("[data-name=codename]").innerText = build.codename;
+		document.querySelector("[data-name=build]").innerText = build.build;
+	});
+
+</script>

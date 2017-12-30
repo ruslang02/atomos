@@ -1,0 +1,26 @@
+<clock-menu class="bg-light border border-dark card">
+  <div class="card-body text-right float-right">
+    <h1 class="display-3" data-value="clock">21:39<br></h1>
+  <h4 data-value="date">21 September 2017</h4></div>
+  <div class="list-group list-group-flush">
+    <div class="list-group-item d-flex">
+        <i class="material-icons md-18">volume_down</i> 
+        <input class="form-control" oninput="changeVolume(this)" type="range"> 
+        <i class="material-icons md-18">volume_up</i>
+    </div>
+    <button type="button" class="list-group-item list-group-item-action" onclick="window.new('control')">Settings</button>
+  </div>
+</clock-menu>
+<link rel="stylesheet" href="/atomos/sys/internetMenu/index.css" />
+<script>
+  require("atomos-framework");
+  const proc = require("child_process");
+  window.jQuery = window.$ = require("jquery");
+  function changeVolume(element) {
+    proc.spawn("amixer", ["sset", "Master", element.value + "%"]);
+  }
+setInterval(function() {
+  $("[data-value=clock]").text(new Date().toLocaleTimeString({}, {hour: '2-digit', minute: '2-digit'}))
+  $("[data-value=date]").text(new Date().toLocaleDateString({}, {day: '2-digit', month: 'long', year: 'numeric'}));
+}, 100);
+</script>

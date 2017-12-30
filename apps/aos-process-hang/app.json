@@ -1,0 +1,13 @@
+{
+  "name": "Application became unresponsive",
+  "shortName": "Unresponsiveness dialog",
+  "description": "A simple dialog for killing hanging processes.",
+  "maximizable": false,
+  "minimizable": false,
+  "modal": true,
+  "width": 350,
+  "height": 125,
+  "resizable": false,
+  "hidden": true,
+  "icon": "/atomos/icons/Hang.png"
+}

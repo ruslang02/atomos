@@ -1,0 +1,27 @@
+[
+  {
+    "id": 0,
+    "error": "No error",
+    "solution": "Everything fine..."
+  }, {
+    "id": 1,
+    "error": "Function json_encode() has thrown an error",
+    "solution": "It is probably not a user but a server error. Possible solution is to edit PHP code manually and contact developer."
+  }, {
+    "id": 2,
+    "error": "File/directory expected but got something else",
+    "solution": "Some application (or you) sent wrong data to the server, that is why it refused to do any harmless operations. Check your application for correctness."
+  }, {
+    "id": 3,
+    "error": "We were unable to read/write contents of file/directory",
+    "solution": "Check file/directory permissions, which you want to work with."
+  }, {
+    "id": 4,
+    "error": "Function parse_ini_file() has thrown an error",
+    "solution": "It is probably not a user but a server error. Possible solution is to edit PHP code manually and contact developer."
+  }, {
+    "id": 100,
+    "error": "We don't know what kind of error occured",
+    "solution": "Err, to tell you the truth, we do not know what kind of error we have encountered. Check PHP file for correctness."
+  }
+]

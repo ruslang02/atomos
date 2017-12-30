@@ -1,0 +1,42 @@
+{
+  "foldersFirst": true,
+  "showHidden": true,
+  "iconSize": "list",
+  "accessList": [{
+    "type": "header",
+    "name": "Favorites"
+  }, {
+    "type": "item",
+    "name": "Home",
+    "icon": "/atomos/icons/folders-small/User Folder.png",
+    "location": "/atomos/home/"
+  }, {
+    "type": "item",
+    "name": "Root",
+    "icon": "/atomos/icons/folders-small/Dossier.png",
+    "location": "/"
+  }, {
+    "type": "header",
+    "name": "Libraries"
+  }, {
+    "type": "item",
+    "name": "Documents",
+    "icon": "/atomos/icons/folders-small/Documents Folder.png",
+    "location": "/atomos/home/Documents/"
+  }, {
+    "type": "item",
+    "name": "Music",
+    "icon": "/atomos/icons/folders-small/Music Folder.png",
+    "location": "/atomos/home/Music/"
+  }, {
+    "type": "item",
+    "name": "Pictures",
+    "icon": "/atomos/icons/folders-small/Pictures Folder.png",
+    "location": "/atomos/home/Pictures/"
+  }, {
+    "type": "item",
+    "name": "Videos",
+    "icon": "/atomos/icons/folders-small/Movies Folder.png",
+    "location": "/atomos/home/Videos/"
+  }]
+}

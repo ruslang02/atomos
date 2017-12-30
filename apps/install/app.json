@@ -1,0 +1,6 @@
+{
+	"name": "App Installer",
+	"shortName": "Installer",
+	"icon": "/atomos/icons/Software.png",
+	"description": "Install external AtomOS-compatible apps on your PC"
+}

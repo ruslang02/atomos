@@ -1,0 +1,113 @@
+body, html {
+  background: none !important;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+start-menu .panel, network-menu .panel {
+  flex-grow: 2;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+start-menu .nav, network-menu .nav {
+  flex-shrink: 0;
+  padding-top: 5px;
+}
+
+start-menu .list-item, network-menu .list-item {
+  text-align: left;
+  padding: 5px;
+  line-height: 26px;
+  border: 0;
+  color: black;
+  font-size: 14px;
+  display: inline-block;
+  width:100%;
+  white-space: nowrap;
+}
+
+start-menu .list-item img, network-menu .list-item img {
+  width: 48px;
+  float: left;
+  margin-right: 5px;
+}
+
+start-menu .list-item name, network-menu .list-item name {
+  font-size: large;
+  display: inline-block;
+  padding-top: 2px;
+}
+
+start-menu .list-item description, network-menu .list-item description {
+  white-space: normal;
+  color: slategrey;
+  line-height: 17px;
+  display: inline-block;
+  width: calc(100% - 52px);
+  padding-bottom: 2px;
+}
+
+start-menu hr, network-menu hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 5px -5px;
+}
+
+start-menu, network-menu, clock-menu.card {
+  display: flex;
+  flex-direction: column;
+  background: #F3F3F3;
+  padding: 5px;
+  height: 100%;
+  border: 1px solid #007bff;
+  border-radius:0;
+}
+
+wifi-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+start-menu .cssload-inner, network-menu .cssload-inner {
+  border-color: #286090;
+}
+
+start-menu profile-section {
+  position: relative;
+}
+
+start-menu profile-section img {
+  height: 64px !important;
+}
+
+clock-menu.card {
+  height: auto;
+  left: auto;
+  right: 0;
+  padding: 0;
+}
+
+wifi-overlay img {
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    left: 0;
+    right: 0;
+    -webkit-animation:spin 4s linear infinite;
+    -moz-animation:spin 4s linear infinite;
+    animation:spin 4s linear infinite;
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }

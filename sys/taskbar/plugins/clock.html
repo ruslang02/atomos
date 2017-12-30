@@ -1,0 +1,66 @@
+<script>
+	$("tray").append("<button name=\"clock\" style='color: #343a40' title='Time/Date loading...'></button>");
+	let clockMenu;
+	clockMenu = new BrowserWindow({
+		width: 400,
+		height: 258,
+		type: "notification",
+		frame: false,
+		closable: false,
+		maximizable: false,
+		fullscreenable: false,
+		minimizable: false,
+		movable: false,
+		resizable: false,
+		x: width - 400 - 10,
+		y: height - 258 - 28 - 10,
+		show: false,
+		alwaysOnTop: true
+	});
+	clockMenu.loadURL("file://" + app.getAppPath() + "/sys/clockMenu/index.html");
+	$("[name=clock]").on("click", function () {
+		if (clockMenu.isVisible()) {
+			clockMenu.hide();
+			wc.send("deactivate-tray", {
+				win: 'clock'
+			})
+		} else {
+			clockMenu.show();
+			clockMenu.setAlwaysOnTop(true);
+			wc.send("activate-tray", {
+				win: 'clock'
+			})
+		}
+	}).on("contextmenu", function (e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
+		Menu.buildFromTemplate([{
+			label: "Time/Date Settings",
+			click() {
+				window.new("control", {
+					section: "Date and Time"
+				})
+			}
+		}, {type: 'separator'}, {
+			label: "Taskbar Settings",
+			click() {
+				window.new("control", {
+					section: "Taskbar"
+				})
+			}
+		}]).popup();
+	})
+	clockMenu.on('blur', function () {
+		wc.send("deactivate-tray", {
+			win: 'clock'
+		});
+		clockMenu.hide()
+	});
+	setInterval(function () {
+		// noinspection JSCheckFunctionSignatures
+		$("[name=clock]").text(new Date().toLocaleTimeString({}, {
+			hour: '2-digit',
+			minute: '2-digit'
+		}))
+	}, 1000);
+</script>

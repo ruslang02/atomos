@@ -1,0 +1,64 @@
+<p class="lead px-2 pt-2">
+	Installed Applications
+</p>
+<apps>
+
+</apps>
+<script>
+	require("atomos-framework");
+	const {
+		remote,
+		ipcRenderer
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	const fs = require("fs-extra");
+	window.$ = require("jquery");
+	window.onload = function () {
+		fs.readdir(app.getAppPath() + "/apps")
+				.then(function (apps) {
+					apps.forEach(function (prog) {
+						fs.readJson(app.getAppPath() + "/apps/" + prog + "/app.json")
+								.then(function (info) {
+									$("apps").append(`
+<div class="card mb-2">
+<div class="media py-2">
+  <img class="mx-2" style="width:48px" src="${info.icon}">
+  <div class="media-body">
+    <h5 class="mt-0 mb-1">${info.shortName}</h5>
+    ${info.description}
+    <button class="btn btn-sm btn-danger material-icons" onclick="uninstall('${prog}')">close</button>
+  </div>
+</div></div>
+								`)
+								})
+					})
+				})
+	};
+
+	function uninstall(prog) {
+		ipcRenderer.sendToHost("uninstall", prog);
+	}
+</script>
+<style>
+	body {
+		padding: 0.5rem;
+	}
+
+	.media .btn-danger {
+		position: absolute;
+		right: 0;
+		top: 0;
+		padding: 0;
+		margin: 0.5rem;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity ease .2s;
+	}
+
+	.media:hover .btn-danger {
+		visibility: visible;
+		opacity: 1;
+	}
+</style>

@@ -1,0 +1,266 @@
+<div class="btn-toolbar">
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      File
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="fileMenu">
+      <button class="dropdown-item" data-key="Ctrl+N" onclick="window.new('brush')">New Window</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+O">Open...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+S">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+S">Save as...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Alt+F4">Exit</button>
+    </div>
+  </div>
+  <div class="btn-group btn-group-sm">
+    <button class="btn-secondary btn material-icons" action="crop">crop</button>
+    <button class="btn-primary btn material-icons" action="move">photo</button>
+  </div>
+  <div class="btn-group btn-group-sm">
+    <button class="btn-secondary btn material-icons" action="rotate_-90">rotate_left</button>
+    <button class="btn-secondary btn material-icons" action="rotate_90">rotate_right</button>
+  </div>
+  <div class="btn-group btn-group-sm dropdown">
+    <button class="btn-primary btn material-icons" action="crop_16_9">crop_landscape</button>
+    <button class="btn-secondary btn material-icons" action="crop_1_1">crop_square</button>
+    <button class="btn-secondary btn material-icons" action="crop_free">crop_free</button>
+    <button id="cropMenu" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <b class="caret"></b>
+      </button>
+    <div class="dropdown-menu" aria-labelledby="cropMenu">
+      <div class="dropdown-header">Crop mode</div>
+      <button class="dropdown-item active" action="crop_16_9">16:9 (Landscape)</button>
+      <button class="dropdown-item" action="crop_4_5">4:5 (Portrait)</button>
+      <button class="dropdown-item" action="crop_3_2">3:2</button>
+      <button class="dropdown-item" action="crop_5_4">5:4</button>
+      <button class="dropdown-item" action="crop_7_5">7:5</button>
+      <button class="dropdown-item" action="crop_1_1">1:1</button>
+      <button class="dropdown-item" action="crop_free">Free</button>
+    </div>
+  </div>
+  <div class="btn-group btn-group-sm">
+    <button class="btn-primary btn material-icons" action="grid">grid_on</button>
+    <button class="btn-primary btn material-icons" action="texture">texture</button>
+  </div>
+  <div class="spacer" style="flex-grow:2"></div>
+  <div class="btn-group btn-group-sm m-0" style="display:none" id="applyButtons">
+    <button class="btn btn-danger material-icons">close</button>
+    <button class="btn btn-success"><i class="material-icons p-0 align-text-bottom">done</i> Apply</button>
+  </div>
+</div>
+<cropper>
+  <img id="image" src="">
+</cropper>
+<script>
+  let args = require('atomos-framework').arguments
+  const {
+    remote,
+    ipcRenderer
+  } = require("electron")
+  const fs = require('fs');
+  window.jQuery = window.$ = require("jquery");
+  window.Popper = require("popper.js");
+  require("bootstrap")
+  let saveState;
+  let file = "";
+  let cropper;
+  let toBuffer = require('blob-to-buffer')
+  let guides = true;
+  let background = true;
+  let win = remote.getCurrentWindow();
+  ipcRenderer.on("return-file", function(event, arg) {
+    loadFile(arg);
+  })
+  ipcRenderer.on("save-file", function(event, arg) {
+    saveFile(arg);
+  })
+  window.onload = function() {
+    initCropper();
+    console.log(args.path)
+  if (args.path) loadFile(args.path);
+  $("[data-key='Ctrl+O']").click(function() {
+    window.new("aos-cabinet", {
+      action: "ofd",
+      path: "/atomos/home/Pictures/",
+      title: "Choose an image..."
+    }, {
+      parent: win,
+      modal: true
+    });
+  })
+  $("[data-key='Ctrl+S']").click(function() {
+    saveFile(file);
+  })
+  $("[data-key='Ctrl+Shift+S']").click(function() {
+    openSaveDialog(file);
+  })
+  $("[data-key='Alt+F4']").click(function() {
+    win.close();
+  })
+  $("[action=crop]").click(function() {
+    $("[action=move]").removeClass("btn-primary").addClass("btn-secondary");
+    $(this).addClass("btn-primary").removeClass("btn-secondary");
+    cropper.crop()
+    $("#applyButtons").show();
+  })
+  $("[action=move]").click(function() {
+    $("[action=crop]").removeClass("btn-primary").addClass("btn-secondary");
+    $(this).addClass("btn-primary").removeClass("btn-secondary");
+    cropper.clear()
+  })
+  $("[action='rotate_-90']").click(function() {
+    cropper.rotate(-90);
+    $("#applyButtons").show();
+  })
+  $("[action='rotate_90']").click(function() {
+    cropper.rotate(90);
+    $("#applyButtons").show();
+  })
+  $("[action=grid]").click(function() {
+    guides = (guides ? false : true)
+    $(this).toggleClass("btn-primary").toggleClass("btn-secondary")
+    cropper.destroy();
+    initCropper();
+  })
+  $("[action=texture]").click(function() {
+    background = (background ? false : true)
+    $(this).toggleClass("btn-primary").toggleClass("btn-secondary")
+    cropper.destroy();
+    initCropper();
+  })
+  $("#applyButtons .btn-success").click(function() {
+    saveState = cropper.getCroppedCanvas().toDataURL();
+    $("#image")[0].src = cropper.getCroppedCanvas().toDataURL();
+    cropper.destroy();
+    initCropper();
+    $("#applyButtons").hide();
+  })
+  $("#applyButtons .btn-danger").click(function() {
+    cropper.destroy();
+    $("#image")[0].src = saveState;
+    initCropper();
+  })
+  $("[action*='crop_']").click(function() {
+    $("[action*='crop_']").removeClass("active").removeClass("btn-primary");
+    $("button[action*='crop_']").addClass("btn-secondary")
+    $("button[action=" + $(this).attr("action") + "]").addClass("btn-primary").removeClass("btn-secondary")
+    $(".dropdown-item[action=" + $(this).attr("action") + "]").addClass("active");
+  })
+  $("[action='crop_1_1']").click(function() {
+    cropper.setAspectRatio(1);
+  })
+  $("[action='crop_5_4']").click(function() {
+    cropper.setAspectRatio(5 / 4);
+  })
+  $("[action='crop_4_5']").click(function() {
+    cropper.setAspectRatio(4 / 5);
+  })
+  $("[action='crop_16_9']").click(function() {
+    cropper.setAspectRatio(16 / 9);
+  })
+  $("[action='crop_3_2']").click(function() {
+    cropper.setAspectRatio(3 / 2);
+  })
+  $("[action='crop_7_5']").click(function() {
+    cropper.setAspectRatio(7 / 5);
+  })
+  $("[action='crop_free']").click(function() {
+    cropper.setAspectRatio(0);
+  })
+}
+  function loadFile(path) {
+    saveState = "";
+    file = path;
+    cropper.destroy();
+    $("#image")[0].src = path;
+    initCropper();
+  }
+
+  function saveFile(path) {
+    cropper.getCroppedCanvas().toBlob(function(blob) {
+      toBuffer(blob, function(err, buffer) {
+        if (err) console.log("toBuffer failed" + err);
+        else {
+          fs.writeFile((path ? path : file), buffer, function(err) {
+            if (!err) console.error(err);
+          })
+
+        }
+      })
+    })
+  }
+
+  function openSaveDialog() {
+    window.new("aos-cabinet", {
+      action: "sfd",
+      path: file.substring(0, file.lastIndexOf("/")) || "/atomos/home/Pictures",
+      title: "Choose save path..."
+    }, {
+      parent: win,
+      modal: true
+    });
+
+  }
+
+  function initCropper() {
+    cropper = new Cropper($("img")[0], {
+      autoCrop: false,
+      dragMode: "move",
+      aspectRatio: 16 / 9,
+      background: background,
+      guides: guides,
+      cropstart: function(e) {
+        if (e.detail.action == "move") {
+          $("[action=crop]").removeClass("btn-primary").addClass("btn-secondary");
+          $("[action=move]").addClass("btn-primary").removeClass("btn-secondary");
+          $("#applyButtons").hide();
+        } else {
+          $("[action=move]").removeClass("btn-primary").addClass("btn-secondary");
+          $("[action=crop]").addClass("btn-primary").removeClass("btn-secondary");
+          $("#applyButtons").show();
+        }
+      },
+      ready: function(e) {
+        saveState = cropper.getCroppedCanvas().toDataURL();
+        $("#image")[0].src = saveState;
+      }
+    });
+  }
+</script>
+<link href="/atomos/node_modules/cropperjs/dist/cropper.min.css" rel="stylesheet">
+<script src="/atomos/node_modules/cropperjs/dist/cropper.min.js"></script>
+<style>
+  cropper {
+    flex-grow: 2;
+    display: flex;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .btn-group .material-icons {
+    font-size: 18px;
+    padding: 0.07rem 0.38rem;
+  }
+
+  .btn-group {
+    margin-right: 0.5rem
+  }
+
+  cropper .cropper-container {
+    flex-grow: 2 !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  img {
+    max-width: 100%;
+    /* This rule is very important, please do not ignore this! */
+  }
+</style>

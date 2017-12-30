@@ -1,0 +1,63 @@
+<input title="Calculation result" type='text' class='form-control form-control-sm'>
+<div>
+  <div><button class='btn btn-sm btn-secondary' value='Math.sin()'>sin</button><button class='btn btn-sm btn-secondary' value='Math.cos()'>cos</button><button class='btn btn-sm btn-secondary' value='Math.tg()'>tg</button><button class='btn btn-sm btn-secondary'>/</button></div>
+  <div><button class='btn btn-sm btn-secondary'>7</button><button class='btn btn-sm btn-secondary'>8</button><button class='btn btn-sm btn-secondary'>9</button><button class='btn btn-sm btn-secondary' value='*'>&times;</button></div>
+  <div><button class='btn btn-sm btn-secondary'>4</button><button class='btn btn-sm btn-secondary'>5</button><button class='btn btn-sm btn-secondary'>6</button><button class='btn btn-sm btn-secondary'>-</button></div>
+  <div><button class='btn btn-sm btn-secondary'>1</button><button class='btn btn-sm btn-secondary'>2</button><button class='btn btn-sm btn-secondary'>3</button><button class='btn btn-sm btn-secondary'>+</button></div>
+  <div><button class='btn btn-sm btn-danger'>C</button><button class='btn btn-sm btn-secondary'>0</button><button class='btn btn-sm btn-secondary'>.</button><button class='btn btn-sm btn-primary'>=</button></div>
+</div>
+<style>
+  div>button {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    width: calc(25% - 4px);
+  }
+
+  div>button:last-child {
+    margin-right: 0
+  }
+
+  body {
+    padding: 1em;
+  }
+
+  input {
+    margin-bottom: 1em;
+  }
+	* {
+		transition: none !important
+	}
+</style>
+
+<script>
+require('atomos-framework');
+let res = document.querySelector(".form-control");
+const win = require("electron").remote.getCurrentWindow();
+window.onload = function() {
+  document.querySelector(".btn-secondary").addEventListener("click", function() {
+	  res.focus();
+    let data;
+    if (this.value) data = this.value;
+    else data = this.innerText;
+    let startPos = res.selectionStart;
+    let endPos = res.selectionEnd;
+	  res.value = res.value.substring(0, startPos) +
+      data +
+			  res.value.substring(endPos, res.value.length);
+      if (res.value.includes(")")) {
+	      res.selectionStart = res.selectionStart - 1;
+	      res.selectionEnd = res.selectionStart;
+      }
+  });
+	document.querySelector(".btn-primary").addEventListener("click", calc);
+	document.querySelector(".btn-danger").addEventListener("click", function() {
+    res.value = "";
+  });
+  setTimeout(function() {
+	  win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+  }, 100);
+};
+  function calc() {
+    res.value = eval(res.value);
+  }
+</script>

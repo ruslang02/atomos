@@ -1,0 +1,80 @@
+<start-menu class="bg-light">
+	<profile-section class="bg-light p-1">
+		<profile-name class="lead">atomOS</profile-name>
+		<atomos-version>
+			<div class="btn-group btn-group-sm float-right">
+				<button type="button" class="btn btn-danger" style="line-height:1.1" onclick="atomos.shutdown()"><i class="material-icons">power_settings_new</i> Shut down</button>
+				<button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"
+								aria-haspopup="true" aria-expanded="false">
+					<span class="sr-only">Toggle Dropdown</span>
+				</button>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" onclick="atomos.suspend()" href="#">Suspend</a>
+					<a class="dropdown-item" onclick="atomos.lock()" href="#">Lock Screen</a>
+					<a class="dropdown-item" onclick="atomos.stopx()" href="#">Log out</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" onclick="atomos.reboot()" href="#">Restart</a>
+					<a class="dropdown-item" onclick="atomos.shutdown()" href="#">Shut down</a>
+				</div>
+			</div>
+		</atomos-version>
+	</profile-section>
+	<div class="panel">
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="folders">
+				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('documents')})"
+					 class="list-item btn btn-light">
+					<img src="/atomos/icons/Documents Folder.png">
+					<name>Documents</name>
+					<br>
+					<description>Work with all your documents in one folder</description>
+				</a>
+				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('music')})" class="list-item btn btn-light">
+					<img src="/atomos/icons/Music Folder.png">
+					<name>Music</name>
+					<br>
+					<description>Listen to the music from one location</description>
+				</a>
+				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('pictures')})" class="list-item btn btn-light">
+					<img src="/atomos/icons/Pictures Folder.png">
+					<name>Pictures</name>
+					<br>
+					<description>View your photos here</description>
+				</a>
+				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('videos')})" class="list-item btn btn-light">
+					<img src="/atomos/icons/Movies Folder.png">
+					<name>Videos</name>
+					<br>
+					<description>See all your movies available locally</description>
+				</a>
+				<hr/>
+				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('home')})" class="list-item btn btn-light">
+					<img src="/atomos/icons/User Folder.png">
+					<name>Home</name>
+					<br>
+					<description>All your storage lays here</description>
+				</a>
+				<a href="#" onclick="window.new('aos-cabinet',{path: '/'})" class="list-item btn btn-light">
+					<img src="/atomos/icons/Binder.png">
+					<name>Root</name>
+					<br>
+					<description>The whole system is yours, be careful!</description>
+				</a>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="applications"></div>
+		</div>
+	</div>
+	<div class="nav nav-pills nav-fill" role="tablist">
+		<a href="#folders" class="nav-link active nav-item" aria-controls="home" role="tab" data-toggle="tab">Folders</a>
+		<a href="#applications" class="nav-link nav-item" aria-controls="messages" role="tab" data-toggle="tab">Applications</a>
+	</div>
+</start-menu>
+<link rel="stylesheet" href="/atomos/sys/internetMenu/index.css"/>
+<script>
+	const app = require("electron").remote.app;
+	window.$ = window.jQuery = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	require("atomos-framework");
+	const atomos = require("./index");
+</script>

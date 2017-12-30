@@ -1,0 +1,10 @@
+{
+  "name": "Typewriter",
+  "shortName": "Typewriter",
+  "description": "Make a note or edit a file easily",
+  "icon": "/atomos/icons/Typewriter.png",
+  "width": 450,
+  "height": 350,
+  "minHeight": 300,
+  "minWidth": 400
+}

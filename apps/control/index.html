@@ -1,0 +1,513 @@
+<link href="/atomos/lib/jquery-ui.min.css" rel="stylesheet">
+<center class="btn-menu bg-light">
+	<button action="up" class="btn btn-outline-primary btn-sm material-icons">keyboard_arrow_left</button>
+	<b action="path" style="-webkit-app-region: drag">Control Center</b>
+	<div class="dropdown">
+		<button action="menu" class="btn btn-outline-primary btn-sm material-icons dropdown-toggle" type="button"
+						id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">reorder
+		</button>
+		<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+			<button class="dropdown-item" onclick="window.new('aos-about')">About PC</button>
+			<button class="dropdown-item" onclick="window.close()">Exit</button>
+		</div>
+	</div>
+</center>
+<section active data-location="Control Center" class="flex-column col-lg-3">
+	<group>
+		<p class="my-2"><b>Appearance</b></p>
+		<a class="btn btn-outline-primary border-0" href="#" data-to="Control Center / Desktop Preferences">
+			<img src="/atomos/icons/Desktop.png" class="mb-2">
+			<div>Desktop Preferences</div>
+		</a>
+		<a class="btn btn-outline-primary border-0" href="#" data-to="Control Center / Taskbar">
+			<img src="/atomos/icons/Taskbar.png" class="mb-2">
+			<div>Taskbar</div>
+		</a>
+	</group>
+	<group>
+		<p class="my-2"><b>Behaviour</b></p>
+		<a class="btn btn-outline-primary border-0" href="#" data-to="Control Center / Autostart">
+			<img src="/atomos/icons/Run Command.png" class="mb-2">
+			<div>Autostart</div>
+		</a>
+		<a class="btn btn-outline-primary border-0 d-none" href="#" data-to="Control Center / Keybindings">
+			<img src="/atomos/icons/Keyboard.png" class="mb-2">
+			<div>Keybindings</div>
+		</a>
+		<a class="btn btn-outline-primary border-0" href="#" data-to="Control Center / Date and Time">
+			<img src="/atomos/icons/Watch.png" class="mb-2">
+			<div>Date and Time</div>
+		</a>
+		<a class="btn btn-outline-primary border-0" href="#" onclick="window.new('market', {action: 'installed'})"
+			 data-to="Control Center">
+			<img src="/atomos/icons/Software.png" class="mb-2">
+			<div>Manage Apps</div>
+		</a>
+	</group>
+</section>
+
+<section data-location="Control Center / Desktop Preferences" class="flex-column">
+	<div class="my-2 mb-5 container" style="max-width:600px">
+		<p class="lead mb-3 mt-1">Manage your Desktop</p>
+		<img src="transparent.png" id="image">
+		<div class="row">
+			<div class="col-sm-5">
+				<button class="btn btn-secondary btn-block mt-2">Choose Image...</button>
+			</div>
+			<div class="col-sm-5 ml-auto">
+				<select class="custom-select form-control mt-2 w-100">
+					<option selected>Fill</option>
+					<option>Tiled</option>
+					<option>Center</option>
+					<option>Stretch</option>
+				</select>
+			</div>
+		</div>
+	</div>
+
+	<div class="text-right fixed-bottom bg-light p-2 mt-auto">
+		<button class="btn btn-primary btn-sm">Apply</button>
+	</div>
+</section>
+
+<section data-location="Control Center / Keybindings" class="p-2 flex-column">
+	<div class="row m-0">
+		<dt class="col">Increase Volume</dt>
+		<dd class="col">
+			<button class="btn btn-secondary btn-sm btn-block">AudioVolumeUp</button>
+		</dd>
+	</div>
+	<div class="row m-0">
+		<dt class="col">Decrease Volume</dt>
+		<dd class="col">
+			<button class="btn btn-secondary btn-sm btn-block">AudioVolumeDown</button>
+		</dd>
+	</div>
+	<div class="row m-0">
+		<dt class="col">Launch Browser</dt>
+		<dd class="col">
+			<button class="btn btn-secondary btn-sm btn-block">LaunchMail</button>
+		</dd>
+	</div>
+	<div class="row m-0">
+		<dt class="col">Launch Search</dt>
+		<dd class="col">
+			<button class="btn btn-secondary btn-sm btn-block">BrowserSearch</button>
+		</dd>
+	</div>
+	<div class="row m-0">
+		<dt class="col">Minimize all windows</dt>
+		<dd class="col">
+			<button class="btn btn-secondary btn-sm btn-block">BrowserHome</button>
+		</dd>
+	</div>
+	<div class="row m-0">
+		<dt class="col">Launch Calculator</dt>
+		<dd class="col">
+			<button class="btn btn-secondary btn-sm btn-block">LaunchApplication2</button>
+		</dd>
+	</div>
+
+	<style>
+		section[data-location="Control Center / Keybindings"] .col {
+			line-height: 30px;
+			flex-shrink: 0;
+		}
+
+		section[data-location="Control Center / Keybindings"] .row {
+			flex-shrink: 0;
+		}
+	</style>
+</section>
+
+<section data-location="Control Center / Taskbar" class="p-2 flex-column">
+	<p class="lead mb-3 mt-1">Item Order</p>
+	<div class="dropdown-menu mb-2"></div>
+	<div class="d-flex" style="flex-shrink:0">
+		<button class="btn btn-success btn-sm"><i class="material-icons">add</i> Add Widget</button>
+		<div class="spacer" style="flex-grow:2"></div>
+	</div>
+	<div class="spacer" style="flex-grow:2"></div>
+	<div class="d-flex mt-2" style="flex-shrink:0">
+		<b class="text-danger" style="display:none;line-height: 30px;">Restart is required to apply changes</b>
+		<div class="spacer" style="flex-grow:2"></div>
+		<button class="btn btn-primary btn-sm">Apply and Restart</button>
+	</div>
+	<style>
+		section[data-location="Control Center / Taskbar"] .dropdown-menu {
+			position: static;
+			display: inline-block;
+			z-index: 0;
+		}
+	</style>
+	<script>
+		let taskbarData;
+		window.addEventListener("load", function () {
+			fs.readJson(app.getPath("appData") + "/taskbar.json")
+					.then(function (data) {
+						taskbarData = data;
+						data.order.forEach(function (element) {
+							$('section[data-location="Control Center / Taskbar"] .dropdown-menu').append("<div class='dropdown-item' id='" + element + "'>" + element[0].toUpperCase() + element.substring(1).split(/(?=[A-Z])/).join(" ") + "</div>")
+						});
+						$('section[data-location="Control Center / Taskbar"] .dropdown-menu').sortable({
+							items: ".dropdown-item"
+						});
+						$("section[data-location=\"Control Center / Taskbar\"] .dropdown-item").on("contextmenu", function (e) {
+							e.preventDefault();
+							let that = this;
+							remote.Menu.buildFromTemplate([{
+								label: "Remove",
+								click() {
+									$(that).remove();
+								}
+							}]).popup()
+						})
+						$('section[data-location="Control Center / Taskbar"] .btn-primary').click(function () {
+							let arr = $("section[data-location=\"Control Center / Taskbar\"] .dropdown-item").toArray();
+							arr.forEach(function (item, index) {
+								arr[index] = item.innerText.substring(0, 1).toLowerCase() + item.innerText.substring(1).split(" ").join("");
+							});
+							fs.writeJson(app.getPath("appData") + "/taskbar.json", {order: arr})
+									.then(function () {
+										remote.BrowserWindow.fromId(2).reload();
+
+									})
+									.catch(console.error)
+						})
+						$('section[data-location="Control Center / Taskbar"] .btn-success').click(function () {
+							let NewWidget = new BrowserWindow({
+								resizable: false,
+								maximizable: false,
+								minimizable: false,
+								width: 300,
+								height: 200,
+								show: true,
+								fullscreenable: false,
+								modal: true,
+								parent: win,
+								title: "New widget",
+								icon: "file:///" + app.getAppPath() + "/icons/Control Panel.png"
+							});
+							NewWidget.setMenu(null);
+							NewWidget.loadURL("file:///" + __dirname + "/newWidget.html");
+							fs.writeJson(app.getPath("appData") + "/taskbar.json")
+									.then(function () {
+										remote.BrowserWindow.fromId(2).webContents.send("update");
+
+									})
+						});
+					})
+		})
+	</script>
+</section>
+
+<section data-location="Control Center / Date and Time" class="p-2 flex-column">
+	<p class="lead mb-2 mx-2">Time and Date options</p>
+	<h1 data-name="time" class="display-1 mt-0 ml-2"></h1>
+	<p class="lead mb-4 ml-3" data-name="date"></p>
+	<button class="btn btn-primary" onclick="changeDate()">Change...</button>
+	<script>
+		function changeDate() {
+			let ChangeDateWindow = new BrowserWindow({
+				resizable: false,
+				maximizable: false,
+				minimizable: false,
+				width: 300,
+				height: 200,
+				show: true,
+				fullscreenable: false,
+				modal: true,
+				parent: win,
+				title: "Modify system time",
+				icon: "file:///" + app.getAppPath() + "/icons/Control Panel.png"
+			});
+			ChangeDateWindow.setMenu(null);
+			ChangeDateWindow.loadURL("file:///" + __dirname + "/changeTime.html");
+		}
+		setInterval(function() {
+			$("[data-name=time]").text(new Date().toLocaleTimeString({}, {
+				hour: '2-digit',
+				minute: '2-digit'
+			}));
+			$("[data-name=date]").text(new Date().toLocaleDateString({}, {day: '2-digit', month: 'long', year: 'numeric'}));
+		}, 1000)
+	</script>
+</section>
+<section data-location="Control Center / Autostart" class="p-2 flex-column">
+	<p class="lead mb-2 mx-2">View your Autostart list</p>
+	<div class="dropdown-menu mb-2 d-inline-block" id="autostart" style="position:static;flex-grow:2;overflow:auto;">
+		<button disabled class="dropdown-item">No items found</button>
+	</div>
+	<div class="d-inline-flex" style="flex-shrink:0">
+		<button class="btn btn-success btn-sm mr-2"><i class="material-icons">add</i> Add Item</button>
+		<button class="btn btn-warning btn-sm mr-2 material-icons" disabled>mode_edit</button>
+		<button class="btn btn-danger btn-sm mr-2 material-icons" disabled>delete</button>
+	</div>
+	<style>
+		#autostart .ui-selected {
+			color: #fff;
+			text-decoration: none;
+			background-color: #007bff;
+		}
+
+		#autostart .ui-selecting {
+			color: #fff;
+			text-decoration: none;
+			background-color: #00abff;
+		}
+
+		#autostart * {
+			cursor: default;
+			user-select: none;
+		}
+
+		.ui-selectable-helper {
+			border: 2px solid #002bff;
+			background: #007bff;
+			box-shadow: 0px 0px 5px -2px black;
+			opacity: 0.5;
+			z-index: 10010;
+		}
+	</style>
+</section>
+<style>
+	p {
+		margin: 0;
+	}
+
+	section {
+		display: none !important;
+		flex-grow: 2;
+		overflow: auto;
+		height: 100%;
+	}
+
+	.btn-link img {
+		max-width: 48px
+	}
+
+	section[active] {
+		display: flex !important;
+	}
+
+	.btn-outline-primary {
+		color: black
+	}
+
+	@media (max-width: 990px) {
+		section[data-location="Control Center"] {
+			padding: 0 0.5rem;
+		}
+
+		section[data-location="Control Center"] .btn {
+			text-align: center;
+			padding: 0.25rem 0.5rem;
+			font-size: 1em;
+			max-width: 100px;
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			display: inline-flex;
+			flex-direction: column;
+			align-items: center;
+			vertical-align: top;
+		}
+
+		section[data-location="Control Center"] img {
+			width: 48px;
+		}
+	}
+
+	@media (min-width: 991px) {
+		section[data-location="Control Center"] {
+			display: flex !important;
+			position: fixed;
+			left: 0;
+			background: white;
+			padding: 0.5rem 0;
+			border-right: 1px solid darkgray;
+			top: 31px;
+		}
+
+		section[data-location="Control Center"] .btn {
+			text-align: left !important;
+			width: 100%;
+			border-radius: 0;
+			padding: 0.5rem 1rem;
+			display: inline-block;
+		}
+
+		section[data-location="Control Center"] b {
+			padding: 0.5rem 1rem;
+			line-height: 0;
+			display: inline-block;
+		}
+
+		section[data-location="Control Center"] img {
+			display: none;
+		}
+
+		section:not([data-location="Control Center"]) {
+			width: 75%;
+			margin-left: auto;
+		}
+	}
+
+	section[data-location="Control Center"] .btn-link .text-center {
+		width: 100%;
+		white-space: normal;
+	}
+
+	b {
+		font-variant: small-caps;
+		text-transform: lowercase;
+		color: #333;
+		font-size: 1em;
+	}
+
+	body {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		height: 100vh;
+	}
+
+	#image {
+		flex-grow: 2;
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: center center;
+		border: 3px solid black;
+		width: 100%;
+	}
+
+	.btn-menu b {
+		flex-grow: 2;
+		line-height: 28px;
+	}
+
+	* {
+		font-size: 1em
+	}
+
+	.btn-menu .material-icons {
+		font-size: 24px;
+		width: 30px;
+		height: 30px;
+		padding: 0 !important
+	}
+</style>
+<script>
+	const args = require('atomos-framework').arguments;
+	const fs = require('fs-extra');
+	const {
+		ipcRenderer,
+		remote
+	} = require('electron');
+	const {
+		app,
+		BrowserWindow
+	} = remote;
+	window.$ = window.jQuery = require("jquery");
+	$.getScript("/atomos/node_modules/jquery-ui-npm/jquery-ui.min.js");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const win = remote.getCurrentWindow();
+	const path = require("path");
+	const URL = require("url").URL;
+	ipcRenderer.on("return-file", function (event, path) {
+		$("#image").css("background-image", "url(file:///" + encodeURI(path).replace(/%5C/g, "/") + ")");
+	});
+	ipcRenderer.on("addWidget", function (e, name) {
+		$("section[data-location=\"Control Center / Taskbar\"] .dropdown-menu").append("<div class='dropdown-item'>" + name.name + "</div>")
+	});
+
+	fs.readJson(app.getPath("appData") + "/autostart.json")
+			.then(function (items) {
+				window.ASitems = items;
+				$("#autostart").html("");
+				items.forEach(function (item) {
+					$("#autostart").append("<div class='dropdown-item'>" + item.name + "</div>");
+				})
+				$("#autostart").selectable({
+					selected: function (event, ui) {
+						if ($("#autostart .ui-selected").length === 1) $("[data-location=\"Control Center / Autostart\"] .btn-warning").removeAttr("disabled");
+						$("[data-location=\"Control Center / Autostart\"] .btn-danger").removeAttr("disabled");
+					}
+				});
+			})
+			.catch(function () {
+				fs.writeJson(app.getPath("appData") + "/autostart.json", [])
+						.catch(function () {
+							new Notification({
+								title: "Failed to create Autostart file",
+								html: "Please check permissions in your Home and .config folders.",
+								icon: "perm_media",
+								color: "#dc3545"
+							});
+						})
+			})
+
+	window.onload = function () {
+		$("#image").css("background-image", "url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg)");
+		$("[data-location='Control Center / Desktop Preferences'] .btn-primary").click(
+				function () {
+					let bg = $("[data-location='Control Center / Desktop Preferences'] #image").css("background-image");
+					let url = new URL(bg.substring(5, bg.length - 2));
+					console.log(url);
+					fs.readFile(url.pathname.substring(1))
+							.then(function (bin) {
+								fs.writeFile(app.getPath("appData") + "/wallpaper.jpg", bin)
+										.then(function () {
+											fs.readJson(app.getPath("appData") + "/aos-cabinet.json")
+													.then(function (sets) {
+														sets.fillMode = $("[data-location='Control Center / Desktop Preferences'] select").val().toLowerCase();
+														fs.writeJson(app.getPath("appData") + "/aos-cabinet.json", sets)
+																.then(function () {
+																	BrowserWindow.fromId(1).webContents.send("changeWallpaper");
+																})
+													})
+										})
+							})
+				});
+		$("[data-location='Control Center / Desktop Preferences'] .btn-secondary").click(
+				function () {
+					window.new("aos-cabinet", {
+						path: app.getPath("pictures"),
+						action: "ofd",
+						okText: "Select",
+						cancelText: "Cancel",
+						title: "Choose a wallpaper..."
+					}, {
+						modal: true,
+						parent: win
+					})
+				})
+		$("[action=up]").click(function () {
+			let dest = $("b[action=path]").text();
+			if (!dest.includes("/")) return;
+			$("section").removeAttr("active");
+			$('[data-location="Control Center"] .btn').removeClass("active");
+			$("[data-location='" + path.dirname(dest).trim() + "']").attr("active", "active");
+			$("b[action=path]").text(path.dirname(dest).trim());
+			win.setTitle(path.dirname(dest).trim())
+		});
+		$('[data-location="Control Center"] .btn').click(function (e) {
+			e.preventDefault();
+			$('[data-location="Control Center"] .btn').removeClass("active");
+			$(this).addClass("active")
+			$("section").removeAttr("active");
+			$("[data-location='" + $(this).attr("data-to") + "']").attr("active",
+					"active");
+			$("b[action=path]").text($(this).attr("data-to"));
+			win.setTitle($(this).attr("data-to").substring($(this).attr("data-to").lastIndexOf(
+					"/") + 1).trim())
+		});
+		if (args.section) $('[data-location="Control Center"] .btn:contains("' + args.section + '")').first().click();
+	};
+</script>
+<context-menu class="dropdown-menu">
+	<!--
+		This is experimental and I do not know whether I will make Bootstrap-based menus a standard, but in apps they
+		should be generated by the developers themselves.
+	-->
+</context-menu>

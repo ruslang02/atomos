@@ -1,0 +1,12 @@
+{
+  "name": "WARNING: No command specified",
+  "shortName": "Angles warning dialog",
+  "description": "A warning Angles dialog saying that you should make build/run commands by yourself.",
+  "maximizable": false,
+  "minimizable": false,
+  "modal": true,
+  "width": 350,
+  "height": 126,
+  "resizable": false,
+  "hidden": true
+}

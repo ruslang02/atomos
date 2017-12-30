@@ -1,0 +1,147 @@
+<section id="searching">
+	<div class="text-center mb-2"><img src="/atomos/icons/Loader.png" class="spin"></div>
+	<p class="lead">We are checking for updates...</p>
+</section>
+<section id="updavailable">
+	<div class="text-center mb-2"><img src="/atomos/icons/Installing Updates.png"></div>
+	<p class="lead">An update is available!</p>
+	<p class="mb-1">Current build: <b data-value="current"></b></p>
+	<p class="mb-3">Latest build: <b data-value="latest"></b></p>
+	<div>
+		<button class="btn btn-sm btn-primary w-50" onclick="update()">Update</button>
+	</div>
+</section>
+<section id="updating">
+	<div class="text-center mb-2"><img src="/atomos/icons/Loader.png" class="spin"></div>
+	<p class="lead">Updating the system...</p>
+	<p class="w-75 mx-auto">DO NOT do anything with the PC right now, the update may fail, leaving you with a broken system.</p>
+	<pre>Initializing...</pre>
+</section>
+<section id="noupd">
+	<div class="text-center mb-2"><img src="/atomos/icons/Thumbs Up.png"></div>
+	<p class="lead">All up to date!</p>
+	<p class="mb-3 w-75 mx-auto">Thank you for looking up for updates.<br>We apprechiate an interest in our product!</p>
+	<div>
+		<button class="btn btn-sm btn-primary w-75" onclick="window.close()">Close</button>
+	</div>
+</section>
+<section id="updated">
+	<div class="text-center mb-2"><img src="/atomos/icons/Thumbs Up.png"></div>
+	<p class="lead">Update complete!</p>
+	<p class="mb-3 w-75 mx-auto">Whew, we are done!<br>We need to make a restart for all changes to apply.<br><small>And that is actually unbelievable that everything is alright...</small></p>
+	<div>
+		<button class="btn btn-sm btn-primary w-50" onclick="app.relaunch(); app.exit(0);">Restart GUI</button>
+	</div>
+</section>
+<style>
+	body {
+		display: flex;
+	}
+
+	section {
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		text-align: center;
+		width: 100%;
+	}
+
+	.spin {
+		animation: spin 2s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	section:target {
+		display: flex;
+	}
+</style>
+<script>
+	require("atomos-framework");
+	const {
+		remote
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	window.$ = require("jquery");
+	const win = remote.getCurrentWindow();
+	window.addEventListener("hashchange", function () {
+		switch (location.hash) {
+			case "#searching":
+				win.setTitle("Searching for updates...");
+				break;
+			case "#updavailable":
+				win.setTitle("Update Available");
+				win.show();
+				break;
+			case "#noupd":
+				win.setTitle("All up to date!");
+				win.show();
+				break;
+			case "#updating":
+				win.setTitle("Updating in process...");
+				break;
+			case "#updated":
+				win.setTitle("Update completed!");
+				win.show();
+				break;
+		}
+	});
+	$.getJSON(app.getAppPath() + "/RELEASE.json")
+			.then(function (release) {
+				window.release = release;
+				$.getJSON("https://api.github.com/repos/" + release.repository + "/branches/" + release.branch)
+						.then(function (branch) {
+							let version = branch.commit.commit.message;
+							version = version.substring(version.indexOf("[") + 1, version.indexOf("]"));
+							if (parseInt(release.build) < version) updateAvailable(release.build, version);
+							else location.hash = "#noupd"
+						})
+			});
+
+	location.hash = "#searching";
+
+	function updateAvailable(current, latest) {
+		$("[data-value=current]").text(current);
+		$("[data-value=latest]").text(latest);
+		location.hash = "#updavailable";
+	}
+
+	function update() {
+		let rm;
+		location.hash = "#updating";
+		$("pre").text("Removing previous version...");
+		if (process.platform === "win32") rm = require("child_process").spawn("rd", ["/Q", '/S', app.getAppPath()], {
+			shell: true
+		}); else rm = require("child_process").spawn("rm", ["-rf", app.getAppPath()]);
+		rm.on('close', update2);
+	}
+
+	function update2(code, signal) {
+		console.log(code, signal);
+		$("pre").text("Downloading a new version...");
+		let git = require("child_process").spawn("git", ["clone", "https://github.com/" + release.repository + ".git", "-b", release.branch, app.getAppPath()]);
+		git.on('close', function (code, signal) {
+			console.log(code, signal);
+			if (code === 0) {
+				$("pre").text("Installing NPM dependencies...");
+				let npm = require("child_process").spawn("npm", ["install"],
+						{
+							cwd: app.getAppPath(),
+							shell: true
+						});
+				npm.on('close', function (code, signal) {
+					location.hash = "#updated";
+				});
+			}
+		})
+	}
+</script>

@@ -1,0 +1,271 @@
+<kbd>
+	<div class="text-center">
+		<img src="/atomos/apps/aos-about/atom.png" class="my-3" style="height: 40vh;filter: brightness(1000%)"><br>
+		<h3>atomOS Terminal</h3>The first next-gen web terminal.
+	</div>
+</kbd>
+<cwd><input title type="text"></cwd>
+<cmd><input title type="text"></cmd>
+<suggestions></suggestions>
+<script>
+	const args = require('atomos-framework').arguments;
+	const fs = require('fs-extra');
+	const {
+		remote,
+		ipcRenderer
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	window.$ = require('jquery');
+	let commands = [];
+	let $cmd = $("cmd input");
+	let $cwd = $("cwd input");
+	let $kbd = $("kbd");
+	$cmd
+			.on("input", autocomplete)
+			.on("keydown", function (e) {
+				if (event.keyCode === 13) {
+					execute();
+					$(this).val("")
+				}
+			});
+	$cwd.val(app.getPath("home"));
+	if (args.cwd) $cwd.val(args.cwd);
+	if (args.path) {
+		if (fs.lstatSync(args.path).isDirectory())
+			$cwd.val(args.path);
+		else {
+			$cmd.val(args.path);
+			execute();
+			$cmd.val("")
+		}
+	}
+
+	$("body").on('click', 'suggestions button', function () {
+		$("input").val($(this).text());
+		autocomplete();
+	}).on("click", "kbd .expander button", function () {
+		if ($(this).parent().hasClass("show"))
+			$(this).text("Expand output").parent().removeClass("show");
+		else $(this).text("Collapse output").parent().addClass("show");
+	});
+	fs.readdir("/atomos/apps", function (err, files) {
+		files.forEach(function (file) {
+			fs.stat("/atomos/apps/" + file, function (err, stat) {
+				if (stat.isDirectory()) commands.push(file);
+			})
+		})
+	});
+	function autocomplete() {
+		$("suggestions").html("");
+		let value = $("cmd input").val();
+		let sugCount = 0;
+		commands.forEach(function (sug) {
+			if (sug.indexOf(value) !== -1 && value !== sug && value.trim() !== "") {
+				sug = sug.replace(value, "<b>" + value + "</b>");
+				if (sugCount !== 3) {
+					$("suggestions").append("<button>" + sug + "</button>");
+					sugCount++
+				} else return;
+			}
+			if (value === sug) $("suggestions").html("");
+
+		})
+	}
+
+	function addMessage(text) {
+		$("kbd > .text-center").remove();
+		if (text.length > 1000) {
+			text = "<button>Expand output</button>" + text;
+		}
+		text = text.replace(/\n/gi, "<br>");
+		$kbd.append("<div " + (text.length > 1000 ? "class='expander'" : "") +
+				">" + text + "</div>");
+		$kbd[0].scrollTop = $kbd[0].scrollHeight;
+		return text;
+	}
+
+	function execute() {
+		let command = $("cmd input").val();
+		$kbd.append("<hr />");
+		addMessage(" > " + command);
+		fs.access("/atomos/apps/" + command.substring(0, (command.indexOf(" ") !== -1 ?
+				command.indexOf(" ") : Infinity)).trim(), function (err) {
+			if (err) {
+				require('child_process').exec(command, {
+					cwd: $("cwd input").val().trim(),
+					shell: "/bin/bash"
+				}, function (err, stdout, stderr) {
+					if (err) addMessage("<error>" + err + "</error>");
+					else if (stderr) addMessage("<error>" + stderr + "</error>");
+					addMessage(stdout)
+				})
+			} else {
+				if (command.startsWith("sudo")) {
+					window.new(command.substring(0, (command.indexOf(" ") !== -1 ? command.indexOf(
+							" ") : Infinity)).trim(), {
+						command: command.substring(command.indexOf(" ")).trim(),
+						cwd: $("cwd input").val().trim(),
+						title: "Authentication is needed to run command as administrator",
+						win: remote.getCurrentWindow().id
+					}, {
+						parent: remote.getCurrentWindow(),
+						modal: true
+					});
+					ipcRenderer.removeListener("return-sudo", returnSudo);
+					ipcRenderer.on("return-sudo", returnSudo)
+				} else window.new(command.substring(0, (command.indexOf(" ") !== -1 ?
+						command.indexOf(" ") : Infinity)).trim(), command.substring(command.indexOf(
+						" ")).trim(), {parent: remote.getCurrentWindow()})
+			}
+		})
+	}
+	ipcRenderer.on("stdout", function(e, stdout) {
+		addMessage(stdout);
+	});
+	function returnSudo(e, res) {
+		if (res.stderr) {
+			res.stderr = res.stderr.replace("[sudo] password for " + process.env.USER +
+					": ", "");
+			if (res.stderr.trim()) addMessage("<error>" + res.stderr + "</error>")
+		}
+		addMessage(res.stdout)
+	}
+</script>
+
+<link href="/atomos/lib/atomos.css" rel="stylesheet">
+<style>
+	kbd {
+		display: block;
+		flex-grow: 2;
+		border-radius: 0;
+		border: 0;
+		overflow: auto;
+	}
+
+	hr {
+		border-color: grey
+	}
+
+	error {
+		color: orangered;
+	}
+
+	suggestions {
+		position: fixed;
+		bottom: 20px;
+		width: calc(100% - 10px);
+		display: flex;
+		flex-direction: column;
+		background: #394047;
+		margin: 5px;
+		border: 1px solid #111316;
+	}
+
+	suggestions:empty {
+		display: none;
+	}
+
+	suggestions button {
+		background: none;
+		text-align: left;
+		border: 0;
+		color: white;
+		padding: 3px 10px;
+	}
+
+	html body button:hover {
+		background: rgba(255, 255, 255, 0.3);
+	}
+
+	button:active,
+	button:hover:active,
+	button:active:hover {
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	cwd {
+		background: #394047;
+		border-style: solid;
+		border-color: #111316;
+		border-width: 1px 0;
+		font-size: small;
+		color: lightgrey;
+		padding: 1px 5px;
+	}
+
+	cmd {
+		background: #212529;
+		color: white;
+		font-family: monospace;
+		padding: 0 5px;
+		height: 20px;
+		display: flex;
+		flex-shrink: 0;
+	}
+
+	.expander {
+		font-size: 0;
+	}
+
+	.expander.show {
+		font-size: inherit;
+	}
+
+	.expander button {
+		font-size: 12px;
+		border: 0;
+		background: #394047;
+		color: white;
+		font-family: inherit;
+		display: block;
+		width: 100%;
+		text-align: left;
+		padding: 2px 5px;
+		margin: 3px 0;
+	}
+
+	kbd * {
+		word-break: break-all;
+	}
+
+	.expander button::after {
+		font-family: "Material Icons", sans-serif;
+		font-size: 17px;
+		float: right;
+		margin: -4px 0;
+	}
+
+	cwd::after {
+		content: "working directory";
+		color: darkgrey;
+		font-size: smaller;
+		position: absolute;
+		line-height: 19px;
+		right: 0;
+		margin-right: 5px;
+	}
+
+	cmd::before {
+		content: ">";
+		padding: 0 5px;
+	}
+
+	cmd input,
+	cwd input {
+		background: none;
+		border: none;
+		outline: 0;
+		color: white;
+		flex-grow: 2;
+		font-size: smaller;
+		width: 100%;
+	}
+</style>

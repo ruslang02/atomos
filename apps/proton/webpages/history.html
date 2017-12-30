@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>History</title>
+</head>
+<body class="p-3">
+<div class="container">
+	<p class="lead">Your browsing history <span class="float-right" style="display:none"><b id="selected" class="align-middle">Selected: 0</b><button class="btn btn-sm btn-danger material-icons p-1 ml-2" style="font-size: 24px">delete</button></span></p>
+	<div class="dropdown-menu d-block w-100">
+		<button class="dropdown-item" disabled>No items to show</button>
+	</div>
+</div>
+<style>
+	.dropdown-menu {
+		position:static;
+		max-height:unset !important;
+		z-index:0 !important;
+	}
+	.dropdown-item.ui-selecting {
+		color: #fff;
+		text-decoration: none;
+		background-color: #0096ff;
+	}
+	.dropdown-item {
+		overflow:hidden;
+		display:block;
+	}
+	.ui-selectable-helper {
+		position: absolute;
+		border:2px solid #006bff;
+		background: rgba(0, 123, 255, 0.5);
+		z-index:1000;
+	}
+	.container {
+		min-height:100vh;
+	}
+	body {
+		overflow-x: hidden;
+	}
+</style>
+<script>
+	require("atomos-framework");
+	const {
+		remote
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	const fs = require("fs-extra");
+	window.$ = window.jQuery = require("jquery");
+	$.getScript(app.getAppPath() + "/node_modules/jquery-ui-npm/jquery-ui.min.js");
+	$(".dropdown-menu").html("");
+
+	fs.readJson(app.getPath("appData") + "/proton.json")
+			.then(function(config) {
+				config.history.reverse();
+				config.history.forEach(function(item) {
+					$(".dropdown-menu").append("<button class='dropdown-item' time='" + item.time + "'>" + item.title + " <address class='ml-2 mb-0 small d-inline'>" + item.url + "</address><time class='float-right'>" + new Date(item.time).toLocaleString() + "</time></button>");
+				});
+				$("body").selectable({
+					classes: {
+						"ui-selected": "active"
+					},
+					cancel: ".btn-danger",
+					filter: ".dropdown-item",
+					selecting: listUpdate,
+					selected: listUpdate,
+					unselecting: listUpdate,
+					unselected: listUpdate
+				});
+				$(".btn-danger").click(function() {
+					fs.readJson(app.getPath("appData") + "/proton.json")
+							.then(function(config) {
+								let newconfig = config;
+								$(".ui-selected").each(function() {
+									let that = $(this);
+									console.log(that);
+									config.history.forEach(function(item, index) {
+										let servertime = item.time;
+										let clienttime = parseInt(that.attr('time'));
+										if(servertime === clienttime)
+											newconfig.history[index] = 0;
+									})
+									newconfig.history = newconfig.history.filter(function(v) {
+										return v !== 0;
+									})
+								})
+								fs.writeJson(app.getPath("appData") + "/proton.json", newconfig)
+										.then(function() {
+											location.reload()
+										})
+										.catch(console.error)
+							});
+
+				})
+			})
+			.catch(function() {
+				$(".dropdown-menu").html('<button class="dropdown-item" disabled>Configuration file not available.</button>');
+			});
+	function listUpdate() {
+		let length = $(".dropdown-item.ui-selected").length + $(".dropdown-item.ui-selecting").length;
+		if(length > 0)
+			$("#selected").text("Selected: " + length).parent().show();
+		else $("#selected").parent().hide();
+	}
+</script>
+</body>
+</html>

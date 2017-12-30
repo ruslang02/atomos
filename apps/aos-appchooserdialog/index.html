@@ -1,0 +1,119 @@
+<content class="p-2 d-flex flex-column h-100">
+  <header class="d-flex">
+    <img class="mr-2" src="/atomos/icons/Ask Question.png" />
+    <div>We do not know how to open file with mime type "<span id="mime"></span>". Please specify an app that could open it:</div>
+  </header>
+
+  <select size="10">
+
+  </select>
+
+  <footer class="text-right mt-2">
+    <button class="btn btn-sm btn-secondary" onclick="win.close()">Cancel</button>&nbsp;&nbsp;
+    <button class="btn btn-sm btn-primary">Open File</button>
+  </footer>
+</content>
+<style>
+  select {
+    flex-grow: 2;
+    overflow: auto;
+    font-size: small;
+    outline: none !important;
+  }
+
+  img {
+    width: 48px;
+    height: 48px;
+  }
+
+  select option {
+    padding: 0.25rem;
+  }
+</style>
+
+<script>
+  let args = require('atomos-framework').arguments;
+  let path = args.path;
+  const {
+    remote
+  } = require('electron');
+  const app = remote.app;
+  const fs = require('fs-extra');
+  window.$ = window.jQuery = require('jquery');
+  let win = remote.getCurrentWindow();
+  if (!(args.path && args.mimeType)) {
+    ErrorProcessor("To open application \"openFile\", you need to specify file's path and it's mime type.");
+    win.close();
+  }
+  let assocs;
+  fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function(err, assocs) {
+    if (err) {
+      ErrorProcessor(err);
+      return;
+    }
+    let recom = "";
+    assocs.forEach(function(assoc) {
+      if (assoc.mime === args.mimeType) recom = assoc.app;
+    })
+
+    listApps();
+    $("option:first-child").prop("selected", "selected");
+    $("#mime").text(args.mimeType);
+    $(".btn-primary").click(function() {
+      let fass = assocs.find(o => o.mime == $("#mime").text());
+      if (fass) assocs[assocs.indexOf(fass)].app = $("select").val();
+      else assocs.push({
+        mime: $("#mime").text(),
+        app: $("select").val()
+      });
+
+      fs.writeJson(app.getPath("appData") + "/associations.json", assocs, function(err) {
+        if (err)
+          ErrorProcessor(err);
+        else new Notification({
+          title: "New association added",
+          body: "The next time you open files like this, you won't get that dialog again.",
+          icon: "done",
+          color: "#28a745"
+        });
+      	window.new($("select").val(), {
+        	path: path
+    		}).then(window.close,console.error)
+      });
+    })
+  });
+
+
+  function listApps(path = "/atomos/apps") {
+    fs.readdir(path, function(err, dir) {
+      dir.forEach(function(item) {
+        if (item.toLowerCase() == "app.json") {
+          fs.readJson(path + "/app.json", function(err, app) {
+            if (!app.hidden)
+              $("select").append('<option value="' +
+                path.substring(path.lastIndexOf("/") + 1) + '">' + app.shortName + '</option>');
+          })
+          let list = $("option").get();
+          list.sort(function(a, b) {
+            return $(a).text().toUpperCase().localeCompare($(b).text().toUpperCase());
+          })
+          $.each(list, function(idx, itm) {
+            $("select").append(itm);
+          });
+        } else if (fs.statSync(path + "/" + item).isDirectory()) {
+          listApps(path + "/" + item);
+        }
+      })
+    })
+
+  }
+
+  function ErrorProcessor(err) {
+    new Notification({
+      title: "<i>aos-appchooserdialog</i> has encountered an error",
+      body: err,
+      color: "#dc3545",
+      icon: "error"
+    });
+  }
+</script>

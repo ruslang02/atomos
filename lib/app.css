@@ -1,0 +1,14 @@
+body {
+  display: flex;
+align-items: stretch;
+flex-direction: column;
+height: 100%;
+}
+.btn-toolbar {
+  padding: 5px;
+  border-bottom: 1px solid lightgray;
+		display: flex;
+		margin: 0;
+		flex-shrink: 0;
+}
+.btn-group:first-child {margin:0}

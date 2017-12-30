@@ -1,0 +1,31 @@
+<nav-bar class="navbar navbar-expand-xs navbar-light bg-light navbar navbar-default fixed-bottom dropup"></nav-bar>
+<link rel="stylesheet" href="index.css" />
+<script>
+  const fs = require('fs-extra');
+  const {
+    remote,
+    ipcRenderer,
+    screen
+  } = require("electron");
+  const {
+    app,
+    BrowserWindow,
+    Menu
+  } = remote;
+  const {
+    width,
+    height
+  } = screen.getPrimaryDisplay().bounds;
+  const win = remote.getCurrentWindow();
+  const wc = remote.getCurrentWebContents();
+  window.jQuery = window.$ = require("jquery");
+  $("body").contextmenu(function(e) {
+	  e.preventDefault();
+	  Menu.buildFromTemplate([{
+		  label: "Taskbar Settings",
+		  click() {window.new("control", {section: "Taskbar"})}
+	  }]).popup(win)
+  });
+  require("atomos-framework");
+  require("./index");
+</script>

@@ -1,0 +1,305 @@
+<div class="btn-toolbar bg-light">
+  <div class="btn-group dropdown btn-group-sm">
+    <button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      File
+      <b class="caret"></b>
+    </button>
+    <div class="dropdown-menu" aria-labelledby="fileMenu">
+      <button class="dropdown-item" data-key="Ctrl+Shift+N" data-description="Opens new Text Editor window" onclick="window.new('notepad')">New Window</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+O" data-description="Opens a file from file system">Open...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+S" data-description="Saves opened file" onclick="save()">Save</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+S" data-description="Saves opened file with specific name and extension">Save as...</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Alt+F4" data-description="Exits from this app">Exit</button>
+    </div>
+  </div>
+
+  <div class="btn-group btn-group-sm dropdown">
+    <button id='editMenu' class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Edit
+      <b class="caret"></b></button>
+    <div class="dropdown-menu" aria-labelledby="editMenu">
+      <button class="dropdown-item" data-key="Ctrl+Z" data-description="Undoes most recent operation">Undo</button>
+      <button class="dropdown-item" data-key="Ctrl+Shift+Z" data-description="Redoes undone operation">Redo</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+X" data-description="Places selected text into the clipboard and deletes it">Cut</button>
+      <button class="dropdown-item" data-key="Ctrl+C" data-description="Places selected text into the clipboard">Copy</button>
+      <button class="dropdown-item" data-key="Ctrl+V" data-description="Pastes text placed in the clipboard">Paste</button>
+      <button class="dropdown-item" data-key="Del" data-description="Deletes selected text">Delete</button>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item" data-key="Ctrl+A" data-description="Selects the whole text">Select All</button>
+    </div>
+  </div>
+</div>
+<textarea title autofocus></textarea>
+<div class="statusBar bg-light d-flex p-1">
+  <div id="menuDescription"></div>
+  <div id="editInfo">Line: 0</div>
+</div>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .dropdown>button {
+    border: 0 !important;
+  }
+
+  textarea {
+    border-radius: 0;
+    background: white;
+    border: 0;
+    box-shadow: none !important;
+    resize: none;
+    flex-grow: 2;
+    width: 100%;
+    overflow: auto;
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  #menuDescription {
+    flex-grow: 2;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+</style>
+
+<script defer>
+  const args = require('atomos-framework').arguments;
+  const ipcRenderer = require('electron').ipcRenderer;
+  const fs = require('fs');
+  const {
+    remote
+  } = require('electron');
+  const {
+    Menu,
+    app
+  } = remote;
+  const MAX_SIZE = 51240;
+  window.jQuery = window.$ = require("jquery");
+  window.Popper = require("popper.js");
+  require("bootstrap");
+
+  let taMenu;
+
+  let win = remote.getCurrentWindow();
+  let fileName = undefined;
+  initContextMenus();
+
+  window.onload = function() {
+    $(window).keypress(function(event) {
+      if (event.ctrlKey && event.shiftKey && event.key === "N") window.new('aos-typewriter');
+      if (event.ctrlKey && event.key === "o") $("[data-key='Ctrl+O']").click();
+      if (event.ctrlKey && event.key === "s") $("[data-key='Ctrl+S']").click();
+      if (event.ctrlKey && event.shiftKey && event.key === "S") $("[data-key='Ctrl+Shift+S']").click();
+    });
+
+    $(".dropdown-toggle").click(function() {
+      $(".dropdown").removeClass("show");
+      $(".dropdown-menu").removeClass("show");
+      $("[aria-expanded]").attr("aria-expanded", "false");
+    }).dropdown();
+
+    ipcRenderer.on("return-file", function(event, file) {
+      loadFile(file);
+    });
+    ipcRenderer.on("save-file", function(event, file) {
+      save(file);
+    });
+
+    $("textarea").on("contextmenu", function(e) {
+      e.preventDefault();
+      taMenu.popup(win);
+    }).on("keyup click focus", function() {
+	    $("#editInfo").text("Line: " + this.value.substr(0, this.selectionStart).split("\n").length);
+    });
+    $('app').click(function() {
+      $(".dropdown").removeClass("show");
+      $(".dropdown-menu").removeClass("show");
+      $("[aria-expanded]").attr("aria-expanded", "false");
+    });
+    $("[data-description]").hover(function() {
+      $("#menuDescription").text($(this).attr("data-description"))
+    }).mouseleave(function() {
+      $("#menuDescription").text("")
+    });
+    $("[data-key]").mouseup(function() {
+      $("textarea").focus();
+    }).click(function() {
+      switch ($(this).attr("data-key")) {
+        case 'Alt+F4':
+          window.close();
+          break;
+        case 'Ctrl+Z':
+          document.execCommand("undo", false, null);
+          break;
+        case 'Ctrl+Shift+Z':
+          document.execCommand("redo", false, null);
+          break;
+        case 'Ctrl+X':
+          document.execCommand("cut", false, null);
+          break;
+        case 'Ctrl+C':
+          document.execCommand("copy", false, null);
+          break;
+        case 'Ctrl+V':
+          document.execCommand("paste", false, null);
+          break;
+        case 'Ctrl+A':
+          document.execCommand("selectAll", false, null);
+          break;
+        case 'Ctrl+O':
+          window.new("aos-cabinet", {
+            action: "ofd",
+            path: app.getPath("documents"),
+            title: "Choose a text file to open..."
+          }, {
+            parent: win,
+            modal: true
+          });
+          break;
+        case 'Ctrl+Shift+S':
+          window.new("aos-cabinet", {
+            action: "sfd",
+            path: app.getPath("documents"),
+            title: "Choose the location to save the file"
+          }, {
+            parent: win,
+            modal: true
+          });
+          break;
+        case 'Del':
+          document.execCommand("delete", false, null);
+          break;
+      }
+    });
+    if (args.path) loadFile(args.path);
+  };
+
+  function save(path) {
+    let contents = $("textarea").val();
+    if (!path && !fileName)
+      window.new("aos-cabinet", {
+        action: "sfd",
+        path: app.getPath("documents"),
+        title: "Choose the location to save the file"
+      }, {
+        parent: win,
+        modal: true
+      });
+    else if (path) fileName = path; else path = fileName;
+    fs.open(path, 'w', function(err, fd) {
+      if (err) new Notification({
+        title: "We're unable to save the file",
+        body: "Here is a library output: " + err,
+        icon: "cancel",
+        color: "#dc3545"
+      });
+      else {
+        fs.write(fd, contents, function(err) {
+          if (err)
+            new Notification({
+              title: "We're unable to save the file",
+              body: "Here is a library output: " + err,
+              icon: "cancel",
+              color: "#dc3545"
+            });
+          else new Notification({
+            title: "File was successfully saved",
+            body: 'It is located here: ' + path +
+              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+                "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
+            icon: "done",
+            color: "#28a745"
+          })
+        });
+      }
+    })
+  }
+
+  function loadFile(path, loadAnyway) {
+    fileName = path;
+    win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Typewriter");
+    fs.stat(path, function(err, stat) {
+      if (stat.size > MAX_SIZE && !loadAnyway) {
+        window.new("aos-typewriter/toolargefile", {}, {
+          modal: true,
+          parent: win
+        });
+        ipcRenderer.on("largeFileConfirmation", function(event, data) {
+          loadFile(path, data.load)
+        })
+      } else {
+        fs.readFile(path, 'utf8', function(err, data) {
+          if (err)
+            new Notification({
+              title: "We're unable to save the file",
+              body: "Here is a library output: " + err,
+              icon: "cancel",
+              color: "#dc3545"
+            });
+          else $("textarea").val(data)
+        })
+      }
+    })
+  }
+
+  function initContextMenus() {
+    const taTemplate = [{
+      label: "Undo",
+      click() {
+        $("[data-key='Ctrl+Z']").click()
+      },
+      accelerator: "CmdOrCtrl+Z"
+    }, {
+      label: "Redo",
+      click() {
+        $("[data-key='Ctrl+Shift+Z']").click()
+      },
+      accelerator: "CmdOrCtrl+Shift+Z"
+    }, {
+      type: "separator"
+    }, {
+      label: "Cut",
+      click() {
+        $("[data-key='Ctrl+X']").click()
+      },
+      accelerator: "CmdOrCtrl+X"
+    }, {
+      label: "Copy",
+      click() {
+        $("[data-key='Ctrl+C']").click()
+      },
+      accelerator: "CmdOrCtrl+C"
+    }, {
+      label: "Paste",
+      click() {
+        $("[data-key='Ctrl+V']").click()
+      },
+      accelerator: "CmdOrCtrl+V"
+    }, {
+      label: "Delete",
+      click() {
+        $("[data-key='Delete']").click()
+      },
+      accelerator: "Delete"
+    }, {
+      type: "separator"
+    }, {
+      label: "Select All",
+      click() {
+        $("[data-key='Ctrl+A']").click()
+      },
+      accelerator: "CmdOrCtrl+A"
+    }];
+
+    taMenu = Menu.buildFromTemplate(taTemplate);
+  }
+</script>

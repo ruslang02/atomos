@@ -1,0 +1,90 @@
+<form onsubmit="return false;">
+<header>
+  <img src="/atomos/icons/Admin.png" />
+  <section>
+    <h6>App wants to run command as an administrator</h6>
+    <div>Type administrator password to proceed:</div>
+    <input class="form-control form-control-sm my-2" autofocus type="password">
+  </section>
+</header>
+<footer class="d-flex">
+  <b class="text-danger" style="flex-grow:2; opacity:0">Password incorrect</b>
+  <button class="btn btn-secondary btn-sm mx-2" type="button" onclick="window.close()">Cancel</button>
+  <button class="btn btn-primary btn-sm" type="submit" onclick="execute()">Run</button>
+</footer>
+</form>
+<script>
+  const args = require("atomos-framework").arguments;
+  const {
+    remote
+  } = require("electron");
+  const {
+    BrowserWindow
+  } = remote;
+  const proc = require("child_process");
+  const app = remote.getCurrentWindow();
+  window.$ = require("jquery");
+  if ((args.command && args.win) || typeof args == "string") {
+    if (args.title)
+      $("header h6").text(args.title);
+    if (args.message)
+      $("header section div").text(args.message);
+
+    function execute() {
+      proc.exec("echo '" + $("input").val() + "' | sudo -k -S -- sh -c '" + (typeof args == "string" ? args : args.command) + "'", {
+        cwd: args.cwd || "/"
+      }, function(error, stdout, stderr) {
+        stderr = stderr.replace("[sudo] password for " + process.env.USER + ": ","");
+        if (stderr.includes("incorrect password"))
+          $(".text-danger").css("opacity", 1);
+        else {
+          if (args.win) {
+            BrowserWindow.fromId(args.win).webContents.send("return-sudo", {
+              error: error,
+              stdout: stdout,
+              stderr: stderr
+            })
+          } else {
+          	app.getParentWindow().webContents.send("return-sudo", {
+              error: error,
+              stdout: stdout,
+              stderr: stderr
+            })
+          }
+          window.close();
+        }
+      })
+    }
+  }
+
+  window.onload = function() {
+	  app.setContentSize(app.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+  }
+</script>
+
+<style>
+  body {
+    padding: 0.5rem;
+    flex-direction: column;
+    display: inline-flex;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  form {
+    margin: 0;
+  }
+
+  section {
+    flex-grow: 2;
+  }
+
+  header {
+    display: flex;
+  }
+
+  header img {
+    width: 48px;
+    height: 48px;
+  }
+</style>

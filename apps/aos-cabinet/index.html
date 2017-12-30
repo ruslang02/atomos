@@ -1,0 +1,1023 @@
+<!--suppress ALL -->
+<link rel="stylesheet" href="/atomos/lib/atomos.css"/>
+<div class="btn-toolbar">
+	<div class="btn-group mr-1 btn-group-sm">
+		<button class="btn btn-outline-primary material-icons active" style="display:none; z-index:10000;"
+						aria-pressed="true" onclick="$('#sidebar').toggle(); $(this).button('toggle')">reorder
+		</button>
+	</div>
+	<div class="input-group btn-group" style="flex-grow: 2">
+		<button class="btn btn-outline-primary material-icons" disabled id="navigateBack"
+						onclick="goBack()">keyboard_arrow_left
+		</button>
+		<button class="btn btn-outline-primary material-icons" disabled style="display:none"
+						id="navigateForward" onclick="goForward()">keyboard_arrow_right
+		</button>
+		<input class="form-control form-control-sm border-left-0 border-right-0" type="text"
+					 id="path">
+		<button class="btn btn-outline-primary material-icons"
+						onclick="navigate(($('#path').val().trim() === fm.path ? fm.path : $('#path').val()), ($('#path').val() === fm.path ? 'reload' : undefined))">
+			refresh
+		</button>
+	</div>
+</div>
+
+<section id="main">
+	<div class="dropdown-menu border border-left-0 border-top-0 border-bottom-0" viewMode="list"
+			 id="sidebar">
+		<section id="access"></section>
+		<div class="dropdown-header">Devices</div>
+		<section id="devices"></section>
+	</div>
+	<div class="files dropdown-menu p-1" viewMode="bigtiles"></div>
+</section>
+<div class="ofdBar input-group p-1 bg-light d-none" style="flex-shrink:0;border-top:1px solid lightgray;">
+	<span class="input-group-btn"><button class="btn btn-sm btn-secondary btn-block"
+																				onclick="window.close()">Cancel</button></span>
+	<input type="text" class="form-control form-control-sm" id="ofdFile" readonly>
+	<span class="input-group-btn"><button class="btn btn-sm btn-primary btn-block" onclick="submitFile()"
+																				disabled>Open</button></span>
+</div>
+<script>
+	let fm = {};
+	const {
+		remote,
+		ipcRenderer
+	} = require('electron');
+	const {
+		Menu,
+		app
+	} = remote;
+	let fs = require("fs-extra");
+	window.$ = window.jQuery = require('jquery');
+	window.arguments = require('atomos-framework').arguments;
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const pathLib = require("path");
+
+	ipcRenderer.on('changeWallpaper', updateWall);
+
+	function updateWall() {
+		fs.readJson(app.getPath("appData") + "/aos-cabinet.json")
+				.then(function(settings) {
+					$("body").css({
+						"background-image": "url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime() + ")",
+						"background-size": (settings.fillMode === "fill" ? "cover" : (settings.fillMode === "stretch" ? "100% 100%" : "initial")),
+						"background-position": (settings.fillMode === "center" ? "center" : "top left"),
+						"background-repeat": (settings.fillMode === "tiled" ? "repeat" : "no-repeat")
+					});
+				})
+	}
+
+	fm.elements = [];
+	fm.folders = [];
+	fm.files = [];
+	fm.nHistory = [];
+	fm.historyNow = -1;
+	fm.files = $("files");
+	fm.sorting = "A-Z";
+	fm.window = remote.getCurrentWindow();
+	window.initMimes();
+	if (fm.window.id < 3) {
+		fm.desktop = true;
+		$("#sidebar").remove();
+		$(".btn-toolbar").hide();
+		$("body").addClass("desktop");
+		$(".files").attr("viewMode", "gigtiles");
+		fm.path = app.getPath("desktop");
+		fm.showHidden = true;
+		fm.foldersFirst = false;
+		fm.arguments = {
+			path: fm.path
+		};
+		updateWall();
+		$("#path").val(fm.path);
+		navigate(app.getPath("desktop"));
+		fs.readJson(app.getAppPath() + "/RELEASE.json").then(function (info) {
+			$("body").append(
+					"<copyright style='position:fixed;bottom:46px;font-family:monospace;right:0;z-index:-1;color:white;text-align:right; margin:0.5rem'>" +
+					info.name + " " + info.version + "_" + info.build + "<br>Code name: \"" +
+					info.codename +
+					"\"</copyright>")
+		})
+	} else {
+		fm.desktop = false;
+		fm.arguments = window.arguments;
+		fm.path = app.getPath("home");
+		$("#path").val(fm.path);
+		if (!fm.arguments.path) fm.arguments.path = fm.path;
+		fm.action = fm.arguments["action"];
+		loadAccessBar();
+		loadDeviceBar();
+	}
+	if (!(fm.desktop || fm.files.attr("viewMode") === "gigtiles")) {
+		window.addEventListener("beforeunload", function (e) {
+			let settingsfile = {
+				foldersFirst: fm.foldersFirst,
+				showHidden: fm.showHidden,
+				iconSize: fm.viewMode,
+				accessList: []
+			};
+			$("section#access > *").each(function () {
+				if (this.className.includes("dropdown-item"))
+					settingsfile.accessList.push({
+						type: "item",
+						description: $(this).attr("title"),
+						location: $(this).attr("data-location").replace(app.getPath("home"),
+								"/atomos/home"),
+						icon: $(this).find("img").attr("src"),
+						name: $(this).text()
+					});
+				else
+					settingsfile.accessList.push({
+						type: "header",
+						name: $(this).text()
+					});
+			});
+			fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json",
+					settingsfile, $.noop);
+		});
+	}
+	initContextMenus();
+	initShortcuts();
+	$(document.body).on("click", "#sidebar section#access [data-location]", function () {
+		$("section#access *").removeClass("active");
+		$(this).parent("li").addClass("active");
+		navigate($(this).attr("data-location"));
+	}).on("dblclick", "[type=folder]", function () {
+		if (!fm.desktop) navigate($(this).attr("data-location"));
+		else window.new("aos-cabinet", {
+			path: $(this).attr("data-location")
+		})
+	}).on("mouseup", "[type]", function () {
+		if ($(this).attr("type") === "file" || $(this).attr("type") === "shortcut") {
+			$("#ofdFile").val($(this).attr("realname") || $(this).children(
+					".file-title").text());
+			$(".ofdBar button.btn-primary").removeAttr("disabled");
+		} else {
+			$(".ofdBar button.btn-primary").attr("disabled", "disabled");
+			$("#ofdFile").val("");
+		}
+	}).on("dblclick", "[type=file]", function () {
+		if (fm.action) submitFile();
+		else
+			window.fileOpen(fm.path + $(this).children(".file-title").text());
+	}).on("dblclick", "[type=shortcut]", function () {
+		if (fm.action) submitFile();
+		else
+			window.fileOpen(fm.path + $(this).attr("realname"));
+	}).on("click", "#sidebar section#devices button", function () {
+		let label = $(this).text();
+		let device = $(this).attr("data-device");
+		let mountDir = "/mnt/" + process.env.USER + "/" + label;
+		fs.readdir(mountDir)
+				.then(function (elem) {
+					if (elem.length) navigate(mountDir);
+					else mountDrive(mountDir, device)
+				})
+				.catch(function () {
+					mountDrive(mountDir, device)
+				})
+	}).on("input", "input:text", function () {
+		$(".btn-toolbar button:contains(refresh)").text("forward");
+	}).on("click", "a", function (E) {
+		E.preventDefault()
+	}).on("dragstart", ".file-item", function (e) {
+		e = e.originalEvent;
+		console.log(e);
+		let dragico = document.createElement('img');
+		if ($(this).attr("type") === "folder") dragico.src = "/atomos/icons/Extensions Folder.png";
+		else if ($(this).find(".file-title").text().endsWith(".wapp")) dragico.src = "/atomos/icons/Product.png";
+		else dragico.src = "/atomos/icons/file-types/Unknown.png";
+		dragico.width = 96;
+		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData("aos/file", JSON.stringify({
+			name: $(this).find(".file-title").text(),
+			fullPath: fm.path + $(this).find(".file-title").text()
+		}));
+		e.dataTransfer.setDragImage(dragico, 48, 48);
+		return true;
+	});
+
+
+	if (fm.action) {
+		$("body").addClass("ofd");
+		$("button:contains(reorder)").attr("aria-pressed", "false").removeClass(
+				"active").show();
+		$("#sidebar").hide();
+		fm.window.setMinimumSize(500, 250);
+		fm.window.setSize(500, 250);
+		fm.window.setMaximizable(false);
+		fm.window.setResizable(false);
+		$(".ofdBar .btn-primary").text(fm.arguments.okText || (fm.action === "sfd" ? "Save" : "Open"));
+		$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
+		fm.window.setTitle(fm.arguments.title || "Choose a file to open...");
+		if (fm.action === "sfd") {
+			$("#ofdFile").removeAttr("readonly").on("input change", function () {
+				if ($(this).val() === "") $(".ofdBar button.btn-primary").attr("disabled",
+						"disabled");
+				else $(".ofdBar button.btn-primary").removeAttr("disabled");
+			})
+		}
+		$(".ofdBar").removeClass("d-none");
+	}
+
+	function reNavigate() {
+		navigate(fm.path, "reload");
+	}
+
+	function mountDrive(mountDir, device) {
+		if (process.platform === "win32") return;
+		window.new("sudo", {
+			command: "mkdir -p '" + mountDir + "'; mount " + device + " '" + mountDir +
+			"'",
+			win: fm.window.id,
+			title: "Authentication is needed to mount drives"
+		});
+		ipcRenderer.removeListener("return-sudo", function (e, res) {
+			returnSudo(e, res, mountDir)
+		});
+		ipcRenderer.on("return-sudo", function (e, res) {
+			returnSudo(e, res, mountDir)
+		})
+	}
+
+	function returnSudo(e, res, mountDir) {
+		console.log(res);
+		if (!res.stderr) navigate(mountDir);
+		else console.error(res);
+	}
+
+	function mkdirHere(path) {
+		fs.mkdirs(path)
+				.then(reNavigate)
+				.catch(function () {
+					window.new("sudo", {
+						command: "mkdir -p '" + path + "'"
+					});
+					ipcRenderer.on("return-sudo", function (e, res) {
+						if (res.error) new Notification({
+							title: "There was an error creating a directory",
+							body: error.message,
+							color: "#dc3545",
+							icon: "folder"
+						});
+						else reNavigate();
+					})
+				})
+	}
+
+	function navigate(path, historymode) {
+		$("#ofdFile").val("");
+		$(".btn-toolbar button:contains(forward)").text("refresh");
+		$(".ofdBar button.btn-primary").prop("disabled", "disabled");
+		if (path === undefined) path = "/";
+		if (!path.endsWith("/")) path += "/";
+		if (!fm.arguments.action) fm.window.setTitle(pathLib.basename(path) + " – Cabinet");
+		fm.path = path;
+		fm.viewMode = $(".files").attr("viewmode");
+		$("[data-location]").removeClass("active");
+		$("[data-location='" + path + "']").addClass("active");
+		let nohistory = false;
+		switch (historymode) {
+			case "back":
+				fm.historyNow--;
+				break;
+			case "forward":
+				fm.historyNow++;
+				break;
+			case "reload":
+				break;
+			default:
+				fm.historyNow++;
+				fm.nHistory.splice(fm.historyNow, fm.nHistory.length);
+				fm.nHistory.push(fm.path);
+				nohistory = true
+		}
+		checkHistory();
+		$("#path").val(path);
+		list(path, (data) => {
+			$(".files *").remove();
+			if (typeof data === "string") {
+				if (data === "ENOENT") {
+					$(".files").html(
+							"<h5 class='px-2 pt-1'>This directory does not exist.</h5><p class='px-2'>This folder was not found in the file system. You can <a href='#' onclick='mkdirHere(\"" +
+							path +
+							"\")'>create it</a> or <a href='#' onclick='goBack()'>go back</a></p>"
+					)
+				}
+			}
+
+
+			if (fm.action) {
+				if (fm.viewMode === "list") $('div.files').prepend(
+						'<button data-location="' + path.substring(0, path.lastIndexOf("/",
+						path.length - 2)) +
+						'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/folders-small/Folder.png"><div class="file-title">..</div></button>'
+				);
+				else $('div.files').prepend('<button data-location="' + path.substring(0,
+						path.lastIndexOf("/", path.length - 2)) +
+						'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/Extensions Folder.png"><div class="file-title">..</div></button>'
+				)
+			}
+
+			data.forEach(function (item) {
+				let opacity = 1;
+				if (item.name.startsWith(".") && !fm.showHidden) return;
+				else if (item.name.startsWith(".") && fm.showHidden) opacity = 0.7;
+				if (item.type === "folder") {
+					$("div.files").append('<button draggable="true" data-mime="' + item.mimeType +
+							'" data-location="' + path + item.name +
+							'/" style="opacity: ' + opacity +
+							'" class="dropdown-item file-item" type="' + item.type +
+							'"><img src="' + item.icon + '"><div class="file-title">' + item.name +
+							'</div></button>')
+				} else if (item.name.endsWith(".lnk")) {
+					let shrt = fs.readJsonSync(fm.path + item.name, {
+						throws: false
+					});
+					if (shrt === null)
+						$("div.files").append('<button draggable="true" data-mime="' + item.mimeType +
+								'" class="dropdown-item file-item" type="' + item.type +
+								'"><img src="' + item.icon +
+								'"></i><div class="file-title">' + item.name + '</div></button>');
+					else {
+						$(".files").append("<button draggable=\"true\" type='shortcut' realname='" + item.name +
+								"' class='" + (!fm.desktop ? "dropdown-item" : "") +
+								" file-item'><img src='" + shrt.icon +
+								"'><div class='file-title'>" + shrt.title + "</div></button>");
+						$(".files .file-item").last().on("dblclick", function (e) {
+							if (!fm.action) e.stopImmediatePropagation();
+							window.new(shrt.app, shrt.args || {});
+						})
+					}
+				} else $("div.files").append(
+						'<button draggable="true" data-mime="' + item.mimeType +
+						'" style="opacity: ' + opacity +
+						'" class="dropdown-item file-item" type="' +
+						item.type + '"><img src="' + item.icon +
+						'"></i><div class="file-title">' + item.name + '</div></button>');
+			});
+			if (nohistory && historymode) $("button:contains('" + historymode + "')").focus();
+		});
+	}
+
+	function checkHistory() {
+		if (fm.nHistory[fm.historyNow + 1] === undefined) $("#navigateForward").attr(
+				"disabled", "disabled").hide();
+		else
+			$("#navigateForward").removeAttr("disabled").show();
+		if (fm.nHistory[fm.historyNow - 1] === undefined) $("#navigateBack").attr(
+				"disabled", "disabled");
+		else
+			$("#navigateBack").removeAttr("disabled");
+	}
+
+	function submitFile() {
+		let channel = (fm.action === "ofd" ? "return-file" : "save-file");
+		fm.window.getParentWindow().webContents.send(channel, $("#path").val() + "/" +
+				$("#ofdFile").val());
+		fm.window.close();
+	}
+
+	function goBack() {
+		navigate(fm.nHistory[fm.historyNow - 1], "back");
+	}
+
+	function goForward() {
+		navigate(fm.nHistory[fm.historyNow + 1], "forward");
+	}
+
+	function list(path, callback) {
+		let result = [];
+		fs.readdir(path)
+				.catch(callback)
+				.then(function (files) {
+					files.forEach(function (file) {
+						let fileRes = {
+							"name": file
+						};
+						let stat = fs.lstatSync(path + "/" + file);
+						if (stat.isFile()) {
+							fileRes.type = "file";
+						} else if (stat.isDirectory()) fileRes.type = "folder";
+						else if (stat.isSymbolicLink()) {
+							fileRes.link = true;
+							try {
+								let link = fs.readlinkSync(path + file);
+								let statLink = fs.statSync((link.startsWith("/") ? link : path +
+										link));
+								if (statLink.isFile()) fileRes.type = "file";
+								else if (statLink.isDirectory()) fileRes.type = "folder";
+							} catch (e) {
+							}
+						} else return;
+						if (fileRes.type === "folder") {
+							if (fm.viewMode === "list")
+								if (fileRes.link) fileRes.icon =
+										"/atomos/icons/folders-small/Symlink Folder.png";
+								else fileRes.icon =
+										"/atomos/icons/folders-small/Extensions Folder.png";
+							else if (fileRes.link) fileRes.icon =
+									"/atomos/icons/Symlink Folder.png";
+							else fileRes.icon = "/atomos/icons/Extensions Folder.png";
+						} else if (fileRes.type === "file") {
+							let mime = "/atomos/icons/file-types/" + pathLib.extname(file).substring(1).toUpperCase() + ".png";
+							if (fs.existsSync(mime)) fileRes.icon = mime;
+							else if (fileRes.link) fileRes.icon = "/atomos/icons/file-types/Symlink.png";
+							else fileRes.icon = "/atomos/icons/file-types/Unknown.png";
+							if (fm.viewMode === "list") fileRes.icon = fileRes.icon.replace(/file-types/g, "file-types-small");
+						}
+						result.push(fileRes);
+					});
+
+					if (fm.sorting === "A-Z") {
+						result.sort(function (a, b) {
+							let nameA = a.name.toLowerCase(),
+									nameB = b.name.toLowerCase();
+							if (nameA < nameB) return -1;
+							if (nameA > nameB) return 1;
+							return 0;
+						});
+					}
+					if (fm.sorting === "Z-A") {
+						result.sort(function (a, b) {
+							let nameA = a.name.toLowerCase(),
+									nameB = b.name.toLowerCase();
+							if (nameA < nameB) return 1;
+							if (nameA > nameB) return -1;
+							return 0;
+						});
+					}
+					if (fm.foldersFirst) {
+						let newResult = [];
+						result.forEach(function (item) {
+							if (item.type === "folder") newResult.push(item);
+						});
+						result.forEach(function (item) {
+							if (item.type !== "folder") newResult.push(item);
+						});
+						callback(newResult)
+					} else callback(result)
+				});
+	}
+
+	function initShortcuts() {
+		$(window).keydown(function (event) {
+			let file = pathLib.join(fm.path, $(".file-item:focus .file-title").text());
+			let fileCount = $(".file-item:focus").length;
+			if (event.ctrlKey && event.key === "c" && fileCount !== 0) doAction("copy", {file: file});
+			if (event.ctrlKey && event.key === "v") doAction("paste");
+			if (event.ctrlKey && event.key === "x" && fileCount !== 0) doAction("cut", {file: file});
+			if (event.key === "Delete" && fileCount !== 0) doAction("delete", {file: file});
+			if (event.key === "F5") reNavigate();
+			if (event.altKey && event.key === "Enter") doAction("properties", {file: file});
+		});
+	}
+
+	function doAction(action, options) {
+		switch (action) {
+			case "vmlist":
+				$(".files").attr("viewMode", "list");
+				break;
+			case "vmsmall":
+				$(".files").attr("viewMode", "smalltiles");
+				break;
+			case "vmmid":
+				$(".files").attr("viewMode", "midtiles");
+				break;
+			case "vmlarge":
+				$(".files").attr("viewMode", "bigtiles");
+				break;
+			case "vmgig":
+				$(".files").attr("viewMode", "gigtiles");
+				break;
+			case "sortaz":
+				fm.sorting = "A-Z";
+				break;
+			case "sortza":
+				fm.sorting = "Z-A";
+				break;
+			case "toggleff":
+				fm.foldersFirst = !fm.foldersFirst;
+				break;
+			case "togglesh":
+				fm.showHidden = !fm.showHidden;
+				break;
+			case "paste":
+				window.fileClipboard.flush(fm.path)
+						.then(reNavigate)
+						.catch(function(err) {
+							new Notification({
+								title: "We were unable to copy file",
+								html: err,
+								color: "#dc3545",
+								icon: "warning"
+							})
+						})
+				break;
+			case "copy":
+				window.fileClipboard.copyMode = "copy";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(options.file);
+				break;
+			case "cut":
+				window.fileClipboard.copyMode = "cut";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(options.file);
+				break;
+			case "delete":
+				fs.remove(options.file).then(reNavigate);
+				break;
+			case "properties":
+				window.new("properties", {
+					path: (options ? options.file : fm.path)
+				});
+				break;
+		}
+		reNavigate();
+	}
+
+	function loadAccessBar() {
+		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", {
+			throws: false
+		}, function (err, settings) {
+			if (err) {
+				fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json", fs.readJsonSync(
+						__dirname + "/default.json"));
+				settings = fs.readJsonSync(__dirname + "/default.json");
+			}
+			fm.foldersFirst = settings.foldersFirst;
+			fm.showHidden = settings.showHidden;
+			fm.viewMode = settings.iconSize;
+			$(".files").attr("viewmode", settings.iconSize);
+			$("section#access *").remove();
+			settings.accessList.forEach(function (item) {
+				console.log(item);
+				if (item.type === "item")
+					$("section#access").append(
+							'<button class="dropdown-item" title="' + (item.description || "") +
+							'" data-location="' + (item.location ? item.location.replace(
+							"/atomos/home", app.getPath("home")) : 1 + 1) + '"><img src="' + (
+							item.icon ||
+							"/atomos/icons/folders-small/Extensions Folder.png") + '"/>' + item.name +
+							'</button>');
+				else $("section#access").append(
+						'<div class="dropdown-header">' + item.name + '</div>')
+			});
+			navigate(fm.arguments.path, fm.arguments["selectFile"] || "");
+		})
+	}
+
+	function loadDeviceBar() {
+		if (process.platform === "win32") return;
+		$("section#devices *").remove();
+		fs.readdir("/dev/disk/by-uuid")
+				.then(function (links) {
+					links.forEach(function (link) {
+						fs.readlink("/dev/disk/by-uuid/" + link)
+								.then(function (loc) {
+									let device = pathLib.resolve("/dev/disk/by-uuid/", loc);
+									let label = "";
+									fs.readdir("/dev/disk/by-label")
+											.then(function (files) {
+												files.forEach(function (file) {
+													if (pathLib.resolve("/dev/disk/by-label/", fs.readlinkSync(
+																	"/dev/disk/by-label/" + file)) === device) label = file;
+												});
+												label = label.replace("\\x20", " ");
+												$("section#devices").append(
+														"<button class='dropdown-item' title='Click to mount/open drive' data-device='" +
+														device + "'><div class='file-title'>" + (label || link) +
+														"</div></button>")
+											})
+								})
+					});
+				})
+				.catch(console.error)
+	}
+
+	function initContextMenus() {
+
+		$(document.body).on("contextmenu", ".files", function () {
+			const fmMenu = [{
+				label: "Open in",
+				type: "submenu",
+				submenu: [{
+					label: "New Window",
+					click() {
+						window.new("aos-cabinet", {path: fm.path})
+					}
+				}, {
+					label: "Terminal",
+					click() {
+						window.new("ash", {path: fm.path})
+					}
+				}]
+			}, {
+				type: "separator"
+			}, {
+				label: "View",
+				type: "submenu",
+				submenu: [{
+					label: "List",
+					type: "radio",
+					visible: !fm.desktop,
+					checked: fm.viewMode === "list",
+					click() {
+						doAction("vmlist")
+					}
+				}, {
+					label: "Small icons",
+					type: "radio",
+					visible: !fm.desktop,
+					checked: fm.viewMode === "smalltiles",
+					click() {
+						doAction("vmsmall")
+					}
+				}, {
+					label: (fm.desktop ? "Small icons" : "Medium icons"),
+					type: "radio",
+					checked: fm.viewMode === "midtiles",
+					click() {
+						doAction("vmmid")
+					}
+				}, {
+					label: (fm.desktop ? "Medium icons" : "Large icons"),
+					type: "radio",
+					checked: fm.viewMode === "bigtiles",
+					click() {
+						doAction("vmlarge")
+					}
+				}, {
+					label: "Large icons",
+					type: "radio",
+					visible: fm.desktop,
+					checked: fm.viewMode === "gigtiles",
+					click() {
+						doAction("vmgig")
+					}
+				}]
+			}, {
+				label: "Sort by",
+				type: "submenu",
+				submenu: [{
+					label: "A to Z",
+					type: "radio",
+					checked: fm.sorting === "A-Z",
+					click() {
+						doAction("sortaz")
+					}
+				}, {
+					label: "Z to A",
+					type: "radio",
+					checked: fm.sorting === "Z-A",
+					click() {
+						doAction("sortza")
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Folders first",
+					type: "checkbox",
+					checked: fm.foldersFirst,
+					click() {
+						doAction("toggleff")
+					}
+				}, {
+					label: "Hidden files",
+					type: "checkbox",
+					checked: fm.showHidden,
+					click() {
+						doAction("togglesh")
+					}
+				}]
+			}, {
+				type: "separator"
+			}, {
+				label: "Refresh",
+				accelerator: "F5",
+				click() {
+					reNavigate()
+				}
+			}, {
+				label: "Paste",
+				accelerator: "CmdOrCtrl+V",
+				click() {
+					doAction("paste")
+				},
+				enabled: window.fileClipboard.isFilled
+			}, {
+				type: "separator"
+			}, {
+				label: "Create",
+				submenu: [{
+					label: "File",
+					click() {
+						window.new("aos-cabinet/createFile", {
+							path: fm.path
+						}, {
+							modal: true,
+							parent: fm.window
+						});
+						ipcRenderer.on('create-file', reNavigate)
+					}
+				}, {
+					label: "Folder",
+					click() {
+						window.new("aos-cabinet/createFolder", {
+							path: fm.path
+						}, {
+							modal: true,
+							parent: fm.window
+						});
+						ipcRenderer.on('create-folder', reNavigate)
+					}
+				}]
+			}, {
+				label: "Properties",
+				click() {
+					doAction("properties")
+				}
+			}, {
+				type: (!fm.desktop ? 'normal' : 'separator'),
+				visible: fm.desktop
+			}, {
+				label: "Desktop Preferences",
+				disabled: true,
+				visible: fm.desktop,
+				click() {
+					window.new("control", {section: "Desktop Preferences"})
+				}
+			}];
+			fm.filesMenu = Menu.buildFromTemplate(fmMenu);
+			fm.filesMenu.popup(fm.window, {
+				async: true
+			});
+		});
+
+		$("body").on("contextmenu", ".file-item[type]", function (e) {
+			e.stopPropagation();
+			let mime = $(this).attr("data-mime") || "text/plain";
+			let file = fm.path + ($(this).attr("realname") ? $(this).attr("realname") :
+					$(this).find(".file-title").text());
+			let $this = $(this);
+			fs.readJson(app.getPath("appData") + "/associations.json", function (err, assocs) {
+				if (err) fs.writeJsonSync(app.getPath("appData") + "/associations.json", []);
+				assocs = assocs || [];
+				let appName = assocs.find(o => o.mime === mime);
+				if (appName) appName = appName["app"];
+				const menu = [{
+					label: ($this.attr("realname") === undefined ? "Open" + (($this.attr(
+							"type") === "folder") ? "" : (!err ? " " + appName :
+							" in default application")) : "Execute"),
+					visible: (appName !== undefined) || ($this.attr("type") === "folder"),
+					click() {
+						$this.trigger("dblclick");
+					}
+				}, {
+					label: "Open in...",
+					visible: !($this.attr("type") === "folder"),
+					click() {
+						window.new("aos-appchooserdialog", {
+							path: file,
+							mimeType: mime
+						})
+					}
+				}, {
+					type: (file.endsWith(".wapp") ? 'separator' : "normal"),
+					visible: file.endsWith(".wapp")
+				}, {
+					label: 'Install',
+					visible: file.endsWith(".wapp"),
+					click() {
+						window.new("install", {path: file});
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Cut",
+					accelerator: "CmdOrCtrl+X",
+					click() {
+						doAction("cut", {
+							file: file
+						})
+					}
+				}, {
+					label: "Copy",
+					accelerator: "CmdOrCtrl+C",
+					click() {
+						doAction("copy", {
+							file: file
+						})
+					}
+				}, {
+					type: "separator"
+				}, {
+					label: "Delete",
+					accelerator: "Delete",
+					click() {
+						doAction("delete", {
+							file: file
+						})
+					}
+				}, {
+					label: "Properties",
+					accelerator: "Alt+Enter",
+					click() {
+						doAction("properties", {
+							file: file
+						})
+					}
+				}];
+				Menu.buildFromTemplate(menu).popup(fm.window, {
+					async: true
+				});
+			})
+		})
+	}
+</script>
+<style>
+	#sidebar {
+		min-width: 150px;
+		position: static;
+		padding: 0;
+		border: 0;
+		margin: 0;
+		border-radius: 0;
+		display: inline-block;
+		overflow-y: auto;
+		z-index: 0;
+	}
+
+	#sidebar section {
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+
+	.files .dropdown-item {
+		-webkit-user-drag: element;
+	}
+
+	.files {
+		flex-grow: 2;
+		overflow: auto;
+		height: auto;
+		border: 0;
+		margin: 0;
+		display: flex;
+		position: static;
+		background: none;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		align-items: flex-start;
+	}
+
+	[viewMode=list] .dropdown-item {
+		display: flex;
+		flex-shrink: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	[viewMode=list] .file-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		margin-left: 0.25rem;
+	}
+
+	[viewMode*=tiles] .file-item {
+		margin: 0.3em;
+		width: 85px;
+		text-align: center;
+		word-break: break-all;
+		flex-direction: column;
+		background: none;
+		border: none;
+		align-items: center;
+	}
+
+	[viewMode=list] {
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+
+	[viewMode=gigtiles] {
+		flex-wrap: wrap;
+		flex-direction: column;
+	}
+
+	[viewMode=list].files button.active,
+	[viewMode=list].files button:active,
+	[viewMode=list].files button:focus {
+		color: #fff;
+		text-decoration: none;
+		background-color: #007bff;
+	}
+
+	body.desktop .file-item {
+		color: white !important;
+		text-shadow: 0 0 4px rgb(0, 0, 0), 0 0 7px rgb(0, 0, 0) !important;
+		width: 110px !important
+	}
+
+	body.desktop .file-item:hover {
+		box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5);
+		background: none
+	}
+
+	body.desktop .file-title {
+		word-break: break-word !important;
+		line-height: 1.5 !important;
+		max-height: 3em !important;
+	}
+
+	body.desktop .file-item:active,
+	body.desktop .file-item:focus,
+	body.desktop .file-item:focus:active {
+		box-shadow: inset 0 0 0 10000px rgba(255, 255, 255, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.5);
+		background: none
+	}
+
+	[viewMode=list] .file-item {
+		padding: 0.1rem 0.25rem;
+		margin-bottom: 5px;
+	}
+
+	[viewMode=list] .dropdown-item img {
+		width: 16px;
+		vertical-align: middle;
+		margin-right: 0.25rem;
+	}
+
+	[viewMode=smalltiles] .file-item img {
+		width: 24px;
+	}
+
+	[viewMode=midtiles] .file-item img {
+		width: 32px;
+	}
+
+	[viewMode=bigtiles] .file-item img {
+		width: 48px;
+	}
+
+	[viewMode=gigtiles] .file-item img {
+		width: 64px;
+	}
+
+	[viewMode*=tiles] .file-item .file-title {
+		max-height: 2em;
+		vertical-align: text-top;
+		word-break: break-all;
+		white-space: pre-wrap;
+		line-height: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.file-item:hover {
+		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.3);
+	}
+
+	.file-item:active,
+	.file-item:focus,
+	.file-item:focus:active {
+		box-shadow: inset 0 0 0 10000px rgba(0, 129, 194, 0.5);
+		color: initial;
+	}
+
+	section {
+		flex-grow: 2;
+		display: flex;
+	}
+
+	.files:empty::before {
+		content: "Nothing here";
+		display: block;
+		text-align: center;
+		width: 100%;
+		padding: 0.5rem;
+		color: grey;
+	}
+
+	body {
+		height: 100%;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		transition: background ease 2.5s;
+	}
+
+	body.ofd #sidebar {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100vh;
+		width: 40vw;
+		max-height: unset;
+		z-index: 9999;
+		padding-top: 40px;
+	}
+</style>

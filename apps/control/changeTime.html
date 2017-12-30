@@ -1,0 +1,40 @@
+<p class="lead mb-2 ml-2">Change Date</p>
+<input class="form-control" type="text" placeholder="2 OCT 2006 18:00:00">
+<pre class="mt-2 mb-0 ml-2">Syntax:&nbsp; DD MMM YYYY HH:MM:SS</pre>
+<pre class="mt-0 mb-2 ml-2">Example: 02 OCT 2006 18:00:00</pre>
+<div class="d-flex w-100">
+	<button class="btn btn-light btn-sm mt-2 mr-auto" onclick="window.close()">Cancel</button>
+	<button class="btn btn-primary btn-sm mt-2" onclick="add()" disabled><i class="material-icons">add</i> Add</button>
+</div>
+<style>
+	body {
+		padding: 0.5rem;
+		height: auto;
+		width: 100%;
+	}
+
+	* {
+		transition: none !important
+	}
+</style>
+<script>
+	require("atomos-framework");
+	const {
+		remote
+	} = require("electron");
+	const win = remote.getCurrentWindow();
+	window.onload = function () {
+		win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+		document.querySelector("input").addEventListener("input", function() {
+			document.querySelector(".btn-primary").disabled = (this.value.trim() === "");
+		})
+	};
+
+	function add() {
+		window.new("sudo", {
+			command: "date --set=\"" + document.querySelector("input").value + "\"",
+			win: win.id,
+			title: "Authentication is needed to modify system time"
+		}).then(window.close)
+	}
+</script>

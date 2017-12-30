@@ -1,0 +1,36 @@
+<script>require('atomos-framework')</script>
+<header>
+  <img src="/atomos/icons/file-types/Binary.png" />
+  <p>The file is too large to open and may be not readable.<br>Do you want to continue loading it?<br>The system may be unavailable for some time or even shut down.</p>
+</header>
+<footer class="text-right"><button class="btn btn-secondary mr-2">Cancel</button><button disabled class="btn btn-primary">Yes, load that file (<counter>3</counter>)</button></footer>
+
+<script>
+  let app = require('electron').remote.getCurrentWindow();
+  const ipc = require('electron').ipcMain;
+  window.onload = function() {
+    $(".btn").click(function() {
+      app.close();
+    })
+    $(".btn-primary").mouseup(function() {
+      console.log("send");
+      app.getParentWindow().webContents.send("largeFileConfirmation", {load: true});
+    })
+  }
+
+    setInterval(function() {
+      if($("counter").text() == 0) $(".btn-primary").removeAttr("disabled").text("Yes, load that file"); else $("counter").text(parseInt($("counter").text()) - 1);
+    },1000)
+</script>
+
+<style>
+  body {
+    padding: 1rem;
+    display:flex;
+    flex-direction:column;
+  }
+  header {
+    display:flex;
+  }
+  header img {width:48px;height:48px;}
+</style>

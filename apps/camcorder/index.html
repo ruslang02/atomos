@@ -1,0 +1,158 @@
+<picture class="bg-light"><img></picture>
+<section class="p-2 border border-bottom-0 border-left-0 border-right-0">
+  <label class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input">
+    <span class="custom-control-indicator"></span>
+    <span class="custom-control-description">Capture screen upon startup</span>
+  </label>
+  <spacer></spacer>
+  <button class="btn btn-success btn-sm">Fetch Screen</button>
+</section>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body>picture {
+    flex-grow: 2;
+    overflow:hidden;
+    position:relative;
+  }
+  label.custom-control {margin: 3px 0;}
+  label.custom-control .custom-control-description {line-height: 25px;}
+  body>picture>img {
+    max-width: 100%;
+position: absolute;
+top: 0;
+bottom: 0;
+margin: auto;
+max-height: 100%;
+left: 0;
+right: 0;
+  }
+  body>section {
+    display:flex;
+    flex-direction:row;
+    flex-shrink: 0;
+  }
+  spacer {flex-grow:2}
+</style>
+<script>
+  let args = require('atomos-framework').arguments
+	const {
+		desktopCapturer,
+		screen,
+		shell,
+		ipcRenderer,
+		clipboard,
+		remote
+	} = require('electron');
+	const {nativeImage} = remote;
+	const fs = require('fs-extra')
+	const app = require('electron').remote.getCurrentWindow();
+	const os = remote.app;
+  let config;
+
+  fs.readFile(os.getPath("appData") + "/camcorder.json", function(err) {
+    if(err) {
+      fs.writeJson(os.getPath("appData") + "/camcorder.json", {autoCapture: false})
+      .then(function() {
+        new Notification({
+          title: "Configuration file was created",
+          body: "This is first time you use Camcorder, so we have created a configuration file. You won't see this notification ever again.",
+          color: "#17a2b8",
+          icon: "camera"
+        });
+        init();
+      })
+      .catch(function() {
+        new Notification({
+          title: "Configuration file was failed to create",
+          body: "Camcorder can not write a configuration file. Please check permissions on your home directory.",
+          color: "#dc3545",
+          icon: "camera"
+        });
+        app.close();
+      })
+    } else init();
+  })
+
+  function init() {
+    fs.readJson(os.getPath("appData") + "/camcorder.json", function(err, conf) {
+      config = conf;
+      document.querySelector("input[type=checkbox]").checked = config.autoCapture;
+      if(config.autoCapture || args.capture) {
+        app.hide();
+        capture();
+      }
+    })
+      document.querySelector(".btn-success").addEventListener("click", function() {
+        window.new("camcorder", {capture: true})
+        .then(function() {
+          app.close();
+        })
+      })
+      document.querySelector("input[type=checkbox]").addEventListener("change", function() {
+        config.autoCapture = this.checked
+      })
+      window.onbeforeunload = function() {
+        fs.writeJson(os.getPath("appData") + "/camcorder.json", config);
+      }
+  }
+
+  function capture() {
+    console.log('Gathering screens...');
+    const thumbSize = determineScreenShotSize()
+    let options = {
+      types: ['screen'],
+      thumbnailSize: thumbSize
+    }
+
+    desktopCapturer.getSources(options, function(error, sources) {
+      if (error) return console.log(error)
+
+      sources.forEach(function(source) {
+        if (source.name === 'Entire screen' || source.name === 'Screen 1') {
+          let pth = os.getPath("pictures") + "/screenshot_" + new Date().getTime() + ".png";
+          fs.writeFile(pth, source.thumbnail.toPng(), function(error) {
+            let ni = nativeImage.createFromBuffer(source.thumbnail.toPng());
+            if (error) {
+              new Notification({
+                title: "Snapshot taking was not successful",
+                body: err,
+                icon: "camera",
+                color: "#dc3545"
+              });
+            } else {
+              new Notification({
+                title: "Snapshot has been successfully taken",
+                body: "<hr><div class='text-right'><button class='btn btn-sm btn-secondary' onclick='require(\"electron\").remote.BrowserWindow.fromId(" + app.id +
+                  ").webContents.send(\"copy-image\")'><i class='material-icons'>bookmark</i>Copy to Clipboard</button><button class='btn btn-sm btn-primary ml-2' onclick='window.new(\"aos-cabinet\", {path: \"" + pth.substring(0, pth.lastIndexOf("/")) +
+                  "\"})'><i class='material-icons'>folder</i> Show in Cabinet</button></div>",
+                color: "#28a745",
+                icon: "camera"
+              });
+              document.querySelector("picture img").src = source.thumbnail.toDataURL();
+              app.show();
+            }
+            if (error) return console.log(error);
+            ipcRenderer.on('copy-image', function(e) {
+              console.log(ni)
+              clipboard.writeImage(ni);
+            })
+          })
+        }
+      })
+    })
+  }
+
+  function determineScreenShotSize() {
+    const screenSize = screen.getPrimaryDisplay().bounds
+    const maxDimension = Math.max(screenSize.width, screenSize.height)
+    return {
+      width: maxDimension * window.devicePixelRatio,
+      height: maxDimension * window.devicePixelRatio
+    }
+  }
+</script>

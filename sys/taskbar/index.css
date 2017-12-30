@@ -1,0 +1,59 @@
+tasks img {
+	height: 100%;
+}
+
+* {
+	user-select: none;
+	cursor: default !important;
+}
+
+@keyframes rotation {
+	from {
+		-webkit-transform: rotate(0deg);
+	}
+	to {
+		-webkit-transform: rotate(359deg);
+	}
+}
+
+nav-bar tasks button.btn {
+	border: 0;
+}
+
+nav-bar {
+	height: 100%;
+}
+
+tasks button.active {
+	box-shadow: inset 0px -2px 0px 0px #286090 !important;
+	border-radius: 0;
+}
+
+tasks button.loading img {
+	animation: rotation 1s infinite linear;
+	filter: contrast(120%)
+}
+
+tray button.active {
+	background: #007bff;
+	color: white !important;
+}
+
+tray button.active i {
+	color: white
+}
+
+tray button {
+	border: 0;
+	background: none;
+	border-radius: 0 0 5px 5px;
+	height: 100%;
+	outline: 0 !important;
+	font-size: 1.25rem;
+	padding: 0px 5px;
+	vertical-align: middle;
+}
+
+tray button img {
+	height: 24px;
+}

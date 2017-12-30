@@ -1,0 +1,575 @@
+<script>
+	const {
+		remote,
+		ipcRenderer
+	} = require('electron');
+	const {
+		Menu,
+		BrowserWindow
+	} = remote;
+	const os = remote.app;
+
+	let app = remote.getCurrentWindow();
+	let appURL = app.webContents.getURL();
+	let args = require('atomos-framework').arguments;
+	BrowserWindow.getAllWindows().forEach(function(win) {
+		if (win.webContents.getURL() === appURL && win.id !== app.id) {
+			if (args.path) win.webContents.send("return-file", args.path);
+			win.show();
+			app.destroy();
+		}
+	});
+	const {
+		width,
+		height
+	} = require('electron').screen.getPrimaryDisplay().bounds
+</script>
+<div class="bg-light btn-menu">
+	<div class="btn-group dropdown btn-group-sm">
+		<button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+		 aria-haspopup="true" aria-expanded="false">
+      File
+      <b class="caret"></b>
+    </button>
+		<div class="dropdown-menu" aria-labelledby="fileMenu">
+			<button class="dropdown-item" data-key="Ctrl+O">Open...</button>
+			<div class="dropdown-divider"></div>
+			<button class="dropdown-item" data-key="Ctrl+S">Export playlist...</button>
+			<div class="dropdown-divider"></div>
+			<button class="dropdown-item" data-key="Alt+F4" onclick="app.destroy()">Exit</button>
+		</div>
+	</div>
+	<div class="btn-group dropdown btn-group-sm">
+		<button id="playerMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+		 aria-haspopup="true" aria-expanded="false">
+        Player
+        <b class="caret"></b>
+      </button>
+		<div class="dropdown-menu" aria-labelledby="playerMenu">
+			<button class="dropdown-item custom-control custom-checkbox">
+        <input title type="checkbox" name="autoplay" checked class="custom-control-input">
+        <span class="custom-control-indicator"></span>
+        <span class="custom-control-description">Autoplay</span>
+      </button>
+			<button class="dropdown-item custom-control custom-checkbox">
+          <input title type="checkbox" name="loop" class="custom-control-input">
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description">Loop</span>
+        </button>
+			<button class="dropdown-item custom-control custom-checkbox">
+            <input title type="checkbox" name="mute" class="custom-control-input">
+            <span class="custom-control-indicator"></span>
+            <span class="custom-control-description">Mute</span>
+          </button>
+		</div>
+	</div>
+	<div class="btn-group dropdown btn-group-sm">
+		<button id="speedMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
+		 aria-haspopup="true" aria-expanded="false">
+        Speed
+        <b class="caret"></b>
+      </button>
+		<div class="dropdown-menu" aria-labelledby="speedMenu">
+			<button class="dropdown-item">0.25</button>
+			<button class="dropdown-item">0.5</button>
+			<button class="dropdown-item active">1</button>
+			<button class="dropdown-item">1.25</button>
+			<button class="dropdown-item">1.5</button>
+		</div>
+	</div>
+</div>
+<section class="row">
+	<section id="cover" class="col-12 col-sm-8 col-lg-9"><img src></section>
+	<section id="playlist" class="dropdown-menu d-none d-sm-block col-sm-4 col-lg-3 bg-light"></section>
+</section>
+<footer class="bg-light border border-left-0 border-right-0 border-bottom-0 d-flex">
+	<progress max="100" value="100"></progress>
+	<div class="media">
+		<div class="media-body">
+			<h5 class="mb-1"></h5>
+			<artist></artist>
+		</div>
+	</div>
+	<div id="player">
+		<button class="btn btn-sm btn-light material-icons" onclick="playPrevious()">skip_previous</button>
+		<button class="btn btn-sm btn-primary material-icons">play_arrow</button>
+		<button class="btn btn-sm btn-light material-icons" onclick="playNext()">skip_next</button>
+	</div>
+</footer>
+<audio></audio>
+<script>
+	let isChanged = false;
+	const fs = require('fs-extra');
+	const path = require('path');
+	const xml2js = require('xml2js');
+	const js2xml = require('jstoxml');
+	let renderID3 = require('musicmetadata');
+	let player = document.querySelector("audio");
+	window.$ = require('jquery');
+	window.Popper = require('popper.js');
+	require('bootstrap');
+	let ofdDefaultPath = os.getPath("music");
+
+	window.onbeforeunload = function(e) {
+		app.hide();
+		e.returnValue = false;
+	};
+
+	let popup = new BrowserWindow({
+		x: width - 10 - 450,
+		y: height - 37 - 450,
+		width: 450,
+		height: 450,
+		frame: false,
+		closable: false,
+		minimizable: false,
+		maximizable: false,
+		fullscreenable: false,
+		resizable: false,
+		movable: false,
+		show: false,
+		type: "notification",
+		parent: app
+	});
+	popup.loadURL("file://" + __dirname + "/popup.html");
+	popup.on('blur', function() {
+		BrowserWindow.fromId(2).webContents.send("deactivate-tray", {
+			win: remote.getCurrentWindow().id
+		});
+		popup.hide();
+	});
+
+	let tray = new Tray("music_note", "Boombox is running", "hsl(33, 100%, 50%)");
+	tray.on("contextClick", function() {
+		Menu.buildFromTemplate([{
+			label: ($("#player").find(".btn-primary").text() === "play_arrow" ? 'Pause' :
+				'Play'),
+			click() {
+				$("#player").find(".btn-primary").click();
+			}
+		}, {
+			type: 'separator'
+		}, {
+			label: 'Previous Track',
+			click() {
+				playPrevious()
+			}
+		}, {
+			label: 'Next Track',
+			click() {
+				playNext()
+			}
+		}, {
+			type: 'separator'
+		}, {
+			label: 'Show UI',
+			click() {
+				app.show()
+			}
+		}, {
+			label: 'Exit',
+			click() {
+				tray.close();
+				app.destroy()
+			}
+		}]).popup(BrowserWindow.fromId(1), {
+			async: true
+		})
+	});
+	tray.on("click", function() {
+		BrowserWindow.fromId(2).webContents.send("activate-tray", {
+			win: remote.getCurrentWindow().id
+		});
+		popup.show();
+		popup.setAlwaysOnTop(true)
+	});
+	tray.show();
+	app.on('closed', function() {
+		tray.close();
+		popup.destroy();
+	});
+
+	ipcRenderer.on("return-file", function(e, path) {
+		ofdDefaultPath = path.substring(0, path.lastIndexOf("/"));
+		load(path);
+	});
+
+	ipcRenderer.on("save-file", function(e, path) {
+		ofdDefaultPath = path.substring(0, path.lastIndexOf("/"));
+		savePlaylist(path);
+	});
+	ipcRenderer.on("getData", function() {
+		popup.webContents.send("getMusicData", JSON.stringify({
+			canNext: true,
+			canPrevious: true,
+			isPlaying: !player.paused,
+			duration: player.duration,
+			time: player.currentTime,
+			isChanged: isChanged,
+			playlist: $('#playlist').find('.dropdown-item').map(function() {
+				return {
+					play: $(this).text(),
+					location: $(this).attr("location"),
+					active: $(this).hasClass("active")
+				}
+			}).get()
+		}));
+		isChanged = false;
+
+	});
+
+	ipcRenderer.on("changeTrack", function(e, options) {
+		if (options.offset === -1) playPrevious();
+		if (options.offset === 1) playNext();
+		if (options.location) $(".dropdown-item[location='" + options.location +
+			"']").click();
+		if (options.action === "toggle") $("#player").find(".btn-primary").click();
+		console.log(options)
+	});
+
+	player.ontimeupdate = function() {
+		$("progress").attr('value', player.currentTime).attr('max', player.duration)
+	};
+	player.onended = playNext;
+	player.onplay = function() {
+		$("footer .btn-primary").text("pause")
+	};
+	player.onpause = function() {
+		$("footer .btn-primary").text("play_arrow")
+	};
+
+	window.onload = function() {
+		if (args.path) load(args.path);
+		MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+		let observer = new MutationObserver(function() {
+			isChanged = true;
+		});
+		observer.observe(document.getElementById("playlist"), {
+			subtree: true,
+			attributes: true
+		});
+
+
+		$("[data-key='Ctrl+O']").click(function() {
+			window.new("aos-cabinet", {
+				action: "ofd",
+				path: ofdDefaultPath,
+				title: "Find your music",
+				okText: "Play",
+				cancelText: "Close"
+			}, {
+				modal: true,
+				parent: app
+			});
+		});
+
+		$("[data-key='Ctrl+S']").click(function() {
+			window.new("aos-cabinet", {
+				action: "sfd",
+				path: ofdDefaultPath,
+				title: "Where to save the playlist?",
+				okText: "Export"
+			}, {
+				modal: true,
+				parent: app
+			});
+		});
+		$("footer .btn-primary").click(function() {
+			if ($("#playlist .dropdown-item.active").length === 0) playNext();
+			else if (player.paused) player.play();
+			else player.pause();
+		});
+		$('[aria-labelledby="speedMenu"] .dropdown-item').click(function() {
+			player.playbackRate = $(this).text().trim();
+			$('[aria-labelledby="speedMenu"] .dropdown-item').removeClass("active");
+			$(this).addClass("active")
+		});
+		$("body").on("click", "#playlist .dropdown-item:not(.active)", function() {
+			$("#playlist").find(".dropdown-item.active").first().removeClass("active");
+			$(this).addClass("active");
+			let file = decodeURIComponent($(this).attr('location'));
+			renderID3(fs.createReadStream(file), function(err, tags) {
+				$(".media artist").text(tags.artist[0] || $("#playlist").find(".dropdown-item.active").attr('creator') || "No artist");
+				$(".media h5").text(tags.title || $("#playlist").find(".dropdown-item.active")
+					.text());
+				if (tags.picture[0])
+					$("#cover img")[0].src = "data:image/" + tags.picture[0].format +
+					";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
+				else $("#cover img").removeAttr("src");
+			})
+			player.src = $("#playlist").find(".dropdown-item.active").attr('location');
+			player.play();
+
+		});
+		$('[name=autoplay]').click(function() {
+			if (player.autoplay) {
+				player.autoplay = false;
+				$(this).find("input")[0].checked = false;
+			} else {
+				player.autoplay = true;
+				$(this).find("input")[0].checked = true;
+			}
+		});
+		$('[name=loop]').click(function() {
+			if (player.loop) {
+				player.loop = false;
+				$(this).find("input")[0].checked = false;
+			} else {
+				player.loop = true;
+				$(this).find("input")[0].checked = true;
+			}
+		});
+		$('[name=mute]').click(function() {
+			if (player.mute) {
+				player.mute = false;
+				$(this).find("input")[0].checked = false;
+			} else {
+				player.mute = true;
+				$(this).find("input")[0].checked = true;
+			}
+		})
+	};
+
+	function load(file) {
+		if (path.extname(file) === ".xspf") {
+			fs.readFile(file, "utf8", function(err, data) {
+				console.log(data);
+				if (!err) xml2js.parseString(data, function(err, list) {
+					if (!err) {
+						$("#playlist *").remove();
+						list.playlist.trackList[0].track.forEach(function(track) {
+							$("#playlist").append("<button class='dropdown-item' location='" +
+								track.location[0].substring(7) + "' creator='" + unescape(track.creator) +
+								"'>" + unescape(track.title) + "</button>")
+						});
+						if ($("[name=autoplay]")[0].checked) playNext();
+						isChanged = true;
+					} else console.error("Error parsing playlist file (" + file +
+						"). Error: " + err)
+				});
+				else console.error("Error reading playlist file (" + file + "). Error: " +
+					err)
+			})
+		} else {
+			renderID3(fs.createReadStream(file), function(err, tags) {
+				$("#playlist").append("<button class='dropdown-item' location='" + file +
+					"' creator='" + tags.artist[0] + "'>" + (tags.title || file.substring(
+						file.lastIndexOf("/") + 1)) + "</button>");
+				if ($("[name=autoplay]")[0].checked && player.paused) playNext();
+				isChanged = true;
+			})
+		}
+	}
+
+	function savePlaylist(url, title) {
+		let trackList = [];
+		$("#playlist").find("button").each(function() {
+			trackList.push({
+				track: {
+					location: "file://" + escape($(this).attr("location")),
+					title: escape($(this).text()),
+					creator: escape($(this).attr("creator"))
+				}
+			})
+		});
+		let playlist = js2xml.toXML({
+			playlist: {
+				_attrs: {
+					xmlns: "http://xspf.org/ns/0/",
+					version: "1"
+				},
+				title: title || "Playlist",
+				trackList: trackList
+			}
+		}, {
+			header: true,
+			indent: "	"
+		});
+		fs.writeFile(url, playlist, 'utf-8')
+			.then(function() {
+				new Notification({
+					title: "Playlist successfully saved",
+					color: "#fd7e14",
+					icon: "done",
+					after: "HIDE"
+				});
+			})
+			.catch(function() {
+				new Notification({
+					title: "Playlist failed to save",
+					color: "#dc3545",
+					icon: "error_outline",
+					after: "HIDE"
+				})
+			});
+	}
+
+	function playNext() {
+		if ($("#playlist").find(".dropdown-item.active").length !== 0)
+			$("#playlist").find(".dropdown-item.active").next().click();
+		else
+			$("#playlist").find(".dropdown-item").first().click();
+	}
+
+	function playPrevious() {
+		if ($("#playlist").find(".dropdown-item.active").length !== 0)
+			$("#playlist").find(".dropdown-item.active").prev().click();
+	}
+</script>
+<style>
+	body {
+		height: 100%;
+	}
+
+	footer {
+		position: relative;
+		padding: 0.25rem 0.5rem;
+		border-top: 1px solid lightgray;
+		height: calc(3.5rem + 4px);
+		padding-top: calc(0.25rem + 4px);
+	}
+
+	#cover img {
+		max-height: 100%;
+		max-width: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		margin: auto;
+	}
+
+	progress {
+		position: absolute;
+		top: 0;
+		width: 100%;
+		height: 4px;
+		border: 0;
+		left: 0;
+		-webkit-appearance: none;
+	}
+
+	progress[value]::-webkit-progress-value {
+		background: darkorange;
+	}
+
+	footer .media {
+		flex-grow: 2;
+	}
+
+	footer #player {
+		flex-shrink: 0;
+		line-height: 2.6rem;
+	}
+
+	footer #player button {
+		font-size: 24px;
+		padding: 0.25rem 0.5rem;
+	}
+
+	section.row {
+		flex-grow: 2;
+		margin: 0;
+		flex-shrink: calc(1 / 0.0001);
+	}
+
+	body {
+		display: flex;
+		flex-direction: column
+	}
+
+	.dropdown-item {
+		position: relative;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		display: inline-block;
+	}
+
+	section#cover::before {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		margin: auto;
+		content: "music_note";
+		font-family: 'Material Icons', sans-serif;
+		width: 6rem;
+		height: 6rem;
+		font-size: 6rem;
+		line-height: 1em;
+		color: orangered;
+	}
+
+	#playlist {
+		border: 0;
+		border-left: 1px solid #e9ecef;
+		position: relative;
+		margin: 0;
+		border-radius: 0;
+		max-height: unset !important;
+		overflow: auto;
+	}
+
+	.btn-primary {
+		background-color: hsl(33, 100%, 50%);
+		border-color: hsl(33, 100%, 50%);
+	}
+
+	.btn-primary:active,
+	.btn-primary.active,
+	.show>.btn-primary.dropdown-toggle {
+		background-color: hsla(33, 100%, 43%, 1);
+		border-color: hsla(33, 100%, 40%, 1);
+	}
+
+	.btn-primary:hover {
+		background-color: hsla(33, 100%, 43%, 1);
+		border-color: hsla(33, 100%, 40%, 1);
+	}
+
+	.btn-primary:focus {
+		box-shadow: 0 0 0 3px hsla(33, 100%, 50%, 0.5);
+	}
+
+	.btn-outline-primary {
+		color: hsla(33, 100%, 50%, 1);
+		border-color: hsla(33, 100%, 50%, 1);
+	}
+
+	.btn-outline-primary:hover {
+		background-color: hsla(33, 100%, 50%, 1);
+		border-color: hsla(33, 100%, 50%, 1);
+	}
+
+	.dropdown-item.active,
+	.dropdown-item:active {
+		background-color: hsla(33, 100%, 50%, 1);
+	}
+
+	.btn-outline-primary:active,
+	.btn-outline-primary.active,
+	.show>.btn-outline-primary.dropdown-toggle {
+		color: #fff;
+		background-color: hsla(33, 100%, 50%, 1);
+		border-color: hsla(33, 100%, 56%, 1);
+	}
+
+	#playlist:empty::before {
+		content: "Playlist is empty. Add more songs from your local storage.";
+		position: absolute;
+		width: 80%;
+		font-size: 16px;
+		color: grey;
+		height: 50px;
+		text-align: center;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		margin: auto;
+	}
+</style>
