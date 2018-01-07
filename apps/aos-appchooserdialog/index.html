@@ -49,6 +49,11 @@
 		ErrorProcessor("To open application \"openFile\", you need to specify file's path and it's mime type.");
 		win.close();
 	}
+	$("select").change(function() {
+		if(this.value)
+			$(".btn-primary").removeAttr("disabled");
+		else $(".btn-primary").attr("disabled","disabled");
+	});
 	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function (err, assocs) {
 		if (err) {
 			ErrorProcessor(err);

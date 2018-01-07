@@ -137,6 +137,15 @@
 				iconSize: fm.viewMode,
 				accessList: []
 			};
+			if($("body").css("background-size") === "cover")
+				settingsFile.fillMode = "fill";
+			else if($("body").css("background-size") === "100% 100%")
+				settingsFile.fillMode = "stretch";
+			else if($("body").css("background-position") === "center")
+				settingsFile.fillMode = "center";
+			else if($("body").css("background-repeat") === "repeat")
+				settingsFile.fillMode = "tiled";
+
 			$("section#access > *").each(function () {
 				if (this.className.includes("dropdown-item"))
 					settingsfile.accessList.push({
@@ -874,7 +883,7 @@
 		display: inline-block;
 		overflow-y: auto;
 		z-index: 0;
-		max-width: 350px;
+		max-width: 200px;
 	}
 
 	#sidebar section {
