@@ -21,7 +21,9 @@
 	});
 	const {
 		width,
-		height
+		height,
+			x,
+			y
 	} = require('electron').screen.getPrimaryDisplay().bounds
 </script>
 <div class="bg-light btn-menu">
@@ -116,8 +118,8 @@
 	};
 
 	let popup = new BrowserWindow({
-		x: width - 10 - 450,
-		y: height - 37 - 450,
+		x: x + width - 10 - 450,
+		y: y + height - 37 - 450,
 		width: 450,
 		height: 450,
 		frame: false,

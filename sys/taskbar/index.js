@@ -13,7 +13,5 @@ function update() {
 		})
 	});
 }
-
-update()
-
-ipcRenderer.on("update", update)
+update();
+ipcRenderer.on("update", update);

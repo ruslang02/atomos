@@ -103,14 +103,14 @@ right: 0;
 
   function capture() {
     console.log('Gathering screens...');
-    const thumbSize = determineScreenShotSize()
+    const thumbSize = determineScreenShotSize();
     let options = {
       types: ['screen'],
       thumbnailSize: thumbSize
     }
 
     desktopCapturer.getSources(options, function(error, sources) {
-      if (error) return console.log(error)
+      if (error) return console.log(error);
 
       sources.forEach(function(source) {
         if (source.name === 'Entire screen' || source.name === 'Screen 1') {
@@ -148,8 +148,8 @@ right: 0;
   }
 
   function determineScreenShotSize() {
-    const screenSize = screen.getPrimaryDisplay().bounds
-    const maxDimension = Math.max(screenSize.width, screenSize.height)
+    const screenSize = screen.getPrimaryDisplay().bounds;
+    const maxDimension = Math.max(screenSize.width, screenSize.height);
     return {
       width: maxDimension * window.devicePixelRatio,
       height: maxDimension * window.devicePixelRatio

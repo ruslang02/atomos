@@ -28,7 +28,7 @@ app.on('browser-window-created', function(event, win) {
   	}]).popup()
   });
   win.webContents.on('did-stop-loading', function() {
-    icon = ipcRenderer.sendSync("icon-get", win.id);
+    icon = win.webContents.browserWindowOptions.icon;
     $task.removeClass("loading");
     $task.find("img")[0].src = icon;
   });

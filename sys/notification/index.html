@@ -14,17 +14,19 @@
   const app = remote.getCurrentWindow();
   const {
     width,
-    height
+    height,
+      x,
+      y
   } = screen.getPrimaryDisplay().bounds;
   let options = [];
   window.$ = window.jQuery = require('jquery');
   require('atomos-framework');
   window.Popper = require('popper.js');
-  require('bootstrap')
+  require('bootstrap');
   setInterval(function() {
     let alertHeight = $(".alert").outerHeight();
     app.setContentSize(350, Math.ceil(alertHeight));
-    app.setPosition(width - 10 - 350, height - 37 - Math.ceil(alertHeight));
+    app.setPosition(x + width - 10 - 350, y + height - 37 - Math.ceil(alertHeight));
   }, 1)
   ipcRenderer.on('blur', function(e) {
     if (options.dismissable) onTimeout()

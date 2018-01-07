@@ -14,7 +14,9 @@
   } = remote;
   const {
     width,
-    height
+    height,
+			x,
+			y
   } = screen.getPrimaryDisplay().bounds;
   const win = remote.getCurrentWindow();
   const wc = remote.getCurrentWebContents();

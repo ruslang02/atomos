@@ -1,5 +1,4 @@
 <!--suppress ALL -->
-<link rel="stylesheet" href="/atomos/lib/atomos.css"/>
 <div class="btn-toolbar">
 	<div class="btn-group mr-1 btn-group-sm">
 		<button class="btn btn-outline-primary material-icons active" style="display:none; z-index:10000;"
@@ -58,15 +57,34 @@
 	ipcRenderer.on('changeWallpaper', updateWall);
 
 	function updateWall() {
-		fs.readJson(app.getPath("appData") + "/aos-cabinet.json")
-				.then(function(settings) {
-					$("body").css({
-						"background-image": "url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime() + ")",
-						"background-size": (settings.fillMode === "fill" ? "cover" : (settings.fillMode === "stretch" ? "100% 100%" : "initial")),
-						"background-position": (settings.fillMode === "center" ? "center" : "top left"),
-						"background-repeat": (settings.fillMode === "tiled" ? "repeat" : "no-repeat")
-					});
-				})
+		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", function(err, settings) {
+			if (err) {
+				fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json", fs.readJsonSync(
+						__dirname + "/default.json"));
+				settings = fs.readJsonSync(__dirname + "/default.json");
+			}
+			let wpURL;
+			if(fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
+				wpURL = encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime();
+			else {
+				wpURL = encodeURI(app.getAppPath()).replace(/%5C/g, "/") + "/resources/default.jpg?time=" + new Date().getTime();
+				fs.copy(app.getAppPath() + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
+						.then(function() {
+							new Notification({
+								title: "Welcome to AtomOS!",
+								body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)",
+								color: "#fd7e14",
+								icon: "pan_tool"
+							})
+						})
+			}
+			$("body").css({
+				"background-image": "url(file:///" + wpURL + ")",
+				"background-size": (settings.fillMode === "fill" ? "cover" : (settings.fillMode === "stretch" ? "100% 100%" : "initial")),
+				"background-position": (settings.fillMode === "center" ? "center" : "top left"),
+				"background-repeat": (settings.fillMode === "tiled" ? "repeat" : "no-repeat")
+			});
+		})
 	}
 
 	fm.elements = [];
@@ -109,7 +127,7 @@
 		fm.action = fm.arguments["action"];
 		loadAccessBar();
 		loadDeviceBar();
-		if(process.platform !== "win32") fs.watch("/dev/disk/by-uuid", loadDeviceBar)
+		if (process.platform !== "win32") fs.watch("/dev/disk/by-uuid", loadDeviceBar)
 	}
 	if (!(fm.desktop || fm.files.attr("viewMode") === "gigtiles")) {
 		window.addEventListener("beforeunload", function (e) {
@@ -187,9 +205,9 @@
 		e = e.originalEvent;
 		console.log(e);
 		let dragico = document.createElement('img');
-		if ($(this).attr("type") === "folder") dragico.src = "/atomos/icons/Extensions Folder.png";
-		else if ($(this).find(".file-title").text().endsWith(".wapp")) dragico.src = "/atomos/icons/Product.png";
-		else dragico.src = "/atomos/icons/file-types/Unknown.png";
+		if ($(this).attr("type") === "folder") dragico.src = app.getAppPath() + "/icons/Extensions Folder.png";
+		else if ($(this).find(".file-title").text().endsWith(".wapp")) dragico.src = app.getAppPath() + "/icons/Product.png";
+		else dragico.src = app.getAppPath() + "/icons/file-types/Unknown.png";
 		dragico.width = 96;
 		e.dataTransfer.effectAllowed = 'move';
 		e.dataTransfer.setData("aos/file", JSON.stringify({
@@ -314,11 +332,11 @@
 				if (fm.viewMode === "list") $('div.files').prepend(
 						'<button data-location="' + path.substring(0, path.lastIndexOf("/",
 						path.length - 2)) +
-						'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/folders-small/Folder.png"><div class="file-title">..</div></button>'
+						'/" class="dropdown-item file-item" type="folder"><img src="' + app.getAppPath() + '/icons/folders-small/Folder.png"><div class="file-title">..</div></button>'
 				);
 				else $('div.files').prepend('<button data-location="' + path.substring(0,
 						path.lastIndexOf("/", path.length - 2)) +
-						'/" class="dropdown-item file-item" type="folder"><img src="/atomos/icons/Extensions Folder.png"><div class="file-title">..</div></button>'
+						'/" class="dropdown-item file-item" type="folder"><img src="' + app.getAppPath() + '/icons/Extensions Folder.png"><div class="file-title">..</div></button>'
 				)
 			}
 
@@ -416,17 +434,17 @@
 						if (fileRes.type === "folder") {
 							if (fm.viewMode === "list")
 								if (fileRes.link) fileRes.icon =
-										"/atomos/icons/folders-small/Symlink Folder.png";
+										app.getAppPath() + "/icons/folders-small/Symlink Folder.png";
 								else fileRes.icon =
-										"/atomos/icons/folders-small/Extensions Folder.png";
+										app.getAppPath() + "/icons/folders-small/Extensions Folder.png";
 							else if (fileRes.link) fileRes.icon =
-									"/atomos/icons/Symlink Folder.png";
-							else fileRes.icon = "/atomos/icons/Extensions Folder.png";
+									app.getAppPath() + "/icons/Symlink Folder.png";
+							else fileRes.icon = app.getAppPath() + "/icons/Extensions Folder.png";
 						} else if (fileRes.type === "file") {
-							let mime = "/atomos/icons/file-types/" + pathLib.extname(file).substring(1).toUpperCase() + ".png";
+							let mime = app.getAppPath() + "/icons/file-types/" + pathLib.extname(file).substring(1).toUpperCase() + ".png";
 							if (fs.existsSync(mime)) fileRes.icon = mime;
-							else if (fileRes.link) fileRes.icon = "/atomos/icons/file-types/Symlink.png";
-							else fileRes.icon = "/atomos/icons/file-types/Unknown.png";
+							else if (fileRes.link) fileRes.icon = app.getAppPath() + "/icons/file-types/Symlink.png";
+							else fileRes.icon = app.getAppPath() + "/icons/file-types/Unknown.png";
 							if (fm.viewMode === "list") fileRes.icon = fileRes.icon.replace(/file-types/g, "file-types-small");
 						}
 						result.push(fileRes);
@@ -508,7 +526,7 @@
 			case "paste":
 				window.fileClipboard.flush(fm.path)
 						.then(reNavigate)
-						.catch(function(err) {
+						.catch(function (err) {
 							new Notification({
 								title: "We were unable to copy file",
 								html: err,
@@ -561,7 +579,7 @@
 							'" data-location="' + (item.location ? item.location.replace(
 							"/atomos/home", app.getPath("home")) : 1 + 1) + '"><img src="' + (
 							item.icon ||
-							"/atomos/icons/folders-small/Extensions Folder.png") + '"/>' + item.name +
+							app.getAppPath() + "/icons/folders-small/Extensions Folder.png") + '"/>' + item.name +
 							'</button>');
 				else $("section#access").append(
 						'<div class="dropdown-header">' + item.name + '</div>')
@@ -580,18 +598,25 @@
 								.then(function (loc) {
 									let device = pathLib.resolve("/dev/disk/by-uuid/", loc);
 									let label = "";
-									fs.readdir("/dev/disk/by-label")
-											.then(function (files) {
-												files.forEach(function (file) {
-													if (pathLib.resolve("/dev/disk/by-label/", fs.readlinkSync(
-																	"/dev/disk/by-label/" + file)) === device) label = file;
-												});
-												label = label.replace("\\x20", " ");
-												$("section#devices").append(
-														"<button class='dropdown-item' title='Click to mount/open drive' data-device='" +
-														device + "'><div class='file-title'>" + (label || link) +
-														"</div></button>")
-											})
+									if (fs.existsSync("/dev/disk/by-label"))
+										fs.readdir("/dev/disk/by-label")
+												.then(function (files) {
+													files.forEach(function (file) {
+														if (pathLib.resolve("/dev/disk/by-label/", fs.readlinkSync(
+																		"/dev/disk/by-label/" + file)) === device) label = file;
+													});
+													label = label.replace("\\x20", " ");
+													$("section#devices").append(
+															"<button class='dropdown-item' title='Click to mount/open drive' data-device='" +
+															device + "'><div class='file-title'>" + (label || link) +
+															"</div></button>")
+												})
+												.catch(function () {
+													$("section#devices").append(
+															"<button class='dropdown-item' title='Click to mount/open drive' data-device='" +
+															device + "'><div class='file-title'>" + loc +
+															"</div></button>")
+												})
 								})
 					});
 				})
@@ -849,7 +874,7 @@
 		display: inline-block;
 		overflow-y: auto;
 		z-index: 0;
-		max-width:350px;
+		max-width: 350px;
 	}
 
 	#sidebar section {
