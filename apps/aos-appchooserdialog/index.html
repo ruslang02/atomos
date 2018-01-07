@@ -49,8 +49,8 @@
 		ErrorProcessor("To open application \"openFile\", you need to specify file's path and it's mime type.");
 		win.close();
 	}
-	$("select").change(function() {
-		if(this.value)
+	$("select").on("input", function() {
+		if($(this).val().trim())
 			$(".btn-primary").removeAttr("disabled");
 		else $(".btn-primary").attr("disabled","disabled");
 	});

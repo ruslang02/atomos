@@ -25,12 +25,20 @@
 		<button class="btn btn-sm btn-primary w-75" onclick="window.close()">Close</button>
 	</div>
 </section>
+<section id="upderr">
+	<div class="text-center mb-2"><img src="/atomos/icons/Cancel.png"></div>
+	<p class="lead">Failed to update</p>
+	<p class="mb-3 w-75 mx-auto" id="reason"></p>
+	<div>
+		<button class="btn btn-sm btn-primary w-75" onclick="window.close()">Close</button>
+	</div>
+</section>
 <section id="updated">
 	<div class="text-center mb-2"><img src="/atomos/icons/Thumbs Up.png"></div>
 	<p class="lead">Update complete!</p>
 	<p class="mb-3 w-75 mx-auto">Whew, we are done!<br>We need to make a restart for all changes to apply.<br><small>And that is actually unbelievable that everything is alright...</small></p>
 	<div>
-		<button class="btn btn-sm btn-primary w-50" onclick="app.relaunch(); app.exit(0);">Restart GUI</button>
+		<button class="btn btn-sm btn-primary w-50" id="restart">Restart GUI</button>
 	</div>
 </section>
 <style>
@@ -93,7 +101,19 @@
 				win.setTitle("Update completed!");
 				win.show();
 				break;
+			case "#upderr":
+				win.setTitle("Update failed to start");
+				win.show();
+				break;
 		}
+	});
+	$("#restart").click(function() {
+		if(fs.existsSync("/etc/os-release")) {
+			if (fs.readFileSync("/etc/os-release").indexOf("atomos") !== -1)
+				require("child_process").exec("killall xinit electron node");
+			else app.relaunch();
+		} else app.relaunch();
+		app.quit();
 	});
 	$.getJSON(app.getAppPath() + "/RELEASE.json")
 			.then(function (release) {
@@ -119,10 +139,18 @@
 		let rm;
 		location.hash = "#updating";
 		$("pre").text("Removing previous version...");
-		if (process.platform === "win32") rm = require("child_process").spawn("rd", ["/Q", '/S', app.getAppPath()], {
-			shell: true
-		}); else rm = require("child_process").spawn("rm", ["-rf", app.getAppPath()]);
-		rm.on('close', update2);
+		fs.access(app.getAppPath(), fs.constants.W_OK)
+				.then(function() {
+					if (process.platform === "win32") rm = require("child_process").spawn("rd", ["/Q", '/S', app.getAppPath()], {
+						shell: true
+					}); else rm = require("child_process").spawn("rm", ["-rf", app.getAppPath() + "/{*,.*}"]);
+					rm.on('close', update2);
+				})
+				.catch(function() {
+					location.hash = "#upderr";
+					$("#reason").text("AtomOS root directory has insufficient permissions. Please change it to 755 or a larger one.")
+				})
+
 	}
 
 	function update2(code, signal) {
@@ -138,7 +166,7 @@
 							cwd: app.getAppPath(),
 							shell: true
 						});
-				npm.on('close', function (code, signal) {
+				npm.on('close', function () {
 					location.hash = "#updated";
 				});
 			}
