@@ -2,7 +2,7 @@
 
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
 
-Latest version: 0.5.0 (build 123). [Download .iso](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.5 (build 128). [Download .iso](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
@@ -27,6 +27,7 @@ sudo npm install -g electron --unsafe-perm=true --allow-root
 Install the libraries:
 ```
 npm install
+npm update
 ```
 And, finally, to run this monster:
 ```

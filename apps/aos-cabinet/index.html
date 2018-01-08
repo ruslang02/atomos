@@ -19,6 +19,16 @@
 			refresh
 		</button>
 	</div>
+	<div class="btn-group ml-1 btn-group-sm">
+		<button class="btn btn-outline-primary material-icons" style="display:none; z-index:10000;" onclick='
+						window.new("aos-cabinet/createFolder", {
+							path: fm.path
+						}, {
+							modal: true,
+							parent: fm.window
+						})'>folder_open
+		</button>
+	</div>
 </div>
 
 <section id="main">
@@ -57,19 +67,19 @@
 	ipcRenderer.on('changeWallpaper', updateWall);
 
 	function updateWall() {
-		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", function(err, settings) {
+		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", function (err, settings) {
 			if (err) {
 				fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json", fs.readJsonSync(
 						__dirname + "/default.json"));
 				settings = fs.readJsonSync(__dirname + "/default.json");
 			}
 			let wpURL;
-			if(fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
+			if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
 				wpURL = encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime();
 			else {
 				wpURL = encodeURI(app.getAppPath()).replace(/%5C/g, "/") + "/resources/default.jpg?time=" + new Date().getTime();
 				fs.copy(app.getAppPath() + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
-						.then(function() {
+						.then(function () {
 							new Notification({
 								title: "Welcome to AtomOS!",
 								body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)",
@@ -129,7 +139,7 @@
 		loadDeviceBar();
 		if (process.platform !== "win32") fs.watch("/dev/disk/by-uuid", loadDeviceBar)
 	}
-	if (!(fm.desktop || fm.files.attr("viewMode") === "gigtiles")) {
+	if (!fm.desktop) {
 		window.addEventListener("beforeunload", function (e) {
 			let settingsfile = {
 				foldersFirst: fm.foldersFirst,
@@ -137,13 +147,13 @@
 				iconSize: fm.viewMode,
 				accessList: []
 			};
-			if($("body").css("background-size") === "cover")
+			if ($("body").css("background-size") === "cover")
 				settingsFile.fillMode = "fill";
-			else if($("body").css("background-size") === "100% 100%")
+			else if ($("body").css("background-size") === "100% 100%")
 				settingsFile.fillMode = "stretch";
-			else if($("body").css("background-position") === "center")
+			else if ($("body").css("background-position") === "center")
 				settingsFile.fillMode = "center";
-			else if($("body").css("background-repeat") === "repeat")
+			else if ($("body").css("background-repeat") === "repeat")
 				settingsFile.fillMode = "tiled";
 
 			$("section#access > *").each(function () {
@@ -178,7 +188,11 @@
 			path: $(this).attr("data-location")
 		})
 	}).on("mouseup", "[type]", function () {
-		if ($(this).attr("type") === "file" || $(this).attr("type") === "shortcut") {
+		if (($(this).attr("type") === "file" || $(this).attr("type") === "shortcut") && fm.action !== "ffd") {
+			$("#ofdFile").val($(this).attr("realname") || $(this).children(
+					".file-title").text());
+			$(".ofdBar button.btn-primary").removeAttr("disabled");
+		} else if(fm.action === "ffd" && $(this).attr("type") === "folder") {
 			$("#ofdFile").val($(this).attr("realname") || $(this).children(
 					".file-title").text());
 			$(".ofdBar button.btn-primary").removeAttr("disabled");
@@ -187,11 +201,11 @@
 			$("#ofdFile").val("");
 		}
 	}).on("dblclick", "[type=file]", function () {
-		if (fm.action) submitFile();
+		if (fm.action && fm.action !== "ffd") submitFile();
 		else
 			window.fileOpen(fm.path + $(this).children(".file-title").text());
 	}).on("dblclick", "[type=shortcut]", function () {
-		if (fm.action) submitFile();
+		if (fm.action && fm.action !== "ffd") submitFile();
 		else
 			window.fileOpen(fm.path + $(this).attr("realname"));
 	}).on("click", "#sidebar section#devices button", function () {
@@ -229,18 +243,24 @@
 
 
 	if (fm.action) {
-		$("body").addClass("ofd");
-		$("button:contains(reorder)").attr("aria-pressed", "false").removeClass(
-				"active").show();
-		$("#sidebar").hide();
 		fm.window.setMinimumSize(500, 250);
 		fm.window.setSize(500, 250);
 		fm.window.setMaximizable(false);
 		fm.window.setResizable(false);
-		$(".ofdBar .btn-primary").text(fm.arguments.okText || (fm.action === "sfd" ? "Save" : "Open"));
+		$("body").addClass("ofd");
+		$("button:contains(reorder)").attr("aria-pressed", "false").removeClass(
+				"active").show();
+		$(".btn-toolbar .btn:contains(folder)").show();
+		$("#sidebar").hide();
+		$(".ofdBar .btn-primary").text(fm.arguments.okText || (fm.action === "sfd" ? "Save" : (fm.action === "ffd" ? "Select" : "Open")));
 		$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
-		fm.window.setTitle(fm.arguments.title || "Choose a file to open...");
-		if (fm.action === "sfd") {
+		fm.window.setTitle(fm.arguments.title || "Choose...");
+		if(fm.action === "ffd") {
+			$("body").addClass("ffd");
+			$(".ofdBar input").hide();
+			$(".ofdBar .input-group-btn").css("flex-grow",2);
+		}
+		if (fm.action === "sfd" || fm.action === "ffd") {
 			$("#ofdFile").removeAttr("readonly").on("input change", function () {
 				if ($(this).val() === "") $(".ofdBar button.btn-primary").attr("disabled",
 						"disabled");
@@ -324,6 +344,10 @@
 		}
 		checkHistory();
 		$("#path").val(path);
+		fs.watch(path, function(e,fname) {
+			if(fm.path === path)
+				reNavigate();
+		})
 		list(path, (data) => {
 			$(".files *").remove();
 			if (typeof data === "string") {
@@ -360,7 +384,7 @@
 							'" class="dropdown-item file-item" type="' + item.type +
 							'"><img src="' + item.icon + '"><div class="file-title">' + item.name +
 							'</div></button>')
-				} else if (item.name.endsWith(".lnk")) {
+				} else if (item.name.endsWith(".lnk") && fm.action !== "ffd") {
 					let shrt = fs.readJsonSync(fm.path + item.name, {
 						throws: false
 					});
@@ -379,7 +403,7 @@
 							window.new(shrt.app, shrt.args || {});
 						})
 					}
-				} else $("div.files").append(
+				} else if(fm.action !== "ffd") $("div.files").append(
 						'<button draggable="true" data-mime="' + item.mimeType +
 						'" style="opacity: ' + opacity +
 						'" class="dropdown-item file-item" type="' +
@@ -402,7 +426,7 @@
 	}
 
 	function submitFile() {
-		let channel = (fm.action === "ofd" ? "return-file" : "save-file");
+		let channel = (fm.action === "ofd" ? "return-file" : (fm.action === "ffd" ? "return-folder" : "save-file"));
 		fm.window.getParentWindow().webContents.send(channel, $("#path").val() + "/" +
 				$("#ofdFile").val());
 		fm.window.close();
@@ -820,13 +844,42 @@
 						})
 					}
 				}, {
-					type: (file.endsWith(".wapp") ? 'separator' : "normal"),
-					visible: file.endsWith(".wapp")
+					type: ((file.endsWith(".wapp") || file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz")) ? 'separator' : "normal"),
+					visible: (file.endsWith(".wapp") || file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"))
 				}, {
 					label: 'Install',
 					visible: file.endsWith(".wapp"),
 					click() {
 						window.new("install", {path: file});
+					}
+				}, {
+					label: 'Extract to...',
+					visible: file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"),
+					click() {
+						window.new("aos-cabinet", {
+							path: fm.path,
+							action: "ffd",
+							title: "Choose extraction directory...",
+							okText: "Extract"
+						}, {
+							modal: true,
+							parent: fm.window
+						});
+						ipcRenderer.on("return-folder", function (e, arg) {
+							if (file.endsWith(".zip")) {
+								const unzip = require('extract-zip');
+								unzip(file, {
+									dir: arg
+								}, reNavigate)
+							} else if (file.endsWith(".tar.gz") || file.endsWith(".tgz")) {
+								const tar = require('tar');
+								fs.createReadStream(file).pipe(
+										tar.x({
+											C: arg // alias for cwd:'some-dir', also ok
+										})
+								)
+							}
+						})
 					}
 				}, {
 					type: "separator"

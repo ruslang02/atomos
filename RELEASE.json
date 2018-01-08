@@ -1,9 +1,9 @@
 {
 	"name": "atomOS",
-	"version": "0.5.0",
+	"version": "0.5",
 	"codename": "awesome",
 	"website": "http:\/\/atomos.org.uk",
-	"build": "127",
+	"build": "128",
 	"repository": "ruslang02/atomos",
 	"branch": "master"
 }
