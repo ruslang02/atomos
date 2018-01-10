@@ -1,7 +1,8 @@
 <tasks class="mx-2" style="flex-grow:2"></tasks>
 <script>
 app.on('browser-window-created', function(event, win) {
-  if(!win.isFullScreenable()) return;
+	console.log(win);
+  if(win.webContents.browserWindowOptions.skipTaskbar === true) return;
   let dangerFlash;
   let hangWin;
   let alreadyHung = false;
@@ -28,6 +29,7 @@ app.on('browser-window-created', function(event, win) {
   	}]).popup()
   });
   win.webContents.on('did-stop-loading', function() {
+  	console.log(win.webContents.browserWindowOptions);
     icon = win.webContents.browserWindowOptions.icon;
     $task.removeClass("loading");
     $task.find("img")[0].src = icon;

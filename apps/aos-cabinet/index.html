@@ -2,20 +2,24 @@
 <div class="btn-toolbar">
 	<div class="btn-group mr-1 btn-group-sm">
 		<button class="btn btn-outline-primary material-icons active" style="display:none; z-index:10000;"
-						aria-pressed="true" onclick="$('#sidebar').toggle(); $(this).button('toggle')">reorder
+						aria-pressed="true" onclick="$('#sidebar').toggle(); $(this).button('toggle')"
+						data-toggle="tooltip" data-placement="bottom" title="Toggle Sidebar">reorder
 		</button>
 	</div>
 	<div class="input-group btn-group" style="flex-grow: 2">
 		<button class="btn btn-outline-primary material-icons" disabled id="navigateBack"
-						onclick="goBack()">keyboard_arrow_left
+						onclick="goBack()"
+						data-toggle="tooltip" data-placement="bottom" title="Go back">keyboard_arrow_left
 		</button>
 		<button class="btn btn-outline-primary material-icons" disabled style="display:none"
-						id="navigateForward" onclick="goForward()">keyboard_arrow_right
+						id="navigateForward" onclick="goForward()"
+						data-toggle="tooltip" data-placement="bottom" title="Go forward">keyboard_arrow_right
 		</button>
 		<input class="form-control form-control-sm border-left-0 border-right-0" type="text"
 					 id="path">
 		<button class="btn btn-outline-primary material-icons"
-						onclick="navigate(($('#path').val().trim() === fm.path ? fm.path : $('#path').val()), ($('#path').val() === fm.path ? 'reload' : undefined))">
+						onclick="navigate(($('#path').val().trim() === fm.path ? fm.path : $('#path').val()), ($('#path').val() === fm.path ? 'reload' : undefined))"
+						data-toggle="tooltip" data-placement="bottom" title="Refresh">
 			refresh
 		</button>
 	</div>
@@ -26,7 +30,8 @@
 						}, {
 							modal: true,
 							parent: fm.window
-						})'>folder_open
+						})'
+						data-toggle="tooltip" data-placement="bottom" title="Create new folder">folder_open
 		</button>
 	</div>
 </div>
@@ -66,6 +71,12 @@
 
 	ipcRenderer.on('changeWallpaper', updateWall);
 
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip({
+			trigger: 'hover'
+		})
+	})
+
 	function updateWall() {
 		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", function (err, settings) {
 			if (err) {
@@ -86,6 +97,9 @@
 								color: "#fd7e14",
 								icon: "pan_tool"
 							})
+							let d1e = fs.existsSync(app.getPath("desktop") + "/.1.lnk");
+							let d2e = fs.existsSync(app.getPath("desktop") + "/.2.lnk");
+							if(!d1e) fs.writeJson(app.getPath("desktop") + "/.1.lnk",)
 						})
 			}
 			$("body").css({
@@ -119,6 +133,11 @@
 			path: fm.path
 		};
 		updateWall();
+		fs.watchFile(app.getPath("appData") + "/wallpaper.jpg", {interval: 1000}, function() {
+			$("body").css({
+				"background-image": "url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime() + ")"
+			});
+		})
 		$("#path").val(fm.path);
 		navigate(app.getPath("desktop"));
 		fs.readJson(app.getAppPath() + "/RELEASE.json").then(function (info) {
@@ -657,7 +676,7 @@
 	}
 
 	function initContextMenus() {
-
+		let aclock = fs.existsSync(app.getAppPath() + "/apps/aclockwallpaper/");
 		$(document.body).on("contextmenu", ".files", function () {
 			const fmMenu = [{
 				label: "Open in",
@@ -674,14 +693,15 @@
 					}
 				}]
 			}, {
-				type: "separator"
+				type: (fm.desktop ? "normal" : "separator"),
+				visible: !fm.desktop
 			}, {
 				label: "View",
 				type: "submenu",
+				visible: !fm.desktop,
 				submenu: [{
 					label: "List",
 					type: "radio",
-					visible: !fm.desktop,
 					checked: fm.viewMode === "list",
 					click() {
 						doAction("vmlist")
@@ -689,32 +709,23 @@
 				}, {
 					label: "Small icons",
 					type: "radio",
-					visible: !fm.desktop,
 					checked: fm.viewMode === "smalltiles",
 					click() {
 						doAction("vmsmall")
 					}
 				}, {
-					label: (fm.desktop ? "Small icons" : "Medium icons"),
+					label: "Medium icons",
 					type: "radio",
 					checked: fm.viewMode === "midtiles",
 					click() {
 						doAction("vmmid")
 					}
 				}, {
-					label: (fm.desktop ? "Medium icons" : "Large icons"),
+					label: "Large icons",
 					type: "radio",
 					checked: fm.viewMode === "bigtiles",
 					click() {
 						doAction("vmlarge")
-					}
-				}, {
-					label: "Large icons",
-					type: "radio",
-					visible: fm.desktop,
-					checked: fm.viewMode === "gigtiles",
-					click() {
-						doAction("vmgig")
 					}
 				}]
 			}, {
@@ -767,6 +778,20 @@
 				},
 				enabled: window.fileClipboard.isFilled
 			}, {
+				type: (fm.desktop ? "separator" : "normal"),
+				visible: fm.desktop
+			}, {
+				label: "Next wallpaper",
+				visible: fm.desktop && aclock,
+				click() {
+					window.new("aclockwallpaper", {autostart: true}, {
+						show: false,
+						showOnLoad: false,
+						skipTaskbar: true,
+						focusable: false
+					});
+				}
+			}, {
 				type: "separator"
 			}, {
 				label: "Create",
@@ -795,15 +820,12 @@
 				}]
 			}, {
 				label: "Properties",
+				visible: !fm.desktop,
 				click() {
 					doAction("properties")
 				}
 			}, {
-				type: (!fm.desktop ? 'normal' : 'separator'),
-				visible: fm.desktop
-			}, {
 				label: "Desktop Preferences",
-				disabled: true,
 				visible: fm.desktop,
 				click() {
 					window.new("control", {section: "Desktop Preferences"})
@@ -1081,7 +1103,7 @@
 		display: flex;
 	}
 
-	.files:empty::before {
+	body:not(.desktop) .files:empty::before {
 		content: "Nothing here";
 		display: block;
 		text-align: center;

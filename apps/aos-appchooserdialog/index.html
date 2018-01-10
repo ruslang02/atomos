@@ -49,11 +49,6 @@
 		ErrorProcessor("To open application \"openFile\", you need to specify file's path and it's mime type.");
 		win.close();
 	}
-	$("select").on("input", function() {
-		if($(this).val().trim())
-			$(".btn-primary").removeAttr("disabled");
-		else $(".btn-primary").attr("disabled","disabled");
-	});
 	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function (err, assocs) {
 		if (err) {
 			ErrorProcessor(err);
@@ -63,6 +58,7 @@
 		assocs.forEach(function (assoc) {
 			if (assoc.mime === args.extension) recom = assoc.app;
 		});
+
 
 		listApps();
 		$("#ext").text(args.extension);
@@ -111,7 +107,13 @@
 					listApps(path + "/" + item);
 				}
 			})
-		})
+		});
+
+		$("select").on("input", function() {
+			if($(this).val().trim())
+				$(".btn-primary").removeAttr("disabled");
+			else $(".btn-primary").attr("disabled","disabled");
+		});
 
 	}
 

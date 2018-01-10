@@ -1,5 +1,5 @@
 <script>
-	$("tray").append("<button name=\"clock\" style='color: #343a40' title='Time/Date loading...'></button>");
+	$("tray").append("<button name=\"clock\" style='color: #343a40' data-toggle=\"tooltip\" data-placement=\"left\" data-trigger='hover' title='Date loading...'></button>");
 	let clockMenu;
 	clockMenu = new BrowserWindow({
 		width: 400,
@@ -8,14 +8,15 @@
 		frame: false,
 		closable: false,
 		maximizable: false,
-		fullscreenable: false,
+		showOnLoad: false,
 		minimizable: false,
+		skipTaskbar: true,
 		movable: false,
 		resizable: false,
 		x: x + width - 400 - 10,
 		y: y + height - 258 - 28 - 10,
 		show: false,
-		alwaysOnTop: true
+		alwaysOnTop: true,
 	});
 	clockMenu.loadURL("file://" + app.getAppPath() + "/sys/clockMenu/index.html");
 	$("[name=clock]").on("click", function () {
@@ -56,11 +57,14 @@
 		});
 		clockMenu.hide()
 	});
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip()
+	});
 	setInterval(function () {
 		// noinspection JSCheckFunctionSignatures
 		$("[name=clock]").text(new Date().toLocaleTimeString({}, {
 			hour: '2-digit',
 			minute: '2-digit'
-		}))
+		})).attr('data-original-title', new Date().toLocaleDateString());
 	}, 1000);
 </script>

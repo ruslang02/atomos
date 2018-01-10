@@ -3,18 +3,24 @@
 		<profile-name class="lead">atomOS</profile-name>
 		<atomos-version>
 			<div class="btn-group btn-group-sm float-right">
-				<button type="button" class="btn btn-danger" style="line-height:1.1" onclick="atomos.shutdown()"><i class="material-icons">power_settings_new</i> Shut down</button>
+				<button type="button" class="btn btn-danger" style="line-height:1.1" onclick="atomos.shutdown()"
+								data-toggle="tooltip" data-placement="bottom" title="Close all apps and turn off PC"><i class="material-icons">power_settings_new</i> Shut down</button>
 				<button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"
 								aria-haspopup="true" aria-expanded="false">
 					<span class="sr-only">Toggle Dropdown</span>
 				</button>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" onclick="atomos.suspend()" href="#">Suspend</a>
-					<a class="dropdown-item" onclick="atomos.lock()" href="#">Lock Screen</a>
-					<a class="dropdown-item" onclick="atomos.stopx()" href="#">Log out</a>
+					<a class="dropdown-item" onclick="atomos.suspend()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Leave everything and sleep">Suspend</a>
+					<a class="dropdown-item" onclick="atomos.lock()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Leave everything and go to login screen">Lock</a>
+					<a class="dropdown-item" onclick="atomos.stopx()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Close all apps and go to login screen">Log out</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="atomos.reboot()" href="#">Restart</a>
-					<a class="dropdown-item" onclick="atomos.shutdown()" href="#">Shut down</a>
+					<a class="dropdown-item" onclick="atomos.reboot()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Close all apps and restart PC">Restart</a>
+					<a class="dropdown-item" onclick="atomos.shutdown()" href="#"
+						 data-toggle="tooltip" data-placement="right" title="Close all apps and turn off PC">Shut down</a>
 				</div>
 			</div>
 		</atomos-version>
@@ -65,8 +71,10 @@
 		</div>
 	</div>
 	<div class="nav nav-pills nav-fill" role="tablist">
-		<a href="#folders" class="nav-link active nav-item" aria-controls="home" role="tab" data-toggle="tab">Folders</a>
-		<a href="#applications" class="nav-link nav-item" aria-controls="messages" role="tab" data-toggle="tab">Applications</a>
+		<a href="#folders" class="nav-link active nav-item" aria-controls="home" role="tab" data-toggle="tab"
+			 data-placement="top" title="Quick file-system access">Folders</a>
+		<a href="#applications" class="nav-link nav-item" aria-controls="messages" role="tab" data-toggle="tab"
+			 data-placement="top" title="All installed apps">Applications</a>
 	</div>
 </start-menu>
 <link rel="stylesheet" href="/atomos/sys/internetMenu/index.css"/>
@@ -77,4 +85,14 @@
 	require("bootstrap");
 	require("atomos-framework");
 	const atomos = require("./index");
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip({
+			trigger: 'hover',
+			delay: 500
+		});
+		$('[data-toggle="tab"]').tooltip({
+			trigger: 'hover',
+			delay: 500
+		})
+	})
 </script>

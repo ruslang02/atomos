@@ -3,7 +3,7 @@
 	"version": "0.5",
 	"codename": "awesome",
 	"website": "http:\/\/atomos.org.uk",
-	"build": "128",
+	"build": "129",
 	"repository": "ruslang02/atomos",
 	"branch": "master"
 }

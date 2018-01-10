@@ -37,7 +37,7 @@ app.on('ready', function () {
 		y: y,
 		width: width,
 		height: height,
-		fullscreenable: false,
+		skipTaskbar: true,
 		backgroundColor: '#bbd8e8',
 		webPreferences: {
 			nativeWindowOpen: true
@@ -63,17 +63,20 @@ app.on('ready', function () {
 		maximizable: false,
 		resizable: false,
 		movable: false,
-		fullscreenable: false,
+		skipTaskbar: true,
 		alwaysOnTop: true,
 		type: "dock"
 	});
 	taskbar.webContents.on('did-finish-load', function () {
 		fs.readFile(app.getPath("appData") + "/autostart.json", function (err, autostart) {
-			if(err) console.error(err);
+			if(err || !autostart) {
+				console.error(err);
+				return;
+			}
 			autostart = JSON.parse(autostart);
 			autostart.forEach(function (item) {
 				let service = new BrowserWindow({
-					fullscreenable: false,
+					skipTaskbar: true,
 					show: false,
 					width: 0,
 					height: 0,
@@ -102,7 +105,7 @@ app.on('ready', function () {
 		maximizable: false,
 		alwaysOnTop: true,
 		resizable: false,
-		fullscreenable: false,
+		skipTaskbar: true,
 		movable: false,
 		show: false,
 		type: "notification"

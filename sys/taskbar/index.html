@@ -21,6 +21,7 @@
   const win = remote.getCurrentWindow();
   const wc = remote.getCurrentWebContents();
   window.jQuery = window.$ = require("jquery");
+  require('bootstrap');
   $("body").contextmenu(function(e) {
 	  e.preventDefault();
 	  Menu.buildFromTemplate([{

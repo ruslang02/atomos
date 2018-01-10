@@ -2,7 +2,7 @@
 
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
 
-Latest version: 0.5 (build 128). [Download .iso](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.5 (build 129). [Download .iso](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
