@@ -46,7 +46,7 @@
 	window.$ = require('jquery');
 	let win = remote.getCurrentWindow();
 	if (!(args.path && args.extension)) {
-		ErrorProcessor("To open application \"openFile\", you need to specify file's path and it's mime type.");
+		ErrorProcessor("To open application, you need to specify file's path and it's mime type.");
 		win.close();
 	}
 	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function (err, assocs) {

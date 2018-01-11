@@ -779,7 +779,7 @@
 				enabled: window.fileClipboard.isFilled
 			}, {
 				type: (fm.desktop ? "separator" : "normal"),
-				visible: fm.desktop
+				visible: fm.desktop && aclock
 			}, {
 				label: "Next wallpaper",
 				visible: fm.desktop && aclock,
@@ -839,14 +839,16 @@
 
 		$("body").on("contextmenu", ".file-item[type]", function (e) {
 			e.stopPropagation();
-			let mime = $(this).attr("data-mime") || "text/plain";
+			let realname = ($(this).attr("realname") ? $(this).attr("realname") :
+					$(this).find(".file-title").text());
+			let extension = pathLib.extname(realname).substring(1) || "text/plain";
 			let file = fm.path + ($(this).attr("realname") ? $(this).attr("realname") :
 					$(this).find(".file-title").text());
 			let $this = $(this);
 			fs.readJson(app.getPath("appData") + "/associations.json", function (err, assocs) {
 				if (err) fs.writeJsonSync(app.getPath("appData") + "/associations.json", []);
 				assocs = assocs || [];
-				let appName = assocs.find(o => o.mime === mime);
+				let appName = assocs.find(o => o.extension === extension);
 				if (appName) appName = appName["app"];
 				const menu = [{
 					label: ($this.attr("realname") === undefined ? "Open" + (($this.attr(
@@ -862,7 +864,7 @@
 					click() {
 						window.new("aos-appchooserdialog", {
 							path: file,
-							mimeType: mime
+							extension: extension
 						})
 					}
 				}, {
