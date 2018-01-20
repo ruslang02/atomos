@@ -1,0 +1,59 @@
+<p class="lead mb-2 ml-2">Select a widget to add</p>
+<div class="dropdown-menu d-inline-block position-static m-0 w-100"></div>
+<div class="d-flex w-100">
+	<button class="btn btn-light btn-sm mt-2 mr-auto" onclick="window.close()">Cancel</button>
+	<button class="btn btn-primary btn-sm mt-2" onclick="add()" disabled><i class="material-icons">add</i> Add</button>
+</div>
+<style>
+	body {
+		padding: 0.5rem;
+		height: auto;
+		width: 100%;
+	}
+
+	.dropdown-menu {
+		position: static;
+		overflow: hidden;
+		max-height: unset;
+	}
+
+	* {
+		transition: none !important
+	}
+</style>
+<script>
+	require("atomos-framework");
+	const {
+		remote
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	const win = remote.getCurrentWindow();
+	const path = require("path");
+	const fs = require("fs-extra");
+	fs.readdir(app.getAppPath() + "/sys/taskbar/plugins")
+			.then(function (elements) {
+				elements.forEach(function (e) {
+					document.querySelector(".dropdown-menu").innerHTML += "<div class='dropdown-item'>" + path.basename(e, ".html") + "</div>";
+				});
+				document.querySelectorAll(".dropdown-item").forEach(function (item) {
+					item.addEventListener("click", function () {
+						document.querySelectorAll(".dropdown-item").forEach(function (item) {
+							item.className = item.className.replace(" active", "");
+						});
+						item.className += " active";
+						document.querySelector(".btn-primary").removeAttribute("disabled");
+					})
+				})
+			});
+	window.onload = function () {
+		win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+
+	};
+
+	function add() {
+		win.getParentWindow().webContents.send("addWidget", {name: document.querySelector(".dropdown-item.active").innerText.trim()});
+		window.close();
+	}
+</script>

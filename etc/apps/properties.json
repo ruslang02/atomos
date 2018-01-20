@@ -1,9 +1,0 @@
-{
-  "name": "Stats",
-  "shortName": "Stats",
-  "description": "Dialog showing file/folder's name, modification, creation, accessing time etc.",
-  "width": 470,
-  "height": 222,
-  "icon": "/atomos/icons/Properties.png",
-  "hidden": "true"
-}
