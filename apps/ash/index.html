@@ -1,6 +1,8 @@
 <kbd>
 	<div class="text-center">
-		<img src="/atomos/apps/aos-about/atom.png" class="my-3" style="height: 40vh;filter: brightness(1000%)"><br>
+		<br>
+		<br>
+		<br>
 		<h3>atomOS Terminal</h3>The first next-gen web terminal.
 	</div>
 </kbd>
@@ -50,9 +52,9 @@
 			$(this).text("Expand output").parent().removeClass("show");
 		else $(this).text("Collapse output").parent().addClass("show");
 	});
-	fs.readdir("/atomos/apps", function (err, files) {
+	fs.readdir(app.getAppPath() + "/apps", function (err, files) {
 		files.forEach(function (file) {
-			fs.stat("/atomos/apps/" + file, function (err, stat) {
+			fs.stat(app.getAppPath() + "/apps/" + file, function (err, stat) {
 				if (stat.isDirectory()) commands.push(file);
 			})
 		})
@@ -90,7 +92,7 @@
 		let command = $("cmd input").val();
 		$kbd.append("<hr />");
 		addMessage(" > " + command);
-		fs.access("/atomos/apps/" + command.substring(0, (command.indexOf(" ") !== -1 ?
+		fs.access(app.getAppPath() + "/apps/" + command.substring(0, (command.indexOf(" ") !== -1 ?
 				command.indexOf(" ") : Infinity)).trim(), function (err) {
 			if (err) {
 				require('child_process').exec(command, {
@@ -133,8 +135,6 @@
 		addMessage(res.stdout)
 	}
 </script>
-
-<link href="/atomos/lib/atomos.css" rel="stylesheet">
 <style>
 	kbd {
 		display: block;

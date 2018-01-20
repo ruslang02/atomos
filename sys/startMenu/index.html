@@ -28,40 +28,40 @@
 	<div class="panel">
 		<div class="tab-content">
 			<div role="tabpanel" class="tab-pane active" id="folders">
-				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('documents')})"
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('documents')})"
 					 class="list-item btn btn-light">
-					<img src="/atomos/icons/Documents Folder.png">
+					<img data-icon="Documents Folder">
 					<name>Documents</name>
 					<br>
 					<description>Work with all your documents in one folder</description>
 				</a>
-				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('music')})" class="list-item btn btn-light">
-					<img src="/atomos/icons/Music Folder.png">
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('music')})" class="list-item btn btn-light">
+					<img data-icon="Music Folder">
 					<name>Music</name>
 					<br>
 					<description>Listen to the music from one location</description>
 				</a>
-				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('pictures')})" class="list-item btn btn-light">
-					<img src="/atomos/icons/Pictures Folder.png">
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('pictures')})" class="list-item btn btn-light">
+					<img data-icon="Pictures Folder">
 					<name>Pictures</name>
 					<br>
 					<description>View your photos here</description>
 				</a>
-				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('videos')})" class="list-item btn btn-light">
-					<img src="/atomos/icons/Movies Folder.png">
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('videos')})" class="list-item btn btn-light">
+					<img data-icon="Movies Folder">
 					<name>Videos</name>
 					<br>
 					<description>See all your movies available locally</description>
 				</a>
 				<hr/>
-				<a href="#" onclick="window.new('aos-cabinet',{path: app.getPath('home')})" class="list-item btn btn-light">
-					<img src="/atomos/icons/User Folder.png">
+				<a href="#" onclick="window.new('aos-files',{path: app.getPath('home')})" class="list-item btn btn-light">
+					<img data-icon="User Folder">
 					<name>Home</name>
 					<br>
 					<description>All your storage lays here</description>
 				</a>
-				<a href="#" onclick="window.new('aos-cabinet',{path: '/'})" class="list-item btn btn-light">
-					<img src="/atomos/icons/Binder.png">
+				<a href="#" onclick="window.new('aos-files',{path: '/'})" class="list-item btn btn-light">
+					<img data-icon="Binder">
 					<name>Root</name>
 					<br>
 					<description>The whole system is yours, be careful!</description>
@@ -77,10 +77,10 @@
 			 data-placement="top" title="All installed apps">Applications</a>
 	</div>
 </start-menu>
-<link rel="stylesheet" href="/atomos/sys/internetMenu/index.css"/>
 <script>
 	const app = require("electron").remote.app;
 	window.$ = window.jQuery = require("jquery");
+	$("body").append("<link href=\"" + app.getAppPath() + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
 	window.Popper = require("popper.js");
 	require("bootstrap");
 	require("atomos-framework");

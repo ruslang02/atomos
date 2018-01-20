@@ -18,14 +18,14 @@
 		<input class="form-control form-control-sm border-left-0 border-right-0" type="text"
 					 id="path">
 		<button class="btn btn-outline-primary material-icons"
-						onclick="navigate(($('#path').val().trim() === fm.path ? fm.path : $('#path').val()), ($('#path').val() === fm.path ? 'reload' : undefined))"
+						onclick=""
 						data-toggle="tooltip" data-placement="bottom" title="Refresh">
 			refresh
 		</button>
 	</div>
 	<div class="btn-group ml-1 btn-group-sm">
 		<button class="btn btn-outline-primary material-icons" style="display:none; z-index:10000;" onclick='
-						window.new("aos-cabinet/createFolder", {
+						window.new("/createFolder", {
 							path: fm.path
 						}, {
 							modal: true,
@@ -181,7 +181,7 @@
 						type: "item",
 						description: $(this).attr("title"),
 						location: $(this).attr("data-location").replace(app.getPath("home"),
-								"/atomos/home"),
+								"$HOME_DIR"),
 						icon: $(this).find("img").attr("src"),
 						name: $(this).text()
 					});
@@ -203,7 +203,7 @@
 		navigate($(this).attr("data-location"));
 	}).on("dblclick", "[type=folder]", function () {
 		if (!fm.desktop) navigate($(this).attr("data-location"));
-		else window.new("aos-cabinet", {
+		else window.new("aos-files", {
 			path: $(this).attr("data-location")
 		})
 	}).on("mouseup", "[type]", function () {
@@ -629,8 +629,9 @@
 					$("section#access").append(
 							'<button class="dropdown-item" title="' + (item.description || "") +
 							'" data-location="' + (item.location ? item.location.replace(
-							"/atomos/home", app.getPath("home")) : 1 + 1) + '"><img src="' + (
-							item.icon ||
+							"$HOME_DIR", app.getPath("home")).replace(
+							"/atomos/home", app.getPath("home")).replace("$SYSTEM_ROOT", app.getAppPath()) : 1 + 1) + '"><img src="' + (
+							item.icon.replace("$SYSTEM_ROOT", app.getAppPath()) ||
 							app.getAppPath() + "/icons/folders-small/Extensions Folder.png") + '"/>' + item.name +
 							'</button>');
 				else $("section#access").append(
@@ -684,7 +685,7 @@
 				submenu: [{
 					label: "New Window",
 					click() {
-						window.new("aos-cabinet", {path: fm.path})
+						window.new("aos-files", {path: fm.path})
 					}
 				}, {
 					label: "Terminal",
@@ -778,7 +779,7 @@
 				},
 				enabled: window.fileClipboard.isFilled
 			}, {
-				type: (fm.desktop ? "separator" : "normal"),
+				type: (fm.desktop && aclock ? "separator" : "normal"),
 				visible: fm.desktop && aclock
 			}, {
 				label: "Next wallpaper",
@@ -880,9 +881,9 @@
 					label: 'Extract to...',
 					visible: file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"),
 					click() {
-						window.new("aos-cabinet", {
+						window.new("aos-files", {
 							path: fm.path,
-							action: "ffd",
+							action: "folder",
 							title: "Choose extraction directory...",
 							okText: "Extract"
 						}, {

@@ -2,7 +2,7 @@
 	"name": "Gain root access",
 	"shortName": "atomSudo",
 	"description": "Provides a GUI to execute root operations",
-	"icon": "/atomos/icons/Admin.png",
+	"icon": "$SYSTEM_ROOT/icons/Admin.png",
 	"width": 450,
 	"height": 100,
 	"hidden": true,

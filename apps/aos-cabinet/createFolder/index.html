@@ -1,7 +1,7 @@
-<form>
+<form onsubmit="return false;">
 	<header>
-		<img src="/atomos/icons/Add Folder.png"/>
-		<input class="form-control" placeholder="New Folder" required/>
+		<img data-icon="Add Folder"/>
+		<input class="form-control" placeholder="New Folder" autofocus required/>
 	</header>
 	<footer class="text-right">
 		<button type="button" class="btn btn-secondary mr-2">Cancel</button>
@@ -23,11 +23,11 @@
 			setTimeout(function () {
 				app.setContentSize(app.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
 			}, 100);
-			$(".btn").click(window.close);
-			$(".btn-primary").click(function (e) {
+			$(".btn-primary").click(function () {
 				fs.mkdirSync(args.path + "/" + $("input").val());
 				app.getParentWindow().webContents.send("create-folder", args.path + "/" + $("input").val());
 			});
+			$(".btn").click(window.close);
 			$("input").on("input", function () {
 				if (fs.existsSync(args.path + this.value)) {
 					$(this).addClass("is-invalid");

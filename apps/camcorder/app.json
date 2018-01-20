@@ -2,5 +2,5 @@
   "name": "Camcorder Screen Capturer",
   "shortName": "Camcorder",
   "description": "Take a screenshot of your own shining system",
-  "icon": "/atomos/icons/Camcorder.png"
+  "icon": "$SYSTEM_ROOT/icons/Camcorder.png"
 }

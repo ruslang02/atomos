@@ -1,7 +1,7 @@
 {
 	"name": "Application Market",
 	"shortName": "Market",
-	"icon": "/atomos/icons/Market.png",
+	"icon": "$SYSTEM_ROOT/icons/Market.png",
 	"description": "Install applications created by other developers",
 	"width": 500,
 	"height": 450

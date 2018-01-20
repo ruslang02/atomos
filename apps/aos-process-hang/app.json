@@ -9,5 +9,5 @@
   "height": 125,
   "resizable": false,
   "hidden": true,
-  "icon": "/atomos/icons/Hang.png"
+  "icon": "$SYSTEM_ROOT/icons/Hang.png"
 }

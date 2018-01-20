@@ -1,0 +1,14 @@
+{
+	"name": "Files",
+	"version": "1.0.0",
+	"shortName": "Files",
+	"description": "Lightweight File Manager",
+	"icon": "$SYSTEM_ROOT/icons/Folders.png",
+	"width": 550,
+	"height": 350,
+	"minHeight": 330,
+	"minWidth": 430,
+	"dependencies": {
+		"fs-extra": "3.0.0"
+	}
+}

@@ -34,6 +34,9 @@ app.on('browser-window-created', function(event, win) {
     $task.removeClass("loading");
     $task.find("img")[0].src = icon;
   });
+	win.webContents.on('will-navigate', ev => {
+		ev.preventDefault()
+	});
   win.on('close', function() {
     $task.hide();
   });
@@ -46,6 +49,17 @@ app.on('browser-window-created', function(event, win) {
     $task.addClass("btn-light").removeClass("btn-danger");
     clearInterval(dangerFlash);
   });
+  win.webContents.on('page-favicon-updated', function(e,favs) {
+  	console.log(e, favs);
+	});
+	win.webContents.on('new-window', function(e, url, frame, dispos, opts, adds) {
+		console.log(e, url, frame, dispos, opts, adds);
+		if(dispos === "new-window") {
+			window.new("aos-files", {
+				action: "save"
+			})
+		}
+	});
   win.on('unresponsive', function() {
     if(!alreadyHung) {
       hangWin = window.new('aos-process-hang', {

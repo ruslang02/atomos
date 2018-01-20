@@ -1,0 +1,118 @@
+<script>
+	const args = require("atomos-framework").arguments;
+	const {
+		remote
+	} = require('electron');
+	const {
+		app
+	} = remote;
+	const fs = require("fs-extra");
+	const http = require("http");
+	window.$ = require("jquery");
+	$.getScript("https://www.sony.net/united/clock/assets/js/heritage_data.js")
+			.then(function () {
+				renderPage(getRandomPhotoID(a_clock_heritage_data.length));
+			});
+
+	function getRandomPhotoID(len) {
+		return Math.floor(Math.random() * len);
+	}
+
+	function renderPage(pid) {
+		window.pid = pid;
+		if (!args.autostart) {
+			$("body").css("background-image", "url(https://www.sony.net/united/clock/share/img/photo/" + a_clock_heritage_data[pid].id + "/fp_hd/05.jpg");
+			$("h2").text(a_clock_heritage_data[pid].name.en);
+			$("p").html(a_clock_heritage_data[pid].caption.en);
+		} else {
+			getImageData();
+		}
+	}
+
+	function setWallpaper(imagedata) {
+		fs.writeFile(app.getPath("appData") + "/wallpaper.jpg", imagedata, 'binary', function (err) {
+			if (err) throw err;
+			if (!args.autostart) {
+				new Notification({
+					title: "Wallpaper changed",
+					icon: "landscape",
+					color: "#28a745"
+				})
+			}
+			console.log('File saved.')
+		})
+	}
+
+	function getImageData() {
+		let options = {
+			host: 'www.sony.net'
+			, port: 80
+			, path: '/united/clock/share/img/photo/' + a_clock_heritage_data[pid].id + '/fp_hd/05.jpg'
+		}
+
+		let request = http.get(options, function (res) {
+			let imagedata = ''
+			res.setEncoding('binary')
+
+			res.on('data', function (chunk) {
+				imagedata += chunk
+			})
+
+			res.on('end', function () {
+				setWallpaper(imagedata);
+			})
+		})
+	}
+
+	function autoStart() {
+		fs.readJson(app.getPath("appData") + "/autostart.json")
+				.then(function (items) {
+					if ($("input:checkbox")[0].checked) {
+						items.push({
+							"name": "α Clock Wallpaper Changer",
+							"app": "aclockwallpaper",
+							"args": {},
+							"service": true
+						});
+					} else {
+						items = items.filter(function (obj) {
+							return obj.app !== 'aclockwallpaper';
+						});
+					}
+					fs.writeJson(app.getPath("appData") + "/autostart.json", items)
+							.catch(console.error)
+				}).catch(function () {
+			fs.writeJson(app.getPath("appData") + "/autostart.json", [])
+					.catch(function () {
+						new Notification({
+							title: "Failed to create Autostart file",
+							html: "Please check permissions in your Home and .config folders.",
+							icon: "perm_media",
+							color: "#dc3545"
+						});
+					})
+		})
+	}
+</script>
+<main class="d-flex h-100 w-100 flex-column justify-content-center text-center text-white"
+			style="background: rgba(0,0,0,0.5);">
+	<h2 class="m-0"></h2>
+	<p class="w-75 mx-auto my-2"></p>
+	<div class="mb-3">
+		<button class="btn btn-primary" onclick="getImageData()">Set as Wallpaper</button>
+	</div>
+	<div>
+		<label class="custom-control custom-checkbox ml-3" onclick="autoStart()">
+			<input type="checkbox" class="custom-control-input">
+			<span class="custom-control-indicator"></span>
+			<span class="custom-control-description" style="padding-top:0.1em;">Daily change wallpaper</span>
+		</label>
+	</div>
+</main>
+<style>
+	body {
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+	}
+</style>

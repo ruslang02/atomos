@@ -1,6 +1,6 @@
 <content class="p-2 d-flex flex-column h-100">
 	<header class="d-flex">
-		<img class="mr-2" src="/atomos/icons/Ask Question.png"/>
+		<img class="mr-2" data-icon="Ask Question"/>
 		<div>We do not know how to open file with extension "<span id="ext"></span>". Please specify an app that could open
 			it:
 		</div>
@@ -35,7 +35,7 @@
 
 <script>
 	let args = require('atomos-framework').arguments;
-	let path = args.path;
+	let path = require("path");
 	const {
 		remote
 	} = require('electron');
@@ -45,8 +45,8 @@
 	const fs = require('fs-extra');
 	window.$ = require('jquery');
 	let win = remote.getCurrentWindow();
-	if (!(args.path && args.extension)) {
-		ErrorProcessor("To open application, you need to specify file's path and it's mime type.");
+	if (!args.path) {
+		ErrorProcessor("To open application, you need to specify file's path.");
 		win.close();
 	}
 	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function (err, assocs) {
@@ -56,12 +56,12 @@
 		}
 		let recom = "";
 		assocs.forEach(function (assoc) {
-			if (assoc.mime === args.extension) recom = assoc.app;
+			if (assoc.mime === path.extname(args.path).substring(1)) recom = assoc.app;
 		});
 
 
 		listApps();
-		$("#ext").text(args.extension);
+		$("#ext").text(path.extname(args.path).substring(1));
 		$(".btn-primary").click(function () {
 			let fass = assocs.find(o => o.ext === $("#ext").text());
 			if (fass) assocs[assocs.indexOf(fass)].app = $("select").val();
@@ -70,7 +70,11 @@
 				app: $("select").val()
 			});
 
-			fs.writeJson(app.getPath("appData") + "/associations.json", assocs, function (err) {
+			window.new($("select").val(), {
+				path: path
+			}).then(window.close, console.error)
+
+			if(path.extname(args.path).substring(1).trim() !== "") fs.writeJson(app.getPath("appData") + "/associations.json", assocs, function (err) {
 				if (err)
 					ErrorProcessor(err);
 				else new Notification({
@@ -79,9 +83,6 @@
 					icon: "done",
 					color: "#28a745"
 				});
-				window.new($("select").val(), {
-					path: path
-				}).then(window.close, console.error)
 			});
 		})
 	});

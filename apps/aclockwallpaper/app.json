@@ -1,0 +1,10 @@
+{
+	"name": "Sony™ \"α\" Clock Wallpaper Switcher",
+	"shortName": "Sony™ \"α\" Clock",
+	"icon": "$SYSTEM_ROOT/icons/Alpha.png",
+	"description": "Change your wallpaper daily from Sony™ \"α\" Clock pro-photos.",
+	"minWidth": 800,
+	"minHeight": 550,
+	"width": 800,
+	"height": 550
+}

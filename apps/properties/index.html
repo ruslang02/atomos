@@ -64,26 +64,26 @@
   let args = require('atomos-framework').arguments;
   window.jQuery = window.$ = require("jquery");
   window.Popper = require("popper.js");
-  require("bootstrap")
-  const fs = require('fs');
-	window.initMimes()
+  require("bootstrap");
+  const fs = require('fs-extra');
+	window.initMimes();
   window.onload = function() {
     $(".btn-secondary").tooltip({
       title: "Copied!",
       trigger: "click"
-    })
+    });
     $(".btn-secondary").click(function() {
       require('electron').clipboard.writeText(args.path);
-    })
+    });
     let mime = window.getMimeType(args.path.substring(args.path.lastIndexOf(".") + 1));
     $("[data=fmime]").text(mime);
-    fs.readFile("/atomos/etc/associations.json", "utf8", function(err, data) {
-      data = JSON.parse(data);
-      if(data.find(o => o.mime === mime))
-      $("[data=fapp]").text(data.find(o => o.mime === mime)["app"]);
-
-    })
-  }
+    fs.readJson(app.getPath("appData") + "/associations.json", "utf8")
+        .then(function(data) {
+	        data = JSON.parse(data);
+	        if(data.find(o => o.mime === mime))
+		        $("[data=fapp]").text(data.find(o => o.mime === mime)["app"]);
+        })
+  };
 
   if (args.path) {
     fs.stat(args.path, function(err, stat) {
@@ -110,15 +110,15 @@
         else
           $("[data=ftype]").text("Unknown");
       }
-    })
+    });
     fs.access(args.path, fs.constants.R_OK, function(err) {
       if (err) $("[data=fread]").text("no");
       else $("[data=fread]").text("yes")
-    })
+    });
     fs.access(args.path, fs.constants.W_OK, function(err) {
       if (err) $("[data=fwrite]").text("no");
       else $("[data=fwrite]").text("yes")
-    })
+    });
     fs.access(args.path, fs.constants.X_OK, function(err) {
       if (err) $("[data=fexec]").text("no");
       else $("[data=fexec]").text("yes")

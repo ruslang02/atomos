@@ -156,8 +156,8 @@
           document.execCommand("selectAll", false, null);
           break;
         case 'Ctrl+O':
-          window.new("aos-cabinet", {
-            action: "ofd",
+          window.new("aos-files", {
+            action: "open",
             path: app.getPath("documents"),
             title: "Choose a text file to open..."
           }, {
@@ -166,8 +166,8 @@
           });
           break;
         case 'Ctrl+Shift+S':
-          window.new("aos-cabinet", {
-            action: "sfd",
+	        window.new("aos-files", {
+		        action: "save",
             path: app.getPath("documents"),
             title: "Choose the location to save the file"
           }, {
@@ -186,8 +186,8 @@
   function save(path) {
     let contents = $("textarea").val();
     if (!path && !fileName)
-      window.new("aos-cabinet", {
-        action: "sfd",
+	    window.new("aos-files", {
+		    action: "save",
         path: app.getPath("documents"),
         title: "Choose the location to save the file"
       }, {
@@ -214,7 +214,7 @@
           else new Notification({
             title: "File was successfully saved",
             body: 'It is located here: ' + path +
-              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
+              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-files\',{path: \'' + path.substring(0, path.lastIndexOf(
                 "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
             icon: "done",
             color: "#28a745"

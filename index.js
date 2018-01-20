@@ -11,6 +11,7 @@ const fs = require("fs");
 global.clipboards = {
 	file: []
 };
+
 if(fs.existsSync("/etc/os-release"))
 	if(fs.readFileSync("/etc/os-release").indexOf("atomos") !== -1)
 		require("child_process").exec("xfwm4");
@@ -41,14 +42,20 @@ app.on('ready', function () {
 		backgroundColor: '#bbd8e8',
 		webPreferences: {
 			nativeWindowOpen: true
+		},
+		arguments: {
+			desktop: true
 		}
 	});
-	win.loadURL("file://" + __dirname + "/apps/aos-cabinet/index.html");
+	win.loadURL("file://" + __dirname + "/apps/aos-files/index.html");
 	win.on("beforeunload", function () {
 		return false;
 	});
 	win.on('close', function () {
 		win = null
+	});
+	win.webContents.on('will-navigate', ev => {
+		ev.preventDefault()
 	});
 	win.show();
 	win.setSize(width, height);
@@ -93,6 +100,9 @@ app.on('ready', function () {
 	});
 	taskbar.loadURL("file://" + __dirname + "/sys/taskbar/index.html");
 	taskbar.show();
+	taskbar.webContents.on('will-navigate', ev => {
+		ev.preventDefault()
+	});
 
 	notification = new BrowserWindow({
 		x: x + width - 10 - 350,
@@ -109,6 +119,9 @@ app.on('ready', function () {
 		movable: false,
 		show: false,
 		type: "notification"
+	});
+	notification.webContents.on('will-navigate', ev => {
+		ev.preventDefault()
 	});
 	notification.loadURL("file://" + __dirname + "/sys/notification/index.html");
 	if (process.argv.indexOf("--debug-taskbar") !== -1)

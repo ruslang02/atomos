@@ -21,6 +21,7 @@
 					apps.forEach(function (prog) {
 						fs.readJson(app.getAppPath() + "/apps/" + prog + "/app.json")
 								.then(function (info) {
+									info.icon = info.icon.replace("$SYSTEM_ROOT", app.getAppPath());
 									$("apps").append(`
 <div class="card mb-2">
 <div class="media py-2">

@@ -1,7 +1,7 @@
 {
 	"name": "AtomOS Updater",
 	"shortName": "Updater",
-	"icon": "/atomos/icons/Available Updates.png",
+	"icon": "$SYSTEM_ROOT/icons/Available Updates.png",
 	"description": "Check for the updates",
 	"height": 400,
 	"width": 400,

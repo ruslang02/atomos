@@ -4,6 +4,6 @@
   "description": "Dialog showing file/folder's name, modification, creation, accessing time etc.",
   "width": 470,
   "height": 222,
-  "icon": "/atomos/icons/Properties.png",
+  "icon": "$SYSTEM_ROOT/icons/Properties.png",
   "hidden": "true"
 }

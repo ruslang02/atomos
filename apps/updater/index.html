@@ -1,9 +1,9 @@
 <section id="searching">
-	<div class="text-center mb-2"><img src="/atomos/icons/Loader.png" class="spin"></div>
+	<div class="text-center mb-2"><img data-icon="Loader" class="spin"></div>
 	<p class="lead">We are checking for updates...</p>
 </section>
 <section id="updavailable">
-	<div class="text-center mb-2"><img src="/atomos/icons/Installing Updates.png"></div>
+	<div class="text-center mb-2"><img data-icon="Installing Updates"></div>
 	<p class="lead">An update is available!</p>
 	<p class="mb-1">Current build: <b data-value="current"></b></p>
 	<p class="mb-3">Latest build: <b data-value="latest"></b></p>
@@ -12,13 +12,13 @@
 	</div>
 </section>
 <section id="updating">
-	<div class="text-center mb-2"><img src="/atomos/icons/Loader.png" class="spin"></div>
+	<div class="text-center mb-2"><img data-icon="Loader" class="spin"></div>
 	<p class="lead">Updating the system...</p>
 	<p class="w-75 mx-auto">DO NOT do anything with the PC right now, the update may fail, leaving you with a broken system.</p>
 	<pre>Initializing...</pre>
 </section>
 <section id="noupd">
-	<div class="text-center mb-2"><img src="/atomos/icons/Thumbs Up.png"></div>
+	<div class="text-center mb-2"><img data-icon="Thumbs Up"></div>
 	<p class="lead">All up to date!</p>
 	<p class="mb-3 w-75 mx-auto">Thank you for looking up for updates.<br>We apprechiate an interest in our product!</p>
 	<div>
@@ -26,7 +26,7 @@
 	</div>
 </section>
 <section id="upderr">
-	<div class="text-center mb-2"><img src="/atomos/icons/Cancel.png"></div>
+	<div class="text-center mb-2"><img data-icon="Cancel"></div>
 	<p class="lead">Failed to update</p>
 	<p class="mb-3 w-75 mx-auto" id="reason"></p>
 	<div>
@@ -34,7 +34,7 @@
 	</div>
 </section>
 <section id="updated">
-	<div class="text-center mb-2"><img src="/atomos/icons/Thumbs Up.png"></div>
+	<div class="text-center mb-2"><img data-icon="Thumbs Up"></div>
 	<p class="lead">Update complete!</p>
 	<p class="mb-3 w-75 mx-auto">Whew, we are done!<br>We need to make a restart for all changes to apply.<br><small>And that is actually unbelievable that everything is alright...</small></p>
 	<div>
@@ -79,6 +79,7 @@
 	const {
 		app
 	} = remote;
+	const fs = require("fs-extra");
 	window.$ = require("jquery");
 	const win = remote.getCurrentWindow();
 	window.addEventListener("hashchange", function () {

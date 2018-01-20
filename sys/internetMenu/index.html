@@ -3,7 +3,7 @@
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane" id="wifi">
         <a class="list-item">
-        <img src="/atomos/icons/Wi-Fi.png">
+        <img data-icon="Wi-Fi">
         <name>Wi-Fi</name><br>
         <description>Select a network down below</description>
       </a>
@@ -12,9 +12,9 @@
 
         </networks>
       </div>
-      <div role="tabpanel " class="tab-pane active" id="ethernet">
+      <div role="tabpanel" class="tab-pane active" id="ethernet">
         <a class="list-item">
-        <img src="/atomos/icons/Ethernet Disconnected.png">
+        <img data-icon="Ethernet Disconnected">
         <button class='btn btn-sm float-right btn-success' onclick="toPing=true"><i class="material-icons" style="vertical-align:sub;">play_arrow</i> Start pinging</button>
         <button class='btn btn-sm float-right btn-danger' style="display:none" onclick="toPing=false"><i class="material-icons" style="vertical-align:sub;">pause</i> Stop pinging</button>
         <name>Ethernet</name><br>
@@ -31,9 +31,9 @@
         </dl>
       </div>
       <div class="tab-pane" id="net_fallback">
-        <center>
+        <div class="text-center">
           <p class="lead text-center m-auto w-100" style="position:absolute;top:0;bottom:0;height:2rem;">No internet interfaces</p>
-        </center>
+        </div>
       </div>
     </div>
   </div>
@@ -43,10 +43,10 @@
   </ul>
   <wifi-connect style="font-size: 12px; display:none" class="file-item">
     <a class="list-item">
-        <img src="/atomos/icons/Wi-Fi Router.png">
+        <img data-icon="Wi-Fi Router">
         <name>Connect to <wifi-name>a hotspot</wifi-name></name><br>
         <description>Enter password below</description>
-      <input type="password" class="form-control form-control-sm my-2">
+      <input title type="password" class="form-control form-control-sm my-2">
       <footer class="dropup float-right">
       <button class="btn btn-secondary btn-sm">Cancel</button>
       <button class="btn btn-primary btn-sm">Connect and remember</button>
@@ -57,9 +57,7 @@
 
   </wifi-connect>
   <wifi-overlay style='display:none'>
-    <img src="/atomos/icons/Loader.png">
+    <img data-icon="Loader">
   </wifi-overlay>
 </network-menu>
-
-<link rel="stylesheet" href="/atomos/sys/internetMenu/index.css" />
 <script src="index.js"></script>

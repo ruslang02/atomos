@@ -1,0 +1,880 @@
+<script>
+	let args = require('atomos-framework').arguments;
+	window.$ = require("jquery");
+	const {
+		remote,
+		ipcRenderer
+	} = require("electron");
+	const {
+		app,
+		Menu
+	} = remote;
+	const fs = require("fs-extra");
+	const path = require("path");
+
+	let win = remote.getCurrentWindow();
+
+	let $sidebar;
+	let $container;
+	let $nav;
+	let $main;
+	let $navButtons;
+	let $pathField;
+	let $FCBar;
+	let watcher = "";
+	let history = {
+		current: -1,
+		items: []
+	};
+
+	function updateWall() {
+		fs.readJson(app.getPath("appData") + "/aos-cabinet.json", function(err, settings) {
+			if (err) {
+				fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json", fs.readJsonSync(
+					__dirname + "/default.json"));
+				settings = fs.readJsonSync(__dirname + "/default.json");
+			}
+			let wpURL;
+			if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
+				wpURL = encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime();
+			else {
+				wpURL = encodeURI(app.getAppPath()).replace(/%5C/g, "/") + "/resources/default.jpg?time=" + new Date().getTime();
+				fs.copy(app.getAppPath() + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
+					.then(function() {
+						new Notification({
+							title: "Welcome to AtomOS!",
+							body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)",
+							color: "#fd7e14",
+							icon: "pan_tool"
+						});
+						let d1e = fs.existsSync(app.getPath("desktop") + "/.1.lnk");
+						let d2e = fs.existsSync(app.getPath("desktop") + "/.2.lnk");
+						if (!d1e) fs.writeJson(app.getPath("desktop") + "/.1.lnk", {
+							title: "Home",
+							app: "aos-files",
+							args: {
+								path: app.getPath("home")
+							},
+							icon: app.getAppPath() + "/icons/User Folder.png"
+						});
+						if (!d2e) fs.writeJson(app.getPath("desktop") + "/.2.lnk", {
+							title: "Computer",
+							app: "aos-files",
+							args: {
+								path: "/"
+							},
+							icon: app.getAppPath() + "/icons/Computer.png"
+						})
+					})
+			}
+			$("body").css({
+				"background-image": "url(file:///" + wpURL + ")",
+				"background-size": (settings.fillMode === "fill" ? "cover" : (settings.fillMode === "stretch" ? "100% 100%" : "initial")),
+				"background-position": (settings.fillMode === "center" ? "center" : "top left"),
+				"background-repeat": (settings.fillMode === "tiled" ? "repeat" : "no-repeat")
+			});
+		})
+	}
+
+	ipcRenderer.on('changeWallpaper', updateWall);
+
+	$(function() {
+		if (args.desktop === true) {
+			window.viewMode = "verylarge";
+			window.showHidden = true;
+			window.foldersFirst = true;
+			updateWall();
+			window.sorting = "A-Z";
+			fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall);
+			fs.watch(app.getPath("appData") + "/aos-cabinet.json", updateWall);
+			$("body").addClass("desktop");
+		} else {
+			window.onbeforeunload = function(e) {
+				let sets = fs.readJsonSync(app.getPath("appData") + "/aos-cabinet.json");
+					sets.foldersFirst = foldersFirst;
+					sets.showHidden = showHidden;
+					sets.iconSize = viewMode;
+					fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json",
+						sets, $.noop);
+			};
+		}
+		renderNav();
+		renderContainer().then(function() {
+			if (args.action) renderFCBar();
+			if (args.desktop === true) $nav.hide();
+			navigate(args.path || (args.desktop === true ? app.getPath("desktop") : app.getPath("home")));
+		});
+	});
+
+	function navigate(url) {
+		let $items = [];
+		if (watcher.start) watcher.close();
+
+		if ($FCBar) {
+			$FCBar.find("input").val("");
+			$FCBar.find(".btn-primary")[0].disabled = true;
+		}
+
+		$main.attr("data-view", window.viewMode)
+
+		switch (url.toLowerCase()) {
+			case ":back":
+				url = history.items[--history.current];
+				break;
+			case ":forward":
+				url = history.items[++history.current];
+				break;
+			case ":refresh":
+				url = history.items[history.current];
+				break;
+			default:
+				history.items.splice(++history.current, history.items.length);
+				history.items.push(url);
+		}
+
+		win.setTitle(path.basename(url) + " - Files");
+
+		url = path.normalize(url);
+
+		$pathField.val(url);
+		$navButtons[0][0].disabled = !(history.current);
+		$navButtons[1][0].disabled = (history.current === history.items.length - 1);
+
+		watcher = fs.watch(url, function() {
+			navigate(":refresh");
+		});
+
+		fs.readdir(url)
+			.then(function(files) {
+				files.forEach(function(file, index, arr) {
+					if (file.startsWith(".") && !showHidden) return;
+					fs.lstat(path.join(url, file))
+						.then(function(stat) {
+							let icon = "";
+							if (stat.isFile()) {
+								let extension = path.extname(file).substring(1).toUpperCase();
+								icon =
+									(stat.isSymbolicLink() ?
+										app.getAppPath() + "/icons/file-types/Symlink.png" :
+										app.getAppPath() + "/icons/file-types/" + extension + ".png"
+									);
+								if (!fs.existsSync(icon))
+									icon = app.getAppPath() + "/icons/file-types/Unknown.png";
+								if (viewMode === "list")
+									icon = icon.replace(/file-types/g, "file-types-small");
+							} else if (stat.isDirectory()) {
+								icon = (stat.isSymbolicLink() ?
+									app.getAppPath() + "/icons/Symlink Folder.png" :
+									app.getAppPath() + "/icons/Extensions Folder.png"
+								);
+								if (viewMode === "list")
+									icon = icon.replace(/\/icons/g, "/icons/folders-small");
+							} else icon = app.getAppPath() + "/icons/file-types" + (viewMode === "list" ? "-small" : "") + "/Symlink.png";
+							let $item = $("<button></button>", {
+								draggable: true,
+								class: 'dropdown-item p-1',
+								"data-type": (stat.isDirectory() ? "folder" : "file"),
+								dblclick: function() {
+									if (stat.isDirectory()) {
+										if (args.desktop === true) window.new("aos-files", {
+											path: path.join(url, file)
+										});
+										else navigate(path.join(url, file));
+									} else if (stat.isFile()) window.fileOpen(path.join(url, file));
+								},
+								click: function() {
+									if (args.action !== "folder" ^ stat.isFile() && args.action) {
+										if ($FCBar) {
+											$FCBar.find("input").val(file);
+											$FCBar.find(".btn-primary")[0].disabled = false;
+										}
+									}
+								},
+								contextmenu: renderFileContextMenu,
+								html: [
+									$("<img />", {
+										src: "file://" + icon
+									}),
+									$("<div></div>", {
+										class: "file-title" + (file.startsWith(".") ? " text-muted" : ""),
+										html: file,
+										css: {
+											overflow: "hidden",
+											textOverflow: "ellipsis"
+										}
+									})
+								]
+							});
+							if (!(args.action !== "folder" ^ stat.isFile()) && args.action) $item.attr("disabled", "disabled")
+
+							$items.push($item);
+
+							if (index === arr.length - 1) {
+								$items.sort(function(a, b) {
+									let nameA = a.find(".file-title").text().trim().toLowerCase(),
+										nameB = b.find(".file-title").text().trim().toLowerCase();
+									if (nameA < nameB) return (sorting === "A-Z" ? -1 : 1);
+									if (nameA > nameB) return (sorting === "A-Z" ? 1 : -1);
+									return 0;
+								});
+								if (foldersFirst) {
+									let $new = [];
+									$items.forEach(function(item) {
+										if (item.data('type') === "folder") $new.push(item);
+									});
+									$items.forEach(function(item) {
+										if (item.data('type') !== "folder") $new.push(item);
+									});
+									$main.html($new);
+								} else $main.html($items);
+
+							}
+						});
+				})
+			});
+
+	}
+
+	function renderFCBar() {
+		$FCBar = $("<footer></footer>", {
+			class: "input-group p-1 bg-light border border-left-0 border-right-0 border-bottom-0",
+			css: {
+				flexShrink: 0
+			},
+			html: [
+				$("<span></span>", {
+					class: "input-group-btn",
+					html: $("<button></button>", {
+						class: "btn btn-sm btn-secondary btn-block",
+						click: window.close,
+						text: "Cancel" || args.cancelText
+					})
+				}),
+				$("<input />", {
+					type: "text",
+					class: "form-control form-control-sm",
+					readonly: args.action !== "open"
+				}),
+				$("<span></span>", {
+					class: "input-group-btn",
+					html: $("<button></button>", {
+						class: "btn btn-sm btn-primary btn-block",
+						click: function() {
+							let channel = (args.action === "open" ? "return-file" : (args.action === "folder" ? "return-folder" : "save-file"));
+							win.getParentWindow().webContents.send(channel, path.join($pathField.val(), $FCBar.find("input").val()));
+							window.close();
+						},
+						text: args.cancelText || (args.action !== "save" ? "Open" : "Save")
+					})
+				})
+			]
+		});
+		$FCBar.appendTo("body");
+	}
+
+	function renderMain() {
+		$main = $("<section></section>", {
+			class: "dropdown-menu p-1 rounded-0 m-0 border-0",
+			"data-view": window.viewMode,
+			css: {
+				flexGrow: 2,
+				position: "static",
+				overflow: "auto"
+			},
+			contextmenu: renderMainContextMenu
+		});
+		$main.appendTo($container);
+	}
+
+	function renderAccessSection() {
+		return new Promise(function(resolve, reject) {
+			fs.readJson(app.getPath("appData") + "/aos-cabinet.json", {
+				throws: false
+			}, function(err, settings) {
+				let result = $("<section></section>", {
+					id: 'access'
+				});
+				if (err) {
+					settings = fs.readJsonSync(__dirname + "/default.json");
+					fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json", settings);
+				}
+				window.foldersFirst = settings.foldersFirst || true;
+				window.showHidden = settings.showHidden || false;
+				window.viewMode = settings.iconSize || "medium";
+				window.sorting = settings.sorting || "A-Z";
+				settings.accessList.forEach(function(item) {
+					if (item.type === "item") {
+						let location = (item.location ? item.location
+							.replace("$HOME_DIR", app.getPath("home"))
+							.replace("/atomos/home", app.getPath("home"))
+							.replace("$SYSTEM_ROOT", app.getAppPath()) :
+							1 + 1);
+						result.append(
+							$("<button></button>", {
+								class: 'dropdown-item',
+								click: function() {
+									result.children().removeClass("active");
+									$(this).addClass("active");
+									navigate(location);
+								},
+								html: [
+									$("<img />", {
+										src: item.icon.replace("$SYSTEM_ROOT", app.getAppPath()) ||
+											app.getAppPath() + "/icons/folders-small/Extensions Folder.png"
+									}),
+									item.name
+								]
+							})
+						)
+					} else result.append(
+						$('<div></div>', {
+							class: "dropdown-header",
+							html: item.name
+						})
+					)
+				});
+				$sidebar.append(result);
+				resolve();
+			})
+		});
+	}
+
+	function renderDeviceSection() {
+		if (process.platform === "win32") return;
+		let result = "";
+		fs.readdir("/dev/disk/by-uuid")
+			.then(function(links) {
+				links.forEach(function(link, i, arr) {
+					fs.readlink("/dev/disk/by-uuid/" + link)
+						.then(function(loc) {
+							let device = pathLib.resolve("/dev/disk/by-uuid/", loc);
+							let label = "";
+							if (fs.existsSync("/dev/disk/by-label"))
+								fs.readdir("/dev/disk/by-label", function(err, files) {
+									if (err) label = loc;
+									else {
+										files.forEach(function(file) {
+											if (pathLib.resolve("/dev/disk/by-label/", fs.readlinkSync(
+													"/dev/disk/by-label/" + file)) === device) label = file;
+										});
+										label = label.replace("\\x20", " ");
+									}
+									result += $("<button></button>", {
+										class: "dropdown-item",
+										title: 'Click to mount/open drive',
+										click: function() {
+											let mountDir = "/mnt/" + process.env.USER + "/" + label;
+											fs.readdir(mountDir)
+												.then(function(elem) {
+													if (elem.length) navigate(mountDir);
+													else mountDrive(mountDir, device)
+												})
+												.catch(function() {
+													mountDrive(mountDir, device)
+												})
+										},
+										text: label || link
+									});
+									if (arr.length === i + 1) $sidebar.append("<section id='devices'>" + result + "</section>");
+								})
+						})
+				});
+			}, console.error)
+	}
+
+	function renderContainer() {
+		$container = $("<main></main>", {
+			class: "d-flex",
+			css: {
+				flexGrow: 2
+			}
+		});
+		let sidebar = renderSidebar();
+		sidebar.then(renderMain);
+		$container.appendTo("body");
+		return sidebar;
+	}
+
+	function renderSidebar() {
+		if (args.desktop === true) return new Promise(function(a) {
+			a()
+		});
+		$sidebar = $("<aside></aside>", {
+			class: "dropdown-menu border border-left-0 py-1 border-top-0 border-bottom-0 rounded-0",
+			css: {
+				position: "static",
+				overflow: "auto",
+				display: (args.action ? "none" : "block")
+			}
+		});
+		$sidebar.appendTo($container);
+		return Promise.all([renderDeviceSection(), renderAccessSection()]);
+	}
+
+	function renderNav() {
+		let $newFolderButton;
+		$nav = $("<nav></nav>", {
+			class: "btn-toolbar"
+		});
+		if (args.action) {
+			let $sidebarButton = $("<div></div>", {
+				class: "btn-group btn-group-sm mr-1",
+				html: $("<button></button>", {
+					class: "btn btn-outline-primary material-icons",
+					click: function() {
+						$sidebar.toggle();
+						$(this).toggleClass("active");
+					},
+					text: "reorder"
+				})
+			});
+			$newFolderButton = $("<div></div>", {
+				class: "btn-group btn-group-sm ml-1",
+				html: $("<button></button>", {
+					class: "btn btn-outline-primary material-icons",
+					click: function() {
+						window.new("aos-cabinet/createFolder", {
+							path: $pathField.val()
+						}, {
+							modal: true,
+							parent: win
+						});
+					},
+					text: "folder_open"
+				})
+			});
+			$nav.append($sidebarButton);
+		}
+		$navButtons = [
+			$("<button></button>", {
+				class: "btn btn-outline-primary material-icons",
+				click: function() {
+					navigate(":back")
+				},
+				disabled: "disabled",
+				text: "keyboard_arrow_left"
+			}),
+			$("<button></button>", {
+				class: "btn btn-outline-primary material-icons",
+				click: function() {
+					navigate(":forward")
+				},
+				disabled: "disabled",
+				text: "keyboard_arrow_right"
+			})
+		];
+		$pathField = $("<input />", {
+			class: "form-control form-control-sm border-left-0 border-right-0 rounded-0",
+			id: "path",
+			input: function() {
+				$(this).data("edited", "true");
+			}
+		});
+		let $mainBar = $("<div></div>", {
+			class: "input-group btn-group",
+			css: {
+				flexGrow: 2
+			},
+			html: [
+				$navButtons[0],
+				$navButtons[1],
+				$pathField,
+				$("<button></button>", {
+					class: "btn btn-outline-primary material-icons",
+					click: function() {
+						if ($pathField.data("edited") === "true")
+							navigate($pathField.val());
+						else navigate(":REFRESH");
+					},
+					text: "refresh"
+				})
+			]
+		});
+		$mainBar.appendTo($nav);
+		if (args.action) $newFolderButton.appendTo($nav);
+		$nav.appendTo("body");
+	}
+
+	function renderMainContextMenu(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		let aclock = fs.existsSync(app.getAppPath() + "/apps/aclockwallpaper/");
+		Menu.buildFromTemplate([{
+			label: "Open in",
+			type: "submenu",
+			submenu: [{
+				label: "New Window",
+				click() {
+					window.new("aos-files", {
+						path: $pathField.val()
+					})
+				}
+			}, {
+				label: "Terminal",
+				click() {
+					window.new("ash", {
+						path: $pathField.val()
+					})
+				}
+			}]
+		}, {
+			type: (args.desktop === true ? "normal" : "separator"),
+			visible: args.desktop !== true
+		}, {
+			label: "View",
+			type: "submenu",
+			visible: args.desktop !== true,
+			submenu: [{
+				label: "List",
+				type: "radio",
+				checked: viewMode === "list",
+				click() {
+					viewMode = "list";
+					navigate(":refresh");
+				}
+			}, {
+				label: "Small icons",
+				type: "radio",
+				checked: viewMode === "small",
+				click() {
+					viewMode = "small"
+					navigate(":refresh");
+				}
+			}, {
+				label: "Medium icons",
+				type: "radio",
+				checked: viewMode === "medium",
+				click() {
+					viewMode = "medium"
+					navigate(":refresh");
+				}
+			}, {
+				label: "Large icons",
+				type: "radio",
+				checked: viewMode === "large",
+				click() {
+					viewMode = "large"
+					navigate(":refresh");
+				}
+			}]
+		}, {
+			label: "Sort by",
+			type: "submenu",
+			visible: args.desktop !== true,
+			submenu: [{
+				label: "A to Z",
+				type: "radio",
+				checked: sorting === "A-Z",
+				click() {
+					sorting = "A-Z"
+					navigate(":refresh");
+				}
+			}, {
+				label: "Z to A",
+				type: "radio",
+				checked: sorting === "Z-A",
+				click() {
+					sorting = "Z-A";
+					navigate(":refresh");
+				}
+			}, {
+				type: "separator"
+			}, {
+				label: "Folders first",
+				type: "checkbox",
+				checked: foldersFirst,
+				click() {
+					foldersFirst = !foldersFirst;
+					navigate(":refresh");
+				}
+			}, {
+				label: "Hidden files",
+				type: "checkbox",
+				checked: showHidden,
+				click() {
+					showHidden = !showHidden;
+					navigate(":refresh");
+				}
+			}]
+		}, {
+			type: "separator"
+		}, {
+			label: "Refresh",
+			accelerator: "F5",
+			click() {
+				navigate(":refresh")
+			}
+		}, {
+			label: "Paste",
+			accelerator: "CmdOrCtrl+V",
+			click() {
+				window.fileClipboard.flush($pathField.val(), {
+					end:
+				})
+					.then(() => {
+						navigate(":refresh")
+					})
+					.catch(function(err) {
+						new Notification({
+							title: "We were unable to copy file",
+							html: err,
+							color: "#dc3545",
+							icon: "warning"
+						})
+					})
+			},
+			enabled: window.fileClipboard.isFilled
+		}, {
+			type: (args.desktop === true && aclock ? "separator" : "normal"),
+			visible: args.desktop === true && aclock
+		}, {
+			label: "Next wallpaper",
+			visible: args.desktop === true && aclock,
+			click() {
+				window.new("aclockwallpaper", {
+					autostart: true
+				}, {
+					show: false,
+					showOnLoad: false,
+					skipTaskbar: true,
+					focusable: false
+				});
+			}
+		}, {
+			type: "separator"
+		}, {
+			label: "Create",
+			submenu: [{
+				label: "File",
+				click() {
+					window.new("aos-cabinet/createFile", {
+						path: $pathField.val()
+					}, {
+						modal: true,
+						parent: win
+					});
+					ipcRenderer.on('create-file', () => {
+						navigate(":refresh")
+					})
+				}
+			}, {
+				label: "Folder",
+				click() {
+					window.new("aos-cabinet/createFolder", {
+						path: $pathField.val()
+					}, {
+						modal: true,
+						parent: win
+					});
+					ipcRenderer.on('create-folder', () => {
+						navigate(":refresh")
+					})
+				}
+			}]
+		}, {
+			label: "Properties",
+			visible: args.desktop !== true,
+			click() {
+				window.new("properties", {
+					path: $pathField.val()
+				})
+			}
+		}, {
+			label: "Desktop Preferences",
+			visible: args.desktop === true,
+			click() {
+				window.new("control", {
+					section: "Desktop Preferences"
+				})
+			}
+		}]).popup();
+	}
+
+	function renderFileContextMenu(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		let file = path.join($pathField.val(), $(this).text());
+		let $this = $(this);
+		Menu.buildFromTemplate([{
+			label: "Open",
+			click() {
+				$this.trigger("dblclick");
+			}
+		}, {
+			label: "Open in...",
+			visible: !($this.data("type") === "folder"),
+			click() {
+				window.new("aos-appchooserdialog", {
+					path: file,
+					extension: path.extname(file).substring(1)
+				})
+			}
+		}, {
+			type: ((file.endsWith(".wapp") || file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz")) ? 'separator' : "normal"),
+			visible: (file.endsWith(".wapp") || file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"))
+		}, {
+			label: 'Install',
+			visible: file.endsWith(".wapp"),
+			click() {
+				window.new("install", {
+					path: file
+				});
+			}
+		}, {
+			label: 'Extract to...',
+			visible: file.endsWith(".zip") || file.endsWith(".tar.gz") || file.endsWith(".tgz"),
+			click() {
+				window.new("aos-files", {
+					path: $pathField.val(),
+					action: "folder",
+					title: "Choose extraction directory...",
+					okText: "Extract"
+				}, {
+					modal: true,
+					parent: win
+				});
+				ipcRenderer.on("return-folder", function(e, arg) {
+					if (file.endsWith(".zip")) {
+						const unzip = require('extract-zip');
+						unzip(file, {
+							dir: arg
+						}, reNavigate)
+					} else if (file.endsWith(".tar.gz") || file.endsWith(".tgz")) {
+						const tar = require('tar');
+						fs.createReadStream(file).pipe(
+							tar.x({
+								C: arg // alias for cwd:'some-dir', also ok
+							})
+						)
+					}
+				})
+			}
+		}, {
+			type: "separator"
+		}, {
+			label: "Cut",
+			accelerator: "CmdOrCtrl+X",
+			click() {
+				window.fileClipboard.copyMode = "cut";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(file);
+			}
+		}, {
+			label: "Copy",
+			accelerator: "CmdOrCtrl+C",
+			click() {
+				window.fileClipboard.copyMode = "copy";
+				window.fileClipboard.clear();
+				window.fileClipboard.add(file);
+			}
+		}, {
+			type: "separator"
+		}, {
+			label: "Delete",
+			accelerator: "Delete",
+			click() {
+				fs.remove(file).then(reNavigate);
+			}
+		}, {
+			label: "Properties",
+			accelerator: "Alt+Enter",
+			click() {
+				window.new("properties", {
+					path: file
+				})
+			}
+		}]).popup();
+	}
+</script>
+<style>
+	body {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		transition: background ease 2.5s;
+	}
+
+	body.desktop .dropdown-item:focus,
+	body.desktop .dropdown-item:hover {
+		background-color: rgba(248, 249, 250, 0.65) !important;
+	}
+
+	body.desktop .dropdown-item.active,
+	body.desktop .dropdown-item:active {
+		background-color: rgba(0, 123, 255, 0.65) !important;
+	}
+
+	body.desktop .dropdown-item:focus,
+	body.desktop .dropdown-item:focus:active {
+		background: rgba(0, 150, 255, 0.65) !important;
+		color: white !important;
+	}
+
+	.dropdown-item:focus,
+	.dropdown-item:focus:active {
+		background: rgb(0, 150, 255) !important;
+		color: white !important;
+	}
+
+	main .dropdown-menu[data-view] {
+		display: flex !important;
+		background: none;
+	}
+
+	main .dropdown-menu[data-view=list],
+	main .dropdown-menu[data-view=verylarge] {
+		flex-direction: column;
+	}
+
+	.dropdown-item {
+		flex-shrink: 0;
+	}
+
+	main .dropdown-menu[data-view]:not([data-view=list]) {
+		flex-wrap: wrap;
+		align-items: flex-start;
+		align-content: flex-start;
+		justify-content: flex-start;
+	}
+
+	main .dropdown-menu[data-view]:not([data-view=list]) .dropdown-item {
+		display: inline-flex !important;
+		flex-direction: column;
+		width: auto;
+		align-items: center;
+	}
+
+	main .dropdown-menu[data-view=list] img,
+	aside img {
+		margin-right: 0.5rem;
+	}
+
+	main .dropdown-menu[data-view=verylarge] img {
+		width: 64px;
+	}
+
+	main .dropdown-menu[data-view=large] img {
+		width: 48px;
+	}
+
+	main .dropdown-menu[data-view=medium] img {
+		width: 32px;
+	}
+
+	main .dropdown-menu[data-view=small] img {
+		width: 24px;
+	}
+
+	main .dropdown-menu[data-view]:not([data-view=list]) .file-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: 125px;
+		text-align: center;
+	}
+
+	main .dropdown-menu[data-view=verylarge] .file-title {
+		white-space: nowrap;
+		color: white;
+		text-shadow: 0px 0px 5px black;
+	}
+</style>
