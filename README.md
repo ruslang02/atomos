@@ -1,6 +1,6 @@
 # atomOS Desktop Environment
-
-![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
+[![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)]() [![npm](https://img.shields.io/npm/dt/express.svg)]() [![npm](https://img.shields.io/npm/v/npm.svg)]() [![node](https://img.shields.io/node/v/passport.svg)]() [![David](https://img.shields.io/david/expressjs/express.svg)]()
+![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png) 
 
 Latest version: 0.5 (build 129). [Download .iso](https://github.com/ruslang02/atomos/releases).
 
