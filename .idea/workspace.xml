@@ -4,46 +4,9 @@
     <list default="true" id="e14bc4a2-4a93-42e1-baf4-f26f2249c863" name="Default" comment="UI enhancements, stability improvements, Notification Center [130]">
       <change beforePath="" afterPath="$PROJECT_DIR$/apps/zohodocs/app.json" />
       <change beforePath="" afterPath="$PROJECT_DIR$/apps/zohodocs/index.html" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Access Denied.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/AtomOS.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Hand.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Moleskine.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Notification.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Office.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Okay.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Save.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Wallpaper.png" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/sys/taskbar/plugins/notifications.html" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
       <change beforePath="$PROJECT_DIR$/RELEASE.json" afterPath="$PROJECT_DIR$/RELEASE.json" />
-      <change beforePath="$PROJECT_DIR$/apps/aclockwallpaper/index.html" afterPath="$PROJECT_DIR$/apps/aclockwallpaper/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-about/atom.png" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-about/index.html" afterPath="$PROJECT_DIR$/apps/aos-about/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-appchooserdialog/index.html" afterPath="$PROJECT_DIR$/apps/aos-appchooserdialog/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-cabinet/createFile/index.html" afterPath="$PROJECT_DIR$/apps/aos-cabinet/createFile/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-cabinet/createFolder/index.html" afterPath="$PROJECT_DIR$/apps/aos-cabinet/createFolder/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-cabinet/index.html" afterPath="$PROJECT_DIR$/apps/aos-cabinet/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-files/index.html" afterPath="$PROJECT_DIR$/apps/aos-files/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-typewriter/index.html" afterPath="$PROJECT_DIR$/apps/aos-typewriter/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/boombox/index.html" afterPath="$PROJECT_DIR$/apps/boombox/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/boombox/popup.html" afterPath="$PROJECT_DIR$/apps/boombox/popup.html" />
-      <change beforePath="$PROJECT_DIR$/apps/camcorder/index.html" afterPath="$PROJECT_DIR$/apps/camcorder/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/control/index.html" afterPath="$PROJECT_DIR$/apps/control/index.html" />
-      <change beforePath="$PROJECT_DIR$/apps/properties/index.html" afterPath="$PROJECT_DIR$/apps/properties/index.html" />
-      <change beforePath="$PROJECT_DIR$/index.js" afterPath="$PROJECT_DIR$/index.js" />
-      <change beforePath="$PROJECT_DIR$/lib/atomos.css" afterPath="$PROJECT_DIR$/lib/atomos.css" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" afterPath="$PROJECT_DIR$/package-lock.json" />
-      <change beforePath="$PROJECT_DIR$/package.json" afterPath="$PROJECT_DIR$/package.json" />
-      <change beforePath="$PROJECT_DIR$/sys/clockMenu/index.html" afterPath="$PROJECT_DIR$/sys/clockMenu/index.html" />
-      <change beforePath="$PROJECT_DIR$/sys/internetMenu/index.css" afterPath="$PROJECT_DIR$/sys/internetMenu/index.css" />
-      <change beforePath="$PROJECT_DIR$/sys/notification/index.html" afterPath="$PROJECT_DIR$/sys/notification/index.html" />
-      <change beforePath="$PROJECT_DIR$/sys/startMenu/index.html" afterPath="$PROJECT_DIR$/sys/startMenu/index.html" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/index.css" afterPath="$PROJECT_DIR$/sys/taskbar/index.css" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/index.html" afterPath="$PROJECT_DIR$/sys/taskbar/index.html" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/index.js" afterPath="$PROJECT_DIR$/sys/taskbar/index.js" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/plugins/clock.html" afterPath="$PROJECT_DIR$/sys/taskbar/plugins/clock.html" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/plugins/startButton.html" afterPath="$PROJECT_DIR$/sys/taskbar/plugins/startButton.html" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/plugins/tasks.html" afterPath="$PROJECT_DIR$/sys/taskbar/plugins/tasks.html" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -115,22 +78,35 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RELEASE.json" pinned="false" current-in-tab="false">
+      <file leaf-file-name="RELEASE.json" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/RELEASE.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="76">
-              <caret line="4" column="32" lean-forward="false" selection-start-line="4" selection-start-column="32" selection-end-line="4" selection-end-column="32" />
+            <state relative-caret-position="133">
+              <caret line="7" column="19" lean-forward="false" selection-start-line="7" selection-start-column="19" selection-end-line="7" selection-end-column="19" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sys/taskbar/index.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="323">
               <caret line="17" column="62" lean-forward="false" selection-start-line="17" selection-start-column="62" selection-end-line="17" selection-end-column="62" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="133">
+                <caret line="7" column="26" lean-forward="true" selection-start-line="7" selection-start-column="26" selection-end-line="7" selection-end-column="26" />
+                <folding />
+              </first_editor>
+              <second_editor />
             </state>
           </provider>
         </entry>
@@ -206,7 +182,6 @@
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/sys/taskbar/index.js" />
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/node_modules/atomos-framework/package.json" />
         <option value="$PROJECT_DIR$/apps/updater/index.html" />
         <option value="$PROJECT_DIR$/apps/control/newASItem.html" />
@@ -251,6 +226,7 @@
         <option value="$PROJECT_DIR$/apps/control/index.html" />
         <option value="$PROJECT_DIR$/apps/viewerjs/index.html" />
         <option value="$PROJECT_DIR$/apps/viewerjs/ViewerJS/index.html" />
+        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/RELEASE.json" />
       </list>
     </option>
@@ -475,6 +451,11 @@
             <path>
               <item name="atomos" type="b2602c69:ProjectViewProjectNode" />
               <item name="atomos" type="462c0819:PsiDirectoryNode" />
+              <item name="resources" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="atomos" type="b2602c69:ProjectViewProjectNode" />
+              <item name="atomos" type="462c0819:PsiDirectoryNode" />
               <item name="sys" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -592,7 +573,7 @@
       <workItem from="1517250761844" duration="4054000" />
       <workItem from="1517328609451" duration="10346000" />
       <workItem from="1517417934201" duration="6057000" />
-      <workItem from="1517499632491" duration="5930000" />
+      <workItem from="1517499632491" duration="6038000" />
     </task>
     <task id="LOCAL-00001" summary="Bug fixes, multi-monitor optimization [125]">
       <created>1515353271822</created>
@@ -643,19 +624,27 @@
       <option name="project" value="LOCAL" />
       <updated>1515691626987</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="UI enhancements, stability improvements, Notification Center [130]">
+      <created>1517506098022</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1517506098022</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="103042000" />
+    <option name="totallyTimeSpent" value="103150000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1928" y="-6" width="1936" height="1096" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5029333" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20833333" sideWeight="0.49813333" order="7" side_tool="false" content_ui="tabs" />
@@ -681,6 +670,8 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="Critical patch [124]" />
     <MESSAGE value="Bug fixes, multi-monitor optimization [125]" />
     <MESSAGE value="Forgot to change release number [125]" />
@@ -699,20 +690,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sys/internetMenu/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-12">
-          <caret line="37" column="10" lean-forward="false" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sys/internetMenu/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="125" column="130" lean-forward="false" selection-start-line="125" selection-start-column="130" selection-end-line="125" selection-end-column="130" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/apps/proton/webpages/version.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
@@ -1057,18 +1034,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/RELEASE.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="76">
-          <caret line="4" column="32" lean-forward="false" selection-start-line="4" selection-start-column="32" selection-end-line="4" selection-end-column="32" />
-          <folding />
-        </state>
+    <entry file="file://$PROJECT_DIR$/resources/default.jpg">
+      <provider selected="true" editor-type-id="images">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sys/taskbar/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="323">
           <caret line="17" column="62" lean-forward="false" selection-start-line="17" selection-start-column="62" selection-end-line="17" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="133">
+            <caret line="7" column="26" lean-forward="true" selection-start-line="7" selection-start-column="26" selection-end-line="7" selection-end-column="26" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/RELEASE.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="7" column="19" lean-forward="false" selection-start-line="7" selection-start-column="19" selection-end-line="7" selection-end-column="19" />
           <folding />
         </state>
       </provider>

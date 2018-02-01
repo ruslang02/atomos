@@ -1,0 +1,136 @@
+<script>
+	const args = require("atomos-framework").arguments;
+	const {
+		remote,
+		ipcRenderer
+	} = require("electron");
+	const path = require("path");
+	const fs = require("fs-extra");
+	const {
+		app
+	} = remote;
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+
+	let elements = {};
+
+	$(function() {
+		renderNav();
+		ipcRenderer.on("return-file", function(e, url) {
+			if(!elements.document) renderDocument(url);
+		});
+		if(args.path) renderDocument(args.path);
+	});
+
+	function renderNav() {
+		elements.navbar = $("<nav></nav>", {
+			class: "btn-menu bg-light border border-left-0 border-right-0 border-top-0",
+			html: [
+				$("<div></div>", {
+					class: 'btn-group dropdown btn-group-sm',
+					html: [
+						$('<button></button>', {
+							class: "btn btn-outline-primary dropdown-toggle",
+							"data-toggle": "dropdown",
+							"aria-expanded": "false",
+							text: "File"
+						}),
+						$("<div></div>", {
+							class: 'dropdown-menu',
+							html: [
+								$("<button></button>", {
+									text: "Open",
+									class: 'dropdown-item',
+									click: function () {
+										window.new("aos-files", {
+											action: "open",
+											path: app.getPath("documents")
+										}, {
+											parent: remote.getCurrentWindow(),
+											modal: true
+										})
+									}
+								}),
+								$("<div class='dropdown-divider'></div>"),
+								$("<button></button>", {
+									text: "Exit",
+									class: 'dropdown-item',
+									click: window.close
+								})
+							]
+						})
+					]
+				})
+			]
+		});
+		elements.navbar.appendTo("body");
+	}
+	function renderDocument(url = app.getAppPath() + "/node_modules/node-viewerjs/test/files/pdf-test.pdf") {
+		url = path.normalize(url);
+		elements.document = $("<webview></webview>", {
+			src: "about:blank",
+			nodeintegration: false,
+			text: "To view ViewerJS instance, open shadow-root",
+			class: "border-0",
+			css: {
+				"flex-grow": 2
+			}
+		});
+		elements.webview = elements.document[0];
+		elements.webview.addEventListener("enter-html-full-screen", function() {
+			elements.navbar.addClass("floating");
+			remote.BrowserWindow.fromId(2).hide();
+		});
+		elements.webview.addEventListener("leave-html-full-screen", function() {
+			elements.navbar.removeClass("floating");
+			remote.BrowserWindow.fromId(2).show();
+		});
+		elements.document.appendTo("body");
+
+		let socket = new WebSocket("http://atomos.org.uk/zoho");
+
+		socket.onmessage = function(event) {
+			let data = $.parseJSON(event.data);
+			if(data.generatedKey) {
+				elements.webview.loadURL("https://writer.zoho.com/writer/remotedoc.im", {
+					postData: [{
+						type: 'rawData',
+						bytes: Buffer.from('output=editor&mode=normaledit&filename=' + path.basename(url) + "&lang=en&id=" + data.generatedKey + "&format=" + path.extname(url).substring(1) + "&saveurl=http://atomos.org.uk/zoho/index.php")
+					}, {
+						type: 'file',
+						filePath: url
+					}]
+				})
+			}
+			alert("Получены данные " + event.data);
+		};
+	}
+</script>
+<style>
+	body {
+		display:flex;
+		flex-direction: column;
+		height: 100%;
+	}
+	nav.floating {
+		background: rgba(0,0,0,0.8) !important;
+		position:fixed;
+		top:-27px;
+		border:none;
+		width:100%;
+		color:white !important;
+		border:0 !important;
+		transition: top .2s ease
+	}
+	nav.floating button.btn {
+		background:none;
+		color:white !important;
+	}
+	nav.floating button.btn:hover {
+		box-shadow: inset 0 0 0 100px rgba(255,255,255,0.2);
+	}
+	nav.floating:hover {
+		top:0;
+	}
+</style>

@@ -1,0 +1,8 @@
+{
+	"name": "Zoho Office",
+	"shortName": "Office",
+	"icon": "$SYSTEM_ROOT/icons/Office.png",
+	"description": "Work with your documents online",
+	"height": 500,
+	"width": 500
+}
