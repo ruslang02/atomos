@@ -1,8 +1,8 @@
-<button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-action="openStart">Start</button>
+<button type="button" class="btn btn-sm btn-primary rounded-0 h-100" data-action="openStart"><img data-icon="AtomOS" style="height: 20px; filter: brightness(1000%) drop-shadow(0 0 0 white)" /></button>
 <script>
   let startMenu = new BrowserWindow({
-    x: x + 10,
-    y: y + height - 57 - 315,
+    x: x,
+    y: y + height - 32 - 315,
     width: 350,
     height: 315,
     frame: false,
@@ -17,12 +17,11 @@
     type: "notification"
   });
   startMenu.loadURL("file://" + app.getAppPath() + "/sys/startMenu/index.html");
-  startMenu.on('blur', startMenu.hide);
+  startMenu.on('blur', function() {
+  	startMenu.hide();
+  });
   $("[data-action=openStart]").click(function() {
-    if (startMenu.isVisible()) startMenu.hide();
-    else {
       startMenu.show();
       startMenu.setAlwaysOnTop(true);
-    }
   })
 </script>

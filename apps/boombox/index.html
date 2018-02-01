@@ -38,7 +38,7 @@
 			<div class="dropdown-divider"></div>
 			<button class="dropdown-item" data-key="Ctrl+S">Export playlist...</button>
 			<div class="dropdown-divider"></div>
-			<button class="dropdown-item" data-key="Alt+F4" onclick="app.destroy()">Exit</button>
+			<button class="dropdown-item" data-key="Alt+F4" onclick="tray.close(); popup.destroy(); app.destroy()">Exit</button>
 		</div>
 	</div>
 	<div class="btn-group dropdown btn-group-sm">
@@ -118,8 +118,8 @@
 	};
 
 	let popup = new BrowserWindow({
-		x: x + width - 10 - 450,
-		y: y + height - 37 - 450,
+		x: x + width - 450,
+		y: y + height - 32 - 450,
 		width: 450,
 		height: 450,
 		frame: false,
@@ -172,7 +172,7 @@
 			label: 'Exit',
 			click() {
 				tray.close();
-				app.destroy()
+				app.destroy();
 			}
 		}]).popup(BrowserWindow.fromId(1), {
 			async: true
@@ -182,7 +182,7 @@
 		BrowserWindow.fromId(2).webContents.send("activate-tray", {
 			win: remote.getCurrentWindow().id
 		});
-		popup.show();
+		popup.showInactive();
 		popup.setAlwaysOnTop(true)
 	});
 	tray.show();
@@ -295,11 +295,19 @@
 				$(".media artist").text(tags.artist[0] || $("#playlist").find(".dropdown-item.active").attr('creator') || "No artist");
 				$(".media h5").text(tags.title || $("#playlist").find(".dropdown-item.active")
 					.text());
+
+				new Notification({
+					title: tags.title || $("#playlist").find(".dropdown-item.active"),
+					body: tags.artist[0] || " playing",
+					icon: "Boombox"
+				});
+
 				if (tags.picture[0])
 					$("#cover img")[0].src = "data:image/" + tags.picture[0].format +
 					";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
 				else $("#cover img").removeAttr("src");
-			})
+
+			});
 			player.src = $("#playlist").find(".dropdown-item.active").attr('location');
 			player.play();
 
@@ -392,17 +400,15 @@
 			.then(function() {
 				new Notification({
 					title: "Playlist successfully saved",
-					color: "#fd7e14",
-					icon: "done",
-					after: "HIDE"
+					body: "It is located in " + path.normalize(url) + ".",
+					icon: "file-types/XSPF",
 				});
 			})
-			.catch(function() {
+			.catch(function(e) {
 				new Notification({
 					title: "Playlist failed to save",
-					color: "#dc3545",
-					icon: "error_outline",
-					after: "HIDE"
+					body: e,
+					icon: "Cancel"
 				})
 			});
 	}

@@ -35,8 +35,8 @@
 			if (!args.autostart) {
 				new Notification({
 					title: "Wallpaper changed",
-					icon: "landscape",
-					color: "#28a745"
+					body: "It will update shortly.",
+					icon: "Wallpaper"
 				})
 			}
 			console.log('File saved.')
@@ -87,8 +87,7 @@
 						new Notification({
 							title: "Failed to create Autostart file",
 							html: "Please check permissions in your Home and .config folders.",
-							icon: "perm_media",
-							color: "#dc3545"
+							icon: "Access Denied"
 						});
 					})
 		})

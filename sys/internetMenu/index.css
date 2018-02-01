@@ -62,7 +62,9 @@ start-menu, network-menu, clock-menu.card {
   background: #F3F3F3;
   padding: 5px;
   height: 100%;
+  border:0;
   border: 1px solid #007bff;
+  border-bottom-width: 3px !important;
   border-radius:0;
 }
 

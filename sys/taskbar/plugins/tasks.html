@@ -1,27 +1,25 @@
-<tasks class="mx-2" style="flex-grow:2"></tasks>
+<tasks style="flex-grow:2"></tasks>
 <script>
 app.on('browser-window-created', function(event, win) {
-	console.log(win);
   if(win.webContents.browserWindowOptions.skipTaskbar === true) return;
   let dangerFlash;
   let hangWin;
   let alreadyHung = false;
   let icon;
-  $("tasks").append("<button id='" + win.id + "' class='btn btn-light btn-sm loading'><img src='file://" + app.getAppPath() + "/icons/Loader.png'></button>");
+  $("tasks").append("<button id='" + win.id + "' class='loading btn btn-sm btn-light'><img src='file://" + app.getAppPath() + "/icons/Loader.png'><div class='title'>Loading...</div></button>");
   let $task = $("tasks #" + win.id);
   $task.on('mousedown', function(e) {
     e.preventDefault();
     e.stopImmediatePropagation();
     win.show();
   });
+	$task.find(".title").text(win.getTitle());
   $task.on('contextmenu', function(e) {
   	e.stopImmediatePropagation();
   	Menu.buildFromTemplate([{
   		label: "New instance",
   		click() {
-  			let url = win.getURL();
-  			url = url.substring(url.lastIndexOf("/",url.length - "/index.html".length - 1) + 1, url.lastIndexOf("/"));
-  			window.new(url)
+  			window.new(path.dirname(win.getURL()))
   		}
   	}, {type: 'separator'}, {
   		label: "Close",
@@ -52,6 +50,10 @@ app.on('browser-window-created', function(event, win) {
   win.webContents.on('page-favicon-updated', function(e,favs) {
   	console.log(e, favs);
 	});
+	win.on('page-title-updated', function() {
+		console.log(arguments);
+		$task.find(".title").text(win.getTitle());
+	});
 	win.webContents.on('new-window', function(e, url, frame, dispos, opts, adds) {
 		console.log(e, url, frame, dispos, opts, adds);
 		if(dispos === "new-window") {
@@ -72,6 +74,7 @@ app.on('browser-window-created', function(event, win) {
   });
   win.on('page-title-updated', function(e, title) {
     $task.attr("title", title);
+		$task.find(".title").text(title);
   });
   win.on('blur', function() {
     $task.removeClass("active");

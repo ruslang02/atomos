@@ -91,11 +91,11 @@
 		} else {
 			window.onbeforeunload = function(e) {
 				let sets = fs.readJsonSync(app.getPath("appData") + "/aos-cabinet.json");
-					sets.foldersFirst = foldersFirst;
-					sets.showHidden = showHidden;
-					sets.iconSize = viewMode;
-					fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json",
-						sets, $.noop);
+				sets.foldersFirst = foldersFirst;
+				sets.showHidden = showHidden;
+				sets.iconSize = viewMode;
+				fs.writeJsonSync(app.getPath("appData") + "/aos-cabinet.json",
+					sets, $.noop);
 			};
 		}
 		renderNav();
@@ -115,7 +115,7 @@
 			$FCBar.find(".btn-primary")[0].disabled = true;
 		}
 
-		$main.attr("data-view", window.viewMode)
+		$main.attr("data-view", window.viewMode);
 
 		switch (url.toLowerCase()) {
 			case ":back":
@@ -146,22 +146,30 @@
 
 		fs.readdir(url)
 			.then(function(files) {
+				$main.html("");
 				files.forEach(function(file, index, arr) {
 					if (file.startsWith(".") && !showHidden) return;
 					fs.lstat(path.join(url, file))
 						.then(function(stat) {
 							let icon = "";
+							let shortcut;
 							if (stat.isFile()) {
 								let extension = path.extname(file).substring(1).toUpperCase();
-								icon =
-									(stat.isSymbolicLink() ?
-										app.getAppPath() + "/icons/file-types/Symlink.png" :
-										app.getAppPath() + "/icons/file-types/" + extension + ".png"
-									);
-								if (!fs.existsSync(icon))
-									icon = app.getAppPath() + "/icons/file-types/Unknown.png";
-								if (viewMode === "list")
-									icon = icon.replace(/file-types/g, "file-types-small");
+								if (extension === "LNK") {
+									shortcut = fs.readJsonSync(path.join(url, file), {throws: false});
+									if (shortcut) icon = shortcut.icon.replace("$SYSTEM_ROOT", app.getAppPath());
+									else return;
+								} else {
+									icon =
+										(stat.isSymbolicLink() ?
+											app.getAppPath() + "/icons/file-types/Symlink.png" :
+											app.getAppPath() + "/icons/file-types/" + extension + ".png"
+										);
+									if (!fs.existsSync(icon))
+										icon = app.getAppPath() + "/icons/file-types/Unknown.png";
+									if (viewMode === "list")
+										icon = icon.replace(/file-types/g, "file-types-small");
+								}
 							} else if (stat.isDirectory()) {
 								icon = (stat.isSymbolicLink() ?
 									app.getAppPath() + "/icons/Symlink Folder.png" :
@@ -180,14 +188,17 @@
 											path: path.join(url, file)
 										});
 										else navigate(path.join(url, file));
-									} else if (stat.isFile()) window.fileOpen(path.join(url, file));
+									} else if (stat.isFile()) {
+										if(shortcut) {
+											window.new(shortcut.app, shortcut.args);
+										} else
+											window.fileOpen(path.join(url, file));
+									}
 								},
 								click: function() {
-									if (args.action !== "folder" ^ stat.isFile() && args.action) {
-										if ($FCBar) {
-											$FCBar.find("input").val(file);
-											$FCBar.find(".btn-primary")[0].disabled = false;
-										}
+									if ($FCBar) {
+										$FCBar.find("input").val(file);
+										$FCBar.find(".btn-primary")[0].disabled = false;
 									}
 								},
 								contextmenu: renderFileContextMenu,
@@ -196,8 +207,8 @@
 										src: "file://" + icon
 									}),
 									$("<div></div>", {
-										class: "file-title" + (file.startsWith(".") ? " text-muted" : ""),
-										html: file,
+										class: "file-title",
+										html: (shortcut ? shortcut.title : file),
 										css: {
 											overflow: "hidden",
 											textOverflow: "ellipsis"
@@ -205,7 +216,7 @@
 									})
 								]
 							});
-							if (!(args.action !== "folder" ^ stat.isFile()) && args.action) $item.attr("disabled", "disabled")
+							if (args.action && args.action === "ffd" && stat.isFile()) $item.attr("disabled", "disabled")
 
 							$items.push($item);
 
@@ -229,7 +240,9 @@
 								} else $main.html($items);
 
 							}
-						});
+						}).catch(function (e) {
+
+					});
 				})
 			});
 
@@ -253,7 +266,7 @@
 				$("<input />", {
 					type: "text",
 					class: "form-control form-control-sm",
-					readonly: args.action !== "open"
+					readonly: args.action === "open"
 				}),
 				$("<span></span>", {
 					class: "input-group-btn",
@@ -609,8 +622,10 @@
 			accelerator: "CmdOrCtrl+V",
 			click() {
 				window.fileClipboard.flush($pathField.val(), {
-					end:
-				})
+						end: () => {
+							navigate(":refresh")
+						}
+					})
 					.then(() => {
 						navigate(":refresh")
 					})
@@ -738,7 +753,7 @@
 						const unzip = require('extract-zip');
 						unzip(file, {
 							dir: arg
-						}, reNavigate)
+						}, () =>{navigate(":refresh")})
 					} else if (file.endsWith(".tar.gz") || file.endsWith(".tgz")) {
 						const tar = require('tar');
 						fs.createReadStream(file).pipe(
@@ -773,7 +788,7 @@
 			label: "Delete",
 			accelerator: "Delete",
 			click() {
-				fs.remove(file).then(reNavigate);
+				fs.remove(file).then(() => {navigate(":refresh")});
 			}
 		}, {
 			label: "Properties",

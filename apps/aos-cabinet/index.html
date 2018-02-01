@@ -94,8 +94,7 @@
 							new Notification({
 								title: "Welcome to AtomOS!",
 								body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)",
-								color: "#fd7e14",
-								icon: "pan_tool"
+								icon: "Hand"
 							})
 							let d1e = fs.existsSync(app.getPath("desktop") + "/.1.lnk");
 							let d2e = fs.existsSync(app.getPath("desktop") + "/.2.lnk");
@@ -119,7 +118,6 @@
 	fm.files = $("files");
 	fm.sorting = "A-Z";
 	fm.window = remote.getCurrentWindow();
-	window.initMimes();
 	if (fm.window.id < 3) {
 		fm.desktop = true;
 		$("#sidebar").remove();
@@ -326,8 +324,7 @@
 						if (res.error) new Notification({
 							title: "There was an error creating a directory",
 							body: error.message,
-							color: "#dc3545",
-							icon: "folder"
+							icon: "Cancel"
 						});
 						else reNavigate();
 					})
@@ -582,8 +579,7 @@
 							new Notification({
 								title: "We were unable to copy file",
 								html: err,
-								color: "#dc3545",
-								icon: "warning"
+								icon: "Warning"
 							})
 						})
 				break;

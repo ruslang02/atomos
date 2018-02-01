@@ -61,8 +61,7 @@ right: 0;
         new Notification({
           title: "Configuration file was created",
           body: "This is first time you use Camcorder, so we have created a configuration file. You won't see this notification ever again.",
-          color: "#17a2b8",
-          icon: "camera"
+          icon: "Camcorder"
         });
         init();
       })
@@ -70,8 +69,7 @@ right: 0;
         new Notification({
           title: "Configuration file was failed to create",
           body: "Camcorder can not write a configuration file. Please check permissions on your home directory.",
-          color: "#dc3545",
-          icon: "camera"
+          icon: "Warning"
         });
         app.close();
       })
@@ -121,17 +119,13 @@ right: 0;
               new Notification({
                 title: "Snapshot taking was not successful",
                 body: err,
-                icon: "camera",
-                color: "#dc3545"
+                icon: "Camcorder"
               });
             } else {
               new Notification({
                 title: "Snapshot has been successfully taken",
-                body: "<hr><div class='text-right'><button class='btn btn-sm btn-secondary' onclick='require(\"electron\").remote.BrowserWindow.fromId(" + app.id +
-                  ").webContents.send(\"copy-image\")'><i class='material-icons'>bookmark</i>Copy to Clipboard</button><button class='btn btn-sm btn-primary ml-2' onclick='window.new(\"aos-files\", {path: \"" + pth.substring(0, pth.lastIndexOf("/")) +
-                  "\"})'><i class='material-icons'>folder</i> Show in Cabinet</button></div>",
-                color: "#28a745",
-                icon: "camera"
+                body: "It is saved in your Pictures folder.",
+                icon: "Camcorder"
               });
               document.querySelector("picture img").src = source.thumbnail.toDataURL();
               app.show();

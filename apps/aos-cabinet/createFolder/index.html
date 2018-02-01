@@ -1,4 +1,4 @@
-<form onsubmit="return false;">
+<form>
 	<header>
 		<img data-icon="Add Folder"/>
 		<input class="form-control" placeholder="New Folder" autofocus required/>
@@ -12,20 +12,23 @@
 	const {
 		remote
 	} = require('electron');
+	const {app} = remote;
 	const fs = require('fs');
 	let args = require('atomos-framework').arguments;
-	const app = remote.getCurrentWindow();
+	const win = remote.getCurrentWindow();
 	window.$ = require("jquery");
 	if (!args.path) {
 		app.close();
 	} else {
 		window.onload = function () {
 			setTimeout(function () {
-				app.setContentSize(app.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+				win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
 			}, 100);
-			$(".btn-primary").click(function () {
+			$(".btn-primary").click(function (e) {
+				e.preventDefault();
 				fs.mkdirSync(args.path + "/" + $("input").val());
-				app.getParentWindow().webContents.send("create-folder", args.path + "/" + $("input").val());
+				win.getParentWindow().webContents.send("create-folder", args.path + "/" + $("input").val());
+				return false;
 			});
 			$(".btn").click(window.close);
 			$("input").on("input", function () {

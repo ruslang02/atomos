@@ -1,77 +1,75 @@
-<div class="alert">
-  <div><strong>Alert title</strong></div>
-  <small></small>
-</div>
-<script>
-  const {
-    remote,
-    ipcRenderer,
-    screen
-  } = require('electron');
-  const {
-    BrowserWindow
-  } = remote;
-  const app = remote.getCurrentWindow();
-  const {
-    width,
-    height,
-      x,
-      y
-  } = screen.getPrimaryDisplay().bounds;
-  let options = [];
-  window.$ = window.jQuery = require('jquery');
-  require('atomos-framework');
-  window.Popper = require('popper.js');
-  require('bootstrap');
-  setInterval(function() {
-    let alertHeight = $(".alert").outerHeight();
-    app.setContentSize(350, Math.ceil(alertHeight));
-    app.setPosition(x + width - 10 - 350, y + height - 37 - Math.ceil(alertHeight));
-  }, 1)
-  ipcRenderer.on('blur', function(e) {
-    if (options.dismissable) onTimeout()
-  })
-  let timeout;
-  ipcRenderer.on('spawn-notification', function(e, opts) {
-    remote.BrowserWindow.fromId(2).webContents.send("deactivate-tray", {
-      win: options.win
-    });
-    clearTimeout(timeout);
-    options = opts;
-    $(".alert > div > strong").text(options.title);
-    $(".alert > small").html(options.html);
-    $(".alert").css("border-color", options.color);
-    $(window).mouseup(function() {
-      BrowserWindow.fromId(options.win).webContents.send("notification-click");
-    })
-    remote.BrowserWindow.fromId(2).webContents.send("activate-tray", {
-      win: options.win
-    })
-    app.showInactive();
-    app.setAlwaysOnTop(true);
-    timeout = setTimeout(onTimeout, options.timeout)
-  })
-
-  function onTimeout() {
-    if (options.after === "REMOVE")
-      remote.BrowserWindow.fromId(2).webContents.send("remove-tray", {
-        win: options.win
-      });
-    else remote.BrowserWindow.fromId(2).webContents.send("deactivate-tray", {
-      win: options.win
-    });
-    app.hide();
-    clearTimeout(timeout);
-  }
-</script>
+<main class="p-2">
+	<p class="lead">Notifications
+		<button class="btn btn-sm btn-info material-icons float-right p-1 m-0" onclick="$('#notifications').html('')">done_all</button>
+	</p>
+	<section id="notifications"></section>
+</main>
 <style>
-  html,
-  body,
-  div.alert {
-    width: 100vw;
-    margin: 0;
-    border-radius: 0;
-    overflow:hidden;
-    background:white;
-  }
+	main {
+		border: 1px solid #6610f2;
+		border-bottom-width: 3px;
+	}
+	#notifications {
+		max-height:350px;
+		overflow:auto;
+		border: 1px solid lightgray;
+		border-radius:0.25rem;
+		padding: 0.5rem;
+	}
+	#notifications:empty::before {
+		content: "No notifications";
+		color: grey;
+	}
+	#notificationsOpened .btn-info {display: none}
+	#notificationsOpened .media {display: none}
+	#notificationsOpened .media:last-child {display: flex; border: 0 !important;}
+	#notifications .media .btn-info {display:none;position:absolute;right:0;top:0;}
+	#notifications .media h6 {position:relative;}
+	#notifications .media:hover .btn-info {display:inline-block;}
+	#notifications .media:first-child {border:none !important}
 </style>
+<script>
+	const {
+		remote,
+		ipcRenderer,
+		screen
+	} = require('electron');
+	const {
+			app
+	} = remote;
+	const win = remote.getCurrentWindow();
+	const {
+		width,
+		height,
+		x,
+		y
+	} = screen.getPrimaryDisplay().bounds;
+	window.$ = window.jQuery = require('jquery');
+	require('atomos-framework');
+	setInterval(function () {
+		let alertHeight = $("main").outerHeight();
+		win.setContentSize(350, Math.ceil(alertHeight));
+		win.setPosition(x + width - 350, y + height - 32 - Math.ceil(alertHeight));
+	}, 1);
+	ipcRenderer.on('new-notification', function (e, options) {
+		if (!options.title) options.title = "";
+		if (!options.icon) options.icon = app.getAppPath() + "/icons/Notification.png";
+		else options.icon = app.getAppPath() + "/icons/" + options.icon + ".png";
+		$("#notifications").append(`
+<div class="media border border-bottom-0 border-left-0 border-right-0 py-2">
+  <img class="mr-3" src="${options.icon}" style="max-width:48px">
+  <div class="media-body">
+    <h6 class="mt-0 mb-1">${ options.title } <button class="btn btn-sm btn-info material-icons p-0 m-0" onclick="$(this).parents('.media').remove()">done</button></h6>
+    <small>${options.body}</small>
+  </div>
+</div>`);
+		$("p.lead").hide();
+		$("#notifications")[0].id = "notificationsOpened";
+		setTimeout(function() {
+			$("p.lead").show();
+			$("#notificationsOpened")[0].id = "notifications";
+			win.hide();
+		},3000);
+		win.showInactive();
+	});
+</script>

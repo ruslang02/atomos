@@ -1,5 +1,5 @@
 <script>
-	$("tray").append("<button name=\"clock\" style='color: #343a40' data-toggle=\"tooltip\" data-placement=\"left\" data-trigger='hover' title='Date loading...'></button>");
+	$("tray").append("<button name=\"clock\" style='color: #343a40' class='px-2' title='Date loading...'></button>");
 	fs.readJson(app.getPath("appData") + "/taskbar.json")
 			.then(function(data) {
 				if(data.clockPopup === undefined) {
@@ -10,7 +10,7 @@
 					let clockMenu;
 					clockMenu = new BrowserWindow({
 						width: 400,
-						height: 258,
+						height: 260,
 						type: "notification",
 						frame: false,
 						closable: false,
@@ -20,8 +20,8 @@
 						skipTaskbar: true,
 						movable: false,
 						resizable: false,
-						x: x + width - 400 - 10,
-						y: y + height - 258 - 28 - 10,
+						x: x + width - 400,
+						y: y + height - 260 - 32,
 						show: false,
 						alwaysOnTop: true,
 					});
@@ -67,15 +67,12 @@
 			}
 		}]).popup();
 	});
-	$(function () {
-		$('[data-toggle="tooltip"]').tooltip()
-	});
 	tick();
 	setInterval(tick, 10000);
 	function tick() {
 		$("[name=clock]").text(new Date().toLocaleTimeString({}, {
 			hour: '2-digit',
 			minute: '2-digit'
-		})).attr('data-original-title', new Date().toLocaleDateString());
+		}));
 	}
 </script>

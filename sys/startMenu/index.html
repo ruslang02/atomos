@@ -1,5 +1,5 @@
-<start-menu class="bg-light">
-	<profile-section class="bg-light p-1">
+<start-menu class="bg-light p-0">
+	<profile-section class="bg-light p-2">
 		<profile-name class="lead">atomOS</profile-name>
 		<atomos-version>
 			<div class="btn-group btn-group-sm float-right">
@@ -25,7 +25,7 @@
 			</div>
 		</atomos-version>
 	</profile-section>
-	<div class="panel">
+	<div class="panel m-1">
 		<div class="tab-content">
 			<div role="tabpanel" class="tab-pane active" id="folders">
 				<a href="#" onclick="window.new('aos-files',{path: app.getPath('documents')})"
@@ -71,10 +71,10 @@
 		</div>
 	</div>
 	<div class="nav nav-pills nav-fill" role="tablist">
-		<a href="#folders" class="nav-link active nav-item" aria-controls="home" role="tab" data-toggle="tab"
+		<a href="#folders" class="nav-link active nav-item" style="border-radius:0" aria-controls="home" role="tab" data-toggle="tab"
 			 data-placement="top" title="Quick file-system access">Folders</a>
 		<a href="#applications" class="nav-link nav-item" aria-controls="messages" role="tab" data-toggle="tab"
-			 data-placement="top" title="All installed apps">Applications</a>
+			 data-placement="top" title="All installed apps" style="border-radius:0">Applications</a>
 	</div>
 </start-menu>
 <script>

@@ -1,4 +1,5 @@
 @import "bootstrap.css";
+@import "jquery-ui.min.css";
 @import "../node_modules/material-design-icons-iconfont/dist/fonts/material-icons.css";
 button {
   outline: none !important
@@ -8,7 +9,7 @@ textarea {outline: none}
 ::-webkit-scrollbar {
     width:10px;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
@@ -17,7 +18,7 @@ textarea {outline: none}
 	  opacity:0;
     transition: all .5s ease;
     animation: all .5s ease;
-    
+
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #aaa;
@@ -69,6 +70,7 @@ button.btn i.material-icons {
 .dropdown-item.custom-control {
   margin: 0!important;
   overflow: hidden;
+  padding-left: 2rem;
 }
 
 .dropdown-item[disabled] {
@@ -124,7 +126,7 @@ button.btn i.material-icons {
 }
 
 .dropdown-item .custom-control-indicator {
-  margin: 0.1rem 0.25rem;
+  margin: 0.1rem 0.5rem;
 }
 
 .dropdown-item .custom-control-input {

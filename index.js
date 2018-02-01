@@ -3,10 +3,10 @@ const {
 	app
 } = require('electron');
 const fs = require("fs");
+global.wsk = require('electron-window-state-manager');
 /* System Components IDs
  * 1 - Desktop
  * 2 - Taskbar
- * 3 - Notifications
 */
 global.clipboards = {
 	file: []
@@ -17,7 +17,6 @@ if(fs.existsSync("/etc/os-release"))
 		require("child_process").exec("xfwm4");
 let win;
 let taskbar;
-let notification;
 
 app.on('ready', function () {
 	const {
@@ -61,9 +60,9 @@ app.on('ready', function () {
 	win.setSize(width, height);
 	taskbar = new BrowserWindow({
 		x: x,
-		y: y + height - 46,
+		y: y + height - 32,
 		width: width,
-		height: 47,
+		height: 32,
 		frame: false,
 		closable: false,
 		minimizable: false,
@@ -103,27 +102,6 @@ app.on('ready', function () {
 	taskbar.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});
-
-	notification = new BrowserWindow({
-		x: x + width - 10 - 350,
-		y: y + height - 37 - 150,
-		width: 450,
-		height: 450,
-		frame: false,
-		closable: false,
-		minimizable: false,
-		maximizable: false,
-		alwaysOnTop: true,
-		resizable: false,
-		skipTaskbar: true,
-		movable: false,
-		show: false,
-		type: "notification"
-	});
-	notification.webContents.on('will-navigate', ev => {
-		ev.preventDefault()
-	});
-	notification.loadURL("file://" + __dirname + "/sys/notification/index.html");
 	if (process.argv.indexOf("--debug-taskbar") !== -1)
 		taskbar.toggleDevTools();
 });
