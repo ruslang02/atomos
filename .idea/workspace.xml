@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e14bc4a2-4a93-42e1-baf4-f26f2249c863" name="Default" comment="UI enhancements, stability improvements, Notification Center [130]">
-      <change beforePath="" afterPath="$PROJECT_DIR$/apps/zohodocs/app.json" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/apps/zohodocs/index.html" />
+    <list default="true" id="e14bc4a2-4a93-42e1-baf4-f26f2249c863" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change beforePath="$PROJECT_DIR$/RELEASE.json" afterPath="$PROJECT_DIR$/RELEASE.json" />
+      <change beforePath="$PROJECT_DIR$/apps/zohodocs/app.json" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/apps/zohodocs/index.html" afterPath="" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -63,16 +61,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="95">
               <caret line="5" column="13" lean-forward="false" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/apps/zohodocs/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="98" column="36" lean-forward="false" selection-start-line="98" selection-start-column="36" selection-end-line="98" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -387,12 +375,6 @@
             <path>
               <item name="atomos" type="b2602c69:ProjectViewProjectNode" />
               <item name="atomos" type="462c0819:PsiDirectoryNode" />
-              <item name="apps" type="462c0819:PsiDirectoryNode" />
-              <item name="zohodocs" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="atomos" type="b2602c69:ProjectViewProjectNode" />
-              <item name="atomos" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -573,7 +555,7 @@
       <workItem from="1517250761844" duration="4054000" />
       <workItem from="1517328609451" duration="10346000" />
       <workItem from="1517417934201" duration="6057000" />
-      <workItem from="1517499632491" duration="6038000" />
+      <workItem from="1517499632491" duration="6097000" />
     </task>
     <task id="LOCAL-00001" summary="Bug fixes, multi-monitor optimization [125]">
       <created>1515353271822</created>
@@ -631,20 +613,26 @@
       <option name="project" value="LOCAL" />
       <updated>1517506098022</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Prepare for merge [131]">
+      <created>1517506203354</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1517506203354</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="103150000" />
+    <option name="totallyTimeSpent" value="103209000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1928" y="-6" width="1936" height="1096" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5029333" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20833333" sideWeight="0.49813333" order="7" side_tool="false" content_ui="tabs" />
@@ -681,7 +669,8 @@
     <MESSAGE value="Fixes and small feature addition [129]" />
     <MESSAGE value="Fix [130]" />
     <MESSAGE value="UI enhancements, stability improvements, Notification Center [130]" />
-    <option name="LAST_COMMIT_MESSAGE" value="UI enhancements, stability improvements, Notification Center [130]" />
+    <MESSAGE value="Prepare for merge [131]" />
+    <option name="LAST_COMMIT_MESSAGE" value="Prepare for merge [131]" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
