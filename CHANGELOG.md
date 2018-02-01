@@ -57,7 +57,7 @@
  - Wi-Fi support
  - Node.JS, Electron and RequireJS integration
  - Full stack optimization
-
+ 
 ## 0.3.3
 
  - Ability to create files and folders in aos-cabinet
