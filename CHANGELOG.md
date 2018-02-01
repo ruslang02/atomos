@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1
+ - System root unlinked from directory /atomos
+ - New apps: _viewerjs_, _aos-files_
+ - _aos-files_ replaced _aos-cabinet_ due to better performance and less memory leaks
+ - UI improvements
+ - Window state saving
+ - Notification Center
+ - Less RAM usage
+
 ## 0.5.0
  - App structure redesigned
  - Package management system
