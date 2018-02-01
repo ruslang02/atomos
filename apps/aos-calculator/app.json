@@ -1,7 +1,7 @@
 {
   "name": "Calculator",
   "shortName": "Calculator",
-  "icon": "/atomos/icons/Calculator.png",
+  "icon": "$SYSTEM_ROOT/icons/Calculator.png",
   "description": "Count anything",
   "width": 320,
   "height": 249,

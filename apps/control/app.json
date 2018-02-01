@@ -2,7 +2,7 @@
   "name": "Control Center",
   "shortName": "Control Center",
   "description": "Modify your system whatever you like",
-  "icon": "/atomos/icons/Control Panel.png",
+  "icon": "$SYSTEM_ROOT/icons/Control Panel.png",
   "height": 545,
   "width": 600
 }

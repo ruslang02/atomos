@@ -37,7 +37,7 @@
 	setInterval(function () {
 		app.getParentWindow().webContents.send("getData");
 		app.setContentSize(450, Math.ceil($("body").outerHeight()));
-		app.setPosition(x + width - 10 - 450, y + height - 37 - Math.ceil($("body").outerHeight()));
+		app.setPosition(x + width - 450, y + height - 32 - Math.ceil($("body").outerHeight()));
 
 	}, 10);
 
@@ -86,6 +86,7 @@
 
 	body {
 		border: 1px solid hsl(33, 100%, 50%);
+		border-bottom-width:2px;
 		padding-bottom: 4px;
 		display: inline-block;
 		width: 100%;

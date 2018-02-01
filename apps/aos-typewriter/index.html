@@ -75,6 +75,7 @@
   const args = require('atomos-framework').arguments;
   const ipcRenderer = require('electron').ipcRenderer;
   const fs = require('fs');
+  const path = require('path');
   const {
     remote
   } = require('electron');
@@ -86,12 +87,8 @@
   window.jQuery = window.$ = require("jquery");
   window.Popper = require("popper.js");
   require("bootstrap");
-
-  let taMenu;
-
   let win = remote.getCurrentWindow();
   let fileName = undefined;
-  initContextMenus();
 
   window.onload = function() {
     $(window).keypress(function(event) {
@@ -101,12 +98,6 @@
       if (event.ctrlKey && event.shiftKey && event.key === "S") $("[data-key='Ctrl+Shift+S']").click();
     });
 
-    $(".dropdown-toggle").click(function() {
-      $(".dropdown").removeClass("show");
-      $(".dropdown-menu").removeClass("show");
-      $("[aria-expanded]").attr("aria-expanded", "false");
-    }).dropdown();
-
     ipcRenderer.on("return-file", function(event, file) {
       loadFile(file);
     });
@@ -114,16 +105,8 @@
       save(file);
     });
 
-    $("textarea").on("contextmenu", function(e) {
-      e.preventDefault();
-      taMenu.popup(win);
-    }).on("keyup click focus", function() {
+    $("textarea").on("keyup click focus", function() {
 	    $("#editInfo").text("Line: " + this.value.substr(0, this.selectionStart).split("\n").length);
-    });
-    $('app').click(function() {
-      $(".dropdown").removeClass("show");
-      $(".dropdown-menu").removeClass("show");
-      $("[aria-expanded]").attr("aria-expanded", "false");
     });
     $("[data-description]").hover(function() {
       $("#menuDescription").text($(this).attr("data-description"))
@@ -137,27 +120,9 @@
         case 'Alt+F4':
           window.close();
           break;
-        case 'Ctrl+Z':
-          document.execCommand("undo", false, null);
-          break;
-        case 'Ctrl+Shift+Z':
-          document.execCommand("redo", false, null);
-          break;
-        case 'Ctrl+X':
-          document.execCommand("cut", false, null);
-          break;
-        case 'Ctrl+C':
-          document.execCommand("copy", false, null);
-          break;
-        case 'Ctrl+V':
-          document.execCommand("paste", false, null);
-          break;
-        case 'Ctrl+A':
-          document.execCommand("selectAll", false, null);
-          break;
         case 'Ctrl+O':
-          window.new("aos-cabinet", {
-            action: "ofd",
+          window.new("aos-files", {
+            action: "open",
             path: app.getPath("documents"),
             title: "Choose a text file to open..."
           }, {
@@ -166,8 +131,8 @@
           });
           break;
         case 'Ctrl+Shift+S':
-          window.new("aos-cabinet", {
-            action: "sfd",
+	        window.new("aos-files", {
+		        action: "save",
             path: app.getPath("documents"),
             title: "Choose the location to save the file"
           }, {
@@ -175,32 +140,30 @@
             modal: true
           });
           break;
-        case 'Del':
-          document.execCommand("delete", false, null);
-          break;
       }
     });
-    if (args.path) loadFile(args.path);
+    if (args.path) loadFile(args.path); else
+      win.setTitle("untitled - Typewriter");
   };
 
-  function save(path) {
+  function save(url) {
     let contents = $("textarea").val();
-    if (!path && !fileName)
-      window.new("aos-cabinet", {
-        action: "sfd",
+    if (!url && !fileName)
+	    window.new("aos-files", {
+		    action: "save",
         path: app.getPath("documents"),
         title: "Choose the location to save the file"
       }, {
         parent: win,
         modal: true
       });
-    else if (path) fileName = path; else path = fileName;
-    fs.open(path, 'w', function(err, fd) {
+    else if (url) fileName = url; else url = fileName;
+    win.setTitle(path.basename(fileName) + " - Typewriter");
+    fs.open(url, 'w', function(err, fd) {
       if (err) new Notification({
         title: "We're unable to save the file",
         body: "Here is a library output: " + err,
-        icon: "cancel",
-        color: "#dc3545"
+	      icon: "Cancel",
       });
       else {
         fs.write(fd, contents, function(err) {
@@ -208,98 +171,42 @@
             new Notification({
               title: "We're unable to save the file",
               body: "Here is a library output: " + err,
-              icon: "cancel",
-              color: "#dc3545"
+              icon: "Cancel",
             });
           else new Notification({
             title: "File was successfully saved",
-            body: 'It is located here: ' + path +
-              '. <hr class="mt-2 mb-2"> <div class="text-right"><button action="dismiss" class="btn btn-sm btn-secondary">Dismiss</button> <button onclick="window.new(\'aos-cabinet\',{path: \'' + path.substring(0, path.lastIndexOf(
-                "/")) + '\', selectFile: \'' + path.substring(path.lastIndexOf("/") + 1) + '\'})" class="btn btn-sm btn-primary">Show in Cabinet</button></div>',
-            icon: "done",
-            color: "#28a745"
+            body: 'It is located here: ' + url + '.',
+            icon: "Save",
           })
         });
       }
     })
   }
 
-  function loadFile(path, loadAnyway) {
-    fileName = path;
-    win.setTitle(path.substring(path.lastIndexOf("/") + 1) + " - Typewriter");
-    fs.stat(path, function(err, stat) {
+  function loadFile(url, loadAnyway) {
+    fileName = url;
+    console.log(url, args)
+    win.setTitle(path.basename(url) + " - Typewriter");
+    fs.stat(url, function(err, stat) {
       if (stat.size > MAX_SIZE && !loadAnyway) {
         window.new("aos-typewriter/toolargefile", {}, {
           modal: true,
           parent: win
         });
         ipcRenderer.on("largeFileConfirmation", function(event, data) {
-          loadFile(path, data.load)
+          loadFile(url, data.load)
         })
       } else {
-        fs.readFile(path, 'utf8', function(err, data) {
+        fs.readFile(url, 'utf8', function(err, data) {
           if (err)
             new Notification({
               title: "We're unable to save the file",
               body: "Here is a library output: " + err,
-              icon: "cancel",
-              color: "#dc3545"
+	            icon: "Cancel",
             });
           else $("textarea").val(data)
         })
       }
     })
-  }
-
-  function initContextMenus() {
-    const taTemplate = [{
-      label: "Undo",
-      click() {
-        $("[data-key='Ctrl+Z']").click()
-      },
-      accelerator: "CmdOrCtrl+Z"
-    }, {
-      label: "Redo",
-      click() {
-        $("[data-key='Ctrl+Shift+Z']").click()
-      },
-      accelerator: "CmdOrCtrl+Shift+Z"
-    }, {
-      type: "separator"
-    }, {
-      label: "Cut",
-      click() {
-        $("[data-key='Ctrl+X']").click()
-      },
-      accelerator: "CmdOrCtrl+X"
-    }, {
-      label: "Copy",
-      click() {
-        $("[data-key='Ctrl+C']").click()
-      },
-      accelerator: "CmdOrCtrl+C"
-    }, {
-      label: "Paste",
-      click() {
-        $("[data-key='Ctrl+V']").click()
-      },
-      accelerator: "CmdOrCtrl+V"
-    }, {
-      label: "Delete",
-      click() {
-        $("[data-key='Delete']").click()
-      },
-      accelerator: "Delete"
-    }, {
-      type: "separator"
-    }, {
-      label: "Select All",
-      click() {
-        $("[data-key='Ctrl+A']").click()
-      },
-      accelerator: "CmdOrCtrl+A"
-    }];
-
-    taMenu = Menu.buildFromTemplate(taTemplate);
   }
 </script>

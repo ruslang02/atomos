@@ -1,71 +1,76 @@
-<header>
-  <file-image></file-image>
-  <input class="form-control" placeholder="Untitled" required/>
-</header>
-<footer class="text-right"><button class="btn btn-secondary mr-2">Cancel</button><button disabled class="btn btn-primary">Create File</button></footer>
-
+<form onsubmit="return false;">
+	<header>
+		<file-image></file-image>
+		<input class="form-control" placeholder="Untitled" autofocus required/>
+	</header>
+	<footer class="text-right">
+		<button class="btn btn-secondary mr-2" type="button">Cancel</button>
+		<button disabled class="btn btn-primary" type="submit">Create File</button>
+	</footer>
+</form>
 <script>
-  const {
-    remote
-  } = require('electron');
-  const fs = require('fs');
-  let args = require('atomos-framework').arguments;
-  window.$ = require('jquery');
-  const app = remote.getCurrentWindow();
-  if (!args.path) app.close();
-  else {
-    window.onload = function() {
-	    setTimeout(function() {
-		    app.setContentSize(app.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
-	    }, 100);
-      $(".btn-secondary").click(function() {
-        app.close();
-      });
-      $(".btn-primary").click(function() {
-        fs.closeSync(fs.openSync(args.path + "/" + $("input").val(), 'w'));
-        app.getParentWindow().webContents.send("create-file", args.path + "/" + $("input").val());
-        app.close();
-      });
-      $("input").on("input", function() {
-        if (fs.existsSync(args.path + this.value)) {
-          $(this).addClass("is-invalid");
-          $(".btn-primary").attr("disabled", "disabled");
-        } else {
-          $(".btn-primary").removeAttr("disabled");
-          $(this).removeClass("is-invalid");
-        }
+	const {
+		remote
+	} = require('electron');
+	const {app} = remote;
+	const fs = require('fs');
+	let args = require('atomos-framework').arguments;
+	window.$ = require('jquery');
+	const win = remote.getCurrentWindow();
+	if (!args.path) app.close();
+	else {
+		window.onload = function () {
+			$("file-image").css("background-image", "url('" + app.getAppPath() + "/icons/file-types/Add File.png')");
+			setTimeout(function () {
+				win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+			}, 100);
+			$(".btn-secondary").click(function () {
+				win.close();
+			});
+			$(".btn-primary").click(function () {
+				fs.closeSync(fs.openSync(args.path + "/" + $("input").val(), 'w'));
+				win.getParentWindow().webContents.send("create-file", args.path + "/" + $("input").val());
+				win.close();
+			});
+			$("input").on("input", function () {
+				if (fs.existsSync(args.path + this.value)) {
+					$(this).addClass("is-invalid");
+					$(".btn-primary").attr("disabled", "disabled");
+				} else {
+					$(".btn-primary").removeAttr("disabled");
+					$(this).removeClass("is-invalid");
+				}
 
-        if (fs.existsSync("/atomos/icons/file-types/" + this.value.substring(this.value.lastIndexOf(".") + 1).toUpperCase() + ".png")) {
-          $("file-image").css("background-image", "url('/atomos/icons/file-types/" + this.value.substring(this.value.lastIndexOf(".") + 1).toUpperCase() + ".png')");
-        } else $("file-image").css("background-image", "url('/atomos/icons/file-types/Add File.png')");
-      })
-    }
-  }
+				if (fs.existsSync(app.getAppPath() + "/icons/file-types/" + this.value.substring(this.value.lastIndexOf(".") + 1).toUpperCase() + ".png")) {
+					$("file-image").css("background-image", "url('" + app.getAppPath() + "/icons/file-types/" + this.value.substring(this.value.lastIndexOf(".") + 1).toUpperCase() + ".png')");
+				} else $("file-image").css("background-image", "url('" + app.getAppPath() + "/icons/file-types/Add File.png')");
+			})
+		}
+	}
 </script>
 
 <style>
-  body {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    overflow:hidden;
-  }
+	body {
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
 
-  header {
-    display: flex;
-  }
+	header {
+		display: flex;
+	}
 
-  header file-image {
-    width: 48px;
-    height: 48px;
-    background-image: url("/atomos/icons/file-types/Add File.png");
-    flex-shrink: 0;
-    background-size: 100%;
-    transition: all .2s ease
-  }
+	header file-image {
+		width: 48px;
+		height: 48px;
+		flex-shrink: 0;
+		background-size: 100%;
+		transition: all .2s ease
+	}
 
-  header input {
-    margin: 0.5rem;
-    margin-right: 0
-  }
+	header input {
+		margin: 0.5rem;
+		margin-right: 0
+	}
 </style>

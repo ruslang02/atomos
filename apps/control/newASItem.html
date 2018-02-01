@@ -1,0 +1,53 @@
+<form class="m-0">
+	<input class="form-control form-control-sm mb-2" id="name" placeholder="Name">
+	<input class="form-control form-control-sm mb-2" id="app" placeholder="Application name (e.g. aos-cabinet)">
+	<input class="form-control form-control-sm mb-2" id="args" placeholder="Arguments (JSON string)">
+
+	<label class="w-100 mb-2 custom-control custom-checkbox">
+		<input title type="checkbox" id="service" disabled checked class="custom-control-input">
+		<span class="custom-control-indicator"></span>
+		<span class="custom-control-description">Start in background</span>
+	</label>
+</form>
+<div class="d-flex w-100">
+	<button class="btn btn-light btn-sm mr-auto" onclick="window.close()">Cancel</button>
+	<button class="btn btn-primary btn-sm" onclick="add()" disabled><i class="material-icons">add</i> Add</button>
+</div>
+<style>
+	body {
+		padding: 0.5rem;
+		height: auto;
+		width: 100%;
+		overflow:hidden;
+	}
+
+	.dropdown-menu {
+		position: static;
+		overflow: hidden;
+		max-height: unset;
+	}
+
+	* {
+		transition: none !important
+	}
+</style>
+<script>
+	require("atomos-framework");
+	const {
+		remote
+	} = require("electron");
+	const win = remote.getCurrentWindow();
+	window.onload = function () {
+		win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+	};
+
+	function add() {
+		win.getParentWindow().webContents.send("addASItem", {
+			name: document.getElementById("name").value,
+			app: document.getElementById("app").value,
+			args: JSON.stringify(document.getElementById("args").value),
+			service: document.getElementById("service").checked,
+		});
+		window.close();
+	}
+</script>

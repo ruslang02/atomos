@@ -1,7 +1,7 @@
 {
   "name": "Terminal",
   "shortName": "Terminal",
-  "icon": "/atomos/icons/Console.png",
+  "icon": "$SYSTEM_ROOT/icons/Console.png",
   "description": "Gain low-level access to the system",
   "width": 450,
   "height": 250

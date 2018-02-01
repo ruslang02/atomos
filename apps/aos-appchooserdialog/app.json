@@ -1,7 +1,7 @@
 {
   "name": "Choose application to open file with...",
   "shortName": "File Associator",
-  "icon": "/atomos/icons/Ask Question.png",
+  "icon": "$SYSTEM_ROOT/icons/Ask Question.png",
   "description": "Your file is opened with the right app",
   "width": 450,
   "height": 350,

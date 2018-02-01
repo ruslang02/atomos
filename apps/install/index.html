@@ -1,5 +1,5 @@
 <main id="main" class="btn-light">
-	<div class="text-center"><img src="/atomos/icons/Product.png"/></div>
+	<div class="text-center"><img data-icon="Product"/></div>
 	<p class="lead">
 		Drag-drop your app or click to choose.
 	</p>
@@ -14,7 +14,7 @@
 	<pre id="process" class="mt-3 mb-0">Initializing installation...</pre>
 </main>
 <main id="installed" class="p-4">
-	<div><img src="/atomos/icons/Thumbs Up.png"></div>
+	<div><img data-icon="Thumbs Up"></div>
 	<p class="lead my-2">
 		App installed!
 	</p>
@@ -166,8 +166,8 @@
 			if (path.extname(fPath) === ".wapp") InstallApp(fPath)
 		});
 		$("#main").click(function () {
-			window.new("aos-cabinet", {
-				action: "ofd"
+			window.new("aos-files", {
+				action: "open"
 			}, {
 				modal: true,
 				parent: win

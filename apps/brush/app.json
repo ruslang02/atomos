@@ -2,7 +2,7 @@
   "name": "Brush - Photo Editor",
   "shortName": "Brush",
   "description": "A crop/invert/rotate image editor",
-  "icon": "/atomos/icons/Brush.png",
+  "icon": "$SYSTEM_ROOT/icons/Brush.png",
   "width": 600,
   "height": 500,
   "minWidth": 550,

@@ -1,0 +1,64 @@
+<script>
+	$("tray").append("<button name=\"notification\" style='color: #6610f2; font-size:16px !important;' class='material-icons p-2'>message</button>");
+	let notificationsMenu;
+	notificationsMenu = new BrowserWindow({
+		width: 400,
+		height: 260,
+		type: "notification",
+		frame: false,
+		closable: false,
+		maximizable: false,
+		showOnLoad: false,
+		minimizable: false,
+		skipTaskbar: true,
+		movable: false,
+		resizable: false,
+		x: x + width - 400,
+		y: y + height - 260 - 33,
+		show: false,
+		alwaysOnTop: true,
+	});
+	notificationsMenu.loadURL("file://" + app.getAppPath() + "/sys/notification/index.html");
+	$("[name=notification]").on("click", function () {
+		if (notificationsMenu.isVisible()) {
+			notificationsMenu.hide();
+			wc.send("deactivate-tray", {
+				win: 'notification'
+			})
+		} else {
+			notificationsMenu.show();
+			notificationsMenu.setAlwaysOnTop(true);
+			wc.send("activate-tray", {
+				win: 'notification'
+			})
+		}
+	});
+	notificationsMenu.on('blur', function () {
+		wc.send("deactivate-tray", {
+			win: 'notification'
+		});
+		notificationsMenu.hide()
+	});
+	$("[name=notification]").on("contextmenu", function (e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
+		Menu.buildFromTemplate([{
+			label: "Mute all notifications",
+			click() {
+
+			}
+		}, {
+			label: "Configure notifications...",
+			click() {
+
+			}
+		}, {type: 'separator'}, {
+			label: "Taskbar Settings",
+			click() {
+				window.new("control", {
+					section: "Taskbar"
+				})
+			}
+		}]).popup();
+	});
+</script>

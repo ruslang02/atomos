@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "shortName": "Cabinet",
   "description": "Your own file manager",
-  "icon": "/atomos/icons/Cabiner.png",
+  "icon": "$SYSTEM_ROOT/icons/Cabiner.png",
   "width": 550,
   "height": 350,
   "minHeight": 330,

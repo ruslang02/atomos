@@ -1,35 +1,54 @@
 <header>
-  <img src="/atomos/icons/Hang.png" />
-  <p>Application "<application></application>" has hung. It probably entered an infinite loop or executed an illegal operation.</p>
+	<img data-icon="Hang"/>
+	<p>Application "
+		<application></application>
+		" has hung. It probably entered an infinite loop or executed an illegal operation.
+	</p>
 </header>
-<footer><button class="btn btn-secondary btn-sm mr-2"><i class="material-icons">alarm</i> Wait</button><button class="btn btn-danger btn-sm"><i class="material-icons">eject</i> Terminate app</button></footer>
+<footer class="text-right">
+	<button class="btn btn-secondary btn-sm mr-2"><i class="material-icons">alarm</i> Wait</button>
+	<button class="btn btn-danger btn-sm"><i class="material-icons">eject</i> Terminate app</button>
+</footer>
 
 <script>
-  require('atomos-framework');
-  const {remote} = require("electron");
-  let app = remote.getCurrentWindow();
-  if(!window.arguments["wid"]) app.close();
-  window.onload = function() {
-	  setTimeout(function () {
-		  app.setContentSize(app.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
-	  }, 100);
-    $("application").text(remote.BrowserWindow.fromId(window.arguments["wid"]).getTitle());
-    $(".btn").click(app.close);
-    $(".btn-danger").click(remote.BrowserWindow.fromId(window.arguments["wid"]).destroy);
-  }
+	const args = require('atomos-framework').arguments;
+	const {remote} = require("electron");
+	let app = remote.getCurrentWindow();
+	window.$ = require("jquery");
+	if (!args.wid) app.close();
+	window.onload = function () {
+		$("application").text(remote.BrowserWindow.fromId(args.wid).getTitle());
+		$(".btn-danger").click(function () {
+			remote.BrowserWindow.fromId(args.wid).destroy()
+		});
+		$(".btn").click(function () {
+			app.close()
+		});
+		setTimeout(function () {
+			app.setContentSize(app.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+		}, 100);
+	}
 </script>
 
 <style>
-  body {
-    padding: 0.5rem;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-  header {
-    display:flex;
-  }
-  header img {width:48px;height:48px;}
-  header input {margin:0.5rem;margin-right:0}
-  footer {position:fixed;bottom:0.5rem;right:0.5rem;}
+	body {
+		padding: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	header {
+		display: flex;
+	}
+
+	header img {
+		width: 48px;
+		height: 48px;
+	}
+
+	header input {
+		margin: 0.5rem;
+		margin-right: 0
+	}
 </style>

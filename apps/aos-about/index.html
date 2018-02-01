@@ -1,5 +1,5 @@
 <section>
-	<img src="atom.png" style="width:64px;margin-right: 1em;">
+	<img data-icon="AtomOS" style="width:64px;margin-right: 1em;">
 </section>
 <main style="flex-grow: 2;">
 	<p>This PC runs <b data-name="name"></b></p>
@@ -27,14 +27,20 @@
 <script defer>
 	require('atomos-framework');
 	const fs = require('fs-extra');
-	const win = require("electron").remote.getCurrentWindow();
+	const {
+		remote
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	const win = remote.getCurrentWindow();
 	window.onload = function() {
 		setTimeout(function() {
 			win.setContentSize(win.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
 		}, 100);
 	};
 
-	fs.readJson("/atomos/RELEASE.json", function(err, build) {
+	fs.readJson(app.getAppPath() + "/RELEASE.json", function(err, build) {
 		document.querySelector("[data-name=name]").innerText = build.name;
 		document.querySelector("[data-name=version]").innerText = build.version;
 		document.querySelector("[data-name=codename]").innerText = build.codename;
