@@ -138,7 +138,10 @@
 
 	function InstallationComplete() {
 		location.hash = "installed";
-		if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Installed.");
+		if (win.getParentWindow()) {
+			win.getParentWindow().webContents.send("stdout", "Installed.");
+			window.close();
+		}
 		$(".btn-primary").click(function() {
 			window.new(appDir).then(window.close);
 		})

@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e14bc4a2-4a93-42e1-baf4-f26f2249c863" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/client_secret.json" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/icons/Youtube.png" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/RELEASE.json" afterPath="$PROJECT_DIR$/RELEASE.json" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" afterPath="$PROJECT_DIR$/package-lock.json" />
-      <change beforePath="$PROJECT_DIR$/package.json" afterPath="$PROJECT_DIR$/package.json" />
+      <change beforePath="$PROJECT_DIR$/apps/install/index.html" afterPath="$PROJECT_DIR$/apps/install/index.html" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -49,7 +49,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RELEASE.json" pinned="false" current-in-tab="true">
+      <file leaf-file-name="RELEASE.json" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/RELEASE.json">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="95">
@@ -59,20 +59,40 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sys/startMenu/index.js">
+      <file leaf-file-name="app.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/apps/install/app.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="152">
-              <caret line="8" column="32" lean-forward="false" selection-start-line="8" selection-start-column="32" selection-end-line="8" selection-end-column="32" />
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="app.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/apps/market/app.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/apps/install/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="206">
+              <caret line="131" column="0" lean-forward="true" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/apps/aos-files/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
+            <state relative-caret-position="13357">
               <caret line="850" column="29" lean-forward="false" selection-start-line="850" selection-start-column="29" selection-end-line="850" selection-end-column="29" />
               <folding>
                 <element signature="e#877#2661#0" expanded="false" />
@@ -84,11 +104,26 @@
         </entry>
       </file>
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sys/clockMenu/index.html">
+        <entry file="file://$PROJECT_DIR$/apps/market/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="181">
+              <caret line="16" column="121" lean-forward="false" selection-start-line="16" selection-start-column="121" selection-end-line="16" selection-end-column="121" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="installed.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/apps/market/installed.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-29">
+              <caret line="0" column="25" lean-forward="false" selection-start-line="0" selection-start-column="25" selection-end-line="0" selection-end-column="25" />
+              <folding>
+                <marker date="1517732343447" expanded="true" signature="622:931" ph="..." />
+                <marker date="1517732343447" expanded="true" signature="647:925" ph="..." />
+                <marker date="1517732343447" expanded="false" signature="676:686" ph="..." />
+                <marker date="1517732343447" expanded="true" signature="733:918" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -97,8 +132,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>remote.getCurrentWindow()</find>
-      <find>send(&quot;pipe</find>
       <find>getM</find>
       <find>load</find>
       <find>fullscreenable</find>
@@ -127,6 +160,8 @@
       <find>credentials.installed</find>
       <find>.form-control</find>
       <find>jquery-ui</find>
+      <find>maxi</find>
+      <find>mini</find>
     </findStrings>
     <replaceStrings>
       <replace>skipTaskbar</replace>
@@ -158,7 +193,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/apps/aos-cabinet/createFolder/index.html" />
         <option value="$PROJECT_DIR$/apps/aos-process-hang/index.html" />
         <option value="$PROJECT_DIR$/apps/aos-files/app.json" />
         <option value="$PROJECT_DIR$/apps/aos-cabinet/createFile/index.html" />
@@ -209,6 +243,7 @@
         <option value="$PROJECT_DIR$/apps/youtube/index.html" />
         <option value="$PROJECT_DIR$/lib/atomos.css" />
         <option value="$PROJECT_DIR$/RELEASE.json" />
+        <option value="$PROJECT_DIR$/apps/install/index.html" />
       </list>
     </option>
   </component>
@@ -528,7 +563,7 @@
       <workItem from="1517417934201" duration="6057000" />
       <workItem from="1517499632491" duration="6097000" />
       <workItem from="1517732431192" duration="15011000" />
-      <workItem from="1517753507338" duration="14324000" />
+      <workItem from="1517753507338" duration="14717000" />
     </task>
     <task id="LOCAL-00001" summary="Bug fixes, multi-monitor optimization [125]">
       <created>1515353271822</created>
@@ -607,11 +642,18 @@
       <option name="project" value="LOCAL" />
       <updated>1517770632771</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Corrected package.json file [134]">
+      <created>1517771638565</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1517771638565</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="132544000" />
+    <option name="totallyTimeSpent" value="132937000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -624,10 +666,11 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5029333" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20520833" sideWeight="0.49813333" order="7" side_tool="false" content_ui="tabs" />
@@ -690,7 +733,8 @@
     <MESSAGE value="Prepare for merge [131]" />
     <MESSAGE value="First run optimization, return to official app distribution [132]" />
     <MESSAGE value="Enhancements for fullscreen mode, cleanup, aos-files optimization [133]" />
-    <option name="LAST_COMMIT_MESSAGE" value="Enhancements for fullscreen mode, cleanup, aos-files optimization [133]" />
+    <MESSAGE value="Corrected package.json file [134]" />
+    <option name="LAST_COMMIT_MESSAGE" value="Corrected package.json file [134]" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -699,36 +743,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sys/taskbar/plugins/clock.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1292">
-          <caret line="68" column="5" lean-forward="false" selection-start-line="68" selection-start-column="5" selection-end-line="68" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/apps/aos-cabinet/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2261">
-          <caret line="119" column="40" lean-forward="false" selection-start-line="119" selection-start-column="40" selection-end-line="119" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sys/taskbar/plugins/notifications.html" />
-    <entry file="file://$PROJECT_DIR$/apps/aos-appchooserdialog/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1026">
-          <caret line="54" column="13" lean-forward="false" selection-start-line="54" selection-start-column="13" selection-end-line="54" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/apps/properties/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2128">
-          <caret line="112" column="74" lean-forward="false" selection-start-line="112" selection-start-column="74" selection-end-line="112" selection-end-column="74" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/node-viewerjs/release/index.html" />
     <entry file="file://$PROJECT_DIR$/node_modules/node-viewerjs/release/pdf.js" />
     <entry file="file://$PROJECT_DIR$/node_modules/pdfjs-dist/webpack.js" />
@@ -961,18 +975,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/apps/aos-files/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="850" column="29" lean-forward="false" selection-start-line="850" selection-start-column="29" selection-end-line="850" selection-end-column="29" />
-          <folding>
-            <element signature="e#877#2661#0" expanded="false" />
-            <element signature="e#7082#7238#0" expanded="false" />
-            <element signature="e#19635#21991#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sys/clockMenu/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1034,6 +1036,63 @@
         <state relative-caret-position="95">
           <caret line="5" column="15" lean-forward="false" selection-start-line="5" selection-start-column="15" selection-end-line="5" selection-end-column="15" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/install/app.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/market/app.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/market/installed.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-29">
+          <caret line="0" column="25" lean-forward="false" selection-start-line="0" selection-start-column="25" selection-end-line="0" selection-end-column="25" />
+          <folding>
+            <marker date="1517732343447" expanded="true" signature="622:931" ph="..." />
+            <marker date="1517732343447" expanded="true" signature="647:925" ph="..." />
+            <marker date="1517732343447" expanded="false" signature="676:686" ph="..." />
+            <marker date="1517732343447" expanded="true" signature="733:918" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/market/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="16" column="121" lean-forward="false" selection-start-line="16" selection-start-column="121" selection-end-line="16" selection-end-column="121" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/install/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="206">
+          <caret line="131" column="0" lean-forward="true" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/apps/aos-files/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13357">
+          <caret line="850" column="29" lean-forward="false" selection-start-line="850" selection-start-column="29" selection-end-line="850" selection-end-column="29" />
+          <folding>
+            <element signature="e#877#2661#0" expanded="false" />
+            <element signature="e#7082#7238#0" expanded="false" />
+            <element signature="e#19635#21991#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
