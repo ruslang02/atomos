@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e14bc4a2-4a93-42e1-baf4-f26f2249c863" name="Default" comment="First run optimization, return to official app distribution [132]">
+    <list default="true" id="e14bc4a2-4a93-42e1-baf4-f26f2249c863" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/RELEASE.json" afterPath="$PROJECT_DIR$/RELEASE.json" />
-      <change beforePath="$PROJECT_DIR$/apps/aos-files/index.html" afterPath="$PROJECT_DIR$/apps/aos-files/index.html" />
-      <change beforePath="$PROJECT_DIR$/lib/app.css" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/lib/atomos.css" afterPath="$PROJECT_DIR$/lib/atomos.css" />
-      <change beforePath="$PROJECT_DIR$/lib/base.css" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/lib/bootstrap.css" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/lib/bootstrap.min.css" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/lib/bootstrap.min.js" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/lib/jquery-ui.min.css" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/lib/jquery-ui.min.js" afterPath="" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" afterPath="$PROJECT_DIR$/package-lock.json" />
       <change beforePath="$PROJECT_DIR$/package.json" afterPath="$PROJECT_DIR$/package.json" />
-      <change beforePath="$PROJECT_DIR$/sys/startMenu/index.js" afterPath="$PROJECT_DIR$/sys/startMenu/index.js" />
-      <change beforePath="$PROJECT_DIR$/sys/taskbar/index.js" afterPath="$PROJECT_DIR$/sys/taskbar/index.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -43,8 +32,8 @@
       <file leaf-file-name="package.json" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="437">
-              <caret line="25" column="23" lean-forward="false" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
+            <state relative-caret-position="456">
+              <caret line="24" column="23" lean-forward="false" selection-start-line="24" selection-start-column="23" selection-end-line="24" selection-end-column="23" />
               <folding />
             </state>
           </provider>
@@ -54,7 +43,7 @@
         <entry file="file://$PROJECT_DIR$/lib/atomos.css">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="247">
-              <caret line="15" column="25" lean-forward="true" selection-start-line="15" selection-start-column="25" selection-end-line="15" selection-end-column="25" />
+              <caret line="15" column="25" lean-forward="false" selection-start-line="15" selection-start-column="25" selection-end-line="15" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -218,8 +207,8 @@
         <option value="$PROJECT_DIR$/apps/aos-files/index.html" />
         <option value="$PROJECT_DIR$/apps/youtube/app.json" />
         <option value="$PROJECT_DIR$/apps/youtube/index.html" />
-        <option value="$PROJECT_DIR$/RELEASE.json" />
         <option value="$PROJECT_DIR$/lib/atomos.css" />
+        <option value="$PROJECT_DIR$/RELEASE.json" />
       </list>
     </option>
   </component>
@@ -241,8 +230,8 @@
     <handled-path value="$PROJECT_DIR$/node_modules" />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-2350" />
-    <option name="y" value="-8" />
+    <option name="x" value="465" />
+    <option name="y" value="-14" />
     <option name="width" value="1932" />
     <option name="height" value="1085" />
   </component>
@@ -539,7 +528,7 @@
       <workItem from="1517417934201" duration="6057000" />
       <workItem from="1517499632491" duration="6097000" />
       <workItem from="1517732431192" duration="15011000" />
-      <workItem from="1517753507338" duration="13297000" />
+      <workItem from="1517753507338" duration="14324000" />
     </task>
     <task id="LOCAL-00001" summary="Bug fixes, multi-monitor optimization [125]">
       <created>1515353271822</created>
@@ -611,11 +600,18 @@
       <option name="project" value="LOCAL" />
       <updated>1517735916350</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Enhancements for fullscreen mode, cleanup, aos-files optimization [133]">
+      <created>1517770632771</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1517770632771</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="131517000" />
+    <option name="totallyTimeSpent" value="132544000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -627,12 +623,11 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1928" y="-6" width="1936" height="1096" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5029333" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35416666" sideWeight="0.49706668" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20520833" sideWeight="0.49813333" order="7" side_tool="false" content_ui="tabs" />
@@ -694,7 +689,8 @@
     <MESSAGE value="UI enhancements, stability improvements, Notification Center [130]" />
     <MESSAGE value="Prepare for merge [131]" />
     <MESSAGE value="First run optimization, return to official app distribution [132]" />
-    <option name="LAST_COMMIT_MESSAGE" value="First run optimization, return to official app distribution [132]" />
+    <MESSAGE value="Enhancements for fullscreen mode, cleanup, aos-files optimization [133]" />
+    <option name="LAST_COMMIT_MESSAGE" value="Enhancements for fullscreen mode, cleanup, aos-files optimization [133]" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -957,14 +953,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="437">
-          <caret line="25" column="23" lean-forward="false" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sys/startMenu/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="152">
@@ -1028,7 +1016,15 @@
     <entry file="file://$PROJECT_DIR$/lib/atomos.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="247">
-          <caret line="15" column="25" lean-forward="true" selection-start-line="15" selection-start-column="25" selection-end-line="15" selection-end-column="25" />
+          <caret line="15" column="25" lean-forward="false" selection-start-line="15" selection-start-column="25" selection-end-line="15" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="456">
+          <caret line="24" column="23" lean-forward="false" selection-start-line="24" selection-start-column="23" selection-end-line="24" selection-end-column="23" />
           <folding />
         </state>
       </provider>
