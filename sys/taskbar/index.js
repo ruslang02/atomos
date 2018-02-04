@@ -13,10 +13,5 @@ function update() {
 		})
 	});
 }
-fs.watch(app.getPath("appData") + "/wallpaper.jpg", updWall);
-function updWall() {
-	$("body").append("<style>body::before {background-image: url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime() + ")}</style>");
-}
-updWall();
 update();
 ipcRenderer.on("update", update);

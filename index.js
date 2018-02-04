@@ -76,8 +76,8 @@ app.on('ready', function () {
 	taskbar.webContents.on('did-finish-load', function () {
 		fs.readFile(app.getPath("appData") + "/autostart.json", function (err, autostart) {
 			if(err || !autostart) {
-				console.error(err);
-				return;
+				autostart = "[]";
+				fs.writeFileSync(app.getPath("appData") + "/autostart.json", autostart)
 			}
 			autostart = JSON.parse(autostart);
 			autostart.forEach(function (item) {

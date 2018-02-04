@@ -90,8 +90,8 @@
 		});
 		fs.readJson(app.getPath("appData") + "/associations.json", "utf8")
 				.then(function (data) {
-					if (data.find(o => o.ext === path.extname(args.path).substring(1).toLowerCase()))
-						$("[data=fapp]").text(data.find(o => o.ext === path.extname(args.path).substring(1).toLowerCase())["app"]);
+					if (data.find(o => o.extension === path.extname(args.path).substring(1).toLowerCase()))
+						$("[data=fapp]").text(data.find(o => o.extension === path.extname(args.path).substring(1).toLowerCase())["app"]);
 				})
 	};
 

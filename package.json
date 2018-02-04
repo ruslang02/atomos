@@ -14,14 +14,14 @@
   "author": "Ruslan",
   "license": "MPL-2.0",
   "dependencies": {
-    "atomos-framework": "^0.5.8",
-    "blob-to-buffer": "^1.2.6",
-    "bootstrap": "^4.0.0-beta.3",
+    "atomos-framework": "^0.5.10",
+    "blob-to-buffer": "^1.2.7",
+    "bootstrap": "^4.0.0",
     "cropperjs": "^1.2.2",
     "electron-window-state-manager": "^0.3.2",
     "extract-zip": "^1.6.6",
     "fs-extra": "^5.0.0",
-    "jquery": "^3.2.1",
+    "jquery": "^3.3.1",
     "jquery-mousewheel": "^3.1.13",
     "jquery-ui-npm": "^1.12.0",
     "jstoxml": "^1.1.3",
@@ -29,7 +29,8 @@
     "musicmetadata": "^2.0.5",
     "popper.js": "^1.13.0",
     "rsync": "^0.6.1",
-    "tar": "^4.2.0",
+    "systeminformation": "^3.33.18",
+    "tar": "^4.3.2",
     "xml2js": "^0.4.19"
   }
 }

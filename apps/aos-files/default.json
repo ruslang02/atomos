@@ -1,0 +1,53 @@
+{
+	"foldersFirst": true,
+	"showHidden": true,
+	"sorting": "A-Z",
+	"iconSize": "list",
+	"accessList": [
+		{
+			"type": "header",
+			"name": "Favorites"
+		},
+		{
+			"type": "item",
+			"name": "Home",
+			"icon": "$SYSTEM_ROOT/icons/folders-small/User Folder.png",
+			"location": "$HOME_DIR/"
+		},
+		{
+			"type": "item",
+			"name": "Root",
+			"icon": "$SYSTEM_ROOT/icons/folders-small/Dossier.png",
+			"location": "/"
+		},
+		{
+			"type": "header",
+			"name": "Libraries"
+		},
+		{
+			"type": "item",
+			"name": "Documents",
+			"icon": "$SYSTEM_ROOT/icons/folders-small/Documents Folder.png",
+			"location": "$HOME_DIR/Documents/"
+		},
+		{
+			"type": "item",
+			"name": "Music",
+			"icon": "$SYSTEM_ROOT/icons/folders-small/Music Folder.png",
+			"location": "$HOME_DIR/Music/"
+		},
+		{
+			"type": "item",
+			"name": "Pictures",
+			"icon": "$SYSTEM_ROOT/icons/folders-small/Pictures Folder.png",
+			"location": "$HOME_DIR/Pictures/"
+		},
+		{
+			"type": "item",
+			"name": "Videos",
+			"icon": "$SYSTEM_ROOT/icons/folders-small/Movies Folder.png",
+			"location": "$HOME_DIR/Videos/"
+		}
+	],
+	"fillMode": "fill"
+}

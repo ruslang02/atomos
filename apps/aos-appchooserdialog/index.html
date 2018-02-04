@@ -56,17 +56,17 @@
 		}
 		let recom = "";
 		assocs.forEach(function (assoc) {
-			if (assoc.mime === path.extname(args.path).substring(1)) recom = assoc.app;
+			if (assoc.extension === path.extname(args.path).substring(1)) recom = assoc.app;
 		});
 
 
 		listApps();
 		$("#ext").text(path.extname(args.path).substring(1));
 		$(".btn-primary").click(function () {
-			let fass = assocs.find(o => o.ext === $("#ext").text());
+			let fass = assocs.find(o => o.extension === $("#ext").text());
 			if (fass) assocs[assocs.indexOf(fass)].app = $("select").val();
 			else assocs.push({
-				ext: $("#ext").text(),
+				extension: $("#ext").text(),
 				app: $("select").val()
 			});
 
