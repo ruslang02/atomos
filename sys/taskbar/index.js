@@ -15,3 +15,18 @@ function update() {
 }
 update();
 ipcRenderer.on("update", update);
+ipcRenderer.on("enter-full-screen", function() {
+	win.setPosition(x, y + height - 2);
+	$(window).mousemove(function() {
+		win.setPosition(x, y + height - 32);
+	});
+	$("body").mouseleave(function() {
+		win.setPosition(x, y + height - 2);
+		win.show();
+	})
+});
+ipcRenderer.on("leave-full-screen", function() {
+	win.setPosition(x, y + height - 32);
+	$(window).off("mousemove");
+	$("body").off("mouseleave");
+});

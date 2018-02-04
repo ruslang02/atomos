@@ -5,11 +5,12 @@ $("body").on("click", "a.btn", function () {
 	require('electron').remote.getCurrentWindow().hide();
 });
 listApps();
-fs.watch(app.getAppPath() + "/apps",listApps);
+fs.watch(app.getAppPath() + "/apps", function () {
+	$("#applications *").remove();
+	listApps();
+});
 
-function listApps() {
-	let path = app.getAppPath() + "/apps";
-	$("#applications").html("");
+function listApps(path = app.getAppPath() + "/apps") {
 	fs.readdir(path, function (err, dir) {
 		dir.forEach(function (item) {
 			if (item.toLowerCase() === "app.json") {
