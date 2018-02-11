@@ -1,8 +1,8 @@
 {
+  "title": "Typewriter",
   "name": "Typewriter",
-  "shortName": "Typewriter",
   "description": "Make a note or edit a file easily",
-  "icon": "$SYSTEM_ROOT/icons/Typewriter.png",
+  "icon": "$APP_ROOT/logo.png",
   "width": 450,
   "height": 350,
   "minHeight": 300,

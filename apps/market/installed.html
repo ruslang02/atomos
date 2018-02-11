@@ -21,13 +21,15 @@
 					apps.forEach(function (prog) {
 						fs.readJson(app.getAppPath() + "/apps/" + prog + "/app.json")
 								.then(function (info) {
-									info.icon = info.icon.replace("$SYSTEM_ROOT", app.getAppPath());
+									info.icon = info.icon
+											.replace("$SYSTEM_ROOT", app.getAppPath())
+											.replace("$APP_ROOT", app.getAppPath() + "/apps/" + prog);
 									$("apps").append(`
 <div class="card mb-2">
 <div class="media py-2">
   <img class="mx-2" style="width:48px" src="${info.icon}">
   <div class="media-body">
-    <h5 class="mt-0 mb-1">${info.shortName}</h5>
+    <h5 class="mt-0 mb-1">${info.name}</h5>
     ${info.description}
     <button class="btn btn-sm btn-danger material-icons" onclick="uninstall('${prog}')">close</button>
   </div>

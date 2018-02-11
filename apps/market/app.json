@@ -1,7 +1,7 @@
 {
-	"name": "Application Market",
-	"shortName": "Market",
-	"icon": "$SYSTEM_ROOT/icons/Market.png",
+	"title": "Application Market",
+	"name": "Market",
+	"icon": "$APP_ROOT/logo.png",
 	"description": "Install applications created by other developers",
 	"width": 500,
 	"height": 450

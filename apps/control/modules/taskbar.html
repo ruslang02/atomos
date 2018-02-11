@@ -1,0 +1,86 @@
+<section data-location="Control Center / Taskbar" class="flex-column p-2">
+	<p class="lead mb-3 mt-1">Item Order</p>
+	<div class="dropdown-menu mb-2"></div>
+	<div class="d-flex" style="flex-shrink:0">
+		<button class="btn btn-success btn-sm"><i class="material-icons">add</i> Add Widget</button>
+		<div class="spacer" style="flex-grow:2"></div>
+	</div>
+	<div class="spacer" style="flex-grow:2"></div>
+	<div class="d-flex mt-2" style="flex-shrink:0">
+		<b class="text-danger" style="display:none;line-height: 30px;">Restart is required to apply changes</b>
+		<div class="spacer" style="flex-grow:2"></div>
+		<button class="btn btn-primary btn-sm">Apply and Restart</button>
+	</div>
+</section>
+<style>
+	section[data-location="Control Center / Taskbar"] .dropdown-menu {
+		position: static;
+		display: inline-block;
+		z-index: 0;
+	}
+</style>
+<script>
+	AddSection({
+		title: "Control Center / Taskbar",
+		icon: app.getAppPath() + "/icons/Taskbar.png"
+	});
+
+
+	let taskbarData;
+	fs.readJson(app.getPath("appData") + "/taskbar.json")
+			.then(function (data) {
+				taskbarData = data;
+				data.order.forEach(function (element) {
+					$('section[data-location="Control Center / Taskbar"] .dropdown-menu').append("<div class='dropdown-item' id='" + element + "'>" + element[0].toUpperCase() + element.substring(1).split(/(?=[A-Z])/).join(" ") + "</div>")
+				});
+				$('section[data-location="Control Center / Taskbar"] .dropdown-menu').sortable({
+					items: ".dropdown-item"
+				});
+				$("section[data-location=\"Control Center / Taskbar\"] .dropdown-item").on("contextmenu", function (e) {
+					e.preventDefault();
+					let that = this;
+					remote.Menu.buildFromTemplate([{
+						label: "Remove",
+						click() {
+							$(that).remove();
+						}
+					}]).popup()
+				});
+				$('section[data-location="Control Center / Taskbar"] .btn-primary').click(function () {
+					let arr = $("section[data-location=\"Control Center / Taskbar\"] .dropdown-item").toArray();
+					arr.forEach(function (item, index) {
+						arr[index] = item.innerText.substring(0, 1).toLowerCase() + item.innerText.substring(1).split(" ").join("");
+					});
+					fs.writeJson(app.getPath("appData") + "/taskbar.json", {order: arr})
+							.then(function () {
+								remote.BrowserWindow.fromId(2).reload();
+
+							})
+							.catch(console.error)
+				});
+				$('section[data-location="Control Center / Taskbar"] .btn-success').click(function () {
+					let NewWidget = new BrowserWindow({
+						resizable: false,
+						maximizable: false,
+						minimizable: false,
+						width: 300,
+						height: 200,
+						show: true,
+						modal: true,
+						parent: win,
+						title: "New widget",
+						icon: "file:///" + app.getAppPath() + "/icons/Add.png"
+					});
+					NewWidget.setMenu(null);
+					NewWidget.loadURL("file:///" + __dirname + "/newWidget.html");
+					fs.writeJson(app.getPath("appData") + "/taskbar.json")
+							.then(function () {
+								remote.BrowserWindow.fromId(2).webContents.send("update");
+
+							})
+				});
+			})
+	ipcRenderer.on("addWidget", function (e, name) {
+		$("section[data-location=\"Control Center / Taskbar\"] .dropdown-menu").append("<div class='dropdown-item'>" + name.name + "</div>")
+	});
+</script>

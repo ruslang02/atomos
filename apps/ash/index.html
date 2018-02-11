@@ -1,14 +1,3 @@
-<kbd>
-	<div class="text-center">
-		<br>
-		<br>
-		<br>
-		<h3>atomOS Terminal</h3>The first next-gen web terminal.
-	</div>
-</kbd>
-<cwd><input title type="text"></cwd>
-<cmd><input title type="text"></cmd>
-<suggestions></suggestions>
 <script>
 	const args = require('atomos-framework').arguments;
 	const fs = require('fs-extra');
@@ -20,83 +9,87 @@
 		app
 	} = remote;
 	window.$ = require('jquery');
-	let commands = [];
-	let $cmd = $("cmd input");
-	let $cwd = $("cwd input");
-	let $kbd = $("kbd");
-	$cmd
-			.on("input", autocomplete)
-			.on("keydown", function (e) {
-				if (event.keyCode === 13) {
-					execute();
-					$(this).val("")
-				}
-			});
-	$cwd.val(app.getPath("home"));
-	if (args.cwd) $cwd.val(args.cwd);
-	if (args.path) {
-		if (fs.lstatSync(args.path).isDirectory())
-			$cwd.val(args.path);
-		else {
-			$cmd.val(args.path);
-			execute();
-			$cmd.val("")
+	let elements = {};
+
+	fs.readdir(app.getAppPath() + "/apps", function (err, files) {
+		render();
+		files.forEach(function (file) {
+			fs.stat(app.getAppPath() + "/apps/" + file, function (err, stat) {
+				if (stat.isDirectory())
+					elements.dataset.push(file);
+			})
+		});
+
+		if (args.path) {
+			if (fs.lstatSync(args.path).isDirectory())
+				elements.cwd.val(args.path);
+			else {
+				elements.command.val(args.path);
+				execute();
+			}
+		} else {
+			addMessage("Welcome to AtomOS Terminal!\nThis is not a real TTY so we recommend using an external terminal emulator or switching to TTY using Ctrl-Alt-F1.")
 		}
+	});
+
+	function render() {
+		elements.commands = $("<kbd></kbd>");
+		elements.cwd = $("<input />", {
+			type: "text",
+			value: app.getPath("home") || args.cwd
+		});
+		elements.cwdSection = $("<div></div>", {
+			html: elements.cwd,
+			id: "cwd"
+		});
+		elements.command = $("<input />", {
+			type: "text",
+			keydown: function (e) {
+				if (e.keyCode === 13) execute();
+			},
+			list: "commandsAvailable"
+		});
+		elements.commandSection = $("<div></div>", {
+			html: elements.command,
+			id: "command"
+		});
+		elements.dataset = $("<datalist></datalist>", {
+			id: "commandsAvailable"
+		});
+
+		elements.commands.appendTo("body");
+		elements.cwdSection.appendTo("body");
+		elements.commandSection.appendTo("body");
+		elements.dataset.appendTo("body");
 	}
 
-	$("body").on('click', 'suggestions button', function () {
-		$("input").val($(this).text());
-		autocomplete();
-	}).on("click", "kbd .expander button", function () {
+	$("body").on("click", "kbd .expander button", function () {
 		if ($(this).parent().hasClass("show"))
 			$(this).text("Expand output").parent().removeClass("show");
 		else $(this).text("Collapse output").parent().addClass("show");
 	});
-	fs.readdir(app.getAppPath() + "/apps", function (err, files) {
-		files.forEach(function (file) {
-			fs.stat(app.getAppPath() + "/apps/" + file, function (err, stat) {
-				if (stat.isDirectory()) commands.push(file);
-			})
-		})
-	});
-	function autocomplete() {
-		$("suggestions").html("");
-		let value = $("cmd input").val();
-		let sugCount = 0;
-		commands.forEach(function (sug) {
-			if (sug.indexOf(value) !== -1 && value !== sug && value.trim() !== "") {
-				sug = sug.replace(value, "<b>" + value + "</b>");
-				if (sugCount !== 3) {
-					$("suggestions").append("<button>" + sug + "</button>");
-					sugCount++
-				} else return;
-			}
-			if (value === sug) $("suggestions").html("");
-
-		})
-	}
 
 	function addMessage(text) {
-		$("kbd > .text-center").remove();
-		if (text.length > 1000) {
+		if (text.length > 1000)
 			text = "<button>Expand output</button>" + text;
-		}
 		text = text.replace(/\n/gi, "<br>");
-		$kbd.append("<div " + (text.length > 1000 ? "class='expander'" : "") +
-				">" + text + "</div>");
-		$kbd[0].scrollTop = $kbd[0].scrollHeight;
+		elements.commands.append($("<div></div>", {
+			class: (text.length > 1000 ? "expander" : ""),
+			html: text
+		}));
+		elements.commands[0].scrollTop = elements.commands[0].scrollHeight;
 		return text;
 	}
 
 	function execute() {
-		let command = $("cmd input").val();
-		$kbd.append("<hr />");
+		let command = elements.command.val();
+		elements.commands.append("<hr />");
 		addMessage(" > " + command);
 		fs.access(app.getAppPath() + "/apps/" + command.substring(0, (command.indexOf(" ") !== -1 ?
 				command.indexOf(" ") : Infinity)).trim(), function (err) {
 			if (err) {
 				require('child_process').exec(command, {
-					cwd: $("cwd input").val().trim(),
+					cwd: elements.cwd.val().trim(),
 					shell: "/bin/bash"
 				}, function (err, stdout, stderr) {
 					if (err) addMessage("<error>" + err + "</error>");
@@ -108,7 +101,7 @@
 					window.new(command.substring(0, (command.indexOf(" ") !== -1 ? command.indexOf(
 							" ") : Infinity)).trim(), {
 						command: command.substring(command.indexOf(" ")).trim(),
-						cwd: $("cwd input").val().trim(),
+						cwd: elements.cwd.val().trim(),
 						title: "Authentication is needed to run command as administrator",
 						win: remote.getCurrentWindow().id
 					}, {
@@ -139,41 +132,22 @@
 	kbd {
 		display: block;
 		flex-grow: 2;
-		border-radius: 0;
+		border-radius: 0 !important;
 		border: 0;
 		overflow: auto;
+		user-select: initial !important;
 	}
 
 	hr {
-		border-color: grey
+		border-color: lightgrey !important;
+		margin:0.5rem 0 !important;
 	}
+	hr:first-child {display:none}
 
 	error {
 		color: orangered;
 	}
 
-	suggestions {
-		position: fixed;
-		bottom: 20px;
-		width: calc(100% - 10px);
-		display: flex;
-		flex-direction: column;
-		background: #394047;
-		margin: 5px;
-		border: 1px solid #111316;
-	}
-
-	suggestions:empty {
-		display: none;
-	}
-
-	suggestions button {
-		background: none;
-		text-align: left;
-		border: 0;
-		color: white;
-		padding: 3px 10px;
-	}
 
 	html body button:hover {
 		background: rgba(255, 255, 255, 0.3);
@@ -189,26 +163,6 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-	}
-
-	cwd {
-		background: #394047;
-		border-style: solid;
-		border-color: #111316;
-		border-width: 1px 0;
-		font-size: small;
-		color: lightgrey;
-		padding: 1px 5px;
-	}
-
-	cmd {
-		background: #212529;
-		color: white;
-		font-family: monospace;
-		padding: 0 5px;
-		height: 20px;
-		display: flex;
-		flex-shrink: 0;
 	}
 
 	.expander {
@@ -234,6 +188,7 @@
 
 	kbd * {
 		word-break: break-all;
+		user-select: initial !important;
 	}
 
 	.expander button::after {
@@ -243,7 +198,7 @@
 		margin: -4px 0;
 	}
 
-	cwd::after {
+	#cwd::after {
 		content: "working directory";
 		color: darkgrey;
 		font-size: smaller;
@@ -253,13 +208,13 @@
 		margin-right: 5px;
 	}
 
-	cmd::before {
+	#command::before {
 		content: ">";
 		padding: 0 5px;
 	}
 
-	cmd input,
-	cwd input {
+	#cwd input,
+	#command input {
 		background: none;
 		border: none;
 		outline: 0;
@@ -267,5 +222,25 @@
 		flex-grow: 2;
 		font-size: smaller;
 		width: 100%;
+	}
+
+	#cwd {
+		background: #394047;
+		border-style: solid;
+		border-color: #111316;
+		border-width: 1px 0;
+		font-size: small;
+		color: lightgrey;
+		padding: 1px 5px;
+	}
+
+	#command {
+		background: #212529;
+		color: white;
+		font-family: monospace;
+		padding: 0 5px;
+		height: 20px;
+		display: flex;
+		flex-shrink: 0;
 	}
 </style>

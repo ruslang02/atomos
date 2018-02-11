@@ -11,6 +11,7 @@ global.wsk = require('electron-window-state-manager');
 global.clipboards = {
 	file: []
 };
+global.gui = {};
 
 if(fs.existsSync("/etc/os-release"))
 	if(fs.readFileSync("/etc/os-release").indexOf("atomos") !== -1)
@@ -57,17 +58,23 @@ app.on('ready', function () {
 		ev.preventDefault()
 	});
 	win.show();
+	global.gui.desktop = win.id;
 	win.setSize(width, height);
 	taskbar = new BrowserWindow({
 		x: x,
 		y: y + height - 32,
 		width: width,
 		height: 32,
+		minHeight: 32,
+		minWidth: width,
+		maxWidth: width,
+		maxHeight: 96,
+		useContentSize: false,
 		frame: false,
+		resizable: false,
 		closable: false,
 		minimizable: false,
 		maximizable: false,
-		resizable: false,
 		movable: false,
 		skipTaskbar: true,
 		alwaysOnTop: true,
@@ -99,6 +106,7 @@ app.on('ready', function () {
 	});
 	taskbar.loadURL("file://" + __dirname + "/sys/taskbar/index.html");
 	taskbar.show();
+	global.gui.taskbar = taskbar.id;
 	taskbar.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});

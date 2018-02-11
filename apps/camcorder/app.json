@@ -1,6 +1,6 @@
 {
-  "name": "Camcorder Screen Capturer",
-  "shortName": "Camcorder",
+  "title": "Camcorder Screen Capturer",
+  "name": "Camcorder",
   "description": "Take a screenshot of your own shining system",
-  "icon": "$SYSTEM_ROOT/icons/Camcorder.png"
+  "icon": "$APP_ROOT/logo.png"
 }

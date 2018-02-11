@@ -1,6 +1,6 @@
 {
-  "name": "Create a new file",
-  "shortName": "Cabinet File Creator",
+  "title": "Create a new file",
+  "name": "Cabinet File Creator",
   "description": "A simple window for creating new files.",
   "maximizable": false,
   "minimizable": false,

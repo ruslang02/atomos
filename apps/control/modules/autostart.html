@@ -1,0 +1,176 @@
+<section data-location="Control Center / AutoStart" class="flex-column p-2">
+	<p class="lead mb-2 mx-2">View your Autostart list</p>
+	<div class="dropdown-menu mb-2 d-inline-block" id="autoStart"
+			 style="position:static;flex-grow:2;overflow:auto;"></div>
+	<div class="d-inline-flex" style="flex-shrink:0">
+		<button class="btn btn-success btn-sm mr-2" id="ASNew"><i class="material-icons">add</i> Add Item</button>
+		<button class="btn btn-warning btn-sm mr-2 material-icons" id="ASEdit" disabled>mode_edit</button>
+		<button class="btn btn-danger btn-sm mr-2 material-icons" id="ASRemove" disabled>delete</button>
+	</div>
+	<div class="modal fade" id="ASModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+			 aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">New AutoStart Item</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group m-0">
+							<label for="autostart-name" class="col-form-label">Name: </label>
+							<input type="text" class="form-control form-control-sm" id="autostart-name">
+						</div>
+						<div class="form-group my-1">
+							<label for="application-name" class="col-form-label">Application: </label>
+							<select id="application-name" class="custom-select form-control-sm px-2 py-1"></select>
+						</div>
+						<div class="form-group m-0">
+							<label for="arguments" class="col-form-label">Additional arguments (JSON string): </label>
+							<input id="arguments" type="text" class="form-control form-control-sm"/>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary btn-sm"><i class="material-icons">add</i> Append Item</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<script>
+	AddSection({
+		title: "Control Center / AutoStart",
+		icon: app.getAppPath() + "/icons/Run Command.png"
+	});
+
+	fs.watch(app.getPath("appData") + "/autostart.json", listASitems);
+
+	$('#ASNew').click(function () {
+		$("#ASModal .modal-title").text("New AutoStart Item");
+		$("#ASModal .btn-primary").html(`<i class="material-icons">add</i> Append Item`);
+		$("#ASModal input").val("");
+		$("#ASModal select").val("");
+		$("#ASModal").modal('show');
+	});
+	$('#ASRemove').click(function () {
+		$("#autoStart .ui-selected").each(function() {
+			var $this = this;
+			ASitems = ASitems.filter(function (o) {
+				return o.name !== $this.innerText.trim()
+			});
+		});
+		fs.writeJson(app.getPath("appData") + "/autostart.json", ASitems).then(function () {})
+
+	});
+	$('#ASEdit').click(function () {
+		$("#ASModal .modal-title").text("Edit AutoStart Item");
+		$("#ASModal .btn-primary").html(`<i class="material-icons">edit</i> Edit Item`);
+		let selected = ASitems.find(function (o) {
+			return o.name === $("#autoStart .ui-selected").text().trim()
+		});
+		$("#autostart-name").val(selected.name);
+		$("#application-name").val(selected.app);
+		$("#arguments").val(JSON.stringify(selected.args));
+		$("#ASModal").modal('show');
+	});
+	$("#ASModal .btn-primary").click(function () {
+		let selected;
+		let $this = $(this);
+		this.disabled = true;
+		$this.addClass("progress-bar-striped progress-bar-animated").text("Applying changes...");
+		if ($("#ASModal .modal-title:contains('Edit')").length) {
+			selected = ASitems.find(function (o) {
+				return o.name === $("#autoStart .ui-selected").text().trim()
+			});
+			selected.name = $("#autostart-name").val();
+			selected.app = $("#application-name").val();
+			selected.args = JSON.parse($("#arguments").val());
+		} else if ($("#ASModal .modal-title:contains('New')").length) {
+			selected = {};
+			selected.name = $("#autostart-name").val();
+			selected.app = $("#application-name").val();
+			selected.args = JSON.parse($("#arguments").val());
+			ASitems.push(selected);
+		}
+		fs.writeJson(app.getPath("appData") + "/autostart.json", ASitems).then(function () {
+			$("#ASModal").modal('hide');
+			$this[0].disabled = false;
+			$this.removeClass("progress-bar-striped progress-bar-animated").html(`<i class="material-icons">edit</i> Edit Item`);
+		})
+	});
+	listASitems();
+	listApps();
+	function listASitems() {
+		fs.readJson(app.getPath("appData") + "/autostart.json").then(function (items) {
+			window.ASitems = items;
+			$("#autoStart").html("");
+			items.forEach(function (item) {
+				$("#autoStart").append("<div class='dropdown-item'>" + item.name + "</div>");
+			});
+			$("#autoStart").selectable({
+				selected: function () {
+					$("[data-location=\"Control Center / AutoStart\"] .btn-warning")[0].disabled = !($("#autoStart .ui-selected").length === 1);
+					$("[data-location=\"Control Center / AutoStart\"] .btn-danger")[0].disabled = !($("#autoStart .ui-selected").length >= 1);
+				},
+				unselected: function() {
+					$("[data-location=\"Control Center / AutoStart\"] .btn-warning")[0].disabled = !($("#autoStart .ui-selected").length === 1);
+					$("[data-location=\"Control Center / AutoStart\"] .btn-danger")[0].disabled = !($("#autoStart .ui-selected").length >= 1);
+				}
+			});
+		}, function () {
+			fs.writeJson(app.getPath("appData") + "/autostart.json", []).catch(function () {
+				new Notification({
+					title: "Failed to create Autostart file",
+					html: "Please check permissions in your Home and .config folders."
+				});
+			})
+		});
+	}
+	function listApps(path = app.getAppPath() + "/apps") {
+		fs.readdir(path, function (err, dir) {
+			dir.forEach(function (item) {
+				if (item.toLowerCase() === "app.json") {
+					$("#application-name").append("<option>" + path.substring(path.lastIndexOf("/") + 1) + "</option>");
+				} else if (fs.statSync(path + "/" + item).isDirectory()) {
+					listApps(path + "/" + item);
+				}
+			})
+		})
+
+	}
+</script>
+<style>
+	#autoStart .ui-selected {
+		color: #fff;
+		text-decoration: none;
+		background-color: #007bff;
+	}
+
+	#autoStart .ui-selecting {
+		color: #fff;
+		text-decoration: none;
+		background-color: #00abff;
+	}
+
+	#autoStart * {
+		cursor: default;
+		user-select: none;
+	}
+
+	#autoStart:empty::before {
+		content: "No items found";
+		padding: .5rem 1rem;
+		color: grey;
+	}
+
+	.ui-selectable-helper {
+		border: 2px solid #002bff;
+		background: #007bff;
+		box-shadow: 0px 0px 5px -2px black;
+		opacity: 0.5;
+		z-index: 10010;
+	}
+</style>

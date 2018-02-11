@@ -1,9 +1,9 @@
 {
-	"name": "Files",
+	"title": "Files",
 	"version": "1.0.0",
-	"shortName": "Files",
+	"name": "Files",
 	"description": "Lightweight File Manager",
-	"icon": "$SYSTEM_ROOT/icons/Folders.png",
+	"icon": "$APP_ROOT/logo.png",
 	"width": 550,
 	"height": 350,
 	"minHeight": 330,

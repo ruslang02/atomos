@@ -271,7 +271,7 @@
 		$("#sidebar").hide();
 		$(".ofdBar .btn-primary").text(fm.arguments.okText || (fm.action === "sfd" ? "Save" : (fm.action === "ffd" ? "Select" : "Open")));
 		$(".ofdBar .btn-secondary").text(fm.arguments.cancelText || "Cancel");
-		fm.window.setTitle(fm.arguments.title || "Choose...");
+		document.title = fm.arguments.title || "Choose...";
 		if(fm.action === "ffd") {
 			$("body").addClass("ffd");
 			$(".ofdBar input").hide();
@@ -337,7 +337,7 @@
 		$(".ofdBar button.btn-primary").prop("disabled", "disabled");
 		if (path === undefined) path = "/";
 		if (!path.endsWith("/")) path += "/";
-		if (!fm.arguments.action) fm.window.setTitle(pathLib.basename(path) + " – Cabinet");
+		if (!fm.arguments.action) document.title = pathLib.basename(path) + " – Cabinet";
 		fm.path = path;
 		fm.viewMode = $(".files").attr("viewmode");
 		$("[data-location]").removeClass("active");

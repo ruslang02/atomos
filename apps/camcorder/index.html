@@ -1,10 +1,9 @@
 <picture class="bg-light"><img></picture>
 <section class="p-2 border border-bottom-0 border-left-0 border-right-0">
-  <label class="custom-control custom-checkbox">
-    <input type="checkbox" class="custom-control-input">
-    <span class="custom-control-indicator"></span>
-    <span class="custom-control-description">Capture screen upon startup</span>
-  </label>
+  <div class="custom-control custom-checkbox">
+    <input type="checkbox" class="custom-control-input" id="captureOnStart">
+    <label class="custom-control-label" for="captureOnStart">Capture screen upon startup</label>
+  </div>
   <spacer></spacer>
   <button class="btn btn-success btn-sm">Fetch Screen</button>
 </section>
@@ -19,8 +18,8 @@
     overflow:hidden;
     position:relative;
   }
-  label.custom-control {margin: 3px 0;}
-  label.custom-control .custom-control-description {line-height: 25px;}
+  .custom-control {margin: 3px 0;}
+  .custom-control .custom-control-label {line-height: 25px;}
   body>picture>img {
     max-width: 100%;
 position: absolute;
@@ -39,17 +38,16 @@ right: 0;
   spacer {flex-grow:2}
 </style>
 <script>
-  let args = require('atomos-framework').arguments
+  let args = require('atomos-framework').arguments;
 	const {
 		desktopCapturer,
 		screen,
-		shell,
 		ipcRenderer,
 		clipboard,
 		remote
 	} = require('electron');
 	const {nativeImage} = remote;
-	const fs = require('fs-extra')
+	const fs = require('fs-extra');
 	const app = require('electron').remote.getCurrentWindow();
 	const os = remote.app;
   let config;
@@ -60,21 +58,19 @@ right: 0;
       .then(function() {
         new Notification({
           title: "Configuration file was created",
-          body: "This is first time you use Camcorder, so we have created a configuration file. You won't see this notification ever again.",
-          icon: "Camcorder"
+          body: "This is first time you use Camcorder, so we have created a configuration file. You won't see this notification ever again."
         });
         init();
       })
       .catch(function() {
         new Notification({
           title: "Configuration file was failed to create",
-          body: "Camcorder can not write a configuration file. Please check permissions on your home directory.",
-          icon: "Warning"
+          body: "Camcorder can not write a configuration file. Please check permissions on your home directory."
         });
         app.close();
       })
     } else init();
-  })
+  });
 
   function init() {
     fs.readJson(os.getPath("appData") + "/camcorder.json", function(err, conf) {
@@ -84,16 +80,16 @@ right: 0;
         app.hide();
         capture();
       }
-    })
+    });
       document.querySelector(".btn-success").addEventListener("click", function() {
         window.new("camcorder", {capture: true})
         .then(function() {
           app.close();
         })
-      })
+      });
       document.querySelector("input[type=checkbox]").addEventListener("change", function() {
         config.autoCapture = this.checked
-      })
+      });
       window.onbeforeunload = function() {
         fs.writeJson(os.getPath("appData") + "/camcorder.json", config);
       }
@@ -105,7 +101,7 @@ right: 0;
     let options = {
       types: ['screen'],
       thumbnailSize: thumbSize
-    }
+    };
 
     desktopCapturer.getSources(options, function(error, sources) {
       if (error) return console.log(error);
@@ -131,8 +127,8 @@ right: 0;
               app.show();
             }
             if (error) return console.log(error);
-            ipcRenderer.on('copy-image', function(e) {
-              console.log(ni)
+            ipcRenderer.on('copy-image', function() {
+              console.log(ni);
               clipboard.writeImage(ni);
             })
           })

@@ -6,7 +6,7 @@
 </main>
 <style>
 	main {
-		border: 1px solid #6610f2;
+		border: 1px solid #17a2b8;
 		border-bottom-width: 3px;
 	}
 	#notifications {
@@ -53,8 +53,6 @@
 	}, 1);
 	ipcRenderer.on('new-notification', function (e, options) {
 		if (!options.title) options.title = "";
-		if (!options.icon) options.icon = app.getAppPath() + "/icons/Notification.png";
-		else options.icon = app.getAppPath() + "/icons/" + options.icon + ".png";
 		$("#notifications").append(`
 <div class="media border border-bottom-0 border-left-0 border-right-0 py-2">
   <img class="mr-3" src="${options.icon}" style="max-width:48px">

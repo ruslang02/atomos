@@ -143,7 +143,7 @@
       }
     });
     if (args.path) loadFile(args.path); else
-      win.setTitle("untitled - Typewriter");
+      document.title = "untitled - Typewriter";
   };
 
   function save(url) {
@@ -158,7 +158,7 @@
         modal: true
       });
     else if (url) fileName = url; else url = fileName;
-    win.setTitle(path.basename(fileName) + " - Typewriter");
+	  document.title = path.basename(fileName) + " - Typewriter";
     fs.open(url, 'w', function(err, fd) {
       if (err) new Notification({
         title: "We're unable to save the file",
@@ -185,8 +185,8 @@
 
   function loadFile(url, loadAnyway) {
     fileName = url;
-    console.log(url, args)
-    win.setTitle(path.basename(url) + " - Typewriter");
+    console.log(url, args);
+	  document.title = path.basename(url) + " - Typewriter";
     fs.stat(url, function(err, stat) {
       if (stat.size > MAX_SIZE && !loadAnyway) {
         window.new("aos-typewriter/toolargefile", {}, {

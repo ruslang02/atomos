@@ -1,8 +1,8 @@
 {
-  "name": "Brush - Photo Editor",
-  "shortName": "Brush",
+  "title": "Brush - Photo Editor",
+  "name": "Brush",
   "description": "A crop/invert/rotate image editor",
-  "icon": "$SYSTEM_ROOT/icons/Brush.png",
+  "icon": "$APP_ROOT/logo.png",
   "width": 600,
   "height": 500,
   "minWidth": 550,

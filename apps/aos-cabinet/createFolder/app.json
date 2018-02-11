@@ -1,6 +1,6 @@
 {
-  "name": "Create a new folder",
-  "shortName": "Cabinet Folder Creator",
+  "title": "Create a new folder",
+  "name": "Cabinet Folder Creator",
   "description": "A simple window for creating new folders.",
   "maximizable": false,
   "minimizable": false,

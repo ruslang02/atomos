@@ -1,0 +1,70 @@
+<section data-location="Control Center / Desktop" class="flex-column p-2">
+	<div class="my-2 mb-5 container" style="max-width:600px">
+		<p class="lead mb-3 mt-1">Manage your Desktop</p>
+		<img src="transparent.png" id="image">
+		<div class="row">
+			<div class="col-sm-5">
+				<button class="btn btn-secondary btn-block mt-2">Choose Image...</button>
+			</div>
+			<div class="col-sm-5 ml-auto">
+				<select class="custom-select form-control mt-2 w-100">
+					<option selected>Fill</option>
+					<option>Tiled</option>
+					<option>Center</option>
+					<option>Stretch</option>
+				</select>
+			</div>
+		</div>
+	</div>
+
+	<div class="text-right fixed-bottom bg-light p-2 mt-auto">
+		<button class="btn btn-primary btn-sm">Apply</button>
+	</div>
+</section>
+<script>
+	AddSection({
+		title: "Control Center / Desktop",
+		icon: app.getAppPath() + "/icons/Desktop.png"
+	});
+
+	$("#image").css("background-image", "url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg)");
+	$("[data-location='Control Center / Desktop Preferences'] .btn-primary").click(function () {
+		let bg = $("[data-location='Control Center / Desktop Preferences'] #image").css("background-image");
+		let url = new URL(bg.substring(5, bg.length - 2));
+		fs.readFile(url.pathname).then(function (bin) {
+			fs.writeFile(app.getPath("appData") + "/wallpaper.jpg", bin).then(function () {
+				fs.readJson(app.getPath("appData") + "/aos-cabinet.json").then(function (sets) {
+					sets.fillMode = $("[data-location='Control Center / Desktop Preferences'] select").val().toLowerCase();
+					fs.writeJson(app.getPath("appData") + "/aos-cabinet.json", sets).then(function () {
+						BrowserWindow.fromId(1).webContents.send("changeWallpaper");
+					})
+				})
+			})
+		})
+	});
+	$("[data-location='Control Center / Desktop Preferences'] .btn-secondary").click(function () {
+		window.new("aos-files", {
+			path: app.getPath("pictures"),
+			action: "open",
+			okText: "Select",
+			cancelText: "Cancel",
+			title: "Choose a wallpaper..."
+		}, {
+			modal: true,
+			parent: win
+		})
+	});
+	ipcRenderer.on("return-file", function (event, path) {
+		$("#image").css("background-image", "url(file:///" + encodeURI(path).replace(/%5C/g, "/") + ")");
+	});
+</script>
+<style>
+	#image {
+		flex-grow: 2;
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: center center;
+		border: 3px solid black;
+		width: 100%;
+	}
+</style>

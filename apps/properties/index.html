@@ -80,7 +80,7 @@
 	const fs = require('fs-extra');
 	const path = require('path');
 	window.onload = function () {
-		require('electron').remote.getCurrentWindow().setTitle(path.basename(args.path) + " - Properties");
+		document.title = path.basename(args.path) + " - Properties";
 		$(".btn-secondary").tooltip({
 			title: "Copied!",
 			trigger: "click"

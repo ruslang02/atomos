@@ -113,7 +113,7 @@
 				navigate();
 				loaded = true;
 			} else {
-				if ($(this).parent().attr("active") !== undefined) win.setTitle(this.getTitle() + " - Proton Web Browser");
+				if ($(this).parent().attr("active") !== undefined) document.title = this.getTitle() + " - Proton Web Browser";
 				$(".nav-link[to=" + $(this).parent().attr("id") + "] name").text(this.getTitle());
 				$("#path").val(this.getURL());
 			}
@@ -135,7 +135,7 @@
 		} else {
 			$("#path").val("proton://" + browser.getURL().substring(browser.getURL().lastIndexOf("/") + 1, browser.getURL().lastIndexOf(".")));
 		}
-		win.setTitle(browser.getTitle() + " - Proton Web Browser");
+		document.title = browser.getTitle() + " - Proton Web Browser";
 		setTimeout(function () {
 			$("webview").width($(document).width() - 1)
 					.height($(document).height() - $(".btn-toolbar").height() - $(".nav").height() - 1);
@@ -257,7 +257,7 @@
 		} else {
 			$("#path").val("proton://" + tab.getURL().substring(tab.getURL().lastIndexOf("/") + 1, tab.getURL().lastIndexOf(".")));
 		}
-		if ($(tab).parent().attr("active") !== undefined) win.setTitle(tab.getTitle() + " - Proton Web Browser");
+		if ($(tab).parent().attr("active") !== undefined) document.title = tab.getTitle() + " - Proton Web Browser";
 		$(".nav-link[to=" + $(tab).parent().attr("id") + "] name").text(tab.getTitle());
 		if (tab.canGoBack()) $("[action=back]").removeAttr("disabled"); else $("[action=back]").attr("disabled", "disabled");
 		if (tab.canGoForward()) $("[action=forward]").removeAttr("disabled"); else $("[action=forward]").attr("disabled", "disabled");

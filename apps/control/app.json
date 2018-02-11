@@ -1,8 +1,10 @@
 {
+  "title": "Control Center",
   "name": "Control Center",
-  "shortName": "Control Center",
   "description": "Modify your system whatever you like",
-  "icon": "$SYSTEM_ROOT/icons/Control Panel.png",
+  "icon": "$APP_ROOT/logo.png",
   "height": 545,
-  "width": 600
+  "width": 600,
+  "minHeight": 400,
+  "minWidth": 400
 }

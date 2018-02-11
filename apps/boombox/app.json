@@ -1,6 +1,6 @@
 {
-    "name": "Boombox Music Player",
-    "shortName":"Boombox",
-    "icon": "$SYSTEM_ROOT/icons/Boombox.png",
+    "title": "Boombox Music Player",
+    "name":"Boombox",
+    "icon": "$APP_ROOT/logo.png",
     "description": "A music player for all your tracks"
 }

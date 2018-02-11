@@ -29,9 +29,9 @@
 			  if (item.type === "separator") {
 				  $(".dropdown-menu").append("<div class='dropdown-divider'></div>")
 			  } else if(item.type === "checkbox") {
-				  $(".dropdown-menu").append('<button ' + (item.disabled ? "disabled" : "") + ' action="' + (item.action === undefined ? item.label.toLowerCase() : item.action) + '" class="dropdown-item custom-control custom-checkbox"><input type="checkbox" ' + (item.checked ? "checked": "") + ' class="custom-control-input"><span class="custom-control-indicator"></span><span class="custom-control-description">' + item.label + '</span></button>')
+				  $(".dropdown-menu").append('<button ' + (item.disabled ? "disabled" : "") + ' action="' + (item.action === undefined ? item.label.toLowerCase() : item.action) + '" class="dropdown-item custom-control custom-checkbox"><input type="checkbox" ' + (item.checked ? "checked": "") + ' class="custom-control-input"><span class="custom-control-indicator"></span><span class="custom-control-label">' + item.label + '</span></button>')
 			  } else if(item.type === "radio") {
-				  $(".dropdown-menu").append('<button ' + (item.disabled ? "disabled" : "") + ' action="' + (item.action === undefined ? item.label.toLowerCase() : item.action) + '" class="dropdown-item custom-control custom-radio"><input type="radio" ' + (item.checked ? "checked": "") + ' class="custom-control-input"><span class="custom-control-indicator"></span><span class="custom-control-description">' + item.label + '</span></button>')
+				  $(".dropdown-menu").append('<button ' + (item.disabled ? "disabled" : "") + ' action="' + (item.action === undefined ? item.label.toLowerCase() : item.action) + '" class="dropdown-item custom-control custom-radio"><input type="radio" ' + (item.checked ? "checked": "") + ' class="custom-control-input"><span class="custom-control-indicator"></span><span class="custom-control-label">' + item.label + '</span></button>')
 			  } else if(item.type === "header") {
 				  $(".dropdown-menu").append('<div class="dropdown-header">' + item.label + '</div>')
 			  } else {

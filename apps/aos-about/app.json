@@ -1,7 +1,7 @@
 {
-  "name": "About this PC",
-  "shortName": "About",
-  "icon": "$SYSTEM_ROOT/icons/Info.png",
+  "title": "About this PC",
+  "name": "About",
+  "icon": "$APP_ROOT/logo.png",
   "description": "What is my operating system?",
   "width": 312,
   "height": 199,

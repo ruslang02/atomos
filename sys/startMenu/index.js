@@ -7,6 +7,7 @@ $("body").on("click", "a.btn", function () {
 listApps();
 fs.watch(app.getAppPath() + "/apps", function () {
 	$("#applications *").remove();
+	$("#applications").html(" ");
 	listApps();
 });
 
@@ -18,7 +19,7 @@ function listApps(path = app.getAppPath() + "/apps") {
 					if (!ap.hidden)
 						$("#applications").append('<a href="#" onclick="window.new(\'' +
 								path.substring(path.lastIndexOf("/") + 1) + '\')" class="list-item btn btn-light"><img src="' +
-								ap.icon.replace("$SYSTEM_ROOT", app.getAppPath()) + '"><name>' + ap.shortName + '</name><br><description>' + ap.description + '</description></a>');
+								ap.icon.replace("$SYSTEM_ROOT", app.getAppPath()).replace("$APP_ROOT", path) + '"><name>' + ap.name + '</name><br><description>' + ap.description + '</description></a>');
 				});
 				let list = $("#applications").find(".list-item").get();
 				list.sort(function (a, b) {

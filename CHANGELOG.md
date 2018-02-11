@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2
+ - Stability improvements
+ - Resizable taskbar
+ - App structure redesign
+ 
 ## 0.5.1
  - System root unlinked from directory /atomos
  - New apps: _viewerjs_, _aos-files_

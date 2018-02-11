@@ -151,7 +151,7 @@
 				history.items.push(url);
 		}
 
-		win.setTitle(path.basename(url) + " - Files");
+		document.title = path.basename(url) + " - Files";
 
 		url = path.normalize(url);
 
@@ -398,7 +398,7 @@
 												},
 												text: label || link
 											});
-											if (arr.length === i + 1) $sidebar.append("<section id='devices'>" + result + "</section>");
+											if (arr.length === i + 1) $sidebar.append($("<section></section>", {id: "devices", html: result}));
 										})
 								})
 					});

@@ -1,128 +1,109 @@
-<content class="p-2 d-flex flex-column h-100">
-	<header class="d-flex">
-		<img class="mr-2" data-icon="Ask Question"/>
-		<div>We do not know how to open file with extension "<span id="ext"></span>". Please specify an app that could open
-			it:
-		</div>
-	</header>
-
-	<select size="10">
-
-	</select>
-
-	<footer class="text-right mt-2">
-		<button class="btn btn-sm btn-secondary" onclick="win.close()">Cancel</button>&nbsp;&nbsp;
-		<button class="btn btn-sm btn-primary" disabled>Open File</button>
-	</footer>
-</content>
-<style>
-	select {
-		flex-grow: 2;
-		overflow: auto;
-		font-size: small;
-		outline: none !important;
-	}
-
-	img {
-		width: 48px;
-		height: 48px;
-	}
-
-	select option {
-		padding: 0.25rem;
-	}
-</style>
-
+<header>
+	<img src="logo.png" class="m-1" width="48" height="48">
+	<div class="p-1">
+		File was not recognized. Please select an application for it below:
+	</div>
+</header>
+<div class="card bg-light">
+	<div class="card-body py-1">
+		<a href="#genericapps" data-toggle="collapse"><h6 class="card-title mt-3">Generic Apps</h6></a>
+		<section class="collapse show" id="genericapps"></section>
+		<hr/>
+		<a href="#allapps" data-toggle="collapse"><h6 class="card-title">All Apps</h6></a>
+		<section class="collapse" id="allapps"></section>
+	</div>
+</div>
+<footer class="needs-validation pt-2 d-flex m-0 position-relative">
+	<input class="form-control form-control-sm mr-2 btn-sm" style="flex-grow:2" type="search"
+				 placeholder="Custom JSON cmdline arguments">
+	<div class="invalid-tooltip" style="top: -25px;left: 5px">JSON input is incorrect</div>
+	<div class="btn-group">
+		<button class="btn btn-secondary btn-sm" onclick="window.close()">Cancel</button>
+		<button class="btn btn-primary btn-sm" disabled>Launch</button>
+	</div>
+</footer>
 <script>
-	let args = require('atomos-framework').arguments;
-	let path = require("path");
+	const args = require("atomos-framework").arguments;
+	if (!args.path) window.close();
+	const fs = require("fs-extra");
+	const path = require("path");
 	const {
 		remote
-	} = require('electron');
+	} = require("electron");
 	const {
 		app
 	} = remote;
-	const fs = require('fs-extra');
-	window.$ = require('jquery');
-	let win = remote.getCurrentWindow();
-	if (!args.path) {
-		ErrorProcessor("To open application, you need to specify file's path.");
-		win.close();
-	}
-	fs.readJson(app.getPath("appData") + "/associations.json", "utf-8", function (err, assocs) {
-		if (err) {
-			ErrorProcessor(err);
-			return;
-		}
-		let recom = "";
-		assocs.forEach(function (assoc) {
-			if (assoc.extension === path.extname(args.path).substring(1)) recom = assoc.app;
-		});
-
-
-		listApps();
-		$("#ext").text(path.extname(args.path).substring(1));
-		$(".btn-primary").click(function () {
-			let fass = assocs.find(o => o.extension === $("#ext").text());
-			if (fass) assocs[assocs.indexOf(fass)].app = $("select").val();
-			else assocs.push({
-				extension: $("#ext").text(),
-				app: $("select").val()
-			});
-
-			window.new($("select").val(), {
-				path: args.path
-			}).then(window.close, console.error);
-
-
-			if(path.extname(args.path).substring(1).trim() !== "") fs.writeJson(app.getPath("appData") + "/associations.json", assocs, function (err) {
-				if (err)
-					ErrorProcessor(err);
-				else new Notification({
-					title: "New association added",
-					body: "The next time you open files like this, you won't get that dialog again.",
-					icon: "Okay"
-				});
-			});
-		})
-	});
-
-
-	function listApps(path = app.getAppPath() + "/apps") {
-		fs.readdir(path, function (err, dir) {
-			dir.forEach(function (item) {
-				if (item.toLowerCase() === "app.json") {
-					fs.readJson(path + "/app.json", function (err, app) {
-						if (!app.hidden)
-							$("select").append('<option value="' +
-									path.substring(path.lastIndexOf("/") + 1) + '">' + app.shortName + '</option>');
-					});
-					let list = $("option").get();
-					list.sort(function (a, b) {
-						return $(a).text().toUpperCase().localeCompare($(b).text().toUpperCase());
-					});
-					$.each(list, function (idx, itm) {
-						$("select").append(itm);
-					});
-				} else if (fs.statSync(path + "/" + item).isDirectory()) {
-					listApps(path + "/" + item);
-				}
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	let assocs = [];
+	fs.readJson(path.join(app.getPath("appData"), "associations.json"))
+			.then(function (aApps) {
+				assocs = aApps;
 			})
-		});
-
-		$("select").on("input", function() {
-			if($(this).val().trim())
-				$(".btn-primary").removeAttr("disabled");
-			else $(".btn-primary").attr("disabled","disabled");
-		});
-
-	}
-
-	function ErrorProcessor(err) {
-		new Notification({
-			title: "App Chooser dialog has encountered an error",
-			body: err,
-			icon: "Cancel"
-		});
-	}
+			.catch(console.error);
+	fs.readJson(path.join(app.getPath("appData"), "defaultApps.json"))
+			.then(function (dApps) {
+				Object.values(dApps).forEach(function (prog) {
+					prog.icon = prog.icon.replace("$SYSTEM_ROOT", app.getAppPath());
+					document.getElementById("genericapps").innerHTML += `<button class='btn btn-light btn-block text-left p-1'><img class='float-left mr-2' src='${prog.icon}' width="48" height="48"/><b>${prog.name}</b><div><small>${prog.app}</small></div></button>`;
+				})
+			})
+			.catch(console.error);
+	fs.readdir(path.join(app.getAppPath(), "apps"))
+			.then(function (paths) {
+				paths.forEach(function (item) {
+					let application = fs.readJsonSync(path.join(app.getAppPath(), "apps", item, "app.json"));
+					if (application.hidden) return;
+					application.icon = application.icon.replace("$SYSTEM_ROOT", app.getAppPath()).replace("$APP_ROOT", path.join(app.getAppPath(), "apps", item));
+					document.getElementById("allapps").innerHTML += `<button class='btn btn-light btn-block text-left p-1'><img class='float-left mr-2' src='${application.icon}' width="48" height="48"/><b>${application.name}</b><div><small>${item}</small></div></button>`;
+				});
+			})
+			.catch(console.error);
+	$("body").on("click", "div.card button", function () {
+		$("div.card button").removeClass("active");
+		$(this).addClass("active");
+		$(".btn-primary")[0].disabled = false;
+	});
+	$("body").on("click", ".btn-primary", function (e) {
+		console.log("sit");
+		let custom = {};
+		if ($("input").val())
+			try {
+				custom = JSON.parse($("input").val())
+			} catch (e) {
+				$("input.form-control").addClass("is-invalid");
+			}
+		let options = Object.assign({}, {path: args.path}, custom);
+		assocs.push({app: $(".card .btn-light.active small").text().trim(), extension: path.extname(args.path).substring(1).toLowerCase()});
+		fs.writeJson(app.getPath("appData") + "/associations.json", assocs).then(function() {
+			window.new($(".card .btn-light.active small").text().trim(), options)
+					.then(window.close)
+		})
+	})
 </script>
+<style>
+	body {
+		display: flex;
+		flex-direction: column;
+		padding: 0.5rem;
+	}
+
+	div.card {
+		flex-grow: 2;
+		overflow: auto;
+		height: 0;
+	}
+
+	header {
+		display: flex;
+	}
+
+	header div {
+		flex-grow: 2;
+	}
+
+	header img {
+		flex-shrink: 0;
+	}
+</style>

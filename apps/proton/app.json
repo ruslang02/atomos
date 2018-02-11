@@ -1,8 +1,8 @@
 {
-  "name": "Proton Web Browser",
-  "shortName": "Proton",
+  "title": "Proton Web Browser",
+  "name": "Proton",
   "version": "2.0.0",
-  "icon": "$SYSTEM_ROOT/icons/Globe.png",
+  "icon": "$APP_ROOT/logo.png",
   "description": "Your way to the Internet",
   "width": 550,
   "height": 350,

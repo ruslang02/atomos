@@ -12,7 +12,7 @@
 	let app = remote.getCurrentWindow();
 	let appURL = app.webContents.getURL();
 	let args = require('atomos-framework').arguments;
-	BrowserWindow.getAllWindows().forEach(function(win) {
+	BrowserWindow.getAllWindows().forEach(function (win) {
 		if (win.webContents.getURL() === appURL && win.id !== app.id) {
 			if (args.path) win.webContents.send("return-file", args.path);
 			win.show();
@@ -22,55 +22,53 @@
 	const {
 		width,
 		height,
-			x,
-			y
+		x,
+		y
 	} = require('electron').screen.getPrimaryDisplay().bounds
 </script>
 <div class="bg-light btn-menu">
 	<div class="btn-group dropdown btn-group-sm">
 		<button id="fileMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-		 aria-haspopup="true" aria-expanded="false">
-      File
-      <b class="caret"></b>
-    </button>
+						aria-haspopup="true" aria-expanded="false">
+			File
+			<b class="caret"></b>
+		</button>
 		<div class="dropdown-menu" aria-labelledby="fileMenu">
 			<button class="dropdown-item" data-key="Ctrl+O">Open...</button>
 			<div class="dropdown-divider"></div>
 			<button class="dropdown-item" data-key="Ctrl+S">Export playlist...</button>
 			<div class="dropdown-divider"></div>
-			<button class="dropdown-item" data-key="Alt+F4" onclick="tray.close(); popup.destroy(); app.destroy()">Exit</button>
+			<button class="dropdown-item" data-key="Alt+F4" onclick="tray.close(); popup.destroy(); app.destroy()">Exit
+			</button>
 		</div>
 	</div>
 	<div class="btn-group dropdown btn-group-sm">
 		<button id="playerMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-		 aria-haspopup="true" aria-expanded="false">
-        Player
-        <b class="caret"></b>
-      </button>
+						aria-haspopup="true" aria-expanded="false">
+			Player
+			<b class="caret"></b>
+		</button>
 		<div class="dropdown-menu" aria-labelledby="playerMenu">
 			<button class="dropdown-item custom-control custom-checkbox">
-        <input title type="checkbox" name="autoplay" checked class="custom-control-input">
-        <span class="custom-control-indicator"></span>
-        <span class="custom-control-description">Autoplay</span>
-      </button>
+				<input title type="checkbox" id="autoplay" checked class="custom-control-input">
+				<label class="custom-control-label" for="autoplay">Autoplay</label>
+			</button>
 			<button class="dropdown-item custom-control custom-checkbox">
-          <input title type="checkbox" name="loop" class="custom-control-input">
-          <span class="custom-control-indicator"></span>
-          <span class="custom-control-description">Loop</span>
-        </button>
+				<input title type="checkbox" id="loop" class="custom-control-input">
+				<label class="custom-control-label" for="loop">Loop</label>
+			</button>
 			<button class="dropdown-item custom-control custom-checkbox">
-            <input title type="checkbox" name="mute" class="custom-control-input">
-            <span class="custom-control-indicator"></span>
-            <span class="custom-control-description">Mute</span>
-          </button>
+				<input title type="checkbox" id="mute" class="custom-control-input">
+				<label class="custom-control-label" for="mute">Mute</label>
+			</button>
 		</div>
 	</div>
 	<div class="btn-group dropdown btn-group-sm">
 		<button id="speedMenu" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown"
-		 aria-haspopup="true" aria-expanded="false">
-        Speed
-        <b class="caret"></b>
-      </button>
+						aria-haspopup="true" aria-expanded="false">
+			Speed
+			<b class="caret"></b>
+		</button>
 		<div class="dropdown-menu" aria-labelledby="speedMenu">
 			<button class="dropdown-item">0.25</button>
 			<button class="dropdown-item">0.5</button>
@@ -112,7 +110,7 @@
 	require('bootstrap');
 	let ofdDefaultPath = os.getPath("music");
 
-	window.onbeforeunload = function(e) {
+	window.onbeforeunload = function (e) {
 		app.hide();
 		e.returnValue = false;
 	};
@@ -134,7 +132,7 @@
 		parent: app
 	});
 	popup.loadURL("file://" + __dirname + "/popup.html");
-	popup.on('blur', function() {
+	popup.on('blur', function () {
 		BrowserWindow.fromId(2).webContents.send("deactivate-tray", {
 			win: remote.getCurrentWindow().id
 		});
@@ -142,10 +140,10 @@
 	});
 
 	let tray = new Tray("music_note", "Boombox is running", "hsl(33, 100%, 50%)");
-	tray.on("contextClick", function() {
+	tray.on("contextClick", function () {
 		Menu.buildFromTemplate([{
 			label: ($("#player").find(".btn-primary").text() === "play_arrow" ? 'Pause' :
-				'Play'),
+					'Play'),
 			click() {
 				$("#player").find(".btn-primary").click();
 			}
@@ -178,29 +176,29 @@
 			async: true
 		})
 	});
-	tray.on("click", function() {
+	tray.on("click", function () {
 		BrowserWindow.fromId(2).webContents.send("activate-tray", {
 			win: remote.getCurrentWindow().id
 		});
-		popup.showInactive();
+		popup.show();
 		popup.setAlwaysOnTop(true)
 	});
 	tray.show();
-	app.on('closed', function() {
+	app.on('closed', function () {
 		tray.close();
 		popup.destroy();
 	});
 
-	ipcRenderer.on("return-file", function(e, path) {
+	ipcRenderer.on("return-file", function (e, path) {
 		ofdDefaultPath = path.substring(0, path.lastIndexOf("/"));
 		load(path);
 	});
 
-	ipcRenderer.on("save-file", function(e, path) {
+	ipcRenderer.on("save-file", function (e, path) {
 		ofdDefaultPath = path.substring(0, path.lastIndexOf("/"));
 		savePlaylist(path);
 	});
-	ipcRenderer.on("getData", function() {
+	ipcRenderer.on("getData", function () {
 		popup.webContents.send("getMusicData", JSON.stringify({
 			canNext: true,
 			canPrevious: true,
@@ -208,7 +206,7 @@
 			duration: player.duration,
 			time: player.currentTime,
 			isChanged: isChanged,
-			playlist: $('#playlist').find('.dropdown-item').map(function() {
+			playlist: $('#playlist').find('.dropdown-item').map(function () {
 				return {
 					play: $(this).text(),
 					location: $(this).attr("location"),
@@ -220,31 +218,30 @@
 
 	});
 
-	ipcRenderer.on("changeTrack", function(e, options) {
+	ipcRenderer.on("changeTrack", function (e, options) {
 		if (options.offset === -1) playPrevious();
 		if (options.offset === 1) playNext();
 		if (options.location) $(".dropdown-item[location='" + options.location +
-			"']").click();
+				"']").click();
 		if (options.action === "toggle") $("#player").find(".btn-primary").click();
-		console.log(options)
 	});
 
-	player.ontimeupdate = function() {
+	player.ontimeupdate = function () {
 		$("progress").attr('value', player.currentTime).attr('max', player.duration)
 	};
 	player.onended = playNext;
-	player.onplay = function() {
+	player.onplay = function () {
 		$("footer .btn-primary").text("pause")
 	};
-	player.onpause = function() {
+	player.onpause = function () {
 		$("footer .btn-primary").text("play_arrow")
 	};
 
-	window.onload = function() {
+	window.onload = function () {
 		if (args.path) load(args.path);
 		MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
-		let observer = new MutationObserver(function() {
+		let observer = new MutationObserver(function () {
 			isChanged = true;
 		});
 		observer.observe(document.getElementById("playlist"), {
@@ -252,8 +249,20 @@
 			attributes: true
 		});
 
+		fs.readJson(path.join(os.getPath("appData"), "defaultApps.json"), function(e, dApps) {
+			if (e)
+				fs.writeFile(path.join(os.getPath("appData"), "defaultApps.json"), fs.readFileSync(path.join(app.getAppPath(), "resources", "defaultApps.json.template")));
+			if(dApps.musicplayer) {
+				if(dApps.musicplayer.app !== "boombox")
+					new Notification({
+						title: "Make me default!",
+						body: "Boombox is not the default music player application. <br /> <a href='#' onclick=\"window.setDefaultApp({genericName: 'musicplayer', app: 'boombox', icon: '$SYSTEM_ROOT/icons/Boombox.png', name: 'Music Player'});\">Set it now</a>"
+					})
+			}
+		});
 
-		$("[data-key='Ctrl+O']").click(function() {
+
+		$("[data-key='Ctrl+O']").click(function () {
 			window.new("aos-files", {
 				action: "open",
 				path: ofdDefaultPath,
@@ -266,7 +275,7 @@
 			});
 		});
 
-		$("[data-key='Ctrl+S']").click(function() {
+		$("[data-key='Ctrl+S']").click(function () {
 			window.new("aos-files", {
 				action: "save",
 				path: ofdDefaultPath,
@@ -277,24 +286,24 @@
 				parent: app
 			});
 		});
-		$("footer .btn-primary").click(function() {
+		$("footer .btn-primary").click(function () {
 			if ($("#playlist .dropdown-item.active").length === 0) playNext();
 			else if (player.paused) player.play();
 			else player.pause();
 		});
-		$('[aria-labelledby="speedMenu"] .dropdown-item').click(function() {
+		$('[aria-labelledby="speedMenu"] .dropdown-item').click(function () {
 			player.playbackRate = $(this).text().trim();
 			$('[aria-labelledby="speedMenu"] .dropdown-item').removeClass("active");
 			$(this).addClass("active")
 		});
-		$("body").on("click", "#playlist .dropdown-item:not(.active)", function() {
+		$("body").on("click", "#playlist .dropdown-item:not(.active)", function () {
 			$("#playlist").find(".dropdown-item.active").first().removeClass("active");
 			$(this).addClass("active");
 			let file = decodeURIComponent($(this).attr('location'));
-			renderID3(fs.createReadStream(file), function(err, tags) {
+			renderID3(fs.createReadStream(file), function (err, tags) {
 				$(".media artist").text(tags.artist[0] || $("#playlist").find(".dropdown-item.active").attr('creator') || "No artist");
 				$(".media h5").text(tags.title || $("#playlist").find(".dropdown-item.active")
-					.text());
+						.text());
 
 				new Notification({
 					title: tags.title || $("#playlist").find(".dropdown-item.active"),
@@ -304,7 +313,7 @@
 
 				if (tags.picture[0])
 					$("#cover img")[0].src = "data:image/" + tags.picture[0].format +
-					";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
+							";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
 				else $("#cover img").removeAttr("src");
 
 			});
@@ -312,61 +321,46 @@
 			player.play();
 
 		});
-		$('[name=autoplay]').click(function() {
-			if (player.autoplay) {
-				player.autoplay = false;
-				$(this).find("input")[0].checked = false;
-			} else {
-				player.autoplay = true;
-				$(this).find("input")[0].checked = true;
-			}
+		$('#autoplay').change(function () {
+			player.autoplay = !player.autoplay;
+			this.checked = player.autoplay;
 		});
-		$('[name=loop]').click(function() {
-			if (player.loop) {
-				player.loop = false;
-				$(this).find("input")[0].checked = false;
-			} else {
-				player.loop = true;
-				$(this).find("input")[0].checked = true;
-			}
+		$('#loop').click(function () {
+			player.loop = !player.loop;
+			this.checked = player.loop;
 		});
-		$('[name=mute]').click(function() {
-			if (player.mute) {
-				player.mute = false;
-				$(this).find("input")[0].checked = false;
-			} else {
-				player.mute = true;
-				$(this).find("input")[0].checked = true;
-			}
+		$('#mute').click(function () {
+			player.mute = !player.mute;
+			this.checked = player.mute;
 		})
 	};
 
 	function load(file) {
 		if (path.extname(file) === ".xspf") {
-			fs.readFile(file, "utf8", function(err, data) {
+			fs.readFile(file, "utf8", function (err, data) {
 				console.log(data);
-				if (!err) xml2js.parseString(data, function(err, list) {
+				if (!err) xml2js.parseString(data, function (err, list) {
 					if (!err) {
 						$("#playlist *").remove();
-						list.playlist.trackList[0].track.forEach(function(track) {
+						list.playlist.trackList[0].track.forEach(function (track) {
 							$("#playlist").append("<button class='dropdown-item' location='" +
-								track.location[0].substring(7) + "' creator='" + unescape(track.creator) +
-								"'>" + unescape(track.title) + "</button>")
+									track.location[0].substring(7) + "' creator='" + unescape(track.creator) +
+									"'>" + unescape(track.title) + "</button>")
 						});
-						if ($("[name=autoplay]")[0].checked) playNext();
+						if ($("#autoplay")[0].checked) playNext();
 						isChanged = true;
 					} else console.error("Error parsing playlist file (" + file +
-						"). Error: " + err)
+							"). Error: " + err)
 				});
 				else console.error("Error reading playlist file (" + file + "). Error: " +
-					err)
+						err)
 			})
 		} else {
-			renderID3(fs.createReadStream(file), function(err, tags) {
+			renderID3(fs.createReadStream(file), function (err, tags) {
 				$("#playlist").append("<button class='dropdown-item' location='" + file +
-					"' creator='" + tags.artist[0] + "'>" + (tags.title || file.substring(
-						file.lastIndexOf("/") + 1)) + "</button>");
-				if ($("[name=autoplay]")[0].checked && player.paused) playNext();
+						"' creator='" + tags.artist[0] + "'>" + (tags.title || file.substring(
+								file.lastIndexOf("/") + 1)) + "</button>");
+				if ($("#autoplay")[0].checked && player.paused) playNext();
 				isChanged = true;
 			})
 		}
@@ -374,7 +368,7 @@
 
 	function savePlaylist(url, title) {
 		let trackList = [];
-		$("#playlist").find("button").each(function() {
+		$("#playlist").find("button").each(function () {
 			trackList.push({
 				track: {
 					location: "file://" + escape($(this).attr("location")),
@@ -397,20 +391,20 @@
 			indent: "	"
 		});
 		fs.writeFile(url, playlist, 'utf-8')
-			.then(function() {
-				new Notification({
-					title: "Playlist successfully saved",
-					body: "It is located in " + path.normalize(url) + ".",
-					icon: "file-types/XSPF",
-				});
-			})
-			.catch(function(e) {
-				new Notification({
-					title: "Playlist failed to save",
-					body: e,
-					icon: "Cancel"
+				.then(function () {
+					new Notification({
+						title: "Playlist successfully saved",
+						body: "It is located in " + path.normalize(url) + ".",
+						icon: "file-types/XSPF",
+					});
 				})
-			});
+				.catch(function (e) {
+					new Notification({
+						title: "Playlist failed to save",
+						body: e,
+						icon: "Cancel"
+					})
+				});
 	}
 
 	function playNext() {
@@ -529,7 +523,7 @@
 
 	.btn-primary:active,
 	.btn-primary.active,
-	.show>.btn-primary.dropdown-toggle {
+	.show > .btn-primary.dropdown-toggle {
 		background-color: hsla(33, 100%, 43%, 1);
 		border-color: hsla(33, 100%, 40%, 1);
 	}
@@ -560,7 +554,7 @@
 
 	.btn-outline-primary:active,
 	.btn-outline-primary.active,
-	.show>.btn-outline-primary.dropdown-toggle {
+	.show > .btn-outline-primary.dropdown-toggle {
 		color: #fff;
 		background-color: hsla(33, 100%, 50%, 1);
 		border-color: hsla(33, 100%, 56%, 1);
