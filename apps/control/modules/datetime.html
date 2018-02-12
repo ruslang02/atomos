@@ -34,6 +34,10 @@
 		ChangeDateWindow.loadURL("file:///" + __dirname + "/changeTime.html");
 	}
 
+	$("#autoTime").change(function() {
+	    require("child_process").exec("timedatectl", ["set-ntp", this.value.toString()])
+	});
+
 	setInterval(function () {
 		$("[data-name=time]").text(new Date().toLocaleTimeString({}, {
 			hour: '2-digit',

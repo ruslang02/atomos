@@ -2,27 +2,7 @@
 	<profile-section class="bg-light p-2">
 		<profile-name class="lead">atomOS</profile-name>
 		<atomos-version>
-			<div class="btn-group btn-group-sm float-right">
-				<button type="button" class="btn btn-danger" style="line-height:1.1" onclick="atomos.shutdown()"
-								data-toggle="tooltip" data-placement="bottom" title="Close all apps and turn off PC"><i class="material-icons">power_settings_new</i> Shut down</button>
-				<button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"
-								aria-haspopup="true" aria-expanded="false">
-					<span class="sr-only">Toggle Dropdown</span>
-				</button>
-				<div class="dropdown-menu">
-					<a class="dropdown-item" onclick="atomos.suspend()" href="#"
-						 data-toggle="tooltip" data-placement="right" title="Leave everything and sleep">Suspend</a>
-					<a class="dropdown-item" onclick="atomos.lock()" href="#"
-						 data-toggle="tooltip" data-placement="right" title="Leave everything and go to login screen">Lock</a>
-					<a class="dropdown-item" onclick="atomos.stopx()" href="#"
-						 data-toggle="tooltip" data-placement="right" title="Close all apps and go to login screen">Log out</a>
-					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="atomos.reboot()" href="#"
-						 data-toggle="tooltip" data-placement="right" title="Close all apps and restart PC">Restart</a>
-					<a class="dropdown-item" onclick="atomos.shutdown()" href="#"
-						 data-toggle="tooltip" data-placement="right" title="Close all apps and turn off PC">Shut down</a>
-				</div>
-			</div>
+				<button type="button" class="btn btn-danger float-right p-1" onclick="window.new('aos-shutdown')"><i class="material-icons">power_settings_new</i></button>
 		</atomos-version>
 	</profile-section>
 	<div class="panel m-1">
@@ -78,7 +58,16 @@
 	</div>
 </start-menu>
 <script>
-	const app = require("electron").remote.app;
+	const {
+		remote
+	} = require("electron");
+	const {
+		getGlobal,
+		BrowserWindow,
+		app,
+		getCurrentWindow
+	} = remote;
+	const win = getCurrentWindow();
 	window.$ = window.jQuery = require("jquery");
 	$("body").append("<link href=\"" + app.getAppPath() + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
 	window.Popper = require("popper.js");
@@ -94,5 +83,13 @@
 			trigger: 'hover',
 			delay: 500
 		})
-	})
+	});
+
+	let taskbar = BrowserWindow.fromId(getGlobal("gui").taskbar);
+	taskbar.on('resize', reset);
+
+	function reset() {
+		let bounds = taskbar.getBounds();
+		win.setPosition(bounds.x, bounds.y - win.getContentSize()[1]);
+	}
 </script>

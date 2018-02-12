@@ -2,7 +2,7 @@
 [![Github All Releases](https://img.shields.io/github/downloads/ruslang02/atomos/total.svg)]() [![npm](https://img.shields.io/npm/dt/atomos.svg)]() [![npm](https://img.shields.io/npm/v/atomos.svg)]() [![node](https://img.shields.io/node/v/atomos.svg)]() [![David](https://img.shields.io/david/ruslang02/atomos.svg)]()
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png) 
 
-Latest version: 0.5.2 (build 136). [Download .iso](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.5.2 (build 137). [Download .iso](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
@@ -21,7 +21,7 @@ sudo apt-get install -y nodejs npm
 ```
 Then you need Electron to work:
 ```
-sudo npm install -g electron --unsafe-perm=true --allow-root
+npm install -g electron
 ```
 Install the libraries:
 ```
@@ -31,6 +31,13 @@ And, finally, to run this monster:
 ```
 electron /atomos
 ```
+
+## Extras
+System itself uses XfWM4 as a default window manager.
+
+XfWM4 theme: https://github.com/ruslang02/atomos-xfwm4-theme
+
+lightdm-webkit theme: https://github.com/ruslang02/atomos-lightdm-webkit-theme
 
 ## Changelog
 

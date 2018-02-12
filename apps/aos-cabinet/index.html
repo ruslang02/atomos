@@ -294,7 +294,7 @@
 	function mountDrive(mountDir, device) {
 		if (process.platform === "win32") return;
 		window.new("sudo", {
-			command: "mkdir -p '" + mountDir + "'; mount " + device + " '" + mountDir +
+			command: "mkdir -p '" + mountDir + "'; chmod 777 -R /mnt/" + process.env.USER + "; chown " + process.env.USER + " -R /mnt/" + process.env.USER + "; mount -o uid=" + process.getuid() + ",gid=" + process.getgid() + " " + device + " '" + mountDir +
 			"'",
 			win: fm.window.id,
 			title: "Authentication is needed to mount drives"

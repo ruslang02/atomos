@@ -133,7 +133,7 @@
 	});
 	popup.loadURL("file://" + __dirname + "/popup.html");
 	popup.on('blur', function () {
-		BrowserWindow.fromId(2).webContents.send("deactivate-tray", {
+		BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send("deactivate-tray", {
 			win: remote.getCurrentWindow().id
 		});
 		popup.hide();
@@ -172,12 +172,12 @@
 				tray.close();
 				app.destroy();
 			}
-		}]).popup(BrowserWindow.fromId(1), {
+		}]).popup(BrowserWindow.fromId(remote.getGlobal("gui").desktop), {
 			async: true
 		})
 	});
 	tray.on("click", function () {
-		BrowserWindow.fromId(2).webContents.send("activate-tray", {
+		BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send("activate-tray", {
 			win: remote.getCurrentWindow().id
 		});
 		popup.show();

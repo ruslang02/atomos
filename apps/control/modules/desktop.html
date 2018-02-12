@@ -36,7 +36,7 @@
 				fs.readJson(app.getPath("appData") + "/aos-cabinet.json").then(function (sets) {
 					sets.fillMode = $("[data-location='Control Center / Desktop Preferences'] select").val().toLowerCase();
 					fs.writeJson(app.getPath("appData") + "/aos-cabinet.json", sets).then(function () {
-						BrowserWindow.fromId(1).webContents.send("changeWallpaper");
+						BrowserWindow.fromId(remote.getGlobal("gui").desktop).webContents.send("changeWallpaper");
 					})
 				})
 			})

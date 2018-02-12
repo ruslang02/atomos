@@ -1,4 +1,4 @@
-<nav-bar class="navbar navbar-light bg-light text-dark"></nav-bar>
+<nav-bar class="navbar navbar-light bg-light text-dark flex-nowrap"></nav-bar>
 <link rel="stylesheet" href="index.css" />
 <script>
   const fs = require('fs-extra');
@@ -30,6 +30,19 @@
 		  click() {window.new("control", {section: "Taskbar"})}
 	  }]).popup(win)
   });
+  win.on('resize', function() {
+  	require("child_process").spawn("xfconf-query",["-c", "xfwm4", "-p", "/general/margin_bottom", "-s", win.getContentSize()[1]]).on('close', (data) => {
+		  console.log(`stdout: ${data}`);
+	  });
+  });
+  win.onbeforeunload = function (e) {
+	  window.new("aos-shutdown",{}, {
+		  parent: win,
+		  modal: true
+	  });
+	  e.returnValue = false;
+	  return false;
+  };
   require("atomos-framework");
   require("./index");
 </script>

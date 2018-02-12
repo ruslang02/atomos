@@ -53,7 +53,7 @@
 					});
 					fs.writeJson(app.getPath("appData") + "/taskbar.json", {order: arr})
 							.then(function () {
-								remote.BrowserWindow.fromId(2).reload();
+								remote.BrowserWindow.fromId(remote.getGlobal("gui").taskbar).reload();
 
 							})
 							.catch(console.error)
@@ -75,7 +75,7 @@
 					NewWidget.loadURL("file:///" + __dirname + "/newWidget.html");
 					fs.writeJson(app.getPath("appData") + "/taskbar.json")
 							.then(function () {
-								remote.BrowserWindow.fromId(2).webContents.send("update");
+								remote.BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send("update");
 
 							})
 				});

@@ -29,25 +29,25 @@
 	let settings = {};
 
 	fs.readJson(app.getPath("appData") + "/aos-files.json")
-			.then(function (sets) {
-				settings = sets;
+		.then(function (sets) {
+			settings = sets;
+			init();
+		})
+		.catch(function (e) {
+			if (e.code === "ENOENT") {
+				settings = fs.readJsonSync(__dirname + "/default.json");
+				fs.writeJsonSync(app.getPath("appData") + "/aos-files.json", settings);
 				init();
-			})
-			.catch(function (e) {
-				if (e.code === "ENOENT") {
-					settings = fs.readJsonSync(__dirname + "/default.json");
-					fs.writeJsonSync(app.getPath("appData") + "/aos-files.json", settings);
-					init();
-				}
+			}
 
-				else console.error(e);
-			});
+			else console.error(e);
+		});
 
 	function updateWall() {
 		fs.readJson(app.getPath("appData") + "/aos-files.json", function (err, settings) {
 			if (err) {
 				fs.writeJsonSync(app.getPath("appData") + "/aos-files.json", fs.readJsonSync(
-						__dirname + "/default.json"));
+					__dirname + "/default.json"));
 				settings = fs.readJsonSync(__dirname + "/default.json");
 			}
 			let wpURL;
@@ -99,19 +99,27 @@
 			if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
 				fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall);
 			else fs.copy(app.getAppPath() + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
-					.then(function () {
-						fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall)
-					})
-					.catch(function (e) {
-						console.error(e);
-						new Notification({
-							title: "Error copying default wallpaper",
-							body: "Press <kbd><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd></kbd> to see an error log.",
-							icon: "Cancel"
-						});
+				.then(function () {
+					fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall)
+				})
+				.catch(function (e) {
+					console.error(e);
+					new Notification({
+						title: "Error copying default wallpaper",
+						body: "Press <kbd><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd></kbd> to see an error log.",
+						icon: "Cancel"
 					});
+				});
 			fs.watch(app.getPath("appData") + "/aos-files.json", updateWall);
 			$("body").addClass("desktop");
+			window.onbeforeunload = function (e) {
+				window.new("aos-shutdown",{}, {
+					parent: win,
+					modal: true
+				});
+				e.returnValue = false;
+				return false;
+			};
 		} else {
 			window.onbeforeunload = function () {
 				fs.writeJsonSync(app.getPath("appData") + "/aos-files.json", settings);
@@ -158,114 +166,126 @@
 		$pathField.val(url);
 		$navButtons[0][0].disabled = !(history.current);
 		$navButtons[1][0].disabled = (history.current === history.items.length - 1);
-
-		watcher = fs.watch(url, function () {
-			navigate(":refresh");
-		});
+		try {
+			watcher = fs.watch(url, function (e) {
+				console.error(e);
+				navigate(":refresh");
+			});
+		} catch (e) {
+			if (e.errno === "EACCES")
+				$main.html(`
+<div class="d-flex flex-column h-100 justify-content-center">
+<h3 class='text-center'>Permission denied.</h3>
+<p class='lead text-center'>You are not allowed to view this folder.</p>
+<div class='text-center'>
+    <button class='btn btn-secondary' onclick="navigate(':back')"><i class='material-icons'>keyboard_arrow_left</i> Go back</button>
+    <button class='btn btn-outline-primary'><i class='material-icons'>lock_outline</i> Change permissions</button>
+</div></div>`);
+			return;
+		}
 
 		fs.readdir(url)
-				.then(function (files) {
-					$main.html("");
-					files.forEach(function (file, index, arr) {
-						if (file.startsWith(".") && !settings.showHidden) return;
-						fs.lstat(path.join(url, file))
-								.then(function (stat) {
-									let icon = "";
-									let shortcut;
-									if (stat.isFile()) {
-										let extension = path.extname(file).substring(1).toUpperCase();
-										if (extension === "LNK") {
-											shortcut = fs.readJsonSync(path.join(url, file), {throws: false});
-											if (shortcut) icon = shortcut.icon.replace("$SYSTEM_ROOT", app.getAppPath());
-											else return;
-										} else {
-											icon =
-													(stat.isSymbolicLink() ?
-																	app.getAppPath() + "/icons/file-types/Symlink.png" :
-																	app.getAppPath() + "/icons/file-types/" + extension + ".png"
-													);
-											if (!fs.existsSync(icon))
-												icon = app.getAppPath() + "/icons/file-types/Unknown.png";
-											if (settings.iconSize === "list")
-												icon = icon.replace(/file-types/g, "file-types-small");
-										}
-									} else if (stat.isDirectory()) {
-										icon = (stat.isSymbolicLink() ?
-														app.getAppPath() + "/icons/Symlink Folder.png" :
-														app.getAppPath() + "/icons/Extensions Folder.png"
+			.then(function (files) {
+				$main.html("");
+				files.forEach(function (file, index, arr) {
+					if (file.startsWith(".") && !settings.showHidden) return;
+					fs.lstat(path.join(url, file))
+						.then(function (stat) {
+								let icon = "";
+								let shortcut;
+								if (stat.isFile()) {
+									let extension = path.extname(file).substring(1).toUpperCase();
+									icon =
+										(stat.isSymbolicLink() ?
+												app.getAppPath() + "/icons/file-types/Symlink.png" :
+												app.getAppPath() + "/icons/file-types/" + extension + ".png"
 										);
-										if (settings.iconSize === "list")
-											icon = icon.replace(/\/icons/g, "/icons/folders-small");
-									} else icon = app.getAppPath() + "/icons/file-types" + (settings.iconSize === "list" ? "-small" : "") + "/Symlink.png";
-									let $item = $("<button></button>", {
-										draggable: true,
-										class: 'dropdown-item p-1',
-										"data-type": (stat.isDirectory() ? "folder" : "file"),
-										dblclick: function () {
-											if (stat.isDirectory()) {
-												if (args.desktop === true) window.new("aos-files", {
-													path: path.join(url, file)
-												});
-												else navigate(path.join(url, file));
-											} else if (stat.isFile()) {
-												if (shortcut) {
-													window.new(shortcut.app, shortcut.args);
-												} else
-													window.fileOpen(path.join(url, file));
-											}
-										},
-										click: function () {
-											if ($FCBar) {
-												$FCBar.find("input").val(file);
-												$FCBar.find(".btn-primary")[0].disabled = false;
-											}
-										},
-										contextmenu: renderFileContextMenu,
-										html: [
-											$("<img />", {
-												src: "file://" + icon
-											}),
-											$("<div></div>", {
-												class: "file-title",
-												html: (shortcut ? shortcut.title : file),
-												css: {
-													overflow: "hidden",
-													textOverflow: "ellipsis"
-												}
-											})
-										]
-									});
-
-									if (args.action && args.action === "ffd" && stat.isFile()) $item.attr("disabled", "disabled");
-
-									$items.push($item);
-
-									if (index === arr.length - 1) {
-										$items.sort(function (a, b) {
-											let nameA = a.find(".file-title").text().trim().toLowerCase(),
-													nameB = b.find(".file-title").text().trim().toLowerCase();
-											if (nameA < nameB) return (settings.sorting === "A-Z" ? -1 : 1);
-											if (nameA > nameB) return (settings.sorting === "A-Z" ? 1 : -1);
-											return 0;
-										});
-										if (settings.foldersFirst) {
-											let $new = [];
-											$items.forEach(function (item) {
-												if (item.data('type') === "folder") $new.push(item);
-											});
-											$items.forEach(function (item) {
-												if (item.data('type') !== "folder") $new.push(item);
-											});
-											$main.html($new);
-											console.log($new);
-										} else $main.html($items);
-
+									if (!fs.existsSync(icon))
+										icon = app.getAppPath() + "/icons/file-types/Unknown.png";
+									if (settings.iconSize === "list")
+										icon = icon.replace(/file-types/g, "file-types-small");
+									if (extension === "LNK") {
+										shortcut = fs.readJsonSync(path.join(url, file), {throws: false});
+										if (shortcut) icon = shortcut.icon.replace("$SYSTEM_ROOT", app.getAppPath());
 									}
-								}).catch(function (e) {
+								}
+								else if (stat.isDirectory()) {
+									icon = (stat.isSymbolicLink() ?
+											app.getAppPath() + "/icons/Symlink Folder.png" :
+											app.getAppPath() + "/icons/Extensions Folder.png"
+									);
+									if (settings.iconSize === "list")
+										icon = icon.replace(/\/icons/g, "/icons/folders-small");
+								} else icon = app.getAppPath() + "/icons/file-types" + (settings.iconSize === "list" ? "-small" : "") + "/Symlink.png";
+								let $item = $("<button></button>", {
+									draggable: true,
+									class: 'dropdown-item p-1',
+									"data-type": (stat.isDirectory() ? "folder" : "file"),
+									dblclick: function () {
+										if (stat.isDirectory()) {
+											if (args.desktop === true) window.new("aos-files", {
+												path: path.join(url, file)
+											});
+											else navigate(path.join(url, file));
+										} else if (stat.isFile()) {
+											if (shortcut) {
+												window.new(shortcut.app, shortcut.args);
+											} else
+												window.fileOpen(path.join(url, file));
+										}
+									},
+									click: function () {
+										if ($FCBar) {
+											$FCBar.find("input").val(file);
+											$FCBar.find(".btn-primary")[0].disabled = false;
+										}
+									},
+									contextmenu: renderFileContextMenu,
+									html: [
+										$("<img />", {
+											src: "file://" + icon
+										}),
+										$("<div></div>", {
+											class: "file-title",
+											html: (shortcut ? shortcut.title : file),
+											css: {
+												overflow: "hidden",
+												textOverflow: "ellipsis"
+											}
+										})
+									]
+								});
 
-						});
-					})
-				});
+								if (args.action && args.action === "ffd" && stat.isFile()) $item.attr("disabled", "disabled");
+
+								$items.push($item);
+
+								if (index === arr.length - 1) {
+									$items.sort(function (a, b) {
+										let nameA = a.find(".file-title").text().trim().toLowerCase(),
+											nameB = b.find(".file-title").text().trim().toLowerCase();
+										if (nameA < nameB) return (settings.sorting === "A-Z" ? -1 : 1);
+										if (nameA > nameB) return (settings.sorting === "A-Z" ? 1 : -1);
+										return 0;
+									});
+									if (settings.foldersFirst) {
+										let $new = [];
+										$items.forEach(function (item) {
+											if (item.data('type') === "folder") $new.push(item);
+										});
+										$items.forEach(function (item) {
+											if (item.data('type') !== "folder") $new.push(item);
+										});
+										$main.html($new);
+									} else $main.html($items);
+
+								}
+							}
+						).catch(function (e) {
+
+					});
+				})
+			});
 
 	}
 
@@ -329,32 +349,32 @@
 			settings.accessList.forEach(function (item) {
 				if (item.type === "item") {
 					let location = (item.location ? item.location
-									.replace("$HOME_DIR", app.getPath("home"))
-									.replace("/atomos/home", app.getPath("home"))
-									.replace("$SYSTEM_ROOT", app.getAppPath()) :
-							1 + 1);
+							.replace("$HOME_DIR", app.getPath("home"))
+							.replace("/atomos/home", app.getPath("home"))
+							.replace("$SYSTEM_ROOT", app.getAppPath()) :
+						1 + 1);
 					result.append(
-							$("<button></button>", {
-								class: 'dropdown-item',
-								click: function () {
-									result.children().removeClass("active");
-									$(this).addClass("active");
-									navigate(location);
-								},
-								html: [
-									$("<img />", {
-										src: item.icon.replace("$SYSTEM_ROOT", app.getAppPath()) ||
-										app.getAppPath() + "/icons/folders-small/Extensions Folder.png"
-									}),
-									item.name
-								]
-							})
+						$("<button></button>", {
+							class: 'dropdown-item',
+							click: function () {
+								result.children().removeClass("active");
+								$(this).addClass("active");
+								navigate(location);
+							},
+							html: [
+								$("<img />", {
+									src: item.icon.replace("$SYSTEM_ROOT", app.getAppPath()) ||
+									app.getAppPath() + "/icons/folders-small/Extensions Folder.png"
+								}),
+								item.name
+							]
+						})
 					)
 				} else result.append(
-						$('<div></div>', {
-							class: "dropdown-header",
-							html: item.name
-						})
+					$('<div></div>', {
+						class: "dropdown-header",
+						html: item.name
+					})
 				)
 			});
 			$sidebar.append(result);
@@ -364,45 +384,49 @@
 
 	function renderDeviceSection() {
 		if (process.platform === "win32") return;
-		let result = "";
+		let result = [];
 		fs.readdir("/dev/disk/by-uuid")
-				.then(function (links) {
-					links.forEach(function (link, i, arr) {
-						fs.readlink("/dev/disk/by-uuid/" + link)
-								.then(function (loc) {
-									let device = pathLib.resolve("/dev/disk/by-uuid/", loc);
-									let label = "";
-									if (fs.existsSync("/dev/disk/by-label"))
-										fs.readdir("/dev/disk/by-label", function (err, files) {
-											if (err) label = loc;
-											else {
-												files.forEach(function (file) {
-													if (pathLib.resolve("/dev/disk/by-label/", fs.readlinkSync(
-																	"/dev/disk/by-label/" + file)) === device) label = file;
-												});
-												label = label.replace("\\x20", " ");
-											}
-											result += $("<button></button>", {
-												class: "dropdown-item",
-												title: 'Click to mount/open drive',
-												click: function () {
-													let mountDir = "/mnt/" + process.env.USER + "/" + label;
-													fs.readdir(mountDir)
-															.then(function (elem) {
-																if (elem.length) navigate(mountDir);
-																else mountDrive(mountDir, device)
-															})
-															.catch(function () {
-																mountDrive(mountDir, device)
-															})
-												},
-												text: label || link
-											});
-											if (arr.length === i + 1) $sidebar.append($("<section></section>", {id: "devices", html: result}));
-										})
+			.then(function (links) {
+				$sidebar.find("section#devices").remove();
+				links.forEach(function (link, i, arr) {
+					fs.readlink("/dev/disk/by-uuid/" + link)
+						.then(function (loc) {
+							let device = path.resolve("/dev/disk/by-uuid/", loc);
+							let label = "";
+							if (fs.existsSync("/dev/disk/by-label"))
+								fs.readdir("/dev/disk/by-label", function (err, files) {
+									if (err) label = loc;
+									else {
+										files.forEach(function (file) {
+											if (path.resolve("/dev/disk/by-label/", fs.readlinkSync(
+													"/dev/disk/by-label/" + file)) === device) label = file;
+										});
+										label = label.replace("\\x20", " ");
+									}
+									result.push($("<button></button>", {
+										class: "dropdown-item",
+										title: 'Click to mount/open drive',
+										click: function () {
+											let mountDir = "/mnt/" + process.env.USER + "/" + label;
+											fs.readdir(mountDir)
+												.then(function (elem) {
+													if (elem.length) navigate(mountDir);
+													else mountDrive(mountDir, device)
+												})
+												.catch(function () {
+													mountDrive(mountDir, device)
+												})
+										},
+										text: label || link
+									}));
+									if (arr.length === i + 1) $sidebar.append($("<section></section>", {
+										id: "devices",
+										html: result
+									}));
 								})
-					});
-				}, console.error)
+						})
+				});
+			}, console.error)
 	}
 
 	function renderContainer() {
@@ -426,7 +450,9 @@
 			class: "dropdown-menu border border-left-0 py-1 border-top-0 border-bottom-0 rounded-0",
 			css: {
 				position: "static",
-				overflow: "auto",
+				overflowY: "auto",
+				overflowX: "hidden",
+				maxWidth: "200px",
 				display: (args.action ? "none" : "block")
 			}
 		});
@@ -636,17 +662,17 @@
 						navigate(":refresh")
 					}
 				})
-						.then(() => {
-							navigate(":refresh")
+					.then(() => {
+						navigate(":refresh")
+					})
+					.catch(function (err) {
+						new Notification({
+							title: "We were unable to copy file",
+							html: err,
+							color: "#dc3545",
+							icon: "warning"
 						})
-						.catch(function (err) {
-							new Notification({
-								title: "We were unable to copy file",
-								html: err,
-								color: "#dc3545",
-								icon: "warning"
-							})
-						})
+					})
 			},
 			enabled: window.fileClipboard.isFilled
 		}, {
@@ -769,9 +795,9 @@
 					} else if (file.endsWith(".tar.gz") || file.endsWith(".tgz")) {
 						const tar = require('tar');
 						fs.createReadStream(file).pipe(
-								tar.x({
-									C: arg // alias for cwd:'some-dir', also ok
-								})
+							tar.x({
+								C: arg // alias for cwd:'some-dir', also ok
+							})
 						)
 					}
 				})
@@ -814,6 +840,27 @@
 			}
 		}]).popup();
 	}
+
+	function mountDrive(mountDir, device) {
+		if (process.platform === "win32") return;
+		window.new("sudo", {
+			command: "mkdir -p '" + mountDir + "'; chmod 777 -R /mnt/" + process.env.USER + "; chown " + process.env.USER + " -R /mnt/" + process.env.USER + "; mount -o uid=" + process.getuid() + ",gid=" + process.getgid() + " " + device + " '" + mountDir +
+			"'",
+			win: win.id,
+			title: "Authentication is needed to mount drives"
+		});
+		ipcRenderer.removeListener("return-sudo", function (e, res) {
+			returnSudo(e, res, mountDir)
+		});
+		ipcRenderer.on("return-sudo", function (e, res) {
+			returnSudo(e, res, mountDir)
+		})
+	}
+
+	function returnSudo(e, res, mountDir) {
+		if (!res.stderr) navigate(mountDir);
+		else console.error(res);
+	}
 </script>
 <style>
 	body {
@@ -848,7 +895,7 @@
 	main .dropdown-menu[data-view] {
 		display: flex !important;
 		background: none;
-		font-size:1em !important;
+		font-size: 1em !important;
 	}
 
 	main .dropdown-menu[data-view=list],
@@ -906,5 +953,15 @@
 		white-space: nowrap;
 		color: white;
 		text-shadow: 0px 0px 5px black;
+	}
+
+	section#devices::before {
+		content: "External Devices";
+		display: block;
+		padding: .5rem 1.5rem;
+		margin-bottom: 0;
+		font-size: .875rem;
+		color: #6c757d;
+		white-space: nowrap;
 	}
 </style>

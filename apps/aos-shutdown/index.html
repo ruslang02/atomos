@@ -1,0 +1,32 @@
+<button class="btn btn-danger btn-block d-flex p-3 flex-column align-items-center" onclick="exec('shutdown -h now')"><i class="material-icons" style="font-size:2.5rem;">power_settings_new</i> Shut down</button>
+<div class="row mx-0 my-2 justify-content-around">
+	<button class="btn btn-light d-flex col p-2 flex-column align-items-center mr-2" onclick="exec('reboot')"><i class="material-icons" style="font-size:2rem;">autorenew</i> Reboot</button>
+	<button class="btn btn-light d-flex col p-2 flex-column align-items-center mr-2" onclick="exec('systemctl suspend')"><i class="material-icons" style="font-size:2rem;">restore</i> Suspend</button>
+	<button class="btn btn-light d-flex col p-2 flex-column align-items-center" onclick="exec('dm-tool lock')"><i class="material-icons" style="font-size:2rem;">lock_outline</i> Lock</button>
+</div>
+<button class="btn btn-outline-primary btn-block" onclick="window.close()">Cancel</button>
+<script>
+	require("atomos-framework");
+	const {
+		remote
+	} = require("electron");
+	const {
+		app
+	} = remote;
+	const win = remote.getCurrentWindow();
+	const {exec} = require("child_process")
+	window.onload = function() {
+		setTimeout(function () {
+			win.setContentSize(win.getContentSize()[0], Math.ceil(document.body.offsetHeight));
+		}, 100);
+
+	}
+</script>
+<style>
+	body {
+		padding:1rem;
+		height:auto;
+		display:inline-block;
+		width:100%;
+	}
+</style>

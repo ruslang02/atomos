@@ -16,32 +16,50 @@
 	require("atomos-framework");
 	const proc = require("child_process");
 	const {
-		remote
+		remote,
+		screen
 	} = require("electron");
 
 	const {
-		app
+		width,
+		height,
+		x,
+		y
+	} = screen.getPrimaryDisplay().bounds;
+
+	const {
+		app,
+		BrowserWindow
 	} = remote;
 	window.jQuery = window.$ = require("jquery");
 	const win = remote.getCurrentWindow();
 	$("body").append("<link href=\"" + app.getAppPath() + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
-	win.on("blur", function() {
+	win.on("blur", function () {
 		clearInterval(clock);
 	});
 	let clock;
-	win.on("focus", function() {
+	win.on("focus", function () {
 		tick();
 		clock = setInterval(tick, 1000);
 	});
+	let taskbar = BrowserWindow.fromId(remote.getGlobal("gui").taskbar);
+	taskbar.on('resize', reset)
+
+	function reset() {
+		let bounds = taskbar.getBounds();
+		win.setPosition(bounds.x + bounds.width - win.getContentSize()[0], bounds.y - Math.ceil($(".card").outerHeight()));
+		win.setContentSize(win.getContentSize()[0], Math.ceil($(".card").outerHeight()));
+	}
+
 	function tick() {
-		$("[data-value=clock]").text(new Date().toLocaleTimeString({}, {hour: '2-digit', minute: '2-digit'}))
+		reset()
+		$("[data-value=clock]").text(new Date().toLocaleTimeString({}, {hour: '2-digit', minute: '2-digit'}));
 		$("[data-value=date]").text(new Date().toLocaleDateString({}, {day: '2-digit', month: 'long', year: 'numeric'}));
 	}
+
 	function changeVolume(element) {
 		proc.spawn("amixer", ["sset", "Master", element.value + "%"]);
 	}
-
-
 
 
 </script>

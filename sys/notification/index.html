@@ -1,6 +1,8 @@
 <main class="p-2">
 	<p class="lead">Notifications
-		<button class="btn btn-sm btn-info material-icons float-right p-1 m-0" onclick="$('#notifications').html('')">done_all</button>
+		<button class="btn btn-sm btn-info material-icons float-right p-1 m-0" onclick="$('#notifications').html('')">
+			done_all
+		</button>
 	</p>
 	<section id="notifications"></section>
 </main>
@@ -9,24 +11,51 @@
 		border: 1px solid #17a2b8;
 		border-bottom-width: 3px;
 	}
+
 	#notifications {
-		max-height:350px;
-		overflow:auto;
+		max-height: 350px;
+		overflow: auto;
 		border: 1px solid lightgray;
-		border-radius:0.25rem;
+		border-radius: 0.25rem;
 		padding: 0.5rem;
 	}
+
 	#notifications:empty::before {
 		content: "No notifications";
 		color: grey;
 	}
-	#notificationsOpened .btn-info {display: none}
-	#notificationsOpened .media {display: none}
-	#notificationsOpened .media:last-child {display: flex; border: 0 !important;}
-	#notifications .media .btn-info {display:none;position:absolute;right:0;top:0;}
-	#notifications .media h6 {position:relative;}
-	#notifications .media:hover .btn-info {display:inline-block;}
-	#notifications .media:first-child {border:none !important}
+
+	#notificationsOpened .btn-info {
+		display: none
+	}
+
+	#notificationsOpened .media {
+		display: none
+	}
+
+	#notificationsOpened .media:last-child {
+		display: flex;
+		border: 0 !important;
+	}
+
+	#notifications .media .btn-info {
+		display: none;
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+
+	#notifications .media h6 {
+		position: relative;
+	}
+
+	#notifications .media:hover .btn-info {
+		display: inline-block;
+	}
+
+	#notifications .media:first-child {
+		border: none !important
+	}
 </style>
 <script>
 	const {
@@ -35,7 +64,8 @@
 		screen
 	} = require('electron');
 	const {
-			app
+		app,
+		BrowserWindow
 	} = remote;
 	const win = remote.getCurrentWindow();
 	const {
@@ -45,12 +75,10 @@
 		y
 	} = screen.getPrimaryDisplay().bounds;
 	window.$ = window.jQuery = require('jquery');
+
+	let taskbar = BrowserWindow.fromId(remote.getGlobal("gui").taskbar);
 	require('atomos-framework');
-	setInterval(function () {
-		let alertHeight = $("main").outerHeight();
-		win.setContentSize(350, Math.ceil(alertHeight));
-		win.setPosition(x + width - 350, y + height - 32 - Math.ceil(alertHeight));
-	}, 1);
+	setInterval(reset, 1);
 	ipcRenderer.on('new-notification', function (e, options) {
 		if (!options.title) options.title = "";
 		$("#notifications").append(`
@@ -63,11 +91,18 @@
 </div>`);
 		$("p.lead").hide();
 		$("#notifications")[0].id = "notificationsOpened";
-		setTimeout(function() {
+		setTimeout(function () {
 			$("p.lead").show();
 			$("#notificationsOpened")[0].id = "notifications";
 			win.hide();
-		},5000);
+		}, 5000);
 		win.showInactive();
 	});
+
+	function reset() {
+		let alertHeight = $("main").outerHeight();
+		let bounds = taskbar.getBounds();
+		win.setPosition(bounds.x + bounds.width - win.getContentSize()[0], bounds.y - Math.ceil(alertHeight));
+		win.setSize(win.getContentSize()[0], Math.ceil(alertHeight));
+	}
 </script>

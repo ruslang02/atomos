@@ -4,10 +4,6 @@ const {
 } = require('electron');
 const fs = require("fs");
 global.wsk = require('electron-window-state-manager');
-/* System Components IDs
- * 1 - Desktop
- * 2 - Taskbar
-*/
 global.clipboards = {
 	file: []
 };
@@ -16,9 +12,22 @@ global.gui = {};
 if(fs.existsSync("/etc/os-release"))
 	if(fs.readFileSync("/etc/os-release").indexOf("atomos") !== -1)
 		require("child_process").exec("xfwm4");
+
 let win;
 let taskbar;
 
+const isSecondInstance = app.makeSingleInstance(() => {
+	if (win)
+		win.focus()
+});
+
+if (isSecondInstance) {
+	console.log("Another AtomOS instance is already running. Quitting...");
+	app.exit()
+}
+app.on('before-quit', function() {
+	BrowserWindow.getAllWindows().forEach(w => w.destroy());
+});
 app.on('ready', function () {
 	const {
 		width,
@@ -48,12 +57,7 @@ app.on('ready', function () {
 		}
 	});
 	win.loadURL("file://" + __dirname + "/apps/aos-files/index.html");
-	win.on("beforeunload", function () {
-		return false;
-	});
-	win.on('close', function () {
-		win = null
-	});
+
 	win.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});
@@ -69,16 +73,15 @@ app.on('ready', function () {
 		minWidth: width,
 		maxWidth: width,
 		maxHeight: 96,
-		useContentSize: false,
 		frame: false,
-		resizable: false,
 		closable: false,
+		fullscreenable: false,
 		minimizable: false,
 		maximizable: false,
-		movable: false,
 		skipTaskbar: true,
 		alwaysOnTop: true,
-		type: "dock"
+		type: "dock",
+		background: "#f8f9fa"
 	});
 	taskbar.webContents.on('did-finish-load', function () {
 		fs.readFile(app.getPath("appData") + "/autostart.json", function (err, autostart) {

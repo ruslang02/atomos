@@ -1,0 +1,17 @@
+{
+	"name": "Shut down",
+	"title": "End session",
+	"icon": "$APP_ROOT/logo.png",
+	"hidden": true,
+	"description": "Dialog for shutting down the system.",
+	"maximizable": false,
+	"minimizable": false,
+	"closable": false,
+	"fullscreenable": false,
+	"skipTaskbar": true,
+	"center": true,
+	"width": 300,
+	"height": 260,
+	"useContentSize": true,
+	"alwaysOnTop": true
+}

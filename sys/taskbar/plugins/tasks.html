@@ -1,4 +1,4 @@
-<tasks class="d-flex flex-nowrap" style="flex-grow:2; height: 100vh;"></tasks>
+<tasks class="d-flex flex-wrap" style="flex-grow:2; height: 100vh; overflow: auto"></tasks>
 <script>
 app.on('browser-window-created', function(event, win) {
   if(win.webContents.browserWindowOptions.skipTaskbar === true) return;
