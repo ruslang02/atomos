@@ -1,0 +1,9 @@
+{
+  "title": "Stats",
+  "name": "Stats",
+  "description": "Dialog showing file/folder's name, modification, creation, accessing time etc.",
+  "width": 470,
+  "height": 222,
+  "icon": "$APP_ROOT/logo.png",
+  "hidden": "true"
+}

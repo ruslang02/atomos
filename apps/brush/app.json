@@ -1,0 +1,12 @@
+{
+  "title": "Brush - Photo Editor",
+  "name": "Brush",
+  "description": "A crop/invert/rotate image editor",
+  "icon": "$APP_ROOT/logo.png",
+  "width": 600,
+  "height": 500,
+  "minWidth": 550,
+	"minHeight": 300,
+	"frame": false,
+	"transparent": true
+}

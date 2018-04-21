@@ -1,0 +1,4 @@
+
+- allow flag collapsing to be optional (default = true)
+- add short <-> long option mapping
+- add setting to expand all short options (default = false)

@@ -1,0 +1,31 @@
+<script>
+	$("tray").append(
+		"<button name=\"localechooser\" class='px-2 text-dark'></button>");
+	ipcRenderer.on("changeLocale", function() {
+		require("child_process").exec(
+			`setxkbmap -print | awk -F"+" '/xkb_symbols/ {print $2}'`,
+			function(e, out, err) {
+				if (e || err)
+					console.error(e, err);
+				else $("[name=localechooser]").text(out);
+			})
+	});
+	wc.send("changeLocale");
+	$("[name=localechooser]").on("click contextmenu", function(e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
+		let cmenu = [];
+		systemRegistry.keyboardLayouts.forEach(function(item) {
+			cmenu.push({
+				type: "radio",
+				label: item,
+				checked: item === $("[name=localechooser]")[0].innerText,
+				click() {
+					require("child_process").exec("setxkbmap " + item);
+					wc.send("changeLocale");
+				}
+			});
+		});
+		Menu.buildFromTemplate(cmenu).popup();
+	});
+</script>

@@ -1,0 +1,43 @@
+<script>
+	$("tray").append("<button name=\"battery\" style='color: #28a745' class='p-2 d-inline-flex'><span class='material-icons align-middle' style='font-size:16px !important;'>battery_full</span><span class='align-middle' style='line-height:16px' id='batteryLevel'>60%</span></button>");
+	let batteryMenu;
+	batteryMenu = new BrowserWindow({
+		width: Math.ceil(400 * systemRegistry.uiScaling),
+		height: Math.ceil(260 * systemRegistry.uiScaling),
+		type: "battery",
+		frame: false,
+		closable: false,
+		maximizable: false,
+		showOnLoad: false,
+		minimizable: false,
+		skipTaskbar: true,
+		movable: false,
+		resizable: false,
+		x: x + width - Math.ceil(400 * systemRegistry.uiScaling),
+		y: y + height - Math.ceil(260 * systemRegistry.uiScaling) - Math.ceil(32 * systemRegistry.uiScaling),
+		show: false,
+		alwaysOnTop: true,
+		transparent: true
+	});
+	batteryMenu.loadURL("file://" + app.getAppPath() + "/sys/battery/index.html");
+	$("[name=battery]").on("click", function () {
+		if (batteryMenu.isVisible()) {
+			batteryMenu.hide();
+		} else {
+			batteryMenu.show();
+			batteryMenu.setAlwaysOnTop(true);
+		}
+	});
+	batteryMenu.on('blur', function () {
+		wc.send("deactivate-tray", {
+			win: 'battery'
+		});
+		batteryMenu.hide()
+	});
+	batteryMenu.on('focus', function () {
+		wc.send("activate-tray", {
+			win: 'battery'
+		});
+		batteryMenu.show()
+	});
+</script>

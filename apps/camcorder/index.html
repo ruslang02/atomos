@@ -1,0 +1,280 @@
+<main>
+	<nav class="btn-toolbar bg-transparent border-0">
+		<button id="fileMenu" class="btn btn-outline-primary material-icons border-0" data-toggle="dropdown"
+		        aria-haspopup="true"
+		        aria-expanded="false">camera
+		</button>
+		<div class="dropdown-menu" aria-labelledby="fileMenu">
+			<button class="custom-control custom-checkbox dropdown-item">
+				<input type="checkbox" class="custom-control-input" id="captureOnStart">
+				<label class="custom-control-label" for="captureOnStart">Capture screen upon startup</label>
+			</button>
+			<div class="dropdown-divider"></div>
+			<button class="dropdown-item" data-key="Alt+F4" onclick="window.close()">Exit</button>
+		</div>
+		<header class="col text-center d-flex align-items-center justify-content-center py-1" style="flex-grow:2">
+			Camcorder
+		</header>
+		<div id="winBtns" style="margin-left: auto;display:flex;align-items: center; margin-right:0.25rem;">
+			<button class="btn btn-sm btn-outline-success material-icons p-2"
+			        onclick="if(app.window.isMaximized()) app.window.restore(); else app.window.maximize();"></button>
+			<button class="btn btn-sm btn-outline-warning material-icons p-2 mx-2" onclick="app.window.minimize();"></button>
+			<button class="btn btn-sm btn-danger material-icons p-2" onclick="app.window.close();"></button>
+		</div>
+	</nav>
+	<picture class="bg-white"><img></picture>
+	<section class="p-2 border border-bottom-0 border-left-0 border-right-0 bg-light">
+		<button class="btn btn-success btn-sm btn-block">Fetch Screen</button>
+</section>
+</main>
+<style>
+	body {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		padding: 0.5rem;
+		background: none !important;
+	}
+
+	main {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 2;
+		background: var(--transparent-white);
+		border-radius: 0.25rem;
+		box-shadow: 0 0 0.5rem black;
+		overflow: hidden;
+	}
+
+	nav {
+		-webkit-app-region: drag;
+	}
+
+	nav button {
+		-webkit-app-region: no-drag;
+	}
+
+	main > picture {
+		flex-grow: 2;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.custom-control {
+		margin: 3px 0;
+	}
+
+	.custom-control .custom-control-label {
+		line-height: 25px;
+	}
+
+	main > picture > img {
+		max-width: 100%;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		margin: auto;
+		max-height: 100%;
+		left: 0;
+		right: 0;
+	}
+
+	main > section {
+		display: flex;
+		flex-direction: row;
+		flex-shrink: 0;
+	}
+
+	#winBtns .btn-danger:hover::after,
+	#winBtns .btn-danger:focus::after,
+	#winBtns .btn-outline-danger:hover::after,
+	#winBtns .btn-outline-danger:focus::after {
+		content: "close";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-outline-warning:hover::after,
+	#winBtns .btn-outline-warning:focus::after {
+		content: "expand_more";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-outline-success:hover::after,
+	#winBtns .btn-outline-success:focus::after {
+		content: "expand_less";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+</style>
+<script>
+	const {
+		app,
+		Notification,
+		registry
+	} = require('atomos-framework');
+	let args = app.arguments;
+	const {
+		desktopCapturer,
+		screen,
+		ipcRenderer,
+		clipboard,
+		remote
+	} = require('electron');
+	const {nativeImage} = remote;
+	const fs = require('fs-extra');
+	let config;
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+
+	app.window.on('blur', function () {
+		$("#winBtns .btn-danger").removeClass("btn-danger").addClass("btn-outline-danger");
+		$("main").css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
+	});
+	app.window.on('focus', function () {
+		$("#winBtns .btn-outline-danger").removeClass("btn-outline-danger").addClass("btn-danger");
+		$("main").css("boxShadow", "0px 0px 0.5rem 0 black");
+	});
+	registry.get().then(function (rItems) {
+		if (Object.keys(rItems).length) autoCapture = rItems.autoCapture;
+		else autoCapture = false;
+		init();
+	})
+	function init() {
+		document.querySelector("input[type=checkbox]").checked = autoCapture;
+		if (autoCapture || args.capture) capture();
+		document.querySelector(".btn-success").addEventListener("click", function () {
+			app.launch("camcorder", {capture: true}, {showOnLoad: false, show: false})
+				.then(function () {
+					app.window.close();
+				})
+		});
+		document.querySelector("input[type=checkbox]").addEventListener("change", function () {
+			autoCapture = this.checked;
+			registry.set({autoCapture: autoCapture}).then($.noop);
+		});
+	}
+
+	function capture() {
+		let screenConstraints = {
+			mandatory: {
+				chromeMediaSource: "screen",
+				maxHeight: screen.getPrimaryDisplay().bounds.height,
+				maxWidth: screen.getPrimaryDisplay().bounds.width,
+				minAspectRatio: screen.getPrimaryDisplay().bounds.width / screen.getPrimaryDisplay().bounds.height
+			},
+			optional: []
+		};
+
+		let session = {
+			audio: false,
+			video: screenConstraints
+		};
+		let pth = app.getPath("pictures") + "/screenshot_" + new Date().getTime() + ".png";
+
+		let streaming = false;
+		let canvas = document.createElement("canvas");
+		let video = document.createElement("video");
+		document.body.appendChild(canvas);
+		document.body.appendChild(video);
+		let width = screen.getPrimaryDisplay().bounds.width;
+		let height = 0;
+
+		video.addEventListener("canplay", function () {
+			if (!streaming) {
+				height = video.videoHeight / (video.videoWidth / width);
+
+				if (isNaN(height)) {
+					height = width / (4 / 3);
+				}
+
+				video.setAttribute("width", width.toString());
+				video.setAttribute("height", height.toString());
+				canvas.setAttribute("width", width.toString());
+				canvas.setAttribute("height", height.toString());
+				streaming = true;
+
+				let context = canvas.getContext("2d");
+				if (width && height) {
+					canvas.width = width;
+					canvas.height = height;
+					context.drawImage(video, 0, 0, width, height);
+
+					canvas["toBlob"](function (data) {
+						video.pause();
+						video.src = "";
+						document.body.removeChild(video);
+						document.body.removeChild(canvas);
+						require('blob-to-buffer')(data, function (e, buffer) {
+							if (e) {
+								new Notification({
+									title: "Snapshot taking was not successful",
+									body: e,
+									icon: "Camcorder"
+								});
+							}
+							fs.writeFile(pth, buffer, function (error) {
+								let ni = nativeImage.createFromBuffer(buffer);
+								if (error) {
+									new Notification({
+										title: "Snapshot taking was not successful",
+										body: error,
+										icon: "Camcorder"
+									});
+								} else {
+									new Notification({
+										title: "Snapshot has been successfully taken",
+										body: "It is saved in your Pictures folder.",
+										icon: "Camcorder"
+									});
+									blobToDataURL(data, function (url) {
+										document.querySelector("picture img").src = url;
+									});
+									app.window.show();
+								}
+								if (error) return console.log(error);
+								ipcRenderer.on('copy-image', function () {
+									console.log(ni);
+									clipboard.writeImage(ni);
+								})
+							})
+						})
+
+					});
+				}
+			}
+		}, false);
+
+		navigator["webkitGetUserMedia"](session, function (stream) {
+			video.src = window["webkitURL"].createObjectURL(stream);
+			video.play();
+		}, function () {
+			console.error("Can't take a screenshot");
+		});
+	}
+
+	function blobToDataURL(blob, callback) {
+		let a = new FileReader();
+		a.onload = function (e) {
+			callback(e.target.result);
+		};
+		a.readAsDataURL(blob);
+	}
+</script>

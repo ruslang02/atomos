@@ -1,0 +1,9 @@
+{
+	"name": "AtomOS",
+	"version": "0.6.0-alpha",
+	"codename": "snowfall",
+	"website": "http:\/\/atomos.org.uk",
+	"build": "152",
+	"repository": "ruslang02/atomos",
+	"branch": "0.6-dev"
+}

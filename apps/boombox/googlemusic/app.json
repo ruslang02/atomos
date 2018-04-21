@@ -1,0 +1,11 @@
+{
+	"title": "Google Play Music",
+	"name": "Google Play Music",
+	"icon": "$APP_ROOT/logo.png",
+	"description": "Listen to your favorite music online",
+	"version": "1.0.0",
+	"width": 980,
+	"height": 500,
+	"frame": false,
+	"transparent": true
+}

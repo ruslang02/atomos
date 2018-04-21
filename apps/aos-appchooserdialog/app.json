@@ -1,0 +1,14 @@
+{
+  "title": "Choose application to open file with...",
+  "name": "File Associator",
+  "icon": "$APP_ROOT/logo.png",
+  "description": "Your file is opened with the right app",
+  "width": 450,
+  "height": 350,
+  "maximizable": false,
+  "minimizable": false,
+  "resizable": false,
+	"hidden": true,
+	"frame": false,
+	"transparent": true
+}

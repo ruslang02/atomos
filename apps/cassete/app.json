@@ -1,0 +1,13 @@
+{
+	"name": "Cassete",
+	"title": "Cassete Drive Manager",
+	"icon": "$APP_ROOT/logo.png",
+	"description": "Manage your internal storage",
+	"dependencies": {
+		"fs-filesystem": "latest"
+	},
+	"width": 980,
+	"height": 500,
+	"frame": false,
+	"transparent": true
+}

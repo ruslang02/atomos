@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html class="h-100">
+<head>
+	<meta charset="utf-8"/>
+	<title>Home Page</title>
+	<style>
+		form {
+			max-width: 600px;
+			min-width: 200px;
+		}
+	</style>
+</head>
+<body class="d-flex justify-content-center align-items-center h-100 bg-transparent">
+<form action="https://www.google.ru/search" method="get" class="text-center w-75">
+	<h1>Welcome to atomOS!</h1>
+	<p class="lead">Here is a search form below if you want to find something on the net.</p>
+	<br>
+	<div class="input-group">
+		<input type="text" name="q" class="form-control" placeholder="Search in Google..." aria-label="Search for...">
+		<span class="input-group-append">
+			 <button class="btn btn-primary" type="submit">Search</button>
+		 </span>
+	</div>
+</form>
+<script>
+	const {
+		app
+	} = require("atomos-framework");
+	const fs = require("fs-extra");
+	window.$ = window.jQuery = require("jquery");
+	fs.readJson(app.getPath("appData") + "/proton.json")
+		.then(function (config) {
+			if (config.nightMode === 2) {
+				$("body").addClass("bg-dark text-white");
+				$("input").addClass("btn-outline-light");
+				$("button.btn-primary").addClass("btn-outline-primary");
+			}
+		});
+</script>
+</body>
+</html>

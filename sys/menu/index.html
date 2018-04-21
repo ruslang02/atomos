@@ -1,0 +1,57 @@
+<div class="dropdown-menu">
+  <button class="dropdown-item">Button</button>
+</div>
+<style>
+  .dropdown-menu {
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0;
+    display: inline-block;
+    top: 0;
+    max-height: none;
+  }
+</style>
+<script>
+  window.$ = window.jQuery = require("jquery");
+  const {
+    remote,
+    ipcRenderer
+  } = require("electron");
+  const {
+    BrowserWindow
+  } = remote;
+  const app = remote.getCurrentWindow();
+  ipcRenderer.on('build-menu', function (event, data) {
+  	console.log(data);
+	  $(".dropdown-menu *").remove();
+	  data.items.forEach(function(item) {
+		  if (!item.hidden)
+			  if (item.type === "separator") {
+				  $(".dropdown-menu").append("<div class='dropdown-divider'></div>")
+			  } else if(item.type === "checkbox") {
+				  $(".dropdown-menu").append('<button ' + (item.disabled ? "disabled" : "") + ' action="' + (item.action === undefined ? item.label.toLowerCase() : item.action) + '" class="dropdown-item custom-control custom-checkbox"><input type="checkbox" ' + (item.checked ? "checked": "") + ' class="custom-control-input"><span class="custom-control-indicator"></span><span class="custom-control-label">' + item.label + '</span></button>')
+			  } else if(item.type === "radio") {
+				  $(".dropdown-menu").append('<button ' + (item.disabled ? "disabled" : "") + ' action="' + (item.action === undefined ? item.label.toLowerCase() : item.action) + '" class="dropdown-item custom-control custom-radio"><input type="radio" ' + (item.checked ? "checked": "") + ' class="custom-control-input"><span class="custom-control-indicator"></span><span class="custom-control-label">' + item.label + '</span></button>')
+			  } else if(item.type === "header") {
+				  $(".dropdown-menu").append('<div class="dropdown-header">' + item.label + '</div>')
+			  } else {
+				  $(".dropdown-menu").append("<button " + (item.disabled ? "disabled" : "") + " action='" + (item.action === undefined ? item.label.toLowerCase() : item.action) + "' class='dropdown-item'>" + item.label + "</button>");
+			  }
+	  })
+  });
+  ipcRenderer.on("popup-menu", function(event, data) {
+    $(".dropdown-item").off().click(function() {
+      BrowserWindow.fromId(data.win).webContents.send("return-menu", $(this).attr("action"));
+      closeMenu();
+    });
+    app.setPosition(Math.ceil(data.x), Math.ceil(data.y));
+    app.setSize(Math.ceil($(".dropdown-menu").outerWidth()), Math.ceil($(".dropdown-menu").outerHeight()));
+    app.show();
+  });
+  app.on("blur", closeMenu);
+  ipcRenderer.on("close-menu", closeMenu);
+
+  function closeMenu() {
+    app.hide();
+  }
+</script>

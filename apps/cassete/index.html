@@ -1,0 +1,127 @@
+<main class="d-flex flex-column h-100">
+	<nav class="btn-toolbar bg-transparent">
+		<button id="fileMenu" class="btn btn-outline-primary material-icons border-0" data-toggle="dropdown" aria-haspopup="true"
+						aria-expanded="false">sd_storage</button>
+		<div class="dropdown-menu" aria-labelledby="fileMenu">
+			<button class="dropdown-item">Refresh device list</button>
+			<div class="dropdown-divider"></div>
+			<button class="dropdown-item" data-key="Alt+F4">Exit</button>
+		</div>
+		<header class="col text-center d-flex align-items-center justify-content-center py-1" style="flex-grow:2">Cassete Drive Manager</header>
+		<div id="winBtns" style="margin-left: auto;display:flex;align-items: center; margin-right:0.25rem;">
+			<button class="btn btn-sm btn-outline-success material-icons p-2" onclick="if(app.window.isMaximized()) app.window.restore(); else app.window.maximize();"></button>
+			<button class="btn btn-sm btn-outline-warning material-icons p-2 mx-2" onclick="app.window.minimize();"></button>
+			<button class="btn btn-sm btn-danger material-icons p-2" onclick="app.window.close();"></button>
+		</div>
+	</nav>
+<section class="d-flex col p-0">
+	<div class="dropdown-menu col-3 d-inline-block position-static border-left-0 border-top-0 border-bottom-0 rounded-0 m-0">
+		<div class="dropdown-header">Devices</div>
+		<section id="devices"></section>
+		<div class="dropdown-header">Volumes</div>
+		<section id="volumes"></section>
+	</div>
+	<section class="col bg-white">
+		<div class="container" id="main">
+			
+		</div>
+	</section>
+</section>
+</main>
+
+<script>
+	const {
+		app,
+		iconDB
+	} = require("atomos-framework");
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const fss = require("fs-filesystem");
+	const fs = require("fs-extra");
+	fss(function(err, data) {
+		Object.keys(data.devices).forEach(function(device) {
+			$("#devices").append($("<button></button>", {
+				class: "dropdown-item",
+				text: data.devices[device].node,
+				click: function() {
+					viewDevice(device);
+				}
+			}))
+		})
+	});
+	app.window.on('blur', function() {
+		$("#winBtns .btn-danger").removeClass("btn-danger").addClass("btn-outline-danger");
+		$("main").css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
+	});
+	app.window.on('focus', function() {
+		$("#winBtns .btn-outline-danger").removeClass("btn-outline-danger").addClass("btn-danger");
+		$("main").css("boxShadow", "0px 0px 0.5rem 0 black");
+	});
+	
+	function viewDevice(device) {}
+</script>
+
+<style>
+	.dropdown-menu.d-inline-block {
+		z-index:0;
+		background: none !important;
+	}
+	
+	main {
+		display: flex;
+		flex-direction: column;
+		flex-grow:2;
+		background: var(--transparent-white);
+		border-radius:0.25rem;
+		box-shadow: 0 0 0.5rem black;
+		overflow:hidden;
+	}
+	body {
+		padding: 0.5rem;
+		background:none !important;
+	}
+	nav {
+		-webkit-app-region: drag;
+	}
+	nav button{
+		-webkit-app-region: no-drag;
+	}
+#winBtns .btn-danger:hover::after,
+	#winBtns .btn-danger:focus::after,
+	#winBtns .btn-outline-danger:hover::after,
+	#winBtns .btn-outline-danger:focus::after{
+		content: "close";
+		font-family:"Material Icons";
+		position:absolute;
+		top:0;
+		left:0;
+		margin-top:0.5rem;
+		line-height:0;
+		font-size:1rem;
+	}
+
+	#winBtns .btn-outline-warning:hover::after,
+	#winBtns .btn-outline-warning:focus::after {
+		content: "expand_more";
+		font-family:"Material Icons";
+		position:absolute;
+		top:0;
+		left:0;
+		margin-top:0.5rem;
+		line-height:0;
+		font-size:1rem;
+	}
+
+	#winBtns .btn-outline-success:hover::after,
+	#winBtns .btn-outline-success:focus::after {
+		content: "expand_less";
+		font-family:"Material Icons";
+		position:absolute;
+		top:0;
+		left:0;
+		margin-top:0.5rem;
+		line-height:0;
+		font-size:1rem;
+	}
+</style>

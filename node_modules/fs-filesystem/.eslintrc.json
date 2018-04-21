@@ -1,0 +1,40 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "standard"
+  ],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 8
+  },
+  "rules": {
+    "indent": ["warn", 2],
+    "keyword-spacing": ["error", {
+      "before": false,
+      "after": false,
+      "overrides": {
+        "case": {"after": true},
+        "const": {"after": true},
+        "from": {"after": true, "before": true},
+        "function": {"after": true, "before": true},
+        "import": {"after": true},
+        "return": {"after": true, "before": true},
+        "this": {"before": true},
+        "throw": {"after": true, "before": true}
+      }
+    }],
+    "space-before-blocks": [0, "never"],
+    "no-multiple-empty-lines": 0,
+    "space-before-function-paren": 0,
+    "camelcase": 0,
+    "linebreak-style": ["error", "unix"],
+    "semi": ["error", "always"],
+    "no-unused-vars": ["warn"],
+    "no-console": 0,
+    "no-return-assign": 0
+  }
+}

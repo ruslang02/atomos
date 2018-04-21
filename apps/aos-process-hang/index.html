@@ -1,0 +1,68 @@
+<main>
+<header>
+	<img src="logo.png"/>
+	<p>Application "
+		<application></application>
+		" has hung. It probably entered an infinite loop or executed an illegal operation.
+	</p>
+</header>
+<footer class="text-right">
+	<button class="btn btn-secondary btn-sm mr-2"><i class="material-icons">alarm</i> Wait</button>
+	<button class="btn btn-danger btn-sm"><i class="material-icons">eject</i> Terminate app</button>
+</footer>
+</main>
+<script>
+	const {
+		app
+	} = require('atomos-framework');
+	const {remote} = require("electron");
+	window.$ = require("jquery");
+	if (!app.arguments.wid) app.window.close();
+	window.onload = function () {
+		$("application").text(remote.BrowserWindow.fromId(app.arguments.wid).getTitle());
+		$(".btn-danger").click(function () {
+			remote.BrowserWindow.fromId(app.arguments.wid).destroy()
+		});
+		$(".btn").click(function () {
+			app.window.close()
+		});
+		setTimeout(function () {
+			app.window.setContentSize(app.window.getContentSize()[0], Math.ceil(document.documentElement.offsetHeight));
+		}, 100);
+	}
+</script>
+
+<style>
+	body {
+		padding: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		background: none;
+	}
+
+	main {
+		padding: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		flex-grow: 2;
+		background: var(--transparent-white);
+		border-radius: 0.25rem;
+		box-shadow: 0 0 0.5rem black;
+	}
+
+	header {
+		display: flex;
+	}
+
+	header img {
+		width: 48px;
+		height: 48px;
+	}
+
+	header input {
+		margin: 0.5rem;
+		margin-right: 0
+	}
+</style>

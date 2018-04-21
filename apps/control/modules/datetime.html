@@ -1,0 +1,67 @@
+<section data-location="Control Center / Date and Time" class="flex-column p-2">
+<div class="container">
+	<p class="lead mb-2 mx-2">Time and Date options</p>
+	<h1 data-name="time" class="display-1 mt-0 ml-2"></h1>
+	<p class="lead mb-4 ml-3" data-name="date"></p>
+	<button class="btn btn-primary" onclick="changeDate()">Change...</button>
+	<div class="mt-3 mb-2"><b>Additional Settings</b></div>
+	<div class="w-100 mb-2 custom-control custom-checkbox">
+		<input title type="checkbox" id="autoTime" class="custom-control-input">
+		<label for="autoTime" class="custom-control-label">Set time automatically</label>
+	</div>
+</div>
+</section>
+<script>
+	AddSection({
+		title: "Control Center / Date and Time",
+		icon: app.getPath("os") + "/icons/Watch.png"
+	});
+
+	function changeDate() {
+		$("#TimeModal").modal("show");
+	}
+
+	$("#autoTime").change(function() {
+	    require("child_process").exec("timedatectl", ["set-ntp", this.value.toString()])
+	});
+
+	$("#TimeModal form").submit(function (e) {
+		e.preventDefault();
+		app.launch("sudo", {
+			command: "date --set=\"" + document.querySelector("input").value + "\"",
+			title: "Authentication is needed to modify system time"
+		}, {parent: app.window, modal: true});
+
+	});
+
+	setInterval(function () {
+		$("[data-name=time]").text(new Date().toLocaleTimeString({}, {
+			hour: '2-digit',
+			minute: '2-digit'
+		}));
+		$("[data-name=date]").text(new Date().toLocaleDateString({}, {day: '2-digit', month: 'long', year: 'numeric'}));
+	}, 1000)
+</script>
+<div class="modal fade" id="TimeModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<form class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Modify system time</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+					aria-hidden="true">&times;</span></button>
+			</div>
+			<div class="modal-body">
+				<p>To chande date/time settings, you will need to format date according an example below.</p>
+				<input class="form-control" required type="text" placeholder="2 OCT 2006 18:00:00">
+				<pre class="mt-2 mb-0 ml-2">Syntax:&nbsp; DD MMM YYYY HH:MM:SS</pre>
+				<pre class="mt-0 mb-2 ml-2">Example: 02 OCT 2006 18:00:00</pre>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+				<button type="submit" class="btn btn-primary btn-sm"><i class="material-icons">fingerprint</i> Change time
+				</button>
+			</div>
+		</form>
+	</div>
+</div>

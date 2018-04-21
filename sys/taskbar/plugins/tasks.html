@@ -1,0 +1,120 @@
+<tasks class="d-flex flex-wrap" style="flex-grow:2; height: 100vh; overflow: auto"></tasks>
+<script>
+app.on('browser-window-created', function(event, win) {
+  if(win.webContents.browserWindowOptions.skipTaskbar === true) return;
+  let dangerFlash;
+  let hangWin;
+  let alreadyHung = false;
+  let icon;
+	$("tasks").append("<button id='" + win.id + "' class='loading btn-task'><img src='file://" + app.getAppPath() + "/icons/Loader.png'><div class='title'>Loading...</div></button>");
+  let $task = $("tasks #" + win.id);
+  $task.on('mousedown', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    win.show();
+  });
+	$task.find(".title").text(win.getTitle());
+  $task.on('contextmenu', function(e) {
+  	e.stopImmediatePropagation();
+  	Menu.buildFromTemplate([{
+  		label: "New instance",
+  		click() {
+			  app.launch(path.dirname(win.getURL()))
+  		}
+  	}, {type: 'separator'}, {
+  		label: "Close",
+  		click() {win.close()}
+  	}]).popup()
+  });
+  win.webContents.on('did-stop-loading', function() {
+  	console.log(win.webContents.browserWindowOptions);
+    icon = win.webContents.browserWindowOptions.icon;
+    $task.removeClass("loading");
+    $task.find("img")[0].src = icon;
+  });
+	win.webContents.on('will-navigate', ev => {
+		ev.preventDefault()
+	});
+  win.on('close', function() {
+    $task.hide();
+  });
+  win.on('closed', function() {
+    $task.addClass("btn-light").removeClass("btn-danger").fadeOut("200", function() {$task.remove()});
+    ipcRenderer.send("close-any-menu");
+    clearInterval(dangerFlash);
+  });
+  win.on('responsive', function() {
+    $task.addClass("btn-light").removeClass("btn-danger");
+    clearInterval(dangerFlash);
+  });
+  win.webContents.on('page-favicon-updated', function(e,favs) {
+  	console.log(e, favs);
+	});
+	win.on('page-title-updated', function() {
+		console.log(arguments);
+		$task.find(".title").text(win.getTitle());
+	});
+	win.webContents.on('new-window', function(e, url, frame, dispos, opts, adds) {
+		console.log(e, url, frame, dispos, opts, adds);
+		if(dispos === "new-window") {
+			app.launch("aos-files", {
+				action: "save"
+			})
+		}
+	});
+  win.on('unresponsive', function() {
+    if(!alreadyHung) {
+	    hangWin = app.launch('aos-process-hang', {
+        wid: win.id
+      }, {modal: true, parent: win});
+      dangerFlash = setInterval(function() {
+        $task.toggleClass("btn-light").toggleClass("btn-danger");
+      },500)
+    } else alreadyHung = true;
+  });
+  win.on('page-title-updated', function(e, title) {
+    $task.attr("title", title);
+		$task.find(".title").text(title);
+  });
+  win.on('blur', function() {
+    $task.removeClass("active");
+    ipcRenderer.send("close-any-menu")
+  });
+  win.on('focus', function() {
+    $task.addClass("active");
+    ipcRenderer.send("close-any-menu")
+  });
+  win.on('show', function() {
+    $task.show();
+    try {$task.css("opacity", "1");} catch(e) {}
+  });
+  win.on('hide', function() {
+    try {$task.css("opacity", "1");} catch(e) {}
+  })
+})
+
+</script>
+<style>
+	.btn-task {
+		background: none;
+		border: none;
+		color: var(--dark);
+		padding: 0.25rem 0.5rem;
+		transition: background ease .2s;
+		max-width: 150px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.btn-task:hover, .btn-task.active {
+		background: rgba(0, 0, 0, 0.1);
+	}
+
+	.btn-task.active {
+		box-shadow: inset 0 -3px 0 -1px var(--primary);
+	}
+
+	.btn-task:active, .btn-task:hover:active {
+		background: rgba(0, 0, 0, 0.05);
+	}
+</style>

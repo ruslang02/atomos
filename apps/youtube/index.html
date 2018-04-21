@@ -1,0 +1,399 @@
+<global class="position-relative">
+
+	<div id="resizePH" class="align-items-center justify-content-center h-100 w-100 d-flex rounded bg-white" style="visibility:hidden;position:absolute;top:0;left:0; z-index:1000"><img src="logo.png">
+		</div>
+</global>
+<script>
+	const {
+		app,
+		registry
+	} = require("atomos-framework");
+	const args = app.arguments;
+	const fs = require("fs-extra");
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	let elements = {};
+	registry.get(true).then((r) => {
+		window.scale = r.uiScaling;
+	})
+
+	let TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
+		process.env.USERPROFILE) + '/.credentials/';
+	let TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
+	let loggedin = fs.existsSync(TOKEN_PATH);
+
+	app.window.on('blur', function() {
+		$("#winBtns .btn-danger:empty").removeClass("btn-danger").addClass(
+			"btn-outline-danger");
+		$("global").css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
+	});
+	app.window.on('focus', function() {
+		$("#winBtns .btn-outline-danger:empty").removeClass("btn-outline-danger").addClass(
+			"btn-danger");
+		$("global").css("boxShadow", "0px 0px 0.5rem 0 black");
+	});
+	let resizeCnt;
+	app.window.on('resize', function() {
+		clearTimeout(resizeCnt);
+		$("global > *").css("visibility", "hidden")
+		$("#resizePH")
+			.width($("global").width())
+			.height($("global").height()).css("visibility", "visible");
+		resizeCnt = setTimeout(resetWV, 1000)
+	});
+
+	function resetWV() {
+		let wv = $("webview")[0];
+		if (!wv.getWebContents())
+			wv.addEventListener("dom-ready", resetWV)
+		else
+		wv.getWebContents().setSize({
+			normal: {
+				width: Math.ceil($("webview").width() * scale),
+				height: Math.ceil($("webview").height() * scale)
+			}
+		});
+		$("global > *").css("visibility", "visible")
+		$("#resizePH").css("visibility", "hidden");
+	}
+
+	$(function() {
+		renderNav();
+		renderContainer();
+		renderSidebar();
+		renderMain();
+		elements.Container.appendTo("global");
+		elements.WebView.addEventListener("ipc-message", function(e) {
+			if (e.channel === "log-in") {
+				$('#GoogleLogIn .modal-content').html(
+					"<webview nodeintegration='true' disableguestresize class='w-100 h-100' src='" +
+					e.args[0] + "'></webview>");
+				$('#GoogleLogIn webview')[0].addEventListener("ipc-message", function(
+					e) {
+					if (e.channel === "log-in") {
+						elements.WebView.getWebContents().send("log-in", e.args[0]);
+						$("#GoogleLogIn").modal('hide');
+					}
+				});
+				$("#GoogleLogIn").modal('show');
+			}
+		});
+		elements.WebView.addEventListener("enter-html-full-screen", function() {
+			$("body").addClass("fullscreen");
+			remote.BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents
+				.send("enter-full-screen");
+			$("aside").hide();
+		});
+		elements.WebView.addEventListener("leave-html-full-screen", function() {
+			$("body").removeClass("fullscreen");
+			remote.BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents
+				.send("leave-full-screen");
+		});
+
+	});
+
+	function renderMain() {
+		elements.Main = $("<webview></webview>", {
+			nodeintegration: "true",
+			disableguestresize: true,
+			css: {
+				flexGrow: 2,
+				overflow: "hidden",
+				position: "relative"
+			},
+			src: "file:///" + __dirname + "/pages/home.html"
+		});
+		elements.WebView = elements.Main[0];
+		elements.WebView.addEventListener("did-start-loading", function() {
+			elements.Main.addClass("loading");
+			resetWV();
+		});
+		elements.WebView.addEventListener("did-stop-loading", function() {
+			elements.Main.removeClass("loading");
+		});
+		elements.Main.appendTo(elements.Container);
+	}
+
+	function renderContainer() {
+		elements.Container = $("<section></section>", {
+			class: "d-flex",
+			css: {
+				flexGrow: 2
+			},
+			html: ""
+		});
+	}
+
+	function renderSidebar() {
+		elements.SideBarMenu = $("<div></div>", {
+			class: "nav nav-pills flex-column",
+			html: [
+				$("<button></button>", {
+					class: "nav-link active border-0 text-left btn-outline-light mt-2",
+					html: "<i class='material-icons align-middle'>whatshot</i><span class='align-middle'>Trending</span>",
+					click: function() {
+						elements.SideBarMenu.find("button").removeClass("active").addClass(
+							"text-primary");
+						$(this).addClass("active").removeClass("text-primary");
+						elements.WebView.src = "file:///" + __dirname + "/pages/home.html";
+					}
+				}),
+				$("<button></button>", {
+					class: "nav-link border-0 text-left btn-outline-light text-primary mt-2",
+					html: "<i class='material-icons align-middle'>subscriptions</i><span class='align-middle'>Subscriptions</span>",
+					click: function() {
+						elements.SideBarMenu.find("button").removeClass("active").addClass(
+							"text-primary");
+						$(this).addClass("active").removeClass("text-primary");
+						elements.WebView.src = "file:///" + __dirname + "/pages/subs.html";
+					}
+				}),
+				$("<button></button>", {
+					class: "nav-link border-0 text-left btn-outline-light text-primary mt-2",
+					html: "<i class='material-icons align-middle'>search</i><span class='align-middle'>Search</span>",
+					click: function() {
+						elements.SideBarMenu.find("button").removeClass("active").addClass(
+							"text-primary");
+						$(this).addClass("active").removeClass("text-primary");
+						elements.WebView.src = "file:///" + __dirname +
+							"/pages/search.html";
+					}
+				})
+			]
+		});
+		elements.SideBar = $("<aside></aside>", {
+			class: "px-2 border border-top-0 border-bottom-0 border-left-0",
+			html: [elements.SideBarMenu]
+		});
+		elements.SideBar.appendTo(elements.Container);
+	}
+
+	function renderNav() {
+		elements.NavigationBarToggle = $("<button></button>", {
+				class: "btn btn-sm btn-outline-danger material-icons mr-2 p-1",
+				css: {
+					flexShrink: 0
+				},
+				text: "movie",
+				click: function() {
+					$("aside").toggle();
+				}
+			}),
+			elements.NavigationBar = $("<nav></nav>", {
+				class: "btn-toolbar d-flex px-1 flex-nowrap dropdown",
+				html: [
+					elements.NavigationBarToggle,
+					$("<header></header>", {
+						class: "col d-flex align-items-center justify-content-center",
+						text: "YouTube"
+					})
+				]
+			});
+		renderNavRight();
+		elements.NavigationBar.appendTo("global");
+		if (loggedin) {
+			$("#winBtns").append($("<div></div>", {
+				class: "dropdown-menu dropdown-menu-right",
+				"aria-labelledby": "menu",
+				html: [
+					$("<button></button>", {
+						class: "dropdown-item",
+						text: "Log out",
+						click: function() {
+							fs.unlink(TOKEN_PATH, () => {
+								location.reload()
+							});
+						}
+					}),
+					$("<div class='dropdown-divider'></div>"),
+					$("<button></button>", {
+						class: "dropdown-item",
+						text: "Quit app",
+						click: window.close
+					}),
+				]
+			}));
+			$('#menu').dropdown();
+		}
+	}
+
+	function renderNavRight() {
+		elements.NavigationBar.append(
+			`
+			
+		<div id="winBtns" class="dropdown" style="margin-left: auto;display:flex;align-items: center; margin-right:0.25rem;">
+			${(loggedin ? '<button class="btn btn-sm btn-outline-secondary material-icons mr-2" id="menu" style="font-size: 14px;padding: 1px">menu</button>' : '<button class="btn btn-sm mr-2 px-1 btn-danger">sign in</button>')}
+			<button class="btn btn-sm btn-outline-success material-icons p-2"
+			        onclick="if(app.window.isMaximized()) app.window.restore(); else app.window.maximize();"></button>
+			<button class="btn btn-sm btn-outline-warning material-icons p-2 mx-2" onclick="app.window.minimize();"></button>
+			<button class="btn btn-sm btn-outline-danger material-icons p-2" onclick="app.window.close();"></button>
+		</div>
+		
+			`
+		);
+
+	}
+</script>
+<div class="modal fade" id="GoogleLogIn" tabindex="-1" aria-labelledby="exampleModalLabel"
+ aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content" style="height:500px; overflow:hidden;"></div>
+	</div>
+</div>
+<style>
+	aside {
+		display: none;
+	}
+
+	body:not(.fullscreen) global {
+		box-shadow: 0 0 0.5rem black;
+		background: var(--transparent-white);
+		border-radius: 0.25rem;
+	}
+
+	global {
+		flex-grow: 2;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.modal-backdrop {
+		margin: 0.5rem;
+		border-radius: 0.25rem;
+	}
+
+	#winBtns .btn-danger:not(#menu):hover::after,
+	#winBtns .btn-danger:not(#menu):focus::after,
+	#winBtns .btn-outline-danger:hover::after,
+	#winBtns .btn-outline-danger:focus::after {
+		content: "close";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-danger {
+		font-weight: 900;
+		font-variant: small-caps;
+		height: 18px;
+		font-size: 0.9em;
+		line-height: 0;
+	}
+
+	#winBtns .btn-outline-warning:hover::after,
+	#winBtns .btn-outline-warning:focus::after {
+		content: "expand_more";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-outline-success:hover::after,
+	#winBtns .btn-outline-success:focus::after {
+		content: "expand_less";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	body {
+		height: 100%;
+		display: flex;
+		padding: 0.5rem;
+		background: none !important;
+	}
+
+	body.fullscreen {
+		padding: 0;
+	}
+
+	body.fullscreen aside,
+	body.fullscreen nav {
+		display: none !important;
+	}
+
+	body.fullscreen nav button:not(.btn) {
+		color: white !important;
+	}
+
+	nav:hover {
+		top: 0 !important;
+	}
+
+	body nav {
+		-webkit-app-region: drag;
+	}
+
+	body nav button {
+		-webkit-app-region: no-drag;
+	}
+
+	@media (max-width: 575px) {
+		aside {
+			width: 100vw;
+		}
+		section {
+			flex-direction: column;
+		}
+	}
+
+	@media (min-width: 576px) {
+		aside {
+			width: 25vw;
+			min-width: 200px;
+		}
+		div.modal-dialog {
+			margin: 15px auto;
+		}
+	}
+
+	@media (max-width: 767px) {
+		aside i.material-icons {
+			font-size: 18px;
+			margin-right: 0.25rem;
+		}
+	}
+
+	@media (min-width: 768px) {
+		aside i.material-icons {
+			font-size: 24px;
+			margin-right: 0.5rem;
+		}
+	}
+
+	webview.loading::after {
+		content: url(../../icons/Loader.png);
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		animation: spin 1s linear infinite;
+		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

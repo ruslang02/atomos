@@ -1,0 +1,83 @@
+<div class="d-flex">
+	<section>
+		<img src="logo.png" style="width:64px;margin-right: 1em;">
+	</section>
+	<main style="flex-grow: 2;">
+		<p>This PC runs <b data-name="name"></b></p>
+		<p><b>Release</b> <span data-name="version"></span></p>
+		<p><b>CodeName</b> <span data-name="codename"></span></p>
+		<p><b>Build</b> <span data-name="build"></span></p>
+		<p>Based on Ubuntu 16</p>
+		<button class="btn btn-sm btn-primary ml-2 float-right" id="close" style="-webkit-app-region: no-drag;"
+		        onclick="window.close()">Close
+	</button>
+	</main>
+</div>
+<style>
+	body {
+		background: none;
+		-webkit-app-region: drag;
+	}
+
+	body.windowActive div.d-flex {
+		box-shadow: 0 0 0.5rem black;
+	}
+
+	div.d-flex {
+		background: var(--transparent-white);
+		box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.4);
+		border-radius: 0.25rem;
+		padding: 1rem;
+	}
+
+	html {
+		padding: 0.5rem;
+	}
+
+	p {
+		margin: 0;
+		line-height: 2;
+	}
+
+	* {
+		transition: none !important
+	}
+</style>
+
+<script defer>
+	const {
+		app
+	} = require('atomos-framework');
+	const fs = require('fs-extra');
+	window.onload = function() {
+		setTimeout(function() {
+			app.window.setContentSize(app.window.getContentSize()[0], Math.ceil(
+				document.documentElement.offsetHeight));
+		}, 100);
+	};
+	app.window.on('blur', function () {
+		document.body.className = document.body.className.replace(" windowActive",
+			"");
+		document.getElementById("close").className =
+			document.getElementById("close").className
+				.replace(" btn-primary", "")
+				.replace(" btn-outline-primary", "") + " btn-outline-primary";
+	});
+	app.window.on('focus', function () {
+		document.body.className = document.body.className.replace(" windowActive",
+			"");
+		document.getElementById("close").className =
+			document.getElementById("close").className
+				.replace(" btn-outline-primary", "")
+				.replace(" btn-primary", "") + " btn-primary";
+		document.body.className += " windowActive";
+	});
+	document.getElementsByTagName("img")[0].src = "file://" + app.getPath("os") +
+		"/icons/AtomOS.png";
+	fs.readJson(app.getPath("os") + "/RELEASE.json", function (err, build) {
+		document.querySelector("[data-name=name]").innerText = build.name;
+		document.querySelector("[data-name=version]").innerText = build.version;
+		document.querySelector("[data-name=codename]").innerText = build.codename;
+		document.querySelector("[data-name=build]").innerText = build.build;
+	});
+</script>

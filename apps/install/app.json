@@ -1,0 +1,8 @@
+{
+	"title": "App Installer",
+	"name": "Installer",
+	"icon": "$APP_ROOT/logo.png",
+	"description": "Install external AtomOS-compatible apps on your PC",
+	"frame": false,
+	"transparent": true
+}

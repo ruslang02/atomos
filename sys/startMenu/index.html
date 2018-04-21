@@ -1,0 +1,126 @@
+<start-menu class="bg-light p-0">
+	<profile-section class="bg-light p-2">
+		<profile-name class="lead">atomOS</profile-name>
+		<atomos-version>
+			<button type="button" class="btn btn-danger float-right p-1" onclick="app.launch('aos-shutdown')"><i
+				class="material-icons">power_settings_new</i></button>
+		</atomos-version>
+	</profile-section>
+	<div class="panel m-1">
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="folders"></div>
+			<div role="tabpanel" class="tab-pane" id="applications"></div>
+		</div>
+	</div>
+	<div class="nav nav-pills nav-fill" role="tablist">
+		<a href="#folders" class="nav-link active nav-item" style="border-radius:0" aria-controls="home" role="tab" data-toggle="tab"
+		   data-placement="top" title="Quick file-system access">Libraries</a>
+		<a href="#applications" class="nav-link nav-item" aria-controls="messages" role="tab" data-toggle="tab"
+			 data-placement="top" title="All installed apps" style="border-radius:0">Applications</a>
+	</div>
+</start-menu>
+<script>
+	const {
+		remote
+	} = require("electron");
+	const {
+		getGlobal,
+		BrowserWindow
+	} = remote;
+	const {
+		app,
+		iconDB,
+		Menu,
+		registry
+	} = require("atomos-framework");
+	const fs = require('fs-extra');
+	
+	registry.get(true).then((reg) => {window.scale = reg.uiScaling});
+	registry.on("changed", (cook) => {
+		if(cook === "system")
+			window.scale = JSON.parse(cook.value).uiScaling;
+	})
+
+	const folders = [{
+		name: "Documents",
+		icon: "Binder",
+		description: "Work with all your documents in one folder",
+		click: function () {
+			app.launch('aos-files', {path: app.getPath('documents')})
+		}
+	}, {
+		name: "Music",
+		icon: "Music Player",
+		description: "Play your favorite music tracks",
+		click: function () {
+			app.launch('aos-files', {path: app.getPath('music')})
+		}
+	}, {
+		name: "Pictures",
+		icon: "Image Viewer",
+		description: "View all the photos you took",
+		click: function () {
+			app.launch('aos-files', {path: app.getPath('pictures')})
+		}
+	}, {
+		name: "Videos",
+		icon: "Movie",
+		description: "Watch downloaded movies",
+		click: function () {
+			app.launch('aos-files', {path: app.getPath('documents')})
+		}
+	}];
+	window.$ = window.jQuery = require("jquery");
+
+	folders.forEach(function (folder) {
+		$("#folders").append($("<a></a>", {
+			href: "#",
+			click: function () {
+				folder.click()
+			},
+			class: "list-item btn btn-light",
+			html: [
+				$("<img />", {
+					src: iconDB.retrieveIconURL(folder.icon)
+				}),
+				`<name>${folder.name}</name>`,
+				`<br />`,
+				`<description>${folder.description}</description>`
+			]
+		}))
+	});
+	$("body").append("<link href=\"" + app.getPath("os") + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const atomos = require("./index");
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip({
+			trigger: 'hover',
+			delay: 500
+		});
+		$('[data-toggle="tab"]').tooltip({
+			trigger: 'hover',
+			delay: 500
+		})
+	});
+
+	atomos.listApps();
+	fs.watch(app.getPath("os") + "/apps", function (a, b) {
+		setTimeout(function () {
+			$("#applications")[0].innerHTML = "";
+			atomos.listApps(b);
+		}, 500);
+	});
+
+	$("body").on("click", "a.btn", function () {
+		app.window.hide();
+	});
+
+	let taskbar = BrowserWindow.fromId(getGlobal("gui").taskbar);
+	taskbar.on('resize', reset);
+
+	function reset() {
+		let bounds = taskbar.getBounds();
+		app.window.setPosition(bounds.x, bounds.y + bounds.height - taskbar.getSize()[1] - Math.ceil($("body").height() * scale));
+	}
+</script>

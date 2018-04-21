@@ -1,0 +1,290 @@
+<section>
+	<div class="btn-toolbar bg-transparent border-0" style="height:38px;position:absolute;top:0;left:0;width:100%;">
+		<div id="title" class="col d-flex align-items-center justify-content-center">
+			Application Installer
+		</div>
+		<div id="winBtns" style="margin-left: auto;display:flex;align-items: center; margin-right:0.25rem;">
+			<button class="btn btn-sm btn-outline-success material-icons p-2"
+			        onclick="if(app.window.isMaximized()) app.window.restore(); else app.window.maximize();"></button>
+			<button class="btn btn-sm btn-outline-warning material-icons p-2 mx-2" onclick="app.window.minimize();"></button>
+			<button class="btn btn-sm btn-danger material-icons p-2" onclick="app.window.close();"></button>
+		</div>
+	</div>
+<main id="main" class="btn-light">
+	<div class="text-center"><img data-icon="Product"/></div>
+	<p class="lead">
+		Drag-drop your app or click to choose.
+	</p>
+</main>
+<main id="installProcess" class="p-4">
+	<p class="lead mb-3">
+		Installing, please wait...
+	</p>
+	<div class="progress">
+		<div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0"></div>
+	</div>
+	<pre id="process" class="mt-3 mb-0">Initializing installation...</pre>
+</main>
+<main id="installed" class="p-4">
+	<div><img data-icon="Thumbs Up"></div>
+	<p class="lead my-2">
+		App installed!
+	</p>
+	<div class="text-right mt-1"><button onclick="window.close()" class="btn-light btn">Exit</button> <button class="btn-primary btn">Start</button></div>
+</main>
+</section>
+<style>
+	main {
+		display: none;
+		flex-direction: column;
+		text-align: center;
+		justify-content: center;
+		flex-grow: 2;
+		user-select: none;
+		cursor: default;
+	}
+
+	#main * {
+		pointer-events: none;
+	}
+
+	section {
+		box-shadow: 0 0 0.5rem black;
+		background: var(--transparent-white);
+		display: flex;
+		flex-direction: column;
+		border-radius: 0.25rem;
+		flex-grow: 2;
+		overflow: hidden;
+		position: relative;
+	}
+
+	body {
+		display: flex;
+		height: 100vh;
+		padding: 0.5rem;
+		flex-direction: column;
+		background: none !important;
+	}
+
+	#winBtns .btn-danger:hover::after,
+	#winBtns .btn-danger:focus::after,
+	#winBtns .btn-outline-danger:hover::after,
+	#winBtns .btn-outline-danger:focus::after {
+		content: "close";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	.btn-toolbar {
+		-webkit-app-region: drag;
+	}
+
+	.btn-toolbar button {
+		-webkit-app-region: no-drag;
+	}
+
+	#winBtns .btn-outline-warning:hover::after,
+	#winBtns .btn-outline-warning:focus::after {
+		content: "expand_more";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-outline-success:hover::after,
+	#winBtns .btn-outline-success:focus::after {
+		content: "expand_less";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	main:target {
+		display: flex
+	}
+</style>
+
+<script>
+	const {
+		app,
+		Notification,
+		iconDB
+	} = require("atomos-framework")
+	const args = app.arguments;
+	const {
+		ipcRenderer
+	} = require("electron");
+
+	window.$ = require("jquery");
+	const fs = require("fs-extra");
+	const unzip = require('extract-zip');
+	const win = app.window;
+	const path = require("path");
+	const childProcess = require("child_process");
+	let appDir;
+	let DependencyLength;
+	let index;
+	let FilePath;
+	app.window.on('blur', function () {
+		$("#winBtns .btn-danger").removeClass("btn-danger").addClass("btn-outline-danger");
+		$("section").css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
+	});
+	app.window.on('focus', function () {
+		$("#winBtns .btn-outline-danger").removeClass("btn-outline-danger").addClass("btn-danger");
+		$("section").css("boxShadow", "0px 0px 0.5rem 0 black");
+	});
+
+	$("[data-icon]").each(function () {
+		this.src = iconDB.retrieveIconURL($(this).attr("data-icon"));
+	});
+
+	function InstallApp(fPath) {
+		if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Starting installation...");
+		fs.watch(path.resolve(app.getPath("os"), "apps"), function (event, file) {
+			console.log(event, file);
+			if (event === "rename" && !appDir) appDir = file;
+		});
+		FilePath = fPath;
+		fs.copy(FilePath, path.resolve(app.getPath("temp"), path.basename(FilePath).replace(".wapp", ".zip")))
+			.then(CopyAppToTempResult)
+			.catch(ErrorProvider);
+
+	}
+
+	function CopyAppToTempResult() {
+		location.hash = 'installProcess';
+		$(".progress-bar")[0].addEventListener('webkitTransitionEnd', function () {
+			if ($(".progress-bar").css("width") >= $(".progress").css("width")) InstallationComplete();
+			console.log($(".progress-bar").css("width"), $(".progress").css("width"));
+		}, false);
+		unzip(FilePath, {
+			dir: path.resolve(app.getPath("os"), "apps"),
+			onEntry(entry, file) {
+				if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Unpacking... " + file.entriesRead + "/" + file.entryCount);
+				$("pre").text("Unpacking... " + file.entriesRead + "/" + file.entryCount);
+				$(".progress-bar").css("width", Math.ceil(file.entriesRead / file.entryCount * 100 / 3) + "%");
+			}
+		}, AppExtractionResult)
+	}
+
+	function AppExtractionResult(err) {
+		if (err) ErrorProvider(err);
+		else {
+			if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Installing " + appDir + "...");
+			$("pre").text("Installing " + appDir + "...");
+			$(".progress-bar").css("width", "33%");
+			fs.readJson(path.resolve(app.getPath("os"), "apps", appDir, "app.json"))
+				.then(AppSettingsReadResult)
+				.catch(ErrorProvider)
+		}
+	}
+
+	function AppSettingsReadResult(AppSettings) {
+		if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Installing dependencies...");
+		$("pre").text("Installing dependencies...");
+		$(".progress-bar").css("width", "40%");
+		window.AppSettings = AppSettings;
+		console.log(AppSettings);
+		if (AppSettings.dependencies) {
+			DependencyLength = Object.keys(AppSettings.dependencies).length;
+			$("pre").text("Installing library \"" + Object.keys(AppSettings.dependencies)[0] + "\"...");
+			Object.keys(AppSettings.dependencies).forEach(NodeDependency)
+		} else $(".progress-bar").css("width", "100%");
+	}
+
+	function NodeDependency(dependency, index) {
+		let NPMInstallation = childProcess.spawn(
+			"npm",
+			["install", dependency],
+			{
+				cwd: app.getPath("os"),
+				shell: true
+			}
+		);
+		window.index = index;
+		console.log("npm i " + dependency);
+		NPMInstallation.stdout.on('data', NodeDependencyInstalled);
+	}
+
+	function NodeDependencyInstalled() {
+		if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Installing library \"" + Object.keys(AppSettings.dependencies)[index] + "\"...");
+		$("pre").text("Installing library \"" + Object.keys(AppSettings.dependencies)[index] + "\"...");
+		$(".progress-bar").css("width", (parseInt($(".progress-bar")[0].style.width) + (60 / DependencyLength)) + "%");
+	}
+
+	function InstallationComplete() {
+		location.hash = "installed";
+		if (win.getParentWindow()) {
+			win.getParentWindow().webContents.send("stdout", "Installed.");
+			window.close();
+		}
+		$(".btn-primary").click(function() {
+			app.launch(appDir).then(window.close);
+		})
+	}
+
+	function ErrorProvider(err) {
+		$(".progress-bar").addClass("bg-danger");
+		$("pre").html(err + "<br>Restart App Installer or contact developer");
+	}
+
+	if (typeof args === "string") {
+		if (args.trim() !== "install") {
+			if (args.includes("--help")) {
+				win.getParentWindow().webContents.send("stdout", "USAGE: install [--help || &lt;app_path&gt;]\r\nInstalls an application from .wapp archive\r\n\r\n--help	Displays this help message\r\nIf started w/o any arguments, GUI version opened.");
+			} else if (path.extname(args) === ".wapp") InstallApp(args);
+			win.close();
+		}
+	} else {
+		if (args.path) if (path.extname(args.path) === ".wapp") InstallApp(args.path);
+	}
+
+	$(function () {
+		location.hash = "#main";
+		ipcRenderer.on("return-file", function (e, fPath) {
+			if (path.extname(fPath) === ".wapp") InstallApp(fPath)
+		});
+		$("#main").click(function () {
+			app.launch("aos-files", {
+				action: "open"
+			}, {
+				modal: true,
+				parent: win
+			})
+		}).on("dragenter", function () {
+			$(this).find("p.lead").text("Drop it!");
+		}).on("dragleave", function () {
+			$(this).find("p.lead").text("Drag-drop your app or click to choose.");
+		}).on("dragover", function (e) {
+			e.preventDefault();
+		}).on("drop", function (e) {
+			e.preventDefault();
+			e = e.originalEvent;
+			let file = e.dataTransfer.getData("aos/file");
+			if (file) {
+				file = $.parseJSON(file);
+				console.log(file);
+				if (file.name.endsWith(".wapp"))
+					InstallApp(file.fullPath);
+			}
+		});
+		$(window).on("hashchange", function () {
+			document.title = "App Installer";
+		})
+	});
+
+</script>

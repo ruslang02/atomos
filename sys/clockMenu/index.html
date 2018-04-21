@@ -1,0 +1,130 @@
+<clock-menu class="border-dark card" style="background:var(--transparent-white)">
+	<div class="card-body text-right float-right">
+		<h1 class="display-3" data-value="clock"><br></h1>
+		<h4 data-value="date"></h4>
+	</div>
+	<div class="list-group list-group-flush">
+		<div class="list-group-item d-flex" id="volume">
+			<i class="material-icons md-18">volume_down</i>
+			<input title class="form-control" oninput="changeVolume(this)" type="range">
+			<i class="material-icons md-18">volume_up</i>
+		</div>
+		<div class="list-group-item d-flex" id="brightness">
+			<i class="material-icons md-18">brightness_low</i>
+			<input title class="form-control" min=0.05 max=1 value=1 step=0.05 oninput="changeBrightness(this)"
+			 type="range">
+			<i class="material-icons md-18">brightness_high</i>
+		</div>
+		<button type="button" id="settings" class="list-group-item list-group-item-action"
+		 onclick="app.launch('control')">Settings
+		</button>
+	</div>
+</clock-menu>
+<script>
+	const {
+		app,
+		registry
+	} = require("atomos-framework");
+	const proc = require("child_process");
+	const {
+		remote,
+		screen,
+		ipcRenderer
+	} = require("electron");
+	const fs = require("fs-extra");
+
+	const {
+		width,
+		height,
+		x,
+		y
+	} = screen.getPrimaryDisplay().bounds;
+
+	const {
+		BrowserWindow,
+		getGlobal
+	} = remote;
+
+
+	registry.get(true).then((reg) => {
+		window.scale = reg.uiScaling
+	});
+	registry.on("changed", (cook) => {
+		if (cook === "system") {
+			window.scale = JSON.parse(cook.value).uiScaling;
+			reset();
+		}
+
+	})
+	window.jQuery = window.$ = require("jquery");
+	$("body").append("<link href=\"" + app.getPath("os") +
+		"/sys/internetMenu/index.css\" rel=\"stylesheet\">");
+	let taskbar = BrowserWindow.fromId(getGlobal("gui").taskbar);
+	taskbar.on('resize', reset);
+	$(function() {
+
+		setInterval(tick, 1000);
+		tick();
+	})
+	fs.access("/sys/class/backlight/intel_backlight/brightness", fs.constants.W_OK,
+		(err) => {
+			app.launch("sudo", {
+				command: "chmod 777 -R /sys/class/backlight/intel_backlight/",
+				title: "Enter your user password",
+				message: "Log in is required to access this PC"
+			}, {
+				modal: true,
+				parent: app.window
+			}).then(function(win) {
+				let loggedin = false;
+				ipcRenderer.on("return-sudo", () => {
+					loggedin = true;
+				})
+				BrowserWindow.fromId(win).on("closed", function() {
+					if (!loggedin) remote.app.quit();
+				})
+			})
+		})
+
+	function reset() {
+		let bounds = taskbar.getBounds();
+		app.window.setPosition(bounds.x + bounds.width - app.window.getContentSize()[
+			0], bounds.y - Math.ceil($(".card").outerHeight() * scale));
+		app.window.setContentSize(app.window.getContentSize()[0], Math.ceil($(".card")
+			.outerHeight() * scale));
+	}
+
+	function tick() {
+		$("[data-value=clock]").text(new Date().toLocaleTimeString({}, {
+			hour: '2-digit',
+			minute: '2-digit'
+		}));
+		$("[data-value=date]").text(new Date().toLocaleDateString({}, {
+			day: '2-digit',
+			month: 'long',
+			year: 'numeric'
+		}));
+		proc.exec("amixer get Master", function(e, out, err) {
+			if (e || err) console.log(e, err, out)
+			out = out.substring(out.indexOf("Mono: Playback") + "Mono: Playback".length);
+			if (out !== $("#volume input").val()) {
+				$("#volume input").val(out.substring(out.indexOf("[") + 1, out.indexOf(
+					"]") - 1));
+				reset();
+			}
+
+		});
+		fs.readFile("/sys/class/backlight/intel_backlight/brightness", (e, val) => {
+			$("#brightness input").val(val / 96000)
+		})
+	}
+
+	function changeVolume(element) {
+		proc.spawn("amixer", ["set", "Master", element.value + "%"]);
+	}
+
+	function changeBrightness(element) {
+		require("child_process").exec("echo " + Math.ceil(element.value * 96000) +
+			" > /sys/class/backlight/intel_backlight/brightness");
+	}
+</script>

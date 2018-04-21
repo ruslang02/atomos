@@ -1,0 +1,11 @@
+{
+	"title": "ViewerJS",
+	"version": "1.0.0",
+	"name": "ViewerJS",
+	"icon": "$APP_ROOT/logo.png",
+	"description": "View documents, spreadsheets and presentations",
+	"height": 500,
+	"width": 500,
+	"frame": false,
+	"transparent": true
+}

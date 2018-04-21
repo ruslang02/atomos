@@ -1,0 +1,63 @@
+<network-menu class="bg-light">
+  <div class="panel">
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane" id="wifi">
+        <a class="list-item">
+        <img data-icon="Wi-Fi">
+        <name>Wi-Fi</name><br>
+        <description>Select a network down below</description>
+      </a>
+        <hr />
+        <networks>
+
+        </networks>
+      </div>
+      <div role="tabpanel" class="tab-pane active" id="ethernet">
+        <a class="list-item">
+        <img data-icon="Ethernet Disconnected">
+        <button class='btn btn-sm float-right btn-success' onclick="toPing=true"><i class="material-icons" style="vertical-align:sub;">play_arrow</i> Start pinging</button>
+        <button class='btn btn-sm float-right btn-danger' style="display:none" onclick="toPing=false"><i class="material-icons" style="vertical-align:sub;">pause</i> Stop pinging</button>
+        <name>Ethernet</name><br>
+        <description>Cable not plugged in</description>
+      </a>
+        <hr />
+        <dl class="row m-0">
+          <dt class="col-4">Ping</dt>
+          <dd name="ping-time">0ms</dd>
+        </dl>
+        <dl class="row m-0">
+          <dt class="col-4">IP address</dt>
+          <dd name="ip">n/a</dd>
+        </dl>
+      </div>
+      <div class="tab-pane" id="net_fallback">
+        <div class="text-center">
+          <p class="lead text-center m-auto w-100" style="position:absolute;top:0;bottom:0;height:2rem;">No internet interfaces</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="nav nav-pills nav-fill" role="tablist">
+    <li class="nav-item d-none"><a href="#wifi" class="nav-link " aria-controls="home" role="tab" data-toggle="tab">Wi-Fi</a></li>
+    <li class="nav-item d-none"><a href="#ethernet" class="nav-link active" aria-controls="messages" role="tab" data-toggle="tab">Ethernet</a></li>
+  </ul>
+  <wifi-connect style="font-size: 12px; display:none" class="file-item">
+    <a class="list-item">
+        <img data-icon="Wi-Fi Router">
+        <name>Connect to <wifi-name>a hotspot</wifi-name></name><br>
+        <description>Enter password below</description>
+      <input title type="password" class="form-control form-control-sm my-2">
+      <footer class="dropup float-right">
+      <button class="btn btn-secondary btn-sm">Cancel</button>
+      <button class="btn btn-primary btn-sm">Connect and remember</button>
+    </footer></a>
+
+
+
+
+  </wifi-connect>
+  <wifi-overlay style='display:none'>
+    <img data-icon="Loader">
+  </wifi-overlay>
+</network-menu>
+<script src="index.js"></script>

@@ -1,0 +1,10 @@
+{
+  "title": "Terminal",
+  "name": "Terminal",
+  "icon": "$APP_ROOT/logo.png",
+  "description": "Gain low-level access to the system",
+  "width": 450,
+	"height": 250,
+	"frame": false,
+	"transparent": true
+}

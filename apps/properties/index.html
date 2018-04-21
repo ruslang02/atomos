@@ -1,0 +1,165 @@
+<app class="bg-light d-flex p-1 h-100">
+	<div class="dropdown-menu mr-2 d-block" style="position:static">
+		<button class="dropdown-item active"
+						onclick="$('*').removeAttr('active').removeClass('active');$('properties').attr('active','active');$(this).addClass('active');">
+			<i class="material-icons">list</i> General
+		</button>
+		<button class="dropdown-item"
+						onclick="$('*').removeAttr('active').removeClass('active');$('permissions').attr('active','active');$(this).addClass('active');">
+			<i class="material-icons">supervisor_account</i> Permissions
+		</button>
+		<button class="dropdown-item d-none"
+						onclick="$('*').removeAttr('active').removeClass('active');$('associations').attr('active','active');$(this).addClass('active');">
+			<i class="material-icons">launch</i> Association
+		</button>
+	</div>
+	<section style="flex-grow:2;display:flex;flex-direction:column;">
+		<properties class="p-1" active>
+			<dl>
+				<dd>File Name:</dd>
+				<dt data="fname"></dt>
+			</dl>
+			<dl>
+				<dd>Type:</dd>
+				<dt data="ftype"></dt>
+			</dl>
+			<dl>
+				<dd>Size:</dd>
+				<dt data="fsize"></dt>
+			</dl>
+			<hr>
+			<dl>
+				<dd>Last Access Time:</dd>
+				<dt data="fatime"></dt>
+			</dl>
+			<dl>
+				<dd>Last Modification Time:</dd>
+				<dt data="fmtime"></dt>
+			</dl>
+		</properties>
+
+		<permissions class="p-1">
+			<dl>
+				<dd>Readable:</dd>
+				<dt data="fread">unknown</dt>
+			</dl>
+			<dl>
+				<dd>Writable:</dd>
+				<dt data="fwrite">unknown</dt>
+			</dl>
+			<dl>
+				<dd>Executable:</dd>
+				<dt data="fexec">unknown</dt>
+			</dl>
+
+		</permissions>
+
+		<associations class="p-1 d-none">
+			<dl>
+				<dd>File extenstion:</dd>
+				<dt data="fext">none</dt>
+			</dl>
+			<dl>
+				<dd>Default application:</dd>
+				<dt data="fapp">none</dt>
+			</dl>
+			<button class="btn btn-sm btn-info"><i class="material-icons">link</i> Assign default application...</button>
+
+		</associations>
+		<div class="text-right mt-2">
+			<button class="btn btn-sm btn-secondary"><i class="material-icons">bookmark</i> Copy link</button>
+			<button class="btn btn-sm btn-primary" onclick="window.close()">Close</button>
+		</div>
+	</section>
+</app>
+<script>
+	let args = require('atomos-framework').arguments;
+	window.jQuery = window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const fs = require('fs-extra');
+	const path = require('path');
+	window.onload = function () {
+		document.title = path.basename(args.path) + " - Properties";
+		$(".btn-secondary").tooltip({
+			title: "Copied!",
+			trigger: "click"
+		});
+		$(".btn-secondary").click(function () {
+			require('electron').clipboard.writeText(args.path);
+		});
+		fs.readJson(app.getPath("appData") + "/associations.json", "utf8")
+				.then(function (data) {
+					if (data.find(o => o.extension === path.extname(args.path).substring(1).toLowerCase()))
+						$("[data=fapp]").text(data.find(o => o.extension === path.extname(args.path).substring(1).toLowerCase())["app"]);
+				})
+	};
+
+	if (args.path) {
+		$("[data=fname]").text(path.basename(args.path));
+		$("[data=fext]").text(path.extname(args.path).substring(1));
+		fs.stat(args.path, function (err, stat) {
+			if (!err) {
+				console.log(stat);
+				$("[data=fsize]").text(stat.size + " bytes");
+				$("[data=fatime]").text(stat.atime.toDateString());
+				$("[data=fmtime]").text(stat.mtime.toDateString());
+				if (stat.isFile()) {
+					$("[data=ftype]").text("File");
+					$("associations, .dropdown-item:contains('Association')").removeClass("d-none");
+				}
+				else if (stat.isDirectory()) $("[data=ftype]").text("Folder");
+				else if (stat.isBlockDevice()) $("[data=ftype]").text("Block Device");
+				else if (stat.isCharacterDevice()) $("[data=ftype]").text("Character Device");
+				else if (stat.isFIFO()) $("[data=ftype]").text("FIFO");
+				else if (stat.isSocket()) $("[data=ftype]").text("Socket");
+				else
+					$("[data=ftype]").text("Unknown");
+			} else {
+				$("[data=fsize], [data=ftype], [data=fatime], [data=fmtime]").text("failed to fstat");
+			}
+		});
+		fs.access(args.path, fs.constants.R_OK, function (err) {
+			$("[data=fread]").text((err ? "no" : "yes"));
+		});
+		fs.access(args.path, fs.constants.W_OK, function (err) {
+			$("[data=fwrite]").text((err ? "no" : "yes"));
+		});
+		fs.access(args.path, fs.constants.X_OK, function (err) {
+			$("[data=fexec]").text((err ? "no" : "yes"));
+		})
+	}
+</script>
+<style>
+	.dropdown-item > i {
+		position: absolute;
+		left: 0.55rem;
+	}
+
+	properties,
+	permissions,
+	associations {
+		flex-grow: 2;
+		overflow: auto;
+		display: none;
+	}
+
+	[active] {
+		display: inline-block;
+	}
+
+	dl {
+		margin-bottom: 0.4rem;
+	}
+
+	dd {
+		font-weight: bold;
+		margin: 0;
+		display: inline-block;
+	}
+
+	dt {
+		font-weight: normal;
+		display: inline-block;
+	}
+</style>

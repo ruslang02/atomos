@@ -1,0 +1,14 @@
+{
+	"title": "Authorization",
+	"name": "atomSudo",
+	"description": "Provides a GUI to execute root operations",
+	"icon": "$APP_ROOT/logo.png",
+	"width": 350,
+	"height": 170,
+	"hidden": true,
+	"resizable": false,
+	"maximizable": false,
+	"frame": false,
+	"transparent": true,
+	"center": true
+}

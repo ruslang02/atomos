@@ -1,0 +1,94 @@
+<body>
+<script>
+	let fs = require('fs');
+	let {google} = require('googleapis');
+	let {OAuth2Client} = require('google-auth-library');
+	const {
+		app
+	} = require("atomos-framework");;
+	window.$ = require("jquery");
+	let TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
+			process.env.USERPROFILE) + '/.credentials/';
+	let TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
+
+	// Load client secrets from a local file.
+	$(function() {
+	if(location.hash.substring(1).trim() === "") {
+		$("body").css({
+			display: 'flex',
+			flexDirection: 'column',
+			justifyContent: 'center'
+		}).append("<form class='text-center'><h5 class='m-3'>Find videos from around the world</h5><input type='text' name='search' class='form-control mb-3 mx-auto' style='max-width: 450px'><button type='submit' class='btn btn-primary'>Search</button></form>");
+		$(":submit").click(function(e) {
+			e.preventDefault();
+			location.assign(location.hash + "#" + $('[name=search]').val());
+			location.reload();
+		})
+	} else fs.readFile(app.getPath("os") + '/client_secret.json', function processClientSecrets(err, content) {
+		if (err) {
+			console.log('Error loading client secret file: ' + err);
+			return;
+		}
+		authorize(JSON.parse(content), getChannel);
+	});
+		
+	})
+	
+	
+	function authorize(credentials, callback) {
+		let clientSecret = credentials.web.client_secret;
+		let clientId = credentials.web.client_id;
+		let redirectUrl = "http://atomos.org.uk/ytcallback";
+		let oauth2Client = new OAuth2Client(clientId, clientSecret, redirectUrl);
+
+// Check if we have previously stored a token.
+		fs.readFile(TOKEN_PATH, function (err, token) {
+			if (err) {
+				location.replace("file:///" + __dirname + "/home.html");
+			} else {
+				oauth2Client.credentials = JSON.parse(token);
+				callback(oauth2Client);
+			}
+		});
+	}
+
+	function getChannel(auth) {
+
+		google.youtube('v3').search.list({
+			auth: auth,
+			part: "snippet",
+			q: location.hash.substring(1),
+			type: "video",
+			order: "relevance",
+			videoEmbeddable: true,
+			maxResults: 20
+		}, function (e2, res2) {
+			$("body").append(`<h5 class='m-3'>Search results for "${location.hash.substring(1)}"</h5>`);
+			res2.data.items.forEach(function (item) {
+			console.log(item)
+				$("body").append(`<div class="card m-2 p-2">
+<div class="media">
+  <img class="mr-3" style="height: 3rem;" src="${item.snippet.thumbnails.medium.url}" alt="Generic placeholder image">
+  <div class="media-body position-relative text-truncate">
+    <h5 class="mt-0 text-truncate text-nowrap">${item.snippet.title}</h5>
+    <small>${item.snippet.channelTitle}</small>
+  </div>
+  <a href="file:///${__dirname}/play.html#${item.id.videoId}" class="btn btn-danger material-icons p-0" style="font-size:24px;right:0.5rem; position:absolute;">play_arrow</a>
+</div>
+</div>`)
+			})
+		})
+	}
+</script>
+<style>
+	div.media:hover .btn-danger {
+		visibility: visible;
+		opacity: 1;
+	}
+
+	div.media .btn-danger {
+		visibility: hidden;
+		opacity: 0;
+		transition: opacity .5s ease;
+	}
+</style>

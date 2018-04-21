@@ -1,0 +1,464 @@
+<body>
+<script>
+	const {
+		app,
+		Notification,
+		registry
+	} = require("atomos-framework");
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const pm = new (require('playmusic'));
+	const {
+		remote
+	} = require("electron");
+	const {
+		session
+	} = remote;
+	let cookies;
+	registry.get()
+		.then((a) => {
+			cookies = a;
+			if (Object.keys(cookies).length) init();
+			else login();
+		});
+	let elements = {};
+
+	function login() {
+		app.window.setSize(400, 250);
+		app.window.center();
+		elements.login = $("<main></main>", {
+			class: "container d-flex h-100",
+			html: [
+				$("<form></form>", {
+					class: "card p-3 m-auto",
+					css: {
+						minWidth: "350px",
+						boxShadow: "0 0 0.5rem black",
+						borderRadius: "0.25rem",
+						background: "var(--transparent-white)"
+					},
+					on: {
+						submit: function GLogin(e) {
+							e.preventDefault();
+							pm.login({
+								email: this.elements.gmail.value,
+								password: this.elements.gpass.value
+							}, function (err, data) {
+								if (err) $(".alert-danger").text(err).fadeIn();
+								else if (!data) $(".alert-danger").text(
+									"Username or password are incorrect").fadeIn();
+								else {
+									registry.set(data).catch(function (e) {
+										$(".alert-danger").text(e).fadeIn();
+									}).then(app.relaunch);
+								}
+							});
+						}
+					},
+					html: [
+						$("<center></center>", {
+							css: {
+								fontSize: "1.5em",
+								marginBottom: "1rem"
+							},
+							id: "winBtns",
+							html: [
+								$("<img />", {
+									src: "logo.png",
+									class: "align-middle",
+									height: 32
+								}),
+								$("<span></span>", {
+									html: "<span class='text-secondary'>Google</span> <span style='color:orangered'>Play Music</span>",
+									class: "align-middle ml-2"
+								}),
+								$("<button></button>", {
+									class: "btn btn-danger p-2 material-icons",
+									css: {
+										position: "absolute",
+										top: 0,
+										right: 0,
+										margin: "1rem"
+									},
+									type: "button",
+									click: function () {
+										window.close()
+									}
+								})
+							]
+						}),
+						$("<div></div>", {
+							class: "alert alert-danger text-center",
+							css: {
+								display: "none"
+							}
+						}),
+						$("<input />", {
+							placeholder: "Google account email",
+							name: "gmail",
+							type: "email",
+							required: "required",
+							class: "form-control form-control-sm mb-2"
+						}),
+						$("<input />", {
+							placeholder: "Password",
+							type: "password",
+							name: "gpass",
+							class: "form-control form-control-sm"
+						}),
+						$("<div></div>", {
+							class: "d-flex justify-content-around mt-2",
+							html: [
+								$("<button></button>", {
+									class: "btn btn-primary btn-sm",
+									html: "<i class='material-icons'>lock_outline</i> Sign In",
+									type: "submit"
+								})
+							]
+						})
+					]
+				})
+			]
+		});
+		elements.login.appendTo("body");
+	}
+
+	function init() {
+		window.onhashchange = navigate;
+
+		app.window.on('blur', function () {
+			$("#winBtns .btn-danger").removeClass("btn-danger").addClass(
+				"btn-outline-danger");
+			elements.Window.css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
+		});
+		app.window.on('focus', function () {
+			$("#winBtns .btn-outline-danger").removeClass("btn-outline-danger").addClass(
+				"btn-danger");
+			elements.Window.css("boxShadow", "0px 0px 0.5rem 0 black");
+		});
+
+		elements.NavigationToggle = $("<img />", {
+			src: "logo.png",
+			height: 24
+		});
+		elements.WindowButtons = $("<div></div>", {
+			class: "d-flex align-items-center ml-auto",
+			id: "winBtns",
+			html: [
+				$("<button></button>", {
+					class: "btn btn-outline-success p-2 material-icons",
+					css: {
+						"-webkit-app-region": "no-drag"
+					},
+					click: function () {
+						if (app.window.isMaximized()) app.window.restore();
+						else app.window.maximize();
+					}
+				}),
+				$("<button></button>", {
+					class: "btn btn-outline-warning p-2 material-icons mx-2",
+					css: {
+						"-webkit-app-region": "no-drag"
+					},
+					click: function () {
+						app.window.minimize();
+					}
+				}),
+				$("<button></button>", {
+					class: "btn btn-outline-danger p-2 material-icons",
+					css: {
+						"-webkit-app-region": "no-drag"
+					},
+					click: function () {
+						app.window.close();
+					}
+				})
+			]
+		});
+		elements.NavigationSearch = $("<span></span>", {
+			html: "<span class='text-secondary'>Google</span> <span style='color:orangered'>Play Music</span>",
+			class: "ml-2",
+			css: {
+				fontSize: "1.25em"
+			}
+		})
+		elements.NavigationBar = $("<nav></nav>", {
+			class: "btn-toolbar d-flex bg-transparent align-items-center px-2",
+			css: {
+				borderRadius: "0.25rem 0.25rem 0 0",
+				"-webkit-app-region": "drag"
+			},
+			html: [
+				elements.NavigationToggle,
+				elements.NavigationSearch,
+				$("<button></button>", {
+					type: "submit",
+					css: {
+						position: "fixed",
+						top: "200vh",
+						left: "200vw"
+					}
+				}),
+				elements.WindowButtons
+			],
+			on: {
+				submit: function (e) {
+					e.preventDefault();
+					pm.search($("input[type=search]").val(), 5, list, console.error);
+					return false;
+				}
+			}
+		});
+
+		elements.SideBar = $("<aside></aside>", {
+			class: "nav nav-pills flex-column p-2 border border-top-0 border-left-0 border-bottom-0",
+			css: {
+				minWidth: "200px",
+				borderBottomLeftRadius: "0.25rem"
+			},
+			html: "<a class='nav-item nav-link' href='#home'>Library</a><a class='nav-item nav-link' href='#favs'>Favorites</a><a class='nav-item nav-link mt-auto' href='javascript:logOut()'>Log out</a>"
+		});
+
+		elements.Main = $("<main></main>", {
+			class: "d-flex p-2 bg-white",
+			css: {
+				flexGrow: 2,
+				overflow: 'auto',
+				borderBottomRightRadius: "0.25rem"
+			}
+		});
+
+		elements.Container = $("<section></section>", {
+			class: "d-flex",
+			css: {
+				flexGrow: 2,
+				borderRadius: "0 0 0.25rem 0.25rem",
+				overflow: "hidden"
+			},
+			html: [elements.SideBar, elements.Main]
+		});
+		elements.Window = $("<main></main>", {
+			class: "rounded d-flex flex-column",
+			css: {
+				boxShadow: "0 0 0.5rem black",
+				borderRadius: "0.25rem",
+				background: "var(--transparent-white)",
+				flexGrow: 2
+			},
+			html: [elements.NavigationBar, elements.Container]
+		})
+		elements.Window.appendTo("body");
+
+		location.hash = "#home";
+	}
+
+	function logOut() {
+		registry.remove().then(app.relaunch);
+	}
+
+	function navigate() {
+		document.title = "Google Play Music";
+		pm.init(cookies, function (e) {
+			if (e) elements.Main.html(
+				"<div class='m-auto'><i class='text-danger material-icons align-middle'>warning</i> <span class='align-middle'>" +
+				e + "</span></div>")
+			$(".nav-pills a").removeClass("active");
+			$("a[href='" + location.hash + "']").addClass("active");
+			switch (location.hash) {
+				case "#home":
+					document.title = "Library - Google Play Music";
+					pm.getAllTracks(list);
+					break;
+				case "#lists":
+					document.title = "Playlists - Google Play Music";
+					pm.getPlayLists(list);
+					break;
+				case "#favs":
+					document.title = "Favorites - Google Play Music";
+					pm.getFavorites(list);
+					break;
+				case "#search":
+					document.title = "Search - Google Play Music";
+			}
+		})
+	}
+
+	function list(e, data) {
+		console.dir(e);
+		elements.Main.html("");
+		if (e) {
+			if (e.message.includes(401))
+				elements.Main.addClass("d-flex").html(
+					"<div class='m-auto'><i class='text-danger material-icons align-middle'>warning</i> <span class='align-middle'>Authentication failed. Try to relog in.</span></div>"
+				)
+		} else {
+			console.log(data);
+			if (data.entries) {
+				document.hash = "#search";
+				elements.Main.removeClass("d-flex").html(
+					"<p class='lead mb-2'>Search results for \"" + $("input").val() +
+					"\"</p><section class='d-flex justify-content-around flex-wrap'></section>"
+				);
+				data.entries.forEach(function (song) {
+					if (song.type !== "1") return;
+					elements.Main.find("section").append(
+						`
+<button class="card text-white d-inline-flex m-1 btn p-0 text-left" onclick="play()" data-id="${song.track.storeId}" style="max-width:200px">
+  <img class="card-img" src="${song.track.imageBaseUrl || song.track.albumArtRef[0].url}" alt="Card image">
+  <div class="card-img-overlay" style="box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.3)">
+    <h5 class="card-title text-truncate">${song.track.title}</h5>
+    <p class="card-text text-truncate">${song.track.album} | ${song.track.albumArtist}</p>
+    <small class="card-text">${song.track.year}</small>
+    <i class="material-icons" style="position:absolute;bottom:0;right:0;margin:1rem">play_arrow</i>
+  </div>
+</button>`
+					)
+				})
+
+			}
+			if (data.track) {
+				elements.Main.removeClass("d-flex").html(
+					"<p class='lead mb-2'>Favorites</p><section class='d-flex justify-content-around flex-wrap'></section>"
+				);
+				data.track.forEach(function (song) {
+					elements.Main.find("section").append(
+						`
+<button class="card text-white d-inline-flex m-1 btn p-0 text-left" onclick="play()" data-id="${song.storeId}" style="max-width:200px">
+  <img class="card-img" src="${song.imageBaseUrl || song.albumArtRef[0].url}" alt="Card image">
+  <div class="card-img-overlay" style="box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.3)">
+    <h5 class="card-title text-truncate">${song.title}</h5>
+    <p class="card-text text-truncate">${song.album} | ${song.albumArtist}</p>
+    <small class="card-text">${song.year}</small>
+    <i class="material-icons" style="position:absolute;bottom:0;right:0;margin:1rem">play_arrow</i>
+  </div>
+</button>`
+					)
+				})
+			}
+			if (data.kind && data.kind.includes("trackList")) {
+				elements.Main.removeClass("d-flex").html(
+					"<p class='lead mb-2'>All tracks</p><section class='d-flex justify-content-around flex-wrap'></section>"
+				);
+				data.data.items.forEach(function (song) {
+					elements.Main.find("section").append(
+						`
+<button class="card text-white d-inline-flex m-1 btn p-0 text-left" onclick="play()" data-id="${song.storeId}" style="max-width:200px">
+  <img class="card-img" src="${song.imageBaseUrl || song.albumArtRef[0].url}" alt="Card image">
+  <div class="card-img-overlay" style="box-shadow: inset 0 0 0 1000px rgba(0,0,0,0.3)">
+    <h5 class="card-title text-truncate">${song.title}</h5>
+    <p class="card-text text-truncate">${song.album} | ${song.albumArtist}</p>
+    <small class="card-text">${song.year}</small>
+    <i class="material-icons" style="position:absolute;bottom:0;right:0;margin:1rem">play_arrow</i>
+  </div>
+</button>`
+					)
+				})
+			}
+		}
+	}
+
+	function play() {
+		pm.getStreamUrl($(".card:focus").attr("data-id"), function (e, url) {
+			console.log(url);
+			if (e) new Notification({
+				title: "Error starting playback",
+				body: e
+			});
+			else {
+				let $song = $(".card:focus");
+				app.launch("musicplayer", {
+					path: {
+						url: url,
+						id: $song.attr("data-id"),
+						title: $song.find("h5").text(),
+						artist: $song.find("p.card-text").text()
+					}
+				});
+				setInterval(function () {
+					pm.getStreamUrl($song.attr("data-id"), function (e, url) {
+						app.launch("musicplayer", {
+							path: {
+								url: url,
+								id: $song.attr("data-id"),
+								title: $song.find("h5").text(),
+								artist: $song.find("p.card-text").text()
+							}
+						}, {
+							focusable: false,
+							show: false,
+							showOnLoad: false,
+							skipTaskbar: true
+						});
+					});
+				}, 30000)
+			}
+		});
+	}
+</script>
+<style>
+	.card[data-id]:hover i.material-icons {
+		opacity: 1;
+	}
+
+	.card[data-id] i.material-icons {
+		opacity: 0;
+		transition: opacity .2s ease;
+	}
+
+	#winBtns .btn-danger:hover::after,
+	#winBtns .btn-danger:focus::after,
+	#winBtns .btn-outline-danger:hover::after,
+	#winBtns .btn-outline-danger:focus::after {
+		content: "close";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-outline-warning:hover::after,
+	#winBtns .btn-outline-warning:focus::after {
+		content: "expand_more";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	#winBtns .btn-outline-success:hover::after,
+	#winBtns .btn-outline-success:focus::after {
+		content: "expand_less";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+</style>
+
+<body class="h-100 m-0 d-flex flex-column p-2 bg-transparent">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exitDialog"
+     aria-hidden="true">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-body">
+				Are you sure you want to exit? There might be a playing track that depends on this
+				app.
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+				<button type="button" class="btn btn-primary">Yes</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>

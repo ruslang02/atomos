@@ -1,0 +1,12 @@
+{
+  "title": "Typewriter",
+  "name": "Typewriter",
+  "description": "Make a note or edit a file easily",
+  "icon": "$APP_ROOT/logo.png",
+  "width": 450,
+  "height": 350,
+  "minHeight": 300,
+	"minWidth": 400,
+	"frame": false,
+	"transparent": true
+}
