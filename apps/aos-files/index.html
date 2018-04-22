@@ -59,11 +59,9 @@
 	registry.get(true).then((r) => {window.systemSettings = r; if(args.desktop === true) 
 			updateWall();});
 	registry.on("changed", (cook) => {
-		if(cook.name === "system") {
-			window.systemSettings = JSON.parse(cook.value);
-			updateWall();
-		}
-	})
+		window.systemSettings = cook;
+		if (args.desktop === true) updateWall();
+	}, true);
 	function updateWall() {
 
 		let wpURL;

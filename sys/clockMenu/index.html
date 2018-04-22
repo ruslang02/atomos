@@ -9,12 +9,17 @@
 			<input title class="form-control" oninput="changeVolume(this)" type="range">
 			<i class="material-icons md-18">volume_up</i>
 		</div>
+		<!-- 
+		
+				IF YOU HAVE A LAPTOP, try to uncomment this, and some code under script tag
+		
 		<div class="list-group-item d-flex" id="brightness">
 			<i class="material-icons md-18">brightness_low</i>
 			<input title class="form-control" min=0.05 max=1 value=1 step=0.05 oninput="changeBrightness(this)"
 			 type="range">
 			<i class="material-icons md-18">brightness_high</i>
 		</div>
+		!-->
 		<button type="button" id="settings" class="list-group-item list-group-item-action"
 		 onclick="app.launch('control')">Settings
 		</button>
@@ -50,12 +55,9 @@
 		window.scale = reg.uiScaling
 	});
 	registry.on("changed", (cook) => {
-		if (cook === "system") {
-			window.scale = JSON.parse(cook.value).uiScaling;
+		window.scale = cook.uiScaling;
 			reset();
-		}
-
-	})
+	}, true)
 	window.jQuery = window.$ = require("jquery");
 	$("body").append("<link href=\"" + app.getPath("os") +
 		"/sys/internetMenu/index.css\" rel=\"stylesheet\">");
@@ -66,6 +68,8 @@
 		setInterval(tick, 1000);
 		tick();
 	})
+
+	/*
 	fs.access("/sys/class/backlight/intel_backlight/brightness", fs.constants.W_OK,
 		(err) => {
 			app.launch("sudo", {
@@ -85,7 +89,7 @@
 				})
 			})
 		})
-
+*/
 	function reset() {
 		let bounds = taskbar.getBounds();
 		app.window.setPosition(bounds.x + bounds.width - app.window.getContentSize()[
@@ -114,9 +118,11 @@
 			}
 
 		});
+		/*
 		fs.readFile("/sys/class/backlight/intel_backlight/brightness", (e, val) => {
 			$("#brightness input").val(val / 96000)
 		})
+		*/
 	}
 
 	function changeVolume(element) {

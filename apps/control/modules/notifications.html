@@ -38,9 +38,7 @@
 		title: "Control Center / Notifications",
 		icon: app.getPath("os") + "/icons/Notification.png"
 	});
-	fs.readJson(app.getPath("appData") + "/notify.json")
-		.then(function (apps) {
-			Object.keys(apps).forEach(function (ap) {
+	Object.keys(regs.notificationPrefs).forEach(function (ap) {
 				if (!fs.existsSync(path.join(app.getPath("os"), "apps", ap, "app.json"))) return;
 				let appInfo = fs.readJsonSync(path.join(app.getPath("os"), "apps", ap, "app.json"));
 				appInfo.icon = appInfo.icon.replace("$SYSTEM_ROOT", app.getPath("os")).replace("$APP_ROOT", path.join(app.getPath("os"), "apps", ap));
@@ -50,28 +48,45 @@
 <td>${appInfo.name}</td>
 <td>
 	<div class="custom-control custom-checkbox p-1">
-		<input type="checkbox" class="custom-control-input" ${(apps[ap][0] ? "checked" : "")} id="${ap}message">
+		<input type="checkbox" class="custom-control-input" ${(regs.notificationPrefs[ap][0] ? "checked" : "")} id="${ap}message">
 		<label class="custom-control-label" for="${ap}message"></label>
 	</div>
 </td>
 <td>
 	<div class="custom-control custom-checkbox p-1">
-		<input type="checkbox" class="custom-control-input" ${(apps[ap][1] ? "checked" : "")} id="${ap}sound">
+		<input type="checkbox" class="custom-control-input" ${(regs.notificationPrefs[ap][1] ? "checked" : "")} id="${ap}sound">
 		<label class="custom-control-label" for="${ap}sound"></label>
 	</div>
 </td></tr>`);
 			})
-		});
+
+	$("#apps").append(`
+<tr data-app="other">
+<th><img src="${app.getPath("os")}/icons/Application.png" /></th>
+<td>Other Applications</td>
+<td>
+	<div class="custom-control custom-checkbox p-1">
+		<input type="checkbox" class="custom-control-input" checked disabled id="othermessage">
+		<label class="custom-control-label" for="othermessage"></label>
+	</div>
+</td>
+<td>
+	<div class="custom-control custom-checkbox p-1">
+		<input type="checkbox" class="custom-control-input" checked disabled id="othersound">
+		<label class="custom-control-label" for="othersound"></label>
+	</div>
+</td></tr>`);
 	$('[data-location="Control Center / Notifications"] .btn-primary').click(function () {
 		let apps = {};
 		$("#apps tr").each(function () {
 			let app = $(this).attr("data-app");
+			if (app === "other") return;
 			apps[app] = [
 				$(this).find(`#${app}message`)[0].checked,
 				$(this).find(`#${app}sound`)[0].checked
 			];
 		});
-		fs.writeJson(app.getPath("appData") + "/notify.json", apps);
+		registry.set({notificationPrefs: apps}, true);
 	});
 	$('[data-location="Control Center / Notifications"] .btn-outline-secondary').click(function () {
 		remote.BrowserWindow.getAllWindows().forEach(function (wind) {
@@ -87,11 +102,11 @@
 	section[data-location="Control Center / Notifications"] td:not(:first-child) {
 		width: 24px;
 		line-height: 23px;
+		max-width: calc(24px + 0.5rem)
 	}
 
 	section[data-location="Control Center / Notifications"] th img {
 		width: 24px;
-		margin-left: 0.5rem;
 	}
 
 	section[data-location="Control Center / Notifications"] th .material-icons {

@@ -363,7 +363,7 @@
 			console.log(url);
 			if (e) new Notification({
 				title: "Error starting playback",
-				body: e
+				body: e.message
 			});
 			else {
 				let $song = $(".card:focus");

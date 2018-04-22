@@ -42,5 +42,8 @@
 		"items": ["startButton","tasks","tray","localechooser", "notification","clock"]
 	},
 	"notificationPrefs": {},
-	"keyboardLayouts": ["us"]
+	"keyboardLayouts": [
+		"us"
+	],
+	"uiScaling": 1.00
 }

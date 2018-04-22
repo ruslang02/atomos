@@ -41,14 +41,16 @@
 		icon: app.getPath("os") + "/icons/Run Command.png"
 	});
 
-	registry.on("changed", updateASItems);
+	registry.on("changed", updateASItems, true);
 
 	let ASregs;
-	function updateASItems(cook) {
-		if(!cook) {
+
+	function updateASItems(regis) {
+		if (!regis) {
 			updateAS(regs.autoStart);
 		}
-		ASregs = new Proxy((cook ? JSON.parse(cook.value) : regs).autoStart, {
+		console.log(regis);
+		ASregs = new Proxy((regis ? regis : regs).autoStart, {
 			set(t, p, v) {
 					t[p] = v;
 					updateAS(ASregs);

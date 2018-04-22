@@ -3,10 +3,10 @@
 @import "../node_modules/material-design-icons-iconfont/dist/fonts/material-icons.css";
 
 :root {
-	//--transparent-white: rgba(255, 255, 255, 0.9);
-	--transparent-white: var(--light);
-	--transparent-black: rgba(5, 5, 5, 1);
-	//--transparent-black: rgba(0, 0, 0, 0.9);
+	--transparent-white: rgba(255, 255, 255, 0.9);
+/ / --transparent-white: var(--light);
+/ / --transparent-black: rgba(5, 5, 5, 1);
+	--transparent-black: rgba(0, 0, 0, 0.9);
 }
 
 button {

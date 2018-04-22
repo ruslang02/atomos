@@ -1,12 +1,11 @@
 # google-p12-pem
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/google/google-p12-pem.svg)](https://greenkeeper.io/)
-
 [![NPM Version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Dependency Status][david-image]][david-url]
 [![devDependency Status][david-dev-image]][david-dev-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
+[![Greenkeeper badge](https://badges.greenkeeper.io/google/google-p12-pem.svg)](https://greenkeeper.io/)
 
 Convert Google `.p12` keys to `.pem` keys.
 

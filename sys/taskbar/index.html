@@ -1,73 +1,78 @@
 <nav-bar class="navbar navbar-light text-dark flex-nowrap"></nav-bar>
 <link rel="stylesheet" href="index.css" />
 <script>
-  const fs = require('fs-extra');
-  const path = require('path');
-  const {
-    remote,
-    ipcRenderer,
-    screen
-  } = require("electron");
-  const {
-    BrowserWindow,
-	  app
-  } = remote;
-  const {
-    width,
-    height,
-			x,
-			y
-  } = screen.getPrimaryDisplay().bounds;
-  const win = remote.getCurrentWindow();
-  const wc = remote.getCurrentWebContents();
-  window.jQuery = window.$ = require("jquery");
-  require('bootstrap');
-  const {
-	  Menu,
-	  Notification,
-	  registry
-  } = require("atomos-framework");
-  $("body").contextmenu(function(e) {
-	  e.preventDefault();
-	  Menu.buildFromTemplate([{
-		  label: "Taskbar Settings",
-		  click() {
-			  app.launch("control", {section: "Taskbar"})
-		  }
-	  }]).popup(win)
-  });
-  registry.get(true).then(function (items) {
-	  if (!Object.keys(items).length || items instanceof Error)
-		  registry.set(fs.readJsonSync(__dirname + "/defaultRegistry.json"), true).then(function () {
-			  BrowserWindow.getAllWindows().forEach((item) => {
-				  item.reload()
-			  });
-		  })
+	const fs = require('fs-extra');
+	const path = require('path');
+	const {
+		remote,
+		ipcRenderer,
+		screen
+	} = require("electron");
+	const {
+		BrowserWindow
+	} = remote;
+	const {
+		width,
+		height,
+		x,
+		y
+	} = screen.getPrimaryDisplay().bounds;
+	window.jQuery = window.$ = require("jquery");
+	require('bootstrap');
+	const {
+		Menu,
+		Notification,
+		registry,
+		app
+	} = require("atomos-framework");
+	$("body").contextmenu(function (e) {
+		e.preventDefault();
+		Menu.buildFromTemplate([{
+			label: "Taskbar Settings",
+			click() {
+				app.launch("control", {
+					section: "Taskbar"
+				})
+			}
+		}]).popup(app.window)
+	});
+	registry.get(true).then(function (items) {
+		if (!Object.keys(items).length || items instanceof Error)
+			registry.set(fs.readJsonSync(__dirname + "/defaultRegistry.json"), true).then(
+				function () {
+					BrowserWindow.getAllWindows().forEach((item) => {
+						item.reload()
+					});
+				})
 		else {
 			window.systemRegistry = items;
 			systemRegistry.autoStart.forEach(function(item) {
 				new Worker(item.src);
 			})
 		}
-  });
-	
-	registry.on("changed", (cook) => {
-		if(cook === "system")
-			win.setPosition(bounds.x, bounds.y + bounds.height - Math.ceil(32 * JSON.parse(cook.value).uiScaling));
-			win.setSize(win.getSize()[0], Math.ceil(32 * JSON.parse(cook.value).uiScaling));
-	})
-  win.on('resize', function() {
-  	require("child_process").spawn("xfconf-query",["-c", "xfwm4", "-p", "/general/margin_bottom", "-s", win.getContentSize()[1]]).on('close', (data) => {
-		  console.log(`stdout: ${data}`);
-	  });
-  });
-  win.onbeforeunload = function (e) {
-	  app.launch("aos-shutdown", {}, {
-		  parent: win,
-		  modal: true
-	  });
-	  e.returnValue = false;
-	  return false;
-  };
-  require("./index");
+
+		registry.on("changed", (cook) => {
+			app.window.setPosition(x, y + height - Math.ceil(32 * cook.uiScaling));
+			app.window.setSize(app.window.getSize()[0], Math.ceil(32 * cook.uiScaling));
+			systemRegistry = cook;
+		}, true);
+
+	});
+
+	app.window.on('resize', function () {
+		require("child_process").spawn("xfconf-query", ["-c", "xfwm4", "-p",
+			"/general/margin_bottom", "-s", win.getContentSize()[1]
+		]).on('close', (data) => {
+			console.log(`stdout: ${data}`);
+		});
+	});
+	window.onbeforeunload = function (e) {
+		app.launch("aos-shutdown", {}, {
+			parent: win,
+			modal: true
+		});
+		e.returnValue = false;
+		return false;
+	};
+	require("./index");
 </script>

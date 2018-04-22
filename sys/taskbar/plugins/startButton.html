@@ -1,30 +1,80 @@
-<button type="button" class="btn btn-sm btn-primary rounded-0 h-100" style="flex-shrink: 0" data-action="openStart"><img
+<button type="button" class="btn btn-sm btn-primary rounded-0 h-100" style="flex-shrink: 0"
+        data-action="openStart"><img
 	style="height: 20px; filter: brightness(1000%) drop-shadow(0 0 0 white)"/></button>
 <script>
-  let startMenu = new BrowserWindow({
-    x: x,
-    y: y + height - Math.ceil(32 * systemRegistry.uiScaling) - Math.ceil(315 * systemRegistry.uiScaling),
-    width: Math.ceil(350 * systemRegistry.uiScaling),
-    height: Math.ceil(315 * systemRegistry.uiScaling),
-    frame: false,
-    closable: false,
-    minimizable: false,
-    maximizable: false,
-    alwaysOnTop: true,
-    resizable: false,
-    skipTaskbar: true,
-    movable: false,
-    show: false,
-	  type: "notification",
-	  transparent: true
-  });
-  startMenu.loadURL("file://" + app.getAppPath() + "/sys/startMenu/index.html");
-  startMenu.on('blur', function() {
-  	startMenu.hide();
-  });
-  $("[data-action=openStart] img")[0].src = app.getAppPath() + "/icons/AtomOS.png";
-  $("[data-action=openStart]").click(function() {
-      startMenu.show();
-      startMenu.setAlwaysOnTop(true);
-  }).find("img").attr("src", "file://" + app.getAppPath() + "/icons/AtomOS.png");
+	let startMenu = new BrowserWindow({
+		x: x,
+		y: y + height - Math.ceil(32 * systemRegistry.uiScaling) - Math.ceil(315 *
+			systemRegistry.uiScaling),
+		width: Math.ceil(350 * systemRegistry.uiScaling),
+		height: Math.ceil(315 * systemRegistry.uiScaling),
+		frame: false,
+		closable: false,
+		minimizable: false,
+		maximizable: false,
+		alwaysOnTop: true,
+		resizable: false,
+		skipTaskbar: true,
+		movable: false,
+		show: false,
+		type: "notification",
+		transparent: true
+	});
+	startMenu.loadURL("file://" + app.getPath("os") + "/sys/startMenu/index.html");
+	startMenu.on('blur', function () {
+		startMenu.hide();
+	});
+	window.onbeforeunload = () => {
+		startMenu.close();
+	}
+	$("[data-action=openStart] img")[0].src = app.getPath("os") +
+		"/icons/AtomOS.png";
+	$("[data-action=openStart]").contextmenu(function (e) {
+		e.stopImmediatePropagation();
+		Menu.buildFromTemplate([{
+			label: "Toggle DevTools",
+			type: 'submenu',
+			submenu: [{
+				label: 'Taskbar',
+				click() {
+					app.window.toggleDevTools();
+				}
+			}, {
+				label: 'Desktop (aos-files)',
+				click() {
+					BrowserWindow.fromId(remote.getGlobal("gui").desktop).toggleDevTools();
+				}
+			}, {
+				label: 'Start Menu',
+				enabled: startMenu !== undefined,
+				click() {
+					startMenu.toggleDevTools();
+				}
+			}, {
+				label: 'Notifications panel',
+				enabled: notificationsMenu !== undefined,
+				click() {
+					notificationsMenu.toggleDevTools();
+				}
+			}, {
+				label: 'Clock panel',
+				enabled: clockMenu !== undefined,
+				click() {
+					clockMenu.toggleDevTools();
+				}
+			}],
+			click() {
+				app.window.destroy()
+			}
+		}, {
+			label: "Exit AtomDE",
+			click() {
+				remote.app.quit();
+			}
+		}]).popup()
+	}).click(function () {
+		startMenu.show();
+		startMenu.setAlwaysOnTop(true);
+	}).find("img").attr("src", "file://" + app.getPath("os") +
+		"/icons/AtomOS.png");
 </script>

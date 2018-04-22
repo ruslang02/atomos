@@ -37,9 +37,9 @@
 	
 	registry.get(true).then((reg) => {window.scale = reg.uiScaling});
 	registry.on("changed", (cook) => {
-		if(cook === "system")
-			window.scale = JSON.parse(cook.value).uiScaling;
-	})
+		window.scale = cook.uiScaling;
+		reset();
+	}, true)
 
 	const folders = [{
 		name: "Documents",

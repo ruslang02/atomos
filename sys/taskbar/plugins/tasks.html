@@ -1,12 +1,22 @@
 <tasks class="d-flex flex-wrap" style="flex-grow:2; height: 100vh; overflow: auto"></tasks>
 <script>
-app.on('browser-window-created', function(event, win) {
+
+	BrowserWindow.getAllWindows().forEach((win) => {
+		createWindow(win)
+	})
+
+	remote.app.on('browser-window-created', (a, b) => {
+		createWindow(b)
+	})
+
+	function createWindow(win) {
+		if (win.isDestroyed()) return;
   if(win.webContents.browserWindowOptions.skipTaskbar === true) return;
   let dangerFlash;
   let hangWin;
   let alreadyHung = false;
   let icon;
-	$("tasks").append("<button id='" + win.id + "' class='loading btn-task'><img src='file://" + app.getAppPath() + "/icons/Loader.png'><div class='title'>Loading...</div></button>");
+		$("tasks").append("<button id='" + win.id + "' class='loading btn-task'><img src='file://" + app.getPath("os") + "/icons/Loader.png'><div class='title'>Loading...</div></button>");
   let $task = $("tasks #" + win.id);
   $task.on('mousedown', function(e) {
     e.preventDefault();
@@ -17,21 +27,49 @@ app.on('browser-window-created', function(event, win) {
   $task.on('contextmenu', function(e) {
   	e.stopImmediatePropagation();
   	Menu.buildFromTemplate([{
-  		label: "New instance",
+		  label: "New Window",
+		  click() {
+			  win.webContents.executeJavaScript("require('atomos-framework').app.name").then((name) => app.launch(name))
+		  }
+	  }, {
+		  label: "Toggle Developer Tools",
   		click() {
-			  app.launch(path.dirname(win.getURL()))
+			  win.toggleDevTools();
+		  }
+	  }, {
+		  label: "Browse app code",
+		  click() {
+			  app.launch("aos-files", {
+				  path: path.join(win.getURL().substring(7), "..")
+			  })
+		  }
+	  }, {
+		  label: "Reload",
+		  click() {
+			  win.reload();
   		}
   	}, {type: 'separator'}, {
-  		label: "Close",
-  		click() {win.close()}
-  	}]).popup()
+		  label: "Terminate",
+		  click() {
+			  win.destroy()
+		  }
+	  }, {
+		  label: "Close",
+		  click() {
+			  win.close()
+		  }
+	  }]).popup()
   });
-  win.webContents.on('did-stop-loading', function() {
+
+		function stopLoading() {
   	console.log(win.webContents.browserWindowOptions);
     icon = win.webContents.browserWindowOptions.icon;
     $task.removeClass("loading");
     $task.find("img")[0].src = icon;
-  });
+		}
+
+		if (win.isVisible() || !win.webContents.isLoading()) stopLoading();
+		else win.webContents.on('did-stop-loading', stopLoading);
 	win.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});
@@ -91,7 +129,7 @@ app.on('browser-window-created', function(event, win) {
   win.on('hide', function() {
     try {$task.css("opacity", "1");} catch(e) {}
   })
-})
+	}
 
 </script>
 <style>

@@ -104,22 +104,16 @@
 		})
 	});
 	registry.on("changed", function(cookie) {
-		if (cookie.name === app.name) {
-			let reg = $.parseJSON(cookie.value);
-			window.settings = reg;
-		} else if (cookie.name === "system") {
-			let reg = $.parseJSON(cookie.value);
-			window.systemSettings = reg;
-		}
+		window.systemSettings = cookie;
+	}, true);
+	registry.on("changed", function (cookie) {
+		window.settings = cookie;
 	});
 
 	window.jQuery = window.$ = require("jquery");
 	require("jquery-mousewheel")($);
 	window.Popper = require("popper.js");
 	require("bootstrap");
-	const {
-		remote
-	} = require('electron');
 	app.window.on('blur', function() {
 		$("#winBtns .btn-danger").removeClass("btn-danger").addClass(
 			"btn-outline-danger");

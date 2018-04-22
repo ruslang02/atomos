@@ -1,4 +1,4 @@
-<body>
+<body class="h-100 d-flex flex-column bg-transparent p-2">
 <script>
 	const {
 		remote,
@@ -36,10 +36,10 @@
 		y
 	} = require('electron').screen.getPrimaryDisplay().bounds
 </script>
-<main>
+<main class="col d-flex flex-column rounded p-0">
 	<div class="btn-toolbar" style="height:38px;">
-		<button id="fileMenu" class="btn btn-outline-primary btn-sm material-icons border-0" data-toggle="dropdown"
-		        aria-haspopup="true" aria-expanded="false">speaker
+		<button id="fileMenu" class="btn btn-outline-primary btn-sm material-icons border-0"
+		        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">speaker
 		</button>
 		<div class="dropdown-menu" aria-labelledby="fileMenu" style="width:200px;">
 			<button class="dropdown-item" data-key="Ctrl+O">Open...</button>
@@ -53,31 +53,32 @@
 		<div id="title" class="col d-flex align-items-center justify-content-center">
 			Boombox Music Player
 		</div>
-		<div id="winBtns" style="margin-left: auto;display:flex;align-items: center; margin-right:0.25rem;">
+		<div id="winBtns" class="ml-auto mr-1 align-items-center d-flex">
 			<button class="btn btn-sm btn-outline-success material-icons p-2"
-			        onclick="if(app.window.isMaximized()) app.window.restore(); else app.window.maximize();"></button>
+			        onclick="(app.window.isMaximized() ? app.window.restore() : app.window.maximize())"></button>
 			<button class="btn btn-sm btn-outline-warning material-icons p-2 mx-2" onclick="app.window.minimize();"></button>
 			<button class="btn btn-sm btn-outline-danger material-icons p-2" onclick="app.window.close();"></button>
 		</div>
 	</div>
-	<section class="row">
+	<section class="row m-0 col p-0">
 		<section id="playlist"
-		         class="dropdown-menu d-none d-sm-block col-sm-4 col-lg-3 bg-transparent border border-left-0 border-top-0 border-bottom-0"></section>
-		<section id="cover" class="col-12 col-sm-8 col-lg-9 bg-white"><img src></section>
+		         class="dropdown-menu d-none d-sm-block col-sm-4 col-lg-3 bg-transparent border-top-0 border-bottom-0 border-right border-left-0 position-static m-0 rounded-0"></section>
+		<section id="cover" class="col-12 col-sm-8 col-lg-9 bg-white"><img src class="position-absolute m-auto"></section>
 	</section>
-	<footer class="bg-light border border-left-0 border-right-0 border-bottom-0 d-flex"
-	        style="border-radius: 0 0 0.25rem 0.25rem;">
-		<progress max="100" value="100"></progress>
-		<div class="media">
-			<div class="media-body">
-				<h5 class="mb-1"></h5>
-				<artist></artist>
+	<footer class="bg-light d-flex flex-column rounded-bottom">
+		<progress max="100" value="100" class="w-100"></progress>
+		<div class="d-flex px-2 py-1" style="flex-grow:1">
+			<div class="media col p-0">
+				<div class="media-body w-100 text-truncate">
+					<h5 class="mb-1 text-truncate"></h5>
+					<artist class="text-truncate"></artist>
+				</div>
 			</div>
-		</div>
-		<div id="player">
-			<button class="btn btn-sm btn-light material-icons" onclick="playPrevious()">skip_previous</button>
-			<button class="btn btn-sm btn-primary material-icons">play_arrow</button>
-			<button class="btn btn-sm btn-light material-icons" onclick="playNext()">skip_next</button>
+			<div id="player" class="d-flex align-items-center justify-content-center">
+				<button class="btn btn-sm btn-light material-icons py-1 px-2" onclick="playPrevious()">skip_previous</button>
+				<button class="btn btn-sm btn-primary material-icons py-1 px-2">play_arrow</button>
+				<button class="btn btn-sm btn-light material-icons py-1 px-2" onclick="playNext()">skip_next</button>
+			</div>
 		</div>
 	</footer>
 </main>
@@ -101,11 +102,13 @@
 	};
 
 	app.window.on('blur', function () {
-		$("#winBtns .btn-danger").removeClass("btn-danger").addClass("btn-outline-danger");
+		$("#winBtns .btn-danger").removeClass("btn-danger").addClass(
+			"btn-outline-danger");
 		$("main").css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
 	});
 	app.window.on('focus', function () {
-		$("#winBtns .btn-outline-danger").removeClass("btn-outline-danger").addClass("btn-danger");
+		$("#winBtns .btn-outline-danger").removeClass("btn-outline-danger").addClass(
+			"btn-danger");
 		$("main").css("boxShadow", "0px 0px 0.5rem 0 black");
 	});
 	let popup = new BrowserWindow({
@@ -128,16 +131,18 @@
 	});
 	popup.loadURL("file://" + __dirname + "/popup.html");
 	popup.on('blur', function () {
-		BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send("deactivate-tray", {
-			win: remote.getCurrentWindow().id
-		});
+		BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send(
+			"deactivate-tray", {
+				win: remote.getCurrentWindow().id
+			});
 		popup.hide();
 	});
 
 	let tray = new Tray("music_note", "Boombox is running", "hsl(33, 100%, 50%)");
 	tray.on("contextClick", function () {
 		Menu.buildFromTemplate([{
-			label: ($("#player").find(".btn-primary").text() === "play_arrow" ? 'Pause' :
+			label: ($("#player").find(".btn-primary").text() === "play_arrow" ?
+				'Pause' :
 				'Play'),
 			click() {
 				$("#player").find(".btn-primary").click();
@@ -172,9 +177,10 @@
 		})
 	});
 	tray.on("click", function () {
-		BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send("activate-tray", {
-			win: app.window.id
-		});
+		BrowserWindow.fromId(remote.getGlobal("gui").taskbar).webContents.send(
+			"activate-tray", {
+				win: app.window.id
+			});
 		popup.show();
 		popup.setAlwaysOnTop(true)
 	});
@@ -194,7 +200,7 @@
 		ofdDefaultPath = path.substring(0, path.lastIndexOf("/"));
 		savePlaylist(path);
 	});
-	ipcRenderer.on("getData", function () {
+	setInterval(function () {
 		popup.webContents.send("getMusicData", JSON.stringify({
 			canNext: true,
 			canPrevious: true,
@@ -211,8 +217,7 @@
 			}).get()
 		}));
 		isChanged = false;
-
-	});
+	}, 10)
 
 	ipcRenderer.on("changeTrack", function (e, options) {
 		if (options.offset === -1) playPrevious();
@@ -251,9 +256,11 @@
 
 		fs.readJson(path.join(app.getPath("appData"), "defaultApps.json"), function (e, dApps) {
 			if (e)
-				fs.writeFile(path.join(app.getPath("appData"), "defaultApps.json"), fs.readFileSync(path.join(app.getPath("os"), "resources", "defaultApps.json.template")));
-			if(dApps.musicplayer) {
-				if(dApps.musicplayer.app !== "boombox")
+				fs.writeFile(path.join(app.getPath("appData"), "defaultApps.json"), fs.readFileSync(
+					path.join(app.getPath("os"), "resources", "defaultApps.json.template")
+				));
+			if (dApps.musicplayer) {
+				if (dApps.musicplayer.app !== "boombox")
 					new Notification({
 						title: "Make me default!",
 						body: "Boombox is not the default music player application. <br /> <a href='#' onclick=\"app.setDefault('musicplayer')\">Set it now</a>"
@@ -297,7 +304,8 @@
 			$(this).addClass("active")
 		});
 		$("body").on("click", "#playlist .dropdown-item:not(.active)", function () {
-			$("#playlist").find(".dropdown-item.active").first().removeClass("active");
+			$("#playlist").find(".dropdown-item.active").first().removeClass(
+				"active");
 			$(this).addClass("active");
 			let file = decodeURIComponent($(this).attr('location'));
 			player.src = file;
@@ -309,9 +317,12 @@
 					title: $(this).text(),
 					body: $(this).attr('creator') || " playing"
 				});
-			} else renderID3(fs.createReadStream(file.substring(7)), function (err, tags) {
-				$(".media artist").text(tags.artist[0] || $("#playlist").find(".dropdown-item.active").attr('creator') || "No artist");
-				$(".media h5").text(tags.title || $("#playlist").find(".dropdown-item.active")
+			} else renderID3(fs.createReadStream(file.substring(7)), function (err,
+			                                                                   tags) {
+				$(".media artist").text(tags.artist[0] || $("#playlist").find(
+					".dropdown-item.active").attr('creator') || "No artist");
+				$(".media h5").text(tags.title || $("#playlist").find(
+					".dropdown-item.active")
 					.text());
 
 				new Notification({
@@ -350,9 +361,12 @@
 			if (exists)
 				$("#playlist #" + file.id).attr('location', file.url);
 			else {
-				$("#playlist").append("<button class='dropdown-item' id='" + file.id + "' location='" + file.url +
-					"' creator='" + (file.artist || "No artist") + "'>" + (file.title || "Unknown title") + "</button>");
-				if ($("#autoplay")[0].checked && player.paused) playNext();
+				$("#playlist").append(
+					"<button class='dropdown-item text-truncate d-inline-block' id='" + file
+						.id + "' location='" + file.url +
+					"' creator='" + (file.artist || "No artist") + "'>" + (file.title ||
+					"Unknown title") + "</button>");
+				if (player.paused) playNext();
 				isChanged = true;
 			}
 		} else if (path.extname(file) === ".xspf") {
@@ -366,7 +380,7 @@
 								track.location[0] + "' creator='" + unescape(track.creator) +
 								"'>" + unescape(track.title) + "</button>")
 						});
-						if ($("#autoplay")[0].checked) playNext();
+						playNext();
 						isChanged = true;
 					} else console.error("Error parsing playlist file (" + file +
 						"). Error: " + err)
@@ -379,7 +393,7 @@
 				$("#playlist").append("<button class='dropdown-item' location='" + file +
 					"' creator='" + tags.artist[0] + "'>" + (tags.title || file.substring(
 						file.lastIndexOf("/") + 1)) + "</button>");
-				if ($("#autoplay")[0].checked && player.paused) playNext();
+				if (player.paused) playNext();
 				isChanged = true;
 			})
 		}
@@ -390,7 +404,8 @@
 		$("#playlist").find("button").each(function () {
 			trackList.push({
 				track: {
-					location: (!$(this).attr("location").startsWith("http") ? "file://" : "") + escape($(this).attr("location")),
+					location: (!$(this).attr("location").startsWith("http") ? "file://" :
+						"") + escape($(this).attr("location")),
 					title: escape($(this).text()),
 					creator: escape($(this).attr("creator"))
 				}
@@ -439,42 +454,18 @@
 	}
 </script>
 <style>
-	body {
-		height: 100%;
-		display: flex;
-		padding: 0.5rem;
-		background: none !important;
-	}
-
 	main {
-		flex-grow: 2;
 		box-shadow: 0 0 0.5rem black;
 		background: var(--transparent-white);
-		display: flex;
-		flex-direction: column;
-		border-radius: 0.25rem;
-	}
-
-	#playlist .dropdown-item {
-		display: inline-block;
-	}
-
-	footer {
-		position: relative;
-		border-top: 1px solid lightgray;
-		height: calc(3.5rem + 4px);
-		padding: calc(0.25rem + 4px) 0.5rem 0.25rem;
 	}
 
 	#cover img {
 		max-height: 100%;
 		max-width: 100%;
-		position: absolute;
 		top: 0;
 		left: 0;
 		bottom: 0;
 		right: 0;
-		margin: auto;
 	}
 
 	#winBtns .btn-danger:hover::after,
@@ -516,12 +507,7 @@
 	}
 
 	progress {
-		position: absolute;
-		top: 0;
-		width: 100%;
 		height: 4px;
-		border: 0;
-		left: 0;
 		-webkit-appearance: none;
 	}
 
@@ -530,7 +516,7 @@
 	}
 
 	footer .media {
-		flex-grow: 2;
+		width: 0;
 	}
 
 	footer #player {
@@ -541,12 +527,6 @@
 	footer #player button {
 		font-size: 24px;
 		padding: 0.25rem 0.5rem;
-	}
-
-	section.row {
-		flex-grow: 2;
-		margin: 0;
-		flex-shrink: calc(1 / 0.0001);
 	}
 
 	section#cover::before {
@@ -566,11 +546,6 @@
 	}
 
 	#playlist {
-		border: 0;
-		border-left: 1px solid #e9ecef;
-		position: relative;
-		margin: 0;
-		border-radius: 0;
 		max-height: unset !important;
 		overflow: auto;
 		z-index: 0;

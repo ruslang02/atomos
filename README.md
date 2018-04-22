@@ -2,7 +2,7 @@
 [![Github All Releases](https://img.shields.io/github/downloads/ruslang02/atomos/total.svg)]() [![npm](https://img.shields.io/npm/dt/atomos.svg)]() [![npm](https://img.shields.io/npm/v/atomos.svg)]() [![node](https://img.shields.io/node/v/atomos.svg)]() [![David](https://img.shields.io/david/ruslang02/atomos.svg)]()
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png) 
 
-Latest version: 0.6.0 (build 152). [Download .iso](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.6.0 (build 153). [Download .iso](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.

@@ -1,11 +1,10 @@
 <script>
-	$("tray").append("<button name=\"notification\" style='color: #17a2b8; font-size:16px !important;' class='material-icons p-2'>message</button>");
-	let notificationsMenu;
-	let mute = false;
-	notificationsMenu = new BrowserWindow({
+	$("tray").append("<button name=\"battery\" style='color: #28a745' class='p-2 d-inline-flex'><span class='material-icons align-middle' style='font-size:16px !important;'>battery_full</span><span class='align-middle' style='line-height:16px' id='batteryLevel'>60%</span></button>");
+	let batteryMenu;
+	batteryMenu = new BrowserWindow({
 		width: Math.ceil(400 * systemRegistry.uiScaling),
 		height: Math.ceil(260 * systemRegistry.uiScaling),
-		type: "notification",
+		type: "battery",
 		frame: false,
 		closable: false,
 		maximizable: false,
@@ -20,55 +19,28 @@
 		alwaysOnTop: true,
 		transparent: true
 	});
-	notificationsMenu.loadURL("file://" + app.getAppPath() + "/sys/notification/index.html");
-	$("[name=notification]").on("click", function () {
-		if (notificationsMenu.isVisible()) {
-			notificationsMenu.hide();
+	window.onbeforeunload = () => {
+		batteryMenu.close();
+	}
+	batteryMenu.loadURL("file://" + app.getPath("os") + "/sys/battery/index.html");
+	$("[name=battery]").on("click", function () {
+		if (batteryMenu.isVisible()) {
+			batteryMenu.hide();
 		} else {
-			notificationsMenu.show();
-			notificationsMenu.setAlwaysOnTop(true);
+			batteryMenu.show();
+			batteryMenu.setAlwaysOnTop(true);
 		}
 	});
-	notificationsMenu.on('blur', function () {
+	batteryMenu.on('blur', function () {
 		wc.send("deactivate-tray", {
-			win: 'notification'
+			win: 'battery'
 		});
-		notificationsMenu.hide()
+		batteryMenu.hide()
 	});
-	notificationsMenu.on('focus', function () {
+	batteryMenu.on('focus', function () {
 		wc.send("activate-tray", {
-			win: 'notification'
+			win: 'battery'
 		});
-		notificationsMenu.show()
+		batteryMenu.show()
 	});
-	$("[name=notification]").on("contextmenu", function (e) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		notificationsMenu.webContents.send("isMuted");
-
-	});
-	ipcRenderer.on("isMuted", function (e, mute) {
-		Menu.buildFromTemplate([{
-			label: "Mute all notifications",
-			type: "checkbox",
-			checked: mute,
-			click() {
-				notificationsMenu.webContents.send("mute", !mute);
-			}
-		}, {
-			label: "Configure notifications...",
-			click() {
-				app.launch("control", {
-					section: "Notifications"
-				})
-			}
-		}, {type: 'separator'}, {
-			label: "Taskbar Settings",
-			click() {
-				app.launch("control", {
-					section: "Taskbar"
-				})
-			}
-		}]).popup();
-	})
 </script>

@@ -38,7 +38,7 @@
 			</div>
 		</div>
 		<main class="d-flex col h-0 px-0 bg-white rounded-bottom text-truncate">
-			<form class="col d-flex py-3 flex-column" id="file">
+			<form class="col d-flex py-3 flex-column h-100" id="file">
 				<div class="form-group">
 					<label for="fileInput">File name: </label>
 					<input class="form-control form-control-sm" id="fileInput" name="fileInput" autofocus>
@@ -48,7 +48,7 @@
 					<button class="btn btn-sm btn-primary" type="submit"><i class="material-icons">add</i> Create</button>
 				</footer>
 			</form>
-			<form class="col d-flex py-3 flex-column" id="folder">
+			<form class="col d-flex py-3 flex-column h-100" id="folder">
 				<div class="form-group">
 					<label for="folderInput">Folder name: </label>
 					<input class="form-control form-control-sm" id="folderInput" name="folderInput" autofocus>
@@ -58,10 +58,16 @@
 					<button class="btn btn-sm btn-primary" type="submit"><i class="material-icons">add</i> Create</button>
 				</footer>
 			</form>
-			<form class="col d-flex py-3 flex-column" id="link">
+			<form class="col d-flex py-3 flex-column h-100" id="link">
 				<div class="form-group">
-					<label for="linkInput">Link name: </label>
-					<input class="form-control form-control-sm" id="linkInput" name="linkInput" autofocus>
+					<input class="form-control form-control-sm" placeholder="Link title" id="linkTitle" name="linkTitle">
+				</div>
+				<div class="form-group">
+					<label for="linkIcon">Link icon: </label>
+					<div class="custom-file d-block">
+						<input type="file" class="custom-file-input" id="linkIcon" name="linkIcon">
+						<label class="custom-file-label" for="linkIcon">Click to select</label>
+					</div>
 				</div>
 				<div class="form-group">
 					<div class="custom-control custom-radio">
@@ -75,26 +81,28 @@
 				</div>
 				<section id="aos">
 					<div class="form-group">
-						<input class="form-control form-control-sm" name="linkID" placeholder="Application ID">
+						<input class="form-control form-control-sm" required name="linkID" placeholder="Application ID">
 					</div>
 					<div class="form-group">
 						<input class="form-control form-control-sm" name="linkArgs" placeholder="JSON-styled args">
+						<div class="invalid-feedback">
+							Check JSON syntax.
+						</div>
 					</div>
 				</section>
 				<section id="lcmd" style="display: none">
 					<div class="form-group">
-						<textarea class="form-control form-control-sm" name="linkArgs" placeholder="Command"></textarea>
+						<textarea class="form-control form-control-sm" name="linkCmd" placeholder="Command"></textarea>
 					</div>
 				</section>
-				<div class="form-group">
-					<textarea class="form-control form-control-sm" name="linkTitle" placeholder="Description (optional)"></textarea>
-				</div>
 				<footer class="mt-auto text-right">
 					<button class="btn btn-sm btn-secondary mr-2" type="button" onclick="window.close()">Cancel</button>
 					<button class="btn btn-sm btn-primary" type="submit"><i class="material-icons">add</i> Create</button>
 				</footer>
 			</form>
-			<aside class="dropdown-menu position-static m-0 border-left-0 border-top-0 border-bottom-0 rounded-0 d-flex flex-column" style="order:-1">
+			<aside
+				class="dropdown-menu position-static m-0 border-left-0 border-top-0 border-bottom-0 rounded-0 d-flex flex-column"
+				style="order:-1">
 				<a href="#file" class="dropdown-item"><i class="material-icons mr-2">attachment</i> Plain File</a>
 				<a href="#folder" class="dropdown-item"><i class="material-icons mr-2">folder_open</i> Folder</a>
 				<a href="#link" class="dropdown-item"><i class="material-icons mr-2">link</i> Link</a>
@@ -139,7 +147,7 @@
 			$("#link section").hide();
 			$("#" + this.value).show();
 		});
-		
+
 		$(function() {
 			$(".dropdown-item").first().addClass("active").click();
 		})
@@ -147,43 +155,65 @@
 		$("form").submit(function(e) {
 			console.log(this)
 			e.preventDefault();
-					switch (this.id) {
-						case "file":
-							fs.writeFile(path.join(app.arguments.path, document.forms.file.fileInput
-									.value), "")
-								.then(function() {
-									app.log("0x0: File created successfully.");
-									console.log(path.join(app.arguments.path, document.forms.file.fileInput
-									.value));
-									//window.close();
-								})
-								.catch((e) => {
-									app.log("0x1: File was not created. " + e);
-									$("#file").append(
-										"<div class='text-danger'>We were unable to create the file.</div>"
-									);
-									console.error(e);
-								});
-							break;
-						case "folder":
-							fs.ensureDir(path.join(app.arguments.path, document.forms.folder.folderInput.value))
-								.then(function() {
-									app.log("0x0: Folder created successfully.");
-									console.log(path.join(app.arguments.path, document.forms.folder.folderInput
-									.value));
-									//window.close();
-								})
-								.catch((e) => {
-									app.log("0x1: Folder was not created. " + e);
-									$("#file").append(
-										"<div class='text-danger'>We were unable to create the folder.</div>"
-									);
-									console.error(e);
-								});
-							break;
-						case "link":
-
+			switch (this.id) {
+				case "file":
+					fs.writeFile(path.join(app.arguments.path, document.forms.file.fileInput
+						.value), "")
+						.then(function () {
+							app.log("0x0: File created successfully.");
+							console.log(path.join(app.arguments.path, document.forms.file.fileInput
+								.value));
+							window.close();
+						})
+						.catch((e) => {
+							app.log("0x1: File was not created. " + e);
+							$("#file").append(
+								"<div class='text-danger'>We were unable to create the file.</div>"
+							);
+							console.error(e);
+						});
+					break;
+				case "folder":
+					fs.ensureDir(path.join(app.arguments.path, document.forms.folder.folderInput
+						.value))
+						.then(function () {
+							app.log("0x0: Folder created successfully.");
+							console.log(path.join(app.arguments.path, document.forms.folder.folderInput
+								.value));
+							window.close();
+						})
+						.catch((e) => {
+							app.log("0x1: Folder was not created. " + e);
+							$("#file").append(
+								"<div class='text-danger'>We were unable to create the folder.</div>"
+							);
+							console.error(e);
+						});
+					break;
+				case "link":
+					let linkFile = {};
+					linkFile.title = document.forms.link.linkTitle.value || "Unnamed Link";
+					linkFile.icon = document.forms.link.linkIcon.value || app.getPath("os") + "/icons/Application.png";
+					if (document.forms.link.linkType.value === "aos") {
+						try {
+							if (document.forms.link.linkArgs.value)
+								linkFile.args = JSON.parse(document.forms.link.linkArgs.value);
+							else linkFile.args = {openedFrom: "link"};
+						} catch (e) {
+							$("#linkArgs").addClass("is-invalid");
+							return;
+						}
+						linkFile.app = document.forms.link.linkID.value;
+					} else {
+						linkFile.app = "ash";
+						linkFile.args = {
+							quiet: true,
+							command: document.forms.link.linkCmd.value
+						};
 					}
+					fs.writeJson(path.join(app.arguments.path, document.forms.link.linkTitle
+						.value), linkFile).then(window.close).catch(console.error)
+			}
 		})
 	</script>
 
@@ -192,18 +222,17 @@
 			box-shadow: 0 0 0.5rem black;
 			background: var(--transparent-white);
 		}
-		
+
 		form {
-			overflow:auto;
-			height:100%;
-			flex-grow:2;
+			overflow: auto;
+			flex-grow: 2;
 		}
 
 		form:not(:target) {
 			display: none !important;
 		}
 
-		header {
+		div.btn-toolbar {
 			-webkit-app-region: drag;
 		}
 
@@ -213,7 +242,7 @@
 			outline: none;
 		}
 
-		header button {
+		div.btn-toolbar button {
 			-webkit-app-region: no-drag;
 		}
 

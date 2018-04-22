@@ -20,23 +20,26 @@
 		show: false,
 		alwaysOnTop: true,
 	});
-	clockMenu.loadURL("file://" + app.getAppPath() + "/sys/clockMenu/index.html");
+	window.onbeforeunload = () => {
+		clockMenu.close();
+	}
+	clockMenu.loadURL("file://" + app.getPath("os") + "/sys/clockMenu/index.html");
 	$("[name=clock]").on("click", function() {
 		if (clockMenu.isVisible()) {
 			clockMenu.hide();
-			wc.send("deactivate-tray", {
+			app.webContents.send("deactivate-tray", {
 				win: 'clock'
 			})
 		} else {
 			clockMenu.show();
 			clockMenu.setAlwaysOnTop(true);
-			wc.send("activate-tray", {
+			app.webContents.send("activate-tray", {
 				win: 'clock'
 			})
 		}
 	});
 	clockMenu.on('blur', function() {
-		wc.send("deactivate-tray", {
+		app.webContents.send("deactivate-tray", {
 			win: 'clock'
 		});
 		clockMenu.hide()

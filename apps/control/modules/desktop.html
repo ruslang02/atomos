@@ -17,16 +17,17 @@
 		</div>
 		<p class="lead my-3">Online imaging services</p>
 		<div class="card" style="min-height:200px;">
-			<div class="list-group list-group-flush">
+			<form class="list-group list-group-flush">
 				<div class="list-group-item custom-control custom-radio ">
-					<input type="radio" id="customWPService0" checked name="customWPService" value="none" class="custom-control-input">
+					<input type="radio" id="customWPService0" checked name="customWPService" value="none"
+					       class="custom-control-input">
 					<label class="custom-control-label ml-3" for="customWPService0">none</label>
 				</div>
 				<div class="list-group-item custom-control custom-radio ">
 					<input type="radio" id="customWPService1" name="customWPService" value="aclock" class="custom-control-input">
 					<label class="custom-control-label ml-3" for="customWPService1">Sony "alpha" Clock</label>
 				</div>
-			</div>
+			</form>
 		</div>
 	</div>
 
@@ -39,29 +40,43 @@
 		title: "Control Center / Desktop",
 		icon: app.getPath("os") + "/icons/Desktop.png"
 	});
-	if(regs.autoStart.filter((o) => {
-		return o.src === __dirname + "/modules/aclock.js";
-	}).length) {
-		$("[name=customWPService]").val("aclock");
-	} else 
-		$("[name=customWPService]").val("none");
-	$("#image").css("background-image", "url(file:///" + encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg)");
+	if (regs.autoStart.filter((o) => {
+			return o.src === __dirname + "/modules/aclock.js";
+		}).length) {
+		$("[name=customWPService][value=aclock]")[0].checked = true;
+	} else
+		$("[name=customWPService][value=none]")[0].checked = true;
+	$("#image").css("background-image", "url(file:///" + encodeURI(app.getPath(
+		"appData")).replace(/%5C/g, "/") + "/wallpaper.jpg)");
 	$("[data-location='Control Center / Desktop'] .btn-primary").click(function () {
-		let bg = decodeURI($("[data-location='Control Center / Desktop'] #image").css("background-image"));
+		let bg = decodeURI($("[data-location='Control Center / Desktop'] #image").css(
+			"background-image"));
 		let url = new URL(bg.substring(5, bg.length - 2));
 		fs.readFile(decodeURI(url.pathname)).then(function (bin) {
-			fs.writeFile(app.getPath("appData") + "/wallpaper.jpg", bin).then(function () {
-				registry.get(true).then(function(regs) {
-					if(!regs.wallpaper) {
-						regs.wallpaper = {
-							fillMode: "fill"
-						}
-						regs.wallpaper.fillMode = $("[data-location='Control Center / Desktop Preferences'] select").val().toLowerCase();
-						registry.set(regs, true).then($.noop);
+			fs.writeFile(app.getPath("appData") + "/wallpaper.jpg", bin).then(() => {
+				if (!regs.wallpaper)
+					regs.wallpaper = {
+						fillMode: "fill"
 					}
-				})
+				regs.wallpaper.fillMode = $(
+					"[data-location='Control Center / Desktop'] select").val().toLowerCase();
+				registry.set(regs, true).then($.noop);
 			})
-		})
+		});
+		regs.autoStart.forEach(function (item, i) {
+			if (item.src.includes(__dirname + "/modules/"))
+				regs.autoStart.splice(i, 1);
+		});
+		switch ($("[name=customWPService]:checked").val()) {
+			case "none":
+				break;
+			default:
+				regs.autoStart.push({
+					name: $("[for=" + $("[name=customWPService]:checked").attr("id") + "]").text().trim(),
+					src: __dirname + "/modules/" + $("[name=customWPService]:checked").val() + ".js"
+				})
+		}
+		registry.set(regs, true).then(() => $("[action=up]").click());
 	});
 	$("[data-location='Control Center /  Desktop'] #ImageChoose").click(function () {
 		app.launch("aos-files", {
@@ -76,7 +91,8 @@
 		})
 	});
 	ipcRenderer.on("return-file", function (event, path) {
-		$("#image").css("background-image", "url(file:///" + encodeURI(path).replace(/%5C/g, "/") + ")");
+		$("#image").css("background-image", "url(file:///" + encodeURI(path).replace(
+			/%5C/g, "/") + ")");
 	});
 </script>
 <style>
@@ -105,4 +121,5 @@
 	.list-group-item {
 		align-items: center;
 		display: flex;
+	}
 </style>

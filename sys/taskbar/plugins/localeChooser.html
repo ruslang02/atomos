@@ -10,7 +10,7 @@
 				else $("[name=localechooser]").text(out);
 			})
 	});
-	wc.send("changeLocale");
+	app.webContents.send("changeLocale");
 	$("[name=localechooser]").on("click contextmenu", function(e) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
@@ -22,7 +22,7 @@
 				checked: item === $("[name=localechooser]")[0].innerText,
 				click() {
 					require("child_process").exec("setxkbmap " + item);
-					wc.send("changeLocale");
+					app.webContents.send("changeLocale");
 				}
 			});
 		});

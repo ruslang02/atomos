@@ -87,9 +87,8 @@
 	
 	registry.get(true).then((reg) => {window.scale = reg.uiScaling});
 	registry.on("changed", (cook) => {
-		if(cook === "system")
-			window.scale = JSON.parse(cook.value).uiScaling;
-	})
+		window.scale = cook.uiScaling;
+	}, true)
 	
 	window.$ = window.jQuery = require('jquery');
 	$("body").append(`<audio src="${app.getPath("os")}/resources/notification.ogg"></audio>`);

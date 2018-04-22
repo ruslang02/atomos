@@ -1,7 +1,9 @@
-<div class="dropdown-menu border border-top-0 border-left-0 border-right-0">
-	<button disabled class="dropdown-item">Playlist is empty</button>
+<body>
+<div
+	class="dropdown-menu border border-top-0 border-left-0 border-right-0 bg-transparent border-0 rounded-0 m-0 position-static w-100 d-inline-block">
+	<button disabled class="dropdown-item d-inline-block text-truncate">Playlist is empty</button>
 </div>
-<center>
+<div class="text-center d-inline-block w-100 p-2">
 	<button action="previous" class="btn btn-link material-icons"
 					onclick='app.getParentWindow().webContents.send("changeTrack", {offset: -1});'>skip_previous
 	</button>
@@ -11,8 +13,8 @@
 	<button action="next" class="btn btn-link material-icons"
 					onclick='app.getParentWindow().webContents.send("changeTrack", {offset: 1});'>skip_next
 	</button>
-</center>
-<progress max="100" value="100"></progress>
+</div>
+<progress class="position-absolute w-100" max="100" value="100"></progress>
 <script>
 	const {
 		remote,
@@ -60,7 +62,7 @@
 		if (!options.isChanged) return;
 		$(".dropdown-menu *").remove();
 		options.playlist.forEach(function (play) {
-			$(".dropdown-menu").append("<button location='" + play.location + "' class='dropdown-item" + (play.active ? " active" : "") + "'>" + play.play + "</button>")
+			$(".dropdown-menu").append("<button location='" + play.location + "' class='dropdown-item d-inline-block text-truncate" + (play.active ? " active" : "") + "'>" + play.play + "</button>")
 		})
 		$(".dropdown-item").off().on("click", function () {
 			if (!$(this).hasClass("active")) app.getParentWindow().webContents.send("changeTrack", {
@@ -72,9 +74,7 @@
 </script>
 <style>
 	progress {
-		position: absolute;
 		bottom: 0;
-		width: 100%;
 		height: 4px;
 		border: 0;
 		left: 0;
@@ -91,35 +91,16 @@
 
 	body {
 		border: 1px solid hsl(33, 100%, 50%);
-		border-bottom-width:2px;
+		border-bottom-width: 3px;
 		padding-bottom: 4px;
 		display: inline-block;
 		width: 100%;
 	}
 
-	center {
-		display: inline-block;
-		width: 100%;
-		padding: 0.5rem
-	}
-
 	.dropdown-menu {
-		background: none;
-		border: none;
 		outline: none;
-		border-radius: 0;
-		margin: 0;
-		position: static;
-		width: 100%;
-		display: inline-block;
 		max-height: 300px;
 		overflow: auto;
-	}
-
-	.dropdown-item {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		display: inline-block
 	}
 
 	.dropdown-item.active,
@@ -149,3 +130,4 @@
 		box-shadow: 0 0 0 3px hsla(33, 100%, 50%, 0.5);
 	}
 </style>
+</body>
