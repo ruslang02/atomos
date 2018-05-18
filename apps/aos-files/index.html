@@ -851,7 +851,7 @@
 				let urls = clipboard.readText().split("\n");
 				let promises = [];
 				urls.forEach(function (url) {
-					promises[promises.length] = fs.copy(url, $pathField.val())
+					promises[promises.length] = fs.copy(url, $pathField.val() + "/" + path.basename(url))
 						.then(function () {
 							if ($(clipboard.readHTML()).text() === "cut")
 								fs.remove(url);
