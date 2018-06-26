@@ -1,16 +1,17 @@
 # Changelog
 
-## 0.6.0 _unstable_
+## 0.6.1
+ - Fixed transparency issues on some systems
+ - Fixed inabillity to launch environment due to some legacy code
+ - Source Sans Pro built-in as a NPM dependency
+
+## 0.6.0
  - API redesign using `module.exports`
  - Translucent UI
  - Window open animation
  - No need to use special AtomOS XFWM4 theme
 
 ## 0.5.3
-
- - #####Stable than ever
- 
- 
  - Stability improvements
  - Fixed Start Menu auto-update
  - App uninstallation and shortcut creation in Start menu

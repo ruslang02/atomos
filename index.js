@@ -27,6 +27,9 @@ if (isSecondInstance) {
 	console.log("Another AtomOS instance is already running. Quitting...");
 	app.exit()
 }
+
+app.disableHardwareAcceleration();
+
 app.on('before-quit', function() {
 	BrowserWindow.getAllWindows().forEach(w => w.destroy());
 });

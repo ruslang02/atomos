@@ -44,7 +44,7 @@
 
 	registry.get().then(function (sets) {
 		if (Object.keys(sets).length) settings = sets;
-		else settings = fs.readJsonSync(app.getPath("appData") + "/aos-files.json");
+		else settings = fs.readJsonSync(__dirname + "/default.json");
 		settings = new Proxy(settings, {
 			set(t, p, v) {
 				t[p] = v;

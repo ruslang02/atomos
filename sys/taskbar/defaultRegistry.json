@@ -39,7 +39,7 @@
 	"autoStart": [],
 	"appAssociations": [],
 	"taskbar": {
-		"items": ["startButton","tasks","tray","localechooser", "notification","clock"]
+		"items": ["startButton","tasks","tray","localeChooser", "notifications","clock"]
 	},
 	"notificationPrefs": {},
 	"keyboardLayouts": [

@@ -1,8 +1,8 @@
 # atomOS Desktop Environment
-[![Github All Releases](https://img.shields.io/github/downloads/ruslang02/atomos/total.svg)]() [![npm](https://img.shields.io/npm/dt/atomos.svg)]() [![npm](https://img.shields.io/npm/v/atomos.svg)]() [![node](https://img.shields.io/node/v/atomos.svg)]() [![David](https://img.shields.io/david/ruslang02/atomos.svg)]()
-![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png) 
+![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
+**Tested on Electron 2.0.2, 3.x is not guaranteed to work**
 
-Latest version: 0.6.0 (build 154). [Download .iso](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.6.1 (build 156). [Download .iso](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
@@ -12,7 +12,7 @@ There is also an operating system available based on this.
 
 Download this repository and unpack it to `/atomos` or run this command:
 ```
-sudo git clone https://github.com/ruslang02/atomos.git -b 0.6-dev /atomos
+git clone https://github.com/ruslang02/atomos.git
 ```
 
 Firstly, you should have Node.JS and NPM installed:
@@ -25,15 +25,15 @@ npm install -g electron
 ```
 Install the libraries:
 ```
-/atomos $ npm update
+npm update
 ```
 And, finally, to run this monster:
 ```
-/atomos $ npm start
+npm start
 ```
 
 ## Extras
-System itself uses XfWM4 as a default window manager.
+System itself uses XfWM4 as a default window manager (Mutter is also possible).
 
 lightdm-webkit theme: https://github.com/ruslang02/atomos-lightdm-webkit-theme
 

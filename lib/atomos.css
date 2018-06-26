@@ -1,6 +1,7 @@
 @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 @import "../node_modules/jquery-ui-npm/jquery-ui.min.css";
 @import "../node_modules/material-design-icons-iconfont/dist/fonts/material-icons.css";
+@import "../node_modules/source-sans-pro/source-sans-pro.css";
 
 :root {
 	--transparent-white: rgba(255, 255, 255, 0.9);
@@ -15,7 +16,7 @@ button {
 
 body {
 	margin: 0;
-	font-family: 'Source Sans Pro' !important;
+	font-family: 'Source Sans Pro', sans-serif !important;
 	font-size: 14px;
 	font-weight: normal;
 	line-height: 1.5;

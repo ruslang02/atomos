@@ -56,9 +56,10 @@
 			app.window.setSize(app.window.getSize()[0], Math.ceil(32 * cook.uiScaling));
 			systemRegistry = cook;
 		}, true);
+		
+		require("./index");
 
 	});
-
 	app.window.on('resize', function () {
 		require("child_process").spawn("xfconf-query", ["-c", "xfwm4", "-p",
 			"/general/margin_bottom", "-s", win.getContentSize()[1]
@@ -74,5 +75,4 @@
 		e.returnValue = false;
 		return false;
 	};
-	require("./index");
 </script>
