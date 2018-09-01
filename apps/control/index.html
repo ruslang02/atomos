@@ -16,7 +16,7 @@
 		BrowserWindow
 	} = remote;
 	window.$ = window.jQuery = require("jquery");
-	$.getScript(app.getPath("os") + "/node_modules/jquery-ui-npm/jquery-ui.min.js");
+	$.getScript(osRoot + "/node_modules/jquery-ui-npm/jquery-ui.min.js");
 	window.Popper = require("popper.js");
 	require("bootstrap");
 	const win = app.window;

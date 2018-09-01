@@ -257,7 +257,7 @@
 		fs.readJson(path.join(app.getPath("appData"), "defaultApps.json"), function (e, dApps) {
 			if (e)
 				fs.writeFile(path.join(app.getPath("appData"), "defaultApps.json"), fs.readFileSync(
-					path.join(app.getPath("os"), "resources", "defaultApps.json.template")
+					path.join(osRoot, "resources", "defaultApps.json.template")
 				));
 			if (dApps.musicplayer) {
 				if (dApps.musicplayer.app !== "boombox")

@@ -6,7 +6,7 @@
 	<div class="list-group list-group-flush">
 		<div class="list-group-item d-flex" id="volume">
 			<i class="material-icons md-18">volume_down</i>
-			<input title class="form-control" oninput="changeVolume(this)" type="range">
+			<input title class="form-control custom-range" oninput="changeVolume(this)" type="range">
 			<i class="material-icons md-18">volume_up</i>
 		</div>
 		<!-- 
@@ -15,7 +15,7 @@
 		
 		<div class="list-group-item d-flex" id="brightness">
 			<i class="material-icons md-18">brightness_low</i>
-			<input title class="form-control" min=0.05 max=1 value=1 step=0.05 oninput="changeBrightness(this)"
+			<input title class="form-control custom-range" min=0.05 max=1 value=1 step=0.05 oninput="changeBrightness(this)"
 			 type="range">
 			<i class="material-icons md-18">brightness_high</i>
 		</div>
@@ -59,7 +59,7 @@
 			reset();
 	}, true)
 	window.jQuery = window.$ = require("jquery");
-	$("body").append("<link href=\"" + app.getPath("os") +
+	$("body").append("<link href=\"" + osRoot +
 		"/sys/internetMenu/index.css\" rel=\"stylesheet\">");
 	let taskbar = BrowserWindow.fromId(getGlobal("gui").taskbar);
 	taskbar.on('resize', reset);

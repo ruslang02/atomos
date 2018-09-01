@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html style="display:flex;height:100%;">
+<head>
+	<meta charset="utf-8"/>
+	<title>Files</title>
+</head>
+<body>
+
+<script>
+	const {
+		app,
+		Menu,
+		Notification,
+		registry
+	} = require("atomos-framework");
+	let args = app.arguments;
+	window.$ = require("jquery");
+	window.Popper = require("popper.js");
+	require("bootstrap");
+	const {
+		remote,
+		ipcRenderer
+	} = require("electron");
+	const {
+		clipboard
+	} = remote;
+	const fs = require("fs-extra");
+	const path = require("path");
+
+	let $sidebar;
+	let $container;
+	let $statusBar;
+	let $nav;
+	let $main;
+	let $navButtons;
+	let $pathField;
+	let $FCBar;
+	let watcher = "";
+	let history = {
+		current: -1,
+		items: []
+	};
+	let settings = {};
+
+	registry.get().then(function (sets) {
+		if (Object.keys(sets).length) settings = sets;
+		else settings = fs.readJsonSync(__dirname + "/default.json");
+		settings = new Proxy(settings, {
+			set(t, p, v) {
+				t[p] = v;
+				if (args.desktop !== true) registry.set(settings).then(() => {
+					navigate(":refresh")
+				});
+				return true;
+			}
+		});
+			init();
+		})
+	registry.get(true).then((r) => {window.systemSettings = r; if(args.desktop === true) 
+			updateWall();});
+	registry.on("changed", (cook) => {
+		window.systemSettings = cook;
+		if (args.desktop === true) updateWall();
+	}, true);
+	function updateWall() {
+
+		let wpURL;
+			if (settings.videoWallpaper && settings.videoWallpaper !== $("video#wallpaper").attr("src")) {
+				$("video").remove();
+				$("body").append("<video id='wallpaper' autoplay loop style='position:fixed;top:0;left:0;height:100vh;' src='" + settings.videoWallpaper + "'></video>");
+				$("video")[0].volume = 0;
+			} else if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
+				wpURL = encodeURI(app.getPath("appData")).replace(/%5C/g, "/") + "/wallpaper.jpg?time=" + new Date().getTime();
+			else {
+				wpURL = encodeURI(osRoot).replace(/%5C/g, "/") + "/resources/default.jpg?time=" + new Date().getTime();
+				new Notification({
+					title: "Welcome to AtomOS!",
+					body: "We are very glad to see you here, you have made a long way to seeing this screen, congratulations! :-)"
+				});
+				let d1e = fs.existsSync(app.getPath("desktop") + "/.1.lnk");
+				let d2e = fs.existsSync(app.getPath("desktop") + "/.2.lnk");
+				if (!d1e) fs.writeJson(app.getPath("desktop") + "/.1.lnk", {
+					title: "Home",
+					app: "aos-files",
+					args: {
+						path: app.getPath("home")
+					},
+					icon: osRoot + "/icons/User Folder.png"
+				});
+				if (!d2e) fs.writeJson(app.getPath("desktop") + "/.2.lnk", {
+					title: "Computer",
+					app: "aos-files",
+					args: {
+						path: "/"
+					},
+					icon: osRoot + "/icons/Computer.png"
+				})
+			}
+			$("body").css({
+				"background-image": "url(file:///" + wpURL + ")",
+				"background-size": (systemSettings.fillMode === "fill" ? "cover" : (systemSettings.fillMode === "stretch" ? "100% 100%" : "initial")),
+				"background-position": (systemSettings.fillMode === "center" ? "center" : "top left"),
+				"background-repeat": (systemSettings.fillMode === "tiled" ? "repeat" : "no-repeat")
+			});
+	}
+
+	function init() {
+		if (args.desktop === true) {
+			settings.iconSize = "verylarge";
+			settings.showHidden = true;
+			settings.foldersFirst = true;
+			settings.sorting = "A-Z";
+			if (fs.existsSync(app.getPath("appData") + "/wallpaper.jpg"))
+				fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall);
+			else fs.copy(osRoot + "/resources/default.jpg", app.getPath("appData") + "/wallpaper.jpg")
+				.then(function () {
+					fs.watch(app.getPath("appData") + "/wallpaper.jpg", updateWall)
+				})
+				.catch(function (e) {
+					new Notification({
+						title: "Error copying default wallpaper",
+						body: e
+					});
+				});
+			$("body").addClass("desktop");
+			window.onbeforeunload = function (e) {
+				app.launch("aos-shutdown", {}, {
+					parent: win,
+					modal: true
+				});
+				e.returnValue = false;
+				return false;
+			};
+		} else
+			$("html").addClass("p-2")
+		renderNav();
+		renderContainer().then(function () {
+
+			if (args.action) {
+				if (!args.title) {
+					if (args.action === "open") args.title = "Choose a file to open...";
+					if (args.action === "save") args.title = "Choose destination to save file to...";
+					if (args.action === "folder") args.title = "Choose a folder to open...";
+				}
+				document.title = args.title;
+				renderFCBar();
+			}
+			if (args.desktop === true) $nav.hide();
+			renderStatusbar();
+			navigate(args.path || (args.desktop === true ? app.getPath("desktop") : app.getPath("home")));
+		});
+	}
+
+	function navigate(url) {
+		let $items = [];
+		if (watcher.start) watcher.close();
+
+		if ($FCBar) {
+			$FCBar.find("input").val("");
+			$FCBar.find(".btn-primary")[0].disabled = true;
+		}
+
+		$main.attr("data-view", settings.iconSize);
+
+		switch (url.toLowerCase()) {
+			case ":back":
+				url = history.items[--history.current];
+				break;
+			case ":forward":
+				url = history.items[++history.current];
+				break;
+			case ":refresh":
+				url = history.items[history.current];
+				break;
+			default:
+				history.items.splice(++history.current, history.items.length);
+				history.items.push(url);
+		}
+		if (!args.action)
+			document.title = path.basename(url) + " - Files";
+
+		url = path.normalize(url.trim());
+
+		$("section .dropdown-item").removeClass('active');
+		$("section#devices .dropdown-item[data-location='" + path.basename(url) + "']").addClass('active');
+		$("section#access .dropdown-item[data-location='" + url + "']").addClass('active');
+
+		$pathField.val(url);
+		$navButtons[0][0].disabled = !(history.current);
+		$navButtons[1][0].disabled = (history.current === history.items.length - 1);
+		try {
+			watcher = fs.watch(url, () => navigate(":refresh"));
+		} catch (e) {
+			if (e.errno === "EACCES")
+				$main.html(`
+<div class="d-flex flex-column h-100 justify-content-center mx-auto">
+<h3 class='text-center'>Permission denied.</h3>
+<p class='lead text-center'>You are not allowed to view this folder.</p>
+<div class='text-center'>
+    <button class='btn btn-secondary' onclick="navigate(':back')"><i class='material-icons'>keyboard_arrow_left</i> Go back</button>
+    <button class='btn btn-outline-primary' onclick="app.launch('sudo', {command: 'chmod 777 -R ${$pathField.val()}'}, {parent: app.window, modal: true})"><i class='material-icons'>lock_outline</i> Change permissions</button>
+</div></div>`);
+			else if (e.errno === "ENOENT") {
+				$main.html(`
+<div class="d-flex flex-column h-100 justify-content-center mx-auto">
+<h3 class='text-center'>Folder does not exist.</h3>
+<p class='lead text-center'>You have navigated to an unexisting folder.</p>
+<div class='text-center'>
+    <button class='btn btn-secondary' onclick="navigate(':back')"><i class='material-icons'>keyboard_arrow_left</i> Go back</button>
+    <button class='btn btn-outline-primary' onclick="fs.ensureDirSync('${url}');navigate(':refresh');"><i class='material-icons'>add</i> Create folder</button>
+</div></div>`);
+			}
+			return;
+		}
+
+		$statusBar.text("Retrieving folder contents...");
+
+		fs.readdir(url)
+			.then(function (files) {
+				$statusBar.text(`0 elements`);
+				$main.html("");
+				files.forEach(function (file, index, arr) {
+					$statusBar.text(`Retrieving folder contents: ${index} of ${arr.length}`);
+					if (file.startsWith(".") && !settings.showHidden) return;
+					fs.lstat(path.join(url, file))
+						.then(function (stat) {
+								let icon = "";
+								let shortcut;
+								if (stat.isFile()) {
+									let extension = path.extname(file).substring(1).toUpperCase();
+									icon =
+										(stat.isSymbolicLink() ?
+												osRoot + "/icons/file-types/Symlink.png" :
+												osRoot + "/icons/file-types/" + extension + ".png"
+										);
+									if (!fs.existsSync(icon))
+										icon = osRoot + "/icons/file-types/Unknown.png";
+									if (settings.iconSize === "list")
+										icon = icon.replace(/file-types/g, "file-types-small");
+									if (extension === "LNK") {
+										shortcut = fs.readJsonSync(path.join(url, file), {throws: false});
+										if (shortcut) icon = shortcut.icon.replace("$SYSTEM_ROOT", osRoot);
+									}
+								}
+								else if (stat.isDirectory()) {
+									icon = (stat.isSymbolicLink() ?
+											osRoot + "/icons/Symlink Folder.png" :
+											osRoot + "/icons/Extensions Folder.png"
+									);
+									if (settings.iconSize === "list")
+										icon = icon.replace(/\/icons/g, "/icons/folders-small");
+								} else icon = osRoot + "/icons/file-types" + (settings.iconSize === "list" ? "-small" : "") + "/Symlink.png";
+								let $item = $("<button></button>", {
+									draggable: true,
+									class: 'dropdown-item p-1',
+									"data-type": (stat.isDirectory() ? "folder" : "file"),
+									dblclick: function () {
+										if (stat.isDirectory()) {
+											if (args.desktop === true) app.launch("aos-files", {
+												path: path.join(url, file)
+											});
+											else navigate(path.join(url, file));
+										} else if (stat.isFile()) {
+											if (args.action) sendBack();
+											else if (shortcut) {
+												app.launch(shortcut.app, shortcut.args);
+											} else
+												app.fileOpen(path.join(url, file));
+										}
+									},
+									click: function () {
+										if ($FCBar) {
+											$FCBar.find("input").val(file);
+											$FCBar.find(".btn-primary")[0].disabled = false;
+										}
+									},
+									contextmenu: function (e) {
+										renderFileContextMenu(e, path.join(url, file))
+									},
+									html: [
+										$("<img />", {
+											src: "file://" + icon
+										}),
+										$("<div></div>", {
+											class: "file-title",
+											html: (shortcut ? shortcut.title : file),
+											css: {
+												overflow: "hidden",
+												textOverflow: "ellipsis"
+											}
+										})
+									]
+								});
+								$item.on('dragstart', function (e) {
+									e = e.originalEvent;
+									console.log(e);
+									let dragico = document.createElement('img');
+									dragico.src = "file://" + icon.replace(/\/folders-small/g, "").replace(/-small/g, "");
+									dragico.width = 96;
+									e.dataTransfer.effectAllowed = 'move';
+									e.dataTransfer.setData("aos/file", JSON.stringify({
+										name: file,
+										fullPath: path.join(url, file)
+									}));
+									e.dataTransfer.setDragImage(dragico, 96, 96);
+									return true;
+								});
+
+								if (args.action && args.action === "ffd" && stat.isFile()) $item.attr("disabled", "disabled");
+
+								$items.push($item);
+
+								if (index === arr.length - 1) {
+									$items.sort(function (a, b) {
+										let nameA = a.find(".file-title").text().trim().toLowerCase(),
+											nameB = b.find(".file-title").text().trim().toLowerCase();
+										if (nameA < nameB) return (settings.sorting === "A-Z" ? -1 : 1);
+										if (nameA > nameB) return (settings.sorting === "A-Z" ? 1 : -1);
+										return 0;
+									});
+									if (settings.foldersFirst) {
+										let $new = [];
+										$items.forEach(function (item) {
+											if (item.data('type') === "folder") $new.push(item);
+										});
+										$items.forEach(function (item) {
+											if (item.data('type') !== "folder") $new.push(item);
+										});
+										$main.html($new);
+									} else $main.html($items);
+									$statusBar.text($items.length + " elements");
+
+								}
+							}
+						).catch(function (e) {
+						console.error("lstat failed on one of files. Not all directory contents may be viewed.");
+						console.error(path.join(url, file));
+					});
+				})
+			}).catch(console.error);
+
+	}
+
+	function renderFCBar() {
+		$FCBar = $("<form></form>", {
+			class: "input-group p-1 m-0 bg-light border border-left-0 border-right-0 border-bottom-0 needs-validation",
+			css: {
+				flexShrink: 0
+			},
+			on: {
+				"submit": function (e) {
+					e.preventDefault();
+					sendBack();
+					return false;
+				}
+			},
+			html: [
+				$("<span></span>", {
+					class: "input-group-prepend",
+					html: $("<button></button>", {
+						class: "btn btn-sm btn-secondary btn-block",
+						click: window.close,
+						type: "button",
+						text: "Cancel" || args.cancelText
+					})
+				}),
+				$("<input />", {
+					type: "text",
+					id: "returnInput",
+					class: "form-control form-control-sm",
+					on: {
+						input: function () {
+							$("#sendButton").attr('disabled', this.value.trim() === "")
+						},
+						change: function () {
+							$("#sendButton").attr('disabled', this.value.trim() === "")
+						}
+					}
+				}),
+				$("<label></label>", {
+					class: "invalid-tooltip m-2 p-1",
+					css: {top: 0, right: "50px"},
+					text: "File or folder does not exist"
+				}),
+				$("<span></span>", {
+					class: "input-group-append",
+					html: $("<button></button>", {
+						class: "btn btn-sm btn-primary btn-block",
+						id: "sendButton",
+						type: "submit",
+						text: args.cancelText || (args.action !== "save" ? "Open" : "Save")
+					})
+				})
+			]
+		});
+		$FCBar.appendTo("body");
+	}
+
+	function sendBack(force = false) {
+		if (typeof force !== "boolean") force = false;
+		let file = path.join($pathField.val(), $FCBar.find("input").val());
+		let send = false;
+		let exists = fs.existsSync(file);
+		if (exists) {
+			let lstat = fs.lstatSync(file);
+			if (lstat.isDirectory()) {
+				if (args.action === "folder") send = "return-folder";
+				else navigate(file);
+			} else {
+				if (args.action === "save") {
+					if (force) send = "save-file";
+					else {
+						$("form .btn-primary").popover({
+							container: 'body',
+							content: `<overlay></overlay>
+					<small>File "${$FCBar.find("input").val()}" already exists.<br>Do you want to replace it?</small>
+					<div class='text-right mt-2'>
+						<button class="btn btn-secondary btn-sm" onclick="$('form .input-group-append button').popover('dispose')">No</button>
+						<button class="btn btn-outline-danger btn-sm" onclick="sendBack(true)">Yes, replace it</button>
+					</div>`,
+							html: true,
+							placement: "top",
+							trigger: 'manual'
+						});
+						$("form .btn-primary").popover("show");
+						send = false;
+					}
+				} else if (args.action === "open")
+					send = "return-file";
+			}
+		} else {
+			if (args.action === "folder") {
+				$("form .invalid-tooltip").html(`Folder does not exist. <a href='javascript: app.launch("aos-creator", {path: "${$pathField.val()}"})' class='text-white'><u>Create it</u></a>`);
+				$("form .form-control").addClass("is-invalid");
+				send = false;
+			} else if (args.action === "open") {
+				$("form .invalid-tooltip").html(`Check your file path, we can't find the file.`);
+				$("form .form-control").addClass("is-invalid");
+				send = false;
+			} else
+				send = "save-file";
+		}
+		if (send) {
+			app.window.getParentWindow().webContents.send(send, path.join($pathField.val(), $FCBar.find("input").val()));
+			window.close();
+		}
+	}
+
+	function renderMain() {
+		$main = $("<section></section>", {
+			class: "dropdown-menu p-1 rounded-0 m-0 border-0",
+			"data-view": settings.iconSize,
+			css: {
+				flexGrow: 2,
+				position: "static",
+				overflow: "auto",
+				width: 0
+			},
+			contextmenu: renderMainContextMenu
+		});
+		$main.appendTo($container);
+	}
+
+	function renderAccessSection() {
+		return new Promise(function (resolve) {
+
+			let result = $("<section></section>", {
+				id: 'access'
+			});
+			settings.accessList.forEach(function (item) {
+				if (item.type === "item") {
+					let location = (item.location ? item.location
+							.replace("$HOME_DIR", app.getPath("home"))
+							.replace("/atomos/home", app.getPath("home"))
+							.replace("$SYSTEM_ROOT", osRoot) :
+						1 + 1);
+					result.append(
+						$("<button></button>", {
+							class: 'dropdown-item',
+							click: function () {
+								navigate(location);
+							},
+							"data-location": location,
+							html: [
+								$("<img />", {
+									src: item.icon.replace("$SYSTEM_ROOT", osRoot) ||
+									osRoot + "/icons/folders-small/Extensions Folder.png"
+								}),
+								item.name
+							]
+						})
+					)
+				} else result.append(
+					$('<div></div>', {
+						class: "dropdown-header",
+						html: item.name
+					})
+				)
+			});
+			$sidebar.append(result);
+			resolve();
+		});
+	}
+
+	function renderDeviceSection() {
+		if (process.platform === "win32") return;
+		let result = [];
+		fs.readdir("/dev/disk/by-uuid")
+			.then(function (links) {
+				$sidebar.find("section#devices").remove();
+				links.forEach(function (link, i, arr) {
+					fs.readlink("/dev/disk/by-uuid/" + link)
+						.then(function (loc) {
+							let device = path.resolve("/dev/disk/by-uuid/", loc);
+							let label = "";
+							if (fs.existsSync("/dev/disk/by-label"))
+								fs.readdir("/dev/disk/by-label", function (err, files) {
+
+									if (err) label = loc;
+									else {
+										files.forEach(function (file) {
+											if (path.resolve("/dev/disk/by-label/", fs.readlinkSync(
+													"/dev/disk/by-label/" + file)) === device) label = file;
+										});
+										label = label.replace("\\x20", " ");
+									}
+									let mountDir = "/mnt/" + process.env.USER + "/" + link;
+
+									let isMounted = false;
+									try {
+										isMounted = require("child_process").execSync(`grep -s '/mnt/${process.env.USER}/${label}' /proc/mounts`);
+									} catch (e) {
+									}
+									result.push($("<button></button>", {
+										class: "dropdown-item" + (isMounted ? " mounted" : ""),
+										title: 'Click to mount/open drive',
+										click: function () {
+											fs.readdir(mountDir)
+												.then(function (elem) {
+													if (elem.length) navigate(mountDir);
+													else mountDrive(mountDir, device)
+												})
+												.catch(function () {
+													mountDrive(mountDir, device)
+												})
+										},
+										contextmenu: function () {
+											var that = $(this);
+											Menu.buildFromTemplate([{
+												label: "Open/Mount",
+												click() {
+													that.click();
+												}
+											}, {
+												label: "Unmount",
+												click() {
+													app.launch("sudo", {
+														command: "umount '" + mountDir + "'",
+														win: app.window.id,
+														title: "Authentication is needed to unmount drives"
+													}, {modal: true, parent: app.window});
+													ipcRenderer.once("return-sudo", function (e, res) {
+														renderDeviceSection();
+													})
+
+												}
+											}]).popup();
+										},
+										text: label || link
+									}));
+									if (arr.length === i + 1) $sidebar.append($("<section></section>", {
+										id: "devices",
+										html: result
+									}));
+								})
+						})
+				});
+			}, console.error)
+	}
+
+	function renderContainer() {
+		$container = $("<main></main>", {
+			class: "d-flex",
+			css: {
+				flexGrow: 2
+			}
+		});
+		let sidebar = renderSidebar();
+		sidebar.then(renderMain);
+		$container.appendTo("body");
+		return sidebar;
+	}
+
+	function renderStatusbar() {
+		$statusBar = $("<footer></footer>", {
+			class: "bg-light border border-left-0 border-right-0 border-bottom-0 p-1" + (args.desktop === true ? " d-none" : ""),
+			text: "Loading...",
+			css: {
+				borderRadius: "0 0 0.25rem 0.25rem"
+			}
+		});
+		$statusBar.appendTo("body");
+	}
+
+	function renderSidebar() {
+		if (args.desktop === true) return new Promise(function (a) {
+			a()
+		});
+		$sidebar = $("<aside></aside>", {
+			class: "dropdown-menu border border-left-0 py-1 border-top-0 border-bottom-0 rounded-0 m-0",
+			css: {
+				position: "static",
+				overflowY: "auto",
+				overflowX: "hidden",
+				maxWidth: "170px",
+				background: "var(--transparent-white)",
+				display: (args.action ? "none" : "block")
+			}
+		});
+		$sidebar.appendTo($container);
+		return Promise.all([renderDeviceSection(), renderAccessSection()]);
+	}
+
+	function renderNav() {
+		let $newFolderButton;
+		$nav = $("<nav></nav>", {
+			class: "btn-toolbar border border-left-0 border-right-0 border-top-0 flex-nowrap align-items-center",
+			css: {
+				background: "var(--transparent-white)",
+				borderRadius: "0.25rem 0.25rem 0 0"
+			}
+		});
+		if (args.action) {
+			let $sidebarButton = $("<div></div>", {
+				class: "btn-group btn-group-sm mr-1 ",
+				html: $("<button></button>", {
+					class: "btn btn-outline-primary material-icons",
+					click: function () {
+						$sidebar.toggle();
+						$(this).toggleClass("active");
+					},
+					text: "reorder"
+				})
+			});
+			$newFolderButton = $("<div></div>", {
+				class: "btn-group btn-group-sm ml-1",
+				html: $("<button></button>", {
+					class: "btn btn-outline-primary material-icons",
+					click: function () {
+						app.launch("aos-creator", {
+							path: $pathField.val()
+						}, {
+							modal: true,
+							parent: app.window
+						});
+					},
+					text: "folder_open"
+				})
+			});
+			$nav.append($sidebarButton);
+		}
+		$navButtons = [
+			$("<button></button>", {
+				class: "btn btn-outline-primary material-icons",
+				click: function () {
+					navigate(":back")
+				},
+				disabled: "disabled",
+				text: "keyboard_arrow_left"
+			}),
+			$("<button></button>", {
+				class: "btn btn-outline-primary material-icons",
+				click: function () {
+					navigate(":forward")
+				},
+				disabled: "disabled",
+				text: "keyboard_arrow_right"
+			})
+		];
+		$pathField = $("<input />", {
+			class: "form-control form-control-sm border-0 rounded-0 text-center bg-transparent",
+			id: "path",
+			css: {
+				"-webkit-app-region": "drag"
+			},
+			input: function () {
+				$(this).data("edited", "true");
+			}
+		});
+		let $mainBar = $("<div></div>", {
+			class: "btn-group align-self-stretch",
+			css: {
+				flexShrink: 0
+			},
+			html: [
+				$navButtons[0],
+				$navButtons[1],
+				$("<button></button>", {
+					class: "btn btn-outline-primary material-icons",
+					click: function () {
+						if ($pathField.data("edited") === "true")
+							navigate($pathField.val());
+						else navigate(":REFRESH");
+					},
+					text: "refresh"
+				})
+			]
+		});
+		app.window.on('blur', function () {
+			$winButtons[2].removeClass("btn-danger").addClass("btn-outline-danger");
+			$("body").css("boxShadow", "0px 0px 0.5rem 0 rgba(0,0,0,0.5)");
+		});
+		app.window.on('focus', function () {
+			$winButtons[2].addClass("btn-danger").removeClass("btn-outline-danger");
+			$("body").css("boxShadow", "0px 0px 0.5rem 0 black");
+		});
+		let $winButtons = [
+			$("<button></button>", {
+				class: "btn btn-outline-success rounded p-2 mx-1 collapsing",
+				click: function () {
+					if (app.window.isMaximized())
+						app.window.restore();
+					else app.window.maximize();
+				}
+			}),
+			$("<button></button>", {
+				class: "btn btn-outline-warning rounded p-2 mx-1 collapsing",
+				click: function () {
+					app.window.minimize();
+				}
+			}),
+			$("<button></button>", {
+				class: "btn btn-danger rounded p-2 mx-1 collapsing",
+				click: function () {
+					app.window.close();
+				}
+			})
+		];
+		$mainBar.appendTo($nav);
+		if (args.action) $newFolderButton.appendTo($nav);
+		$pathField.appendTo($nav);
+		$nav.append($winButtons);
+		$nav.appendTo("body");
+	}
+
+	function renderMainContextMenu(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		let aclock = fs.existsSync(osRoot + "/apps/aclockwallpaper/");
+		Menu.buildFromTemplate([{
+			label: "Open in",
+			type: "submenu",
+			submenu: [{
+				label: "New Window",
+				click() {
+					app.launch("aos-files", {
+						path: $pathField.val()
+					})
+				}
+			}, {
+				label: "Terminal",
+				click() {
+					app.launch("ash", {
+						path: $pathField.val()
+					})
+				}
+			}]
+		}, {
+			type: (args.desktop === true ? "normal" : "separator"),
+			visible: args.desktop !== true
+		}, {
+			label: "View",
+			type: "submenu",
+			visible: args.desktop !== true,
+			submenu: [{
+				label: "List",
+				type: "radio",
+				checked: settings.iconSize === "list",
+				click() {
+					settings.iconSize = "list";
+				}
+			}, {
+				label: "Small icons",
+				type: "radio",
+				checked: settings.iconSize === "small",
+				click() {
+					settings.iconSize = "small";
+				}
+			}, {
+				label: "Medium icons",
+				type: "radio",
+				checked: settings.iconSize === "medium",
+				click() {
+					settings.iconSize = "medium";
+				}
+			}, {
+				label: "Large icons",
+				type: "radio",
+				checked: settings.iconSize === "large",
+				click() {
+					settings.iconSize = "large";
+				}
+			}]
+		}, {
+			label: "Sort by",
+			type: "submenu",
+			visible: args.desktop !== true,
+			submenu: [{
+				label: "A to Z",
+				type: "radio",
+				checked: settings.sorting === "A-Z",
+				click() {
+					settings.sorting = "A-Z";
+				}
+			}, {
+				label: "Z to A",
+				type: "radio",
+				checked: settings.sorting === "Z-A",
+				click() {
+					settings.sorting = "Z-A";
+				}
+			}, {
+				type: "separator"
+			}, {
+				label: "Folders first",
+				type: "checkbox",
+				checked: settings.foldersFirst,
+				click() {
+					settings.foldersFirst = !settings.foldersFirst;
+				}
+			}, {
+				label: "Hidden files",
+				type: "checkbox",
+				checked: settings.showHidden,
+				click() {
+					settings.showHidden = !settings.showHidden;
+				}
+			}]
+		}, {
+			type: "separator"
+		}, {
+			label: "Refresh",
+			accelerator: "F5",
+			click() {
+				navigate(":refresh")
+			}
+		}, {
+			label: "Paste",
+			accelerator: "CmdOrCtrl+V",
+			click() {
+				let urls = clipboard.readText().split("\n");
+				let promises = [];
+				urls.forEach(function (url) {
+					promises[promises.length] = fs.copy(url, $pathField.val() + "/" + path.basename(url))
+						.then(function () {
+							if ($(clipboard.readHTML()).text() === "cut")
+								fs.remove(url);
+						}).catch(new Notification)
+				});
+				Promise.all(promises).then(() => new Notification({
+					title: "All files successfully copied.",
+					body: promises.length + " are copied to the directory."
+				}))
+			},
+			enabled: path.isAbsolute(clipboard.readText().split("\n")[0])
+		}, {
+			type: (args.desktop === true && aclock ? "separator" : "normal"),
+			visible: args.desktop === true && aclock
+		}, {
+			label: "Next wallpaper",
+			visible: args.desktop === true && aclock,
+			click() {
+				app.launch("aclockwallpaper", {
+					autostart: true
+				}, {
+					show: false,
+					showOnLoad: false,
+					skipTaskbar: true,
+					focusable: false
+				});
+			}
+		}, {
+			type: "separator"
+		}, {
+			label: "Create",
+			submenu: [{
+				label: "File",
+				click() {
+					app.launch("aos-creator", {
+						path: $pathField.val()
+					}, {
+						modal: true,
+						parent: app.window
+					});
+				}
+			}, {
+				label: "Folder",
+				click() {
+					app.launch("aos-creator", {
+						path: $pathField.val()
+					}, {
+						modal: true,
+						parent: app.window
+					});
+				}
+			}]
+		}, {
+			label: "Properties",
+			visible: args.desktop !== true,
+			click() {
+				app.launch("properties", {
+					path: $pathField.val()
+				})
+			}
+		}, {
+			label: "Desktop Preferences",
+			visible: args.desktop === true,
+			click() {
+				app.launch("control", {
+					section: "Desktop Preferences"
+				})
+			}
+		}]).popup();
+	}
+
+	function renderFileContextMenu(e, file) {
+		e.preventDefault();
+		e.stopPropagation();
+		let $this = $(this);
+		let fstat = fs.lstatSync(file);
+		Menu.buildFromTemplate([{
+			label: "Open",
+			click() {
+				$this.trigger("dblclick");
+			}
+		}, {
+			label: "Open in...",
+			visible: fstat.isFile(),
+			click() {
+				app.launch("aos-appchooserdialog", {
+					path: file,
+					extension: path.extname(file).substring(1)
+				}, {
+					modal: true,
+					parent: app.window
+				})
+			}
+		}, {
+			type: ([".wapp", ".zip", ".gz", ".tgz"].includes(path.extname(file)) || fstat.isDirectory() ? 'separator' : "normal"),
+			visible: ([".wapp", ".zip", ".gz", ".tgz"].includes(path.extname(file)) || !fstat.isFile())
+		}, {
+			label: 'Compress to...',
+			visible: fstat.isDirectory(),
+			click() {
+				app.launch("aos-files", {
+					path: $pathField.val(),
+					action: "save",
+					title: "Choose file to compress into (.tar.gz)...",
+					okText: "Compress"
+				}, {
+					modal: true,
+					parent: app.window
+				});
+				ipcRenderer.once("save-file", function (e, arg) {
+					const tar = require('tar');
+					tar.create({
+						gzip: true,
+						file: arg,
+						C: file
+					}, fs.readdirSync(file))
+						.then(function () {
+							new Notification({
+								title: "Archive was successfully created",
+								html: "Find it in your directory listing."
+							})
+						}).catch(console.error)
+
+				})
+			}
+		}, {
+			label: 'Install',
+			visible: file.endsWith(".wapp"),
+			click() {
+				app.launch("install", {
+					path: file
+				});
+			}
+		}, {
+			label: 'Extract to...',
+			visible: [".zip", ".gz", ".tgz"].includes(path.extname(file)),
+			click() {
+				app.launch("aos-files", {
+					path: $pathField.val(),
+					action: "folder",
+					title: "Choose extraction directory...",
+					okText: "Extract"
+				}, {
+					modal: true,
+					parent: app.window
+				});
+				ipcRenderer.once("return-folder", function (e, arg) {
+					if (path.extname(file) === ".zip") {
+						const unzip = require('extract-zip');
+						unzip(file, {
+							dir: arg
+						}, () => {
+							navigate(":refresh")
+						})
+					} else if ([".gz", ".tgz"].includes(path.extname(file))) {
+						const tar = require('tar');
+						fs.createReadStream(file).pipe(
+							tar.x({
+								C: arg // alias for cwd:'some-dir', also ok
+							})
+						)
+					}
+				})
+			}
+		}, {
+			type: "separator"
+		}, {
+			label: "Cut",
+			accelerator: "CmdOrCtrl+X",
+			click() {
+				clipboard.write({text: file, html: "<action>cut</action>"});
+			}
+		}, {
+			label: "Copy",
+			accelerator: "CmdOrCtrl+C",
+			click() {
+				clipboard.write({text: file, html: "<action>copy</action>"});
+			}
+		}, {
+			type: "separator"
+		}, {
+			label: "Delete",
+			accelerator: "Delete",
+			click() {
+				fs.remove(file);
+			}
+		}, {
+			label: "Properties",
+			accelerator: "Alt+Enter",
+			click() {
+				app.launch("properties", {
+					path: file
+				})
+			}
+		}]).popup();
+	}
+
+	function mountDrive(mountDir, device) {
+		if (process.platform === "win32") return;
+		let cmd = "mkdir -p '" + mountDir + "'; mount -o uid=" + process.getuid() + ",gid=" + process.getgid() + " " + device + " '" + mountDir +
+			"'";
+		console.log(cmd);
+		app.launch("sudo", {
+			command: cmd,
+			title: "Authentication is needed to mount drives"
+		}, {modal: true, parent: app.window});
+		ipcRenderer.removeListener("return-sudo", function (e, res) {
+			returnSudo(e, res, mountDir)
+		});
+		ipcRenderer.once("return-sudo", function (e, res) {
+			returnSudo(e, res, mountDir)
+		})
+	}
+
+	function returnSudo(e, res, mountDir) {
+		if (!res.stderr) navigate(mountDir);
+		else {
+			let cssPath = "file://" + osRoot + "/lib/atomos.css";
+			app.launchFromHTML(`
+			<body class='p-2 bg-transparent d-inline-block w-100' style="height: auto">
+				<link href="${cssPath}" rel="stylesheet"/>
+				<main style="background:var(--transparent-white); box-shadow:0 0 0.5rem black;" class="p-2 rounded">
+					<b class="lead">Failed to mount drives</b>
+					<p>${res.stderr}</p>
+					<button class="btn btn-primary btn-sm btn-block" onclick="window.close()">Close</button>
+				</main>
+				${"<"}script>
+  window.onload = function() {require("atomos-framework").app.window.setContentSize(require("atomos-framework").app.window.getContentSize()[0], Math.ceil(document.body.offsetHeight))}
+${"</"}script>
+			</body>`, {
+				show: true,
+				showOnLoad: false,
+				webPreferences: {
+					webSecurity: false
+				},
+				transparent: true,
+				frame: false,
+				width: 500,
+				height: 250,
+				center: true,
+				maximizable: false,
+				minimizable: false,
+				fullscreenable: false,
+				skipTaskbar: true,
+				modal: true,
+				parent: app.window,
+				resizable: false
+			}).toggleDevTools();
+		}
+	}
+</script>
+<style>
+	body {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 2;
+		transition: background-image ease 2.5s;
+		background-color: transparent;
+		border-radius: 0.25rem;
+	}
+
+	body:not(.desktop) {
+		box-shadow: 0 0 0.5rem black;
+	}
+
+	body:not(.desktop) section.dropdown-menu {
+		background: white;
+	}
+
+	body.desktop .dropdown-item:focus,
+	body.desktop .dropdown-item:hover {
+		background-color: rgba(248, 249, 250, 0.65) !important;
+	}
+
+	body.desktop .dropdown-item.active,
+	body.desktop .dropdown-item:active {
+		background-color: rgba(0, 123, 255, 0.65) !important;
+	}
+
+	body.desktop .dropdown-item:focus,
+	body.desktop .dropdown-item:focus:active {
+		background: rgba(0, 150, 255, 0.65) !important;
+		color: white !important;
+	}
+
+	.dropdown-item:focus,
+	.dropdown-item:focus:active {
+		background: rgb(0, 150, 255) !important;
+		color: white !important;
+	}
+
+	main .dropdown-menu[data-view] {
+		display: flex !important;
+		background: none;
+		font-size: 1em !important;
+	}
+
+	main .dropdown-menu[data-view=list],
+	main .dropdown-menu[data-view=verylarge] {
+		flex-direction: column;
+	}
+
+	.dropdown-item {
+		flex-shrink: 0;
+	}
+
+	nav .btn-danger:hover::after,
+	nav .btn-danger:focus::after,
+	nav .btn-outline-danger:hover::after,
+	nav .btn-outline-danger:focus::after {
+		content: "close";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	nav .btn-outline-warning:hover::after,
+	nav .btn-outline-warning:focus::after {
+		content: "expand_more";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	nav .btn-outline-success:hover::after,
+	nav .btn-outline-success:focus::after {
+		content: "expand_less";
+		font-family: "Material Icons";
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin-top: 0.5rem;
+		line-height: 0;
+		font-size: 1rem;
+	}
+
+	main .dropdown-menu[data-view]:not([data-view=list]) {
+		flex-wrap: wrap;
+		align-items: flex-start;
+		align-content: flex-start;
+		justify-content: flex-start;
+	}
+
+	main .dropdown-menu[data-view]:not([data-view=list]) .dropdown-item {
+		display: inline-flex !important;
+		flex-direction: column;
+		width: auto;
+		align-items: center;
+	}
+
+	main .dropdown-menu[data-view=list] img,
+	aside img {
+		margin-right: 0.5rem;
+	}
+
+	main .dropdown-menu[data-view=verylarge] img {
+		width: 64px;
+	}
+
+	main .dropdown-menu[data-view=large] img {
+		width: 48px;
+	}
+
+	main .dropdown-menu[data-view=medium] img {
+		width: 32px;
+	}
+
+	main .dropdown-menu[data-view=small] img {
+		width: 24px;
+	}
+
+	main .dropdown-menu[data-view]:not([data-view=list]) .file-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: 125px;
+		text-align: center;
+	}
+
+	main .dropdown-menu[data-view=verylarge] .file-title {
+		white-space: nowrap;
+		color: white;
+		text-shadow: 0px 0px 5px black;
+	}
+
+	section#devices::before {
+		content: "External Devices";
+		display: block;
+		padding: .5rem 1.5rem;
+		margin-bottom: 0;
+		font-size: .875rem;
+		color: #6c757d;
+		white-space: nowrap;
+	}
+
+	.popover overlay::before {
+		content: "";
+		position: fixed;
+		top: -100vh;
+		left: -100vw;
+		width: 300vw;
+		height: 300vh;
+		background: black;
+		opacity: 0.3;
+		z-index: -1;
+	}
+
+	.popover overlay::after {
+		content: "";
+		position: fixed;
+		top: -0;
+		left: -0;
+		width: 100%;
+		height: 100%;
+		border-radius: 0.25rem;
+		background: white;
+		z-index: -1;
+	}
+</style>
+</body>
+</html>

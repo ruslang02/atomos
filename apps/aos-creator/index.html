@@ -193,7 +193,7 @@
 				case "link":
 					let linkFile = {};
 					linkFile.title = document.forms.link.linkTitle.value || "Unnamed Link";
-					linkFile.icon = document.forms.link.linkIcon.value || app.getPath("os") + "/icons/Application.png";
+					linkFile.icon = document.forms.link.linkIcon.value || osRoot + "/icons/Application.png";
 					if (document.forms.link.linkType.value === "aos") {
 						try {
 							if (document.forms.link.linkArgs.value)

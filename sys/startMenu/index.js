@@ -5,12 +5,12 @@ const {app, Menu} = require("atomos-framework");
 module.exports.listApps = function (newApp = "") {
 	let apps = [];
 
-	fs.readdir(path.join(app.getPath("os"), "apps"), function (err, dir) {
+	fs.readdir(path.join(osRoot, "apps"), function (err, dir) {
 		console.log(dir);
 		let length = dir.length;
 		dir.forEach(function (item, i, arr) {
-			fs.readJson(path.join(app.getPath("os"), "apps", item, "app.json")).then(function (ap) {
-				ap.icon = ap.icon.replace("$SYSTEM_ROOT", app.getPath("os")).replace("$APP_ROOT", path.join(app.getPath("os"), "apps", item))
+			fs.readJson(path.join(osRoot, "apps", item, "app.json")).then(function (ap) {
+				ap.icon = ap.icon.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", item))
 					if (!ap.hidden)
 						apps.push($("<a></a>", {
 							href: "#",
@@ -47,7 +47,7 @@ module.exports.listApps = function (newApp = "") {
 								}, {
 									label: "Uninstall",
 									click() {
-										fs.remove(path.join(app.getPath("os"), "apps", item))
+										fs.remove(path.join(osRoot, "apps", item))
 											.catch(console.error);
 									}
 								}]).popup()

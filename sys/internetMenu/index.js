@@ -1,7 +1,7 @@
 window.$ = window.jQuery = require("jquery");
 window.Popper = require("popper.js");
 const app = require("electron").remote.app;
-$("body").append("<link href=\"" + app.getPath("os") + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
+$("body").append("<link href=\"" + osRoot + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
 require("bootstrap");
 const network = require("network");
 const ifconfig = require("wireless-tools/ifconfig");
@@ -75,10 +75,10 @@ function updateNetwork() {
     ifaces.forEach(function(iface) {
       if (iface.interface.startsWith("enp")) {
         if (iface.running) {
-	        $("#ethernet img")[0].src = app.getPath("os") + "/icons/Ethernet Connected.png";
+	        $("#ethernet img")[0].src = osRoot + "/icons/Ethernet Connected.png";
           $("#ethernet description").text("Cable plugged in")
         } else {
-	        $("#ethernet img")[0].src = app.getPath("os") + "/icons/Ethernet Disconnected.png";
+	        $("#ethernet img")[0].src = osRoot + "/icons/Ethernet Disconnected.png";
           $("#ethernet description").text("Cable not plugged in")
         }
       } else
@@ -89,7 +89,7 @@ function updateNetwork() {
     })
     if (!wifiavailable) {
       $wifi.find("description").text("No wireless adapter was found.");
-	    $wifi.find("img")[0].src = app.getPath("os") + "/icons/Wi-Fi Off.png";
+	    $wifi.find("img")[0].src = osRoot + "/icons/Wi-Fi Off.png";
     }
 
 
@@ -113,17 +113,17 @@ function updateWifiNetworks(iface) {
     $wbutton.show();
     if (networks.length === 0) {
       if (!wifiConnected) $wifi.find("description").text("No networks are available.");
-	    if (!wifiConnected) $wifi.find("img")[0].src = app.getPath("os") + "/icons/Wi-Fi Error.png";
+	    if (!wifiConnected) $wifi.find("img")[0].src = osRoot + "/icons/Wi-Fi Error.png";
     } else {
       if (!wifiConnected) $wifi.find("description").text("Select a network down below");
-	    if (!wifiConnected) $wifi.find("img")[0].src = app.getPath("os") + "/icons/Wi-Fi.png";
+	    if (!wifiConnected) $wifi.find("img")[0].src = osRoot + "/icons/Wi-Fi.png";
       networks.forEach(function(network) {
         let strength = network.quality;
         let strengthLabel = "Good";
         if (strength < 75) strengthLabel = "Fair";
         if (strength < 50) strengthLabel = "Low";
         if (strength < 20) strengthLabel = "No";
-	      $wnetworks.append("<a href='#connect' class='list-item' bssid='" + network.address + "'><img src='" + app.getPath("os") + "/icons/" + strengthLabel + " Connection.png'><name>" + network.ssid + "</name></a>");
+	      $wnetworks.append("<a href='#connect' class='list-item' bssid='" + network.address + "'><img src='" + osRoot + "/icons/" + strengthLabel + " Connection.png'><name>" + network.ssid + "</name></a>");
       });
     }
   });

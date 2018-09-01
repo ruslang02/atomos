@@ -205,7 +205,7 @@
 		let totalTabs = 0;
 		let ofdPath = app.getPath("documents");
 		require("ace-builds/src-min/ace");
-		ace.config.set('basePath', app.getPath("os") +
+		ace.config.set('basePath', osRoot +
 			"/node_modules/ace-builds/src-min");
 		app.window.on('blur', function() {
 			$("#winBtns .btn-danger").removeClass("btn-danger").addClass(

@@ -24,7 +24,7 @@
 			location.assign(location.hash + "#" + $('[name=search]').val());
 			location.reload();
 		})
-	} else fs.readFile(app.getPath("os") + '/client_secret.json', function processClientSecrets(err, content) {
+	} else fs.readFile(osRoot + '/client_secret.json', function processClientSecrets(err, content) {
 		if (err) {
 			console.log('Error loading client secret file: ' + err);
 			return;

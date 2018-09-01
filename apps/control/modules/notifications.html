@@ -36,12 +36,12 @@
 <script>
 	AddSection({
 		title: "Control Center / Notifications",
-		icon: app.getPath("os") + "/icons/Notification.png"
+		icon: osRoot + "/icons/Notification.png"
 	});
 	Object.keys(regs.notificationPrefs).forEach(function (ap) {
-				if (!fs.existsSync(path.join(app.getPath("os"), "apps", ap, "app.json"))) return;
-				let appInfo = fs.readJsonSync(path.join(app.getPath("os"), "apps", ap, "app.json"));
-				appInfo.icon = appInfo.icon.replace("$SYSTEM_ROOT", app.getPath("os")).replace("$APP_ROOT", path.join(app.getPath("os"), "apps", ap));
+				if (!fs.existsSync(path.join(osRoot, "apps", ap, "app.json"))) return;
+				let appInfo = fs.readJsonSync(path.join(osRoot, "apps", ap, "app.json"));
+				appInfo.icon = appInfo.icon.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", ap));
 				$("#apps").append(`
 <tr data-app="${ap}">
 <th><img src="${appInfo.icon}" /></th>
@@ -62,7 +62,7 @@
 
 	$("#apps").append(`
 <tr data-app="other">
-<th><img src="${app.getPath("os")}/icons/Application.png" /></th>
+<th><img src="${osRoot}/icons/Application.png" /></th>
 <td>Other Applications</td>
 <td>
 	<div class="custom-control custom-checkbox p-1">

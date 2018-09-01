@@ -154,7 +154,7 @@
 
 	function InstallApp(fPath) {
 		if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Starting installation...");
-		fs.watch(path.resolve(app.getPath("os"), "apps"), function (event, file) {
+		fs.watch(path.resolve(osRoot, "apps"), function (event, file) {
 			console.log(event, file);
 			if (event === "rename" && !appDir) appDir = file;
 		});
@@ -172,7 +172,7 @@
 			console.log($(".progress-bar").css("width"), $(".progress").css("width"));
 		}, false);
 		unzip(FilePath, {
-			dir: path.resolve(app.getPath("os"), "apps"),
+			dir: path.resolve(osRoot, "apps"),
 			onEntry(entry, file) {
 				if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Unpacking... " + file.entriesRead + "/" + file.entryCount);
 				$("pre").text("Unpacking... " + file.entriesRead + "/" + file.entryCount);
@@ -187,7 +187,7 @@
 			if (win.getParentWindow()) win.getParentWindow().webContents.send("stdout", "Installing " + appDir + "...");
 			$("pre").text("Installing " + appDir + "...");
 			$(".progress-bar").css("width", "33%");
-			fs.readJson(path.resolve(app.getPath("os"), "apps", appDir, "app.json"))
+			fs.readJson(path.resolve(osRoot, "apps", appDir, "app.json"))
 				.then(AppSettingsReadResult)
 				.catch(ErrorProvider)
 		}
@@ -211,7 +211,7 @@
 			"npm",
 			["install", dependency],
 			{
-				cwd: app.getPath("os"),
+				cwd: osRoot,
 				shell: true
 			}
 		);

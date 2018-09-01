@@ -28,7 +28,7 @@
 				$("button.btn-primary").addClass("btn-outline-primary");
 			}
 		});
-	fs.readJson(app.getPath("os") + "/apps/proton/app.json")
+	fs.readJson(osRoot + "/apps/proton/app.json")
 			.then(function(info) {
 				$("#version").text(info.version);
 			});

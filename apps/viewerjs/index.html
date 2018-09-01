@@ -113,7 +113,7 @@ function reset() {
         elements.navbar.appendTo("global");
         }
 
-        function renderDocument(url = app.getPath("os") +
+        function renderDocument(url = osRoot +
             "/node_modules/node-viewerjs/test/files/pdf-test.pdf") {
             url = path.normalize(url);
             elements.document = $("<webview></webview>", {

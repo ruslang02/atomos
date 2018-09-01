@@ -89,7 +89,7 @@
 			]
 		}))
 	});
-	$("body").append("<link href=\"" + app.getPath("os") + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
+	$("body").append("<link href=\"" + osRoot + "/sys/internetMenu/index.css\" rel=\"stylesheet\">");
 	window.Popper = require("popper.js");
 	require("bootstrap");
 	const atomos = require("./index");
@@ -105,7 +105,7 @@
 	});
 
 	atomos.listApps();
-	fs.watch(app.getPath("os") + "/apps", function (a, b) {
+	fs.watch(osRoot + "/apps", function (a, b) {
 		setTimeout(function () {
 			$("#applications")[0].innerHTML = "";
 			atomos.listApps(b);

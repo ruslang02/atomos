@@ -80,8 +80,8 @@
 	window.jQuery = window.$ = require("jquery");
 	window.Popper = require("popper.js");
 	require("bootstrap");
-	$.getScript(app.getPath("os") + "/node_modules/cropperjs/dist/cropper.min.js");
-	$("body").append("<link rel='stylesheet' href='" + app.getPath("os") + "/node_modules/cropperjs/dist/cropper.min.css' />");
+	$.getScript(osRoot + "/node_modules/cropperjs/dist/cropper.min.js");
+	$("body").append("<link rel='stylesheet' href='" + osRoot + "/node_modules/cropperjs/dist/cropper.min.css' />");
 	let saveState;
 	let file = "";
 	let cropper;

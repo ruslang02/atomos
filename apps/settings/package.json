@@ -1,0 +1,20 @@
+{
+	"name": "@atomos/settings",
+	"productName": "System Settings",
+	"version": "1.0.0",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "homepage": "https://apps.atomos.org.uk/package/settings",
+  "icon": "$APP_ROOT/logo.png",
+  "main": "settings.js",
+	"type": "other",
+	"removable": "false",
+	"dependencies": {
+		"atomos": "0.7.0"
+	},
+	"actions": [{
+		"name": "Settings",
+		"main": "action.js",
+		"icon": "settings"
+	}]
+}

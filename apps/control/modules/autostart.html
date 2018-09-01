@@ -38,7 +38,7 @@
 <script>
 	AddSection({
 		title: "Control Center / AutoStart",
-		icon: app.getPath("os") + "/icons/Run Command.png"
+		icon: osRoot + "/icons/Run Command.png"
 	});
 
 	registry.on("changed", updateASItems, true);
@@ -135,7 +135,7 @@
 	});
 	listApps();
 
-	function listApps(path = app.getPath("os") + "/apps") {
+	function listApps(path = osRoot + "/apps") {
 		fs.readdir(path, function(err, dir) {
 			dir.forEach(function(item) {
 				if (item.toLowerCase() === "app.json") {

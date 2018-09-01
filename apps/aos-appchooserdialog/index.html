@@ -40,16 +40,16 @@
 	registry.get(true).then((rItems) => {
 		assocs = rItems.appAssociations;
 		Object.values(rItems.defaultApplications).forEach(function (prog) {
-				prog.icon = prog.icon.replace("$SYSTEM_ROOT", app.getPath("os"));
+				prog.icon = prog.icon.replace("$SYSTEM_ROOT", osRoot);
 				document.getElementById("genericapps").innerHTML += `<button class='btn btn-light btn-block text-left p-1'><img class='float-left mr-2' src='${prog.icon}' width="48" height="48"/><b>${prog.name}</b><div><small>${prog.app}</small></div></button>`;
 			})
 	}).catch(console.error);
-	fs.readdir(path.join(app.getPath("os"), "apps"))
+	fs.readdir(path.join(osRoot, "apps"))
 		.then(function (paths) {
 			paths.forEach(function (item) {
-				let application = fs.readJsonSync(path.join(app.getPath("os"), "apps", item, "app.json"));
+				let application = fs.readJsonSync(path.join(osRoot, "apps", item, "app.json"));
 				if (application.hidden) return;
-				application.icon = application.icon.replace("$SYSTEM_ROOT", app.getPath("os")).replace("$APP_ROOT", path.join(app.getPath("os"), "apps", item));
+				application.icon = application.icon.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", item));
 				document.getElementById("allapps").innerHTML += `<button class='btn btn-light btn-block text-left p-1'><img class='float-left mr-2' src='${application.icon}' width="48" height="48"/><b>${application.name}</b><div><small>${item}</small></div></button>`;
 			});
 		})
@@ -68,7 +68,7 @@
 				$("input.form-control").addClass("is-invalid");
 			}
 		let options = Object.assign({}, {path: args.path}, custom);
-		assocs.push({app: $(".card .btn-light.active small").text().trim(), extension: path.extname(args.path).substring(1).toLowerCase()});
+		assocs.push({app: $(".card .btn-light.active small").text().trim(), extension: path.extname(args.path).toLowerCase()});
 		registry.set({appAssociations: assocs}, true).then(function () {
 			app.launch($(".card .btn-light.active small").text().trim(), options)
 				.then(window.close)

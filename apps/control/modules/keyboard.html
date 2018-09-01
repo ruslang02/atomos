@@ -16,7 +16,7 @@
 <script>
 	AddSection({
 		title: "Control Center / Keyboard",
-		icon: app.getPath("os") + "/icons/Keyboard.png"
+		icon: osRoot + "/icons/Keyboard.png"
 	});
 	let kbVars = {};
 	kbVars.proc = require("child_process").spawn("localectl", ["list-x11-keymap-layouts"]);

@@ -1,0 +1,24 @@
+{
+  "title": "About this PC",
+  "productName": "About",
+  "name": "@atomos/about",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "version": "1.0.0",
+  "homepage": "https://apps.atomos.org.uk/package/aos-about",
+  "icon": "$APP_ROOT/logo.png",
+  "main": "app.js",
+  "description": "What is my operating system?",
+  "maximizable": false,
+  "minimizable": false,
+  "maxWidth": 400,
+  "maxHeight": 400,
+	"resizable": true,
+	"center": true,
+	"autoSize": true,
+	"type": "app",
+	"hidden": true,
+	"dependencies": {
+		"atomos": "~0.7.0"
+	}
+}

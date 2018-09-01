@@ -22,7 +22,7 @@
 <script>
 	AddSection({
 		title: "Control Center / Taskbar",
-		icon: app.getPath("os") + "/icons/Taskbar.png"
+		icon: osRoot + "/icons/Taskbar.png"
 	});
 
 
@@ -67,7 +67,7 @@
 		$("#WidgetModal").modal("hide");
 	});
 
-	fs.readdir(app.getPath("os") + "/sys/taskbar/plugins")
+	fs.readdir(osRoot + "/sys/taskbar/plugins")
 		.then(function (elements) {
 			elements.forEach(function (e) {
 				$("#WidgetModal .dropdown-menu").append("<div class='dropdown-item'>" + path.basename(e, ".html") + "</div>");

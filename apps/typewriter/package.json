@@ -1,0 +1,22 @@
+{
+  "title": "Typewriter",
+  "productName": "Typewriter",
+  "name": "@atomos/typewriter",
+  "type": "app",
+  "version": "1.0.0",
+  "description": "Make a note or edit a file easily",
+  "icon": "$APP_ROOT/logo.png",
+  "width": 550,
+  "height": 450,
+  "minHeight": 400,
+	"minWidth": 500,
+  "main": "typewriter.js",
+	"dependencies": {
+		"atomos": "~0.7.0"
+	},
+  "actions": [{
+    "name": "Create new text file",
+    "main": "create.js",
+    "icon": "file-document-outline"
+  }]
+}

@@ -15,9 +15,9 @@
 
 	$(render);
 
-	fs.readdir(app.getPath("os") + "/apps", function (err, files) {
+	fs.readdir(osRoot + "/apps", function (err, files) {
 		files.forEach(function (file) {
-			fs.stat(app.getPath("os") + "/apps/" + file, function (err, stat) {
+			fs.stat(osRoot + "/apps/" + file, function (err, stat) {
 				if (stat.isDirectory())
 					elements.dataset.push(file);
 			})
@@ -151,7 +151,7 @@
 			else
 				addMessage("<error>No such file or directory.</error>");
 		} else
-			fs.access(app.getPath("os") + "/apps/" + command.substring(0, (command.indexOf(" ") !== -1 ?
+			fs.access(osRoot + "/apps/" + command.substring(0, (command.indexOf(" ") !== -1 ?
 				command.indexOf(" ") : Infinity)).trim(), function (err) {
 				if (err) {
 					require('child_process').exec(command, {

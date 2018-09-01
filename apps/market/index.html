@@ -242,7 +242,7 @@
 				});
 				break;
 			case "uninstall":
-				fs.remove(app.getPath("os") + "/apps/" + e.args[0])
+				fs.remove(osRoot + "/apps/" + e.args[0])
 					.then(() => {
 						webview.reload()
 					})
@@ -250,7 +250,7 @@
 				break;
 			case "getAppStatus":
 				webview.send("getAppStatus", {
-					installed: fs.existsSync(app.getPath("os") + "/apps/" + e.args[0])
+					installed: fs.existsSync(osRoot + "/apps/" + e.args[0])
 				});
 				break;
 			case "startApp":

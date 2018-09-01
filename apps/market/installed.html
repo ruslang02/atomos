@@ -14,14 +14,14 @@
 	const fs = require("fs-extra");
 	window.$ = require("jquery");
 	window.onload = function () {
-		fs.readdir(app.getPath("os") + "/apps")
+		fs.readdir(osRoot + "/apps")
 				.then(function (apps) {
 					apps.forEach(function (prog) {
-						fs.readJson(app.getPath("os") + "/apps/" + prog + "/app.json")
+						fs.readJson(osRoot + "/apps/" + prog + "/app.json")
 								.then(function (info) {
 									info.icon = info.icon
-										.replace("$SYSTEM_ROOT", app.getPath("os"))
-										.replace("$APP_ROOT", app.getPath("os") + "/apps/" + prog);
+										.replace("$SYSTEM_ROOT", osRoot)
+										.replace("$APP_ROOT", osRoot + "/apps/" + prog);
 									$("apps").append(`
 <div class="card mb-2">
 <div class="media py-2">

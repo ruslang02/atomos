@@ -52,7 +52,7 @@
 			registry
 		} = require("atomos-framework");
 		window.$ = window.jQuery = require("jquery");
-		$.getScript(app.getPath("os") +
+		$.getScript(osRoot +
 			"/node_modules/jquery-ui-npm/jquery-ui.min.js");
 		$(".dropdown-menu").html("");
 		registry.get("proton").then((config) => {

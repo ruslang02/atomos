@@ -116,7 +116,7 @@
 		} else app.relaunch();
 		app.quit();
 	});
-	$.getJSON(app.getPath("os") + "/RELEASE.json")
+	$.getJSON(osRoot + "/RELEASE.json")
 			.then(function (release) {
 				window.release = release;
 				$.getJSON("https://api.github.com/repos/" + release.repository + "/branches/" + release.branch)
@@ -140,11 +140,11 @@
 		let rm;
 		location.hash = "#updating";
 		$("pre").text("Removing previous version...");
-		fs.access(app.getPath("os"), fs.constants.W_OK)
+		fs.access(osRoot, fs.constants.W_OK)
 				.then(function() {
-					if (process.platform === "win32") rm = require("child_process").spawn("rd", ["/Q", '/S', app.getPath("os")], {
+					if (process.platform === "win32") rm = require("child_process").spawn("rd", ["/Q", '/S', osRoot], {
 						shell: true
-					}); else rm = require("child_process").spawn("rm", ["-rf", app.getPath("os") + "/{*,.*}"]);
+					}); else rm = require("child_process").spawn("rm", ["-rf", osRoot + "/{*,.*}"]);
 					rm.on('close', update2);
 				})
 				.catch(function() {
@@ -157,14 +157,14 @@
 	function update2(code, signal) {
 		console.log(code, signal);
 		$("pre").text("Downloading a new version...");
-		let git = require("child_process").spawn("git", ["clone", "https://github.com/" + release.repository + ".git", "-b", release.branch, app.getPath("os")]);
+		let git = require("child_process").spawn("git", ["clone", "https://github.com/" + release.repository + ".git", "-b", release.branch, osRoot]);
 		git.on('close', function (code, signal) {
 			console.log(code, signal);
 			if (code === 0) {
 				$("pre").text("Installing NPM dependencies...");
 				let npm = require("child_process").spawn("npm", ["install"],
 						{
-							cwd: app.getPath("os"),
+							cwd: osRoot,
 							shell: true
 						});
 				npm.on('close', function () {

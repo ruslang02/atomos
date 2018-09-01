@@ -91,7 +91,7 @@
 	}, true)
 	
 	window.$ = window.jQuery = require('jquery');
-	$("body").append(`<audio src="${app.getPath("os")}/resources/notification.ogg"></audio>`);
+	$("body").append(`<audio src="${osRoot}/resources/notification.ogg"></audio>`);
 	let taskbar = BrowserWindow.fromId(remote.getGlobal("gui").taskbar);
 	setInterval(reset, 1);
 
