@@ -1,7 +1,8 @@
-	const fs = require("fs-extra");
+	const fs = require("fs").promises;
 	const path = require("path");
 	const EventEmitter = require("events");
 	const interact = require("interactjs");
+	const wc = require("electron").remote.getCurrentWebContents();
 	const defaultOptions = {
 		width: 400,
 		height: 300,
@@ -60,6 +61,10 @@
 			this.ui.root.style.height = event.rect.height + 'px';
 			this.ui.root.style.left = event.rect.left + 'px';
 			this.ui.root.style.top = event.rect.top + 'px';
+			clearTimeout(this.resizeTimeout);
+			this.resizeTimeout = setTimeout(e => {
+				this.updateThumbnail();
+			}, 200)
 			if(Menu.getFocusedMenu()) Menu.getFocusedMenu().close();
 		}
 		_update(p, n) {
@@ -90,7 +95,7 @@
 				case 'draggable':
 					if(n) interact(this.ui.root).draggable({
 						allowFrom: "[data-draggable]",
-						ignoreFrom: "button, input, [data-draggable=false]",
+						ignoreFrom: "button:not([data-draggable='true']), input:not([data-draggable='true']), [data-draggable='false']",
 						enabled: true,
 					 	//inertia: true,
 						onmove: e => this._drag(e),
@@ -109,6 +114,9 @@
 				case 'title':
 					this.ui.title.innerHTML = n;
 					break;
+				case 'alwaysOnTop':
+					this.alwaysOnTop = n;
+					break;
 			}
 		}
 		_calculateOffsets() {
@@ -122,8 +130,8 @@
 		_paint() {
 			console.log(this.ui.root.className)
 			document.body.appendChild(this.ui.root);
-			this.focus();
 			this._calculateOffsets();
+			this.focus();
 			this.setContentPosition(this.options.x, this.options.y);
 			if(!this.options.autoSize) {
 				this.setContentSize(this.options.width, this.options.height);
@@ -174,7 +182,7 @@
 
 			this.ui.body = document.createElement("window-body");
 			this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0";
-			this.ui.body.setAttribute("data-draggable", false);
+			//this.ui.body.setAttribute("data-draggable", false);
 
 			this.ui.buttons.append(this.ui.buttons.minimize, this.ui.buttons.maximize, this.ui.buttons.close);
 			this.ui.header.append(this.ui.title, this.ui.buttons);
@@ -206,10 +214,9 @@
 			console.time("full render");
 			const winID = wCount++;
 			const appRoot = path.join(osRoot, 'apps', prog);
-			let appOptions = await fs.readJson(appRoot + "/package.json").catch(e => {throw getError(1, prog)});
+			let appOptions = JSON.parse(await fs.readFile(appRoot + "/package.json"));
 			let options = Object.assign({}, defaultOptions, appOptions, launchOptions, {arguments: args})
-			if(!fs.existsSync(appRoot + "/" + options.main))
-				return getError(2, prog);
+			await fs.access(appRoot + "/" + options.main);
 			windows[winID] = new Proxy(options, {
 				get: function(obj, prop) {
 					return prop in obj ? obj[prop] : false;
@@ -255,7 +262,7 @@
 			this.ui.body.innerHTML = "";
 			this.file = file;
 			console.time("app render")
-			new Function("__dirname", "root", "WINDOW_ID", await fs.readFile(file))(path.join(file, ".."), this.ui.body, this.id);
+			await new AsyncFunction("__dirname", "root", "WINDOW_ID", await fs.readFile(file))(path.join(file, ".."), this.ui.body, this.id);
 			console.timeEnd("app render")
 		}
 
@@ -277,13 +284,14 @@
 				}
 			}
 			this.emit('close', e);
-			let _this = this;
+			if(this.fullscreen) this.setFullScreen(false);
 			Elements.Bar.classList.remove("maximized");
 			if(!cancel) this.destroy()
 		}
 		focus() {
 			let _this = this;
 			if(!this.isFocused()) {
+			setTimeout(e => this.updateThumbnail(), 300);
 				windowCollection.forEach(win => {
 					if(_this !== win && win)
 						win.blur()
@@ -296,11 +304,20 @@
 		}
 		blur() {
 			if(this.isFocused()) {
+			setImmediate(e => this.updateThumbnail());
 				this.ui.root.classList.replace("shadow", "shadow-sm");
 				this.ui.buttons.maximize.classList.add("btn-outline-success");
 				this.ui.buttons.minimize.classList.add("btn-outline-warning");
 				this.emit("blur");
 			}
+		}
+		updateThumbnail() {
+			let _this = this;
+			wc.capturePage(this.getContentBounds(), image => {
+				_this.thumbnail = image.toDataURL();
+				_this.emit("thumbnail-changed");
+			})
+			
 		}
 		isFocused() {
 			return this.ui.root.classList.contains("shadow");
@@ -324,7 +341,7 @@
 		hide() {
 			this.ui.root.classList.remove("show");
 			Elements.Bar.classList.remove("maximized");
-			setTimeout(e => this.ui.root.classList.add("d-none"), FADE_ANIMATION_DURATION);
+			setImmediate(e => this.ui.root.classList.add("d-none"));
 		}
 		isVisible() {
 			return this.ui.root.classList.contains("show") && !this.isDestroyed();
@@ -339,11 +356,13 @@
 			return this.ui.root.classList.contains("maximized");
 		}
 		maximize() {
+			if(this.fullscreen) this.setFullScreen(false);
 			this.show();
 			this.ui.root.classList.add("maximized");
 			Elements.Bar.classList.add("maximized");
 		}
 		minimize() {
+			if(this.fullscreen) this.setFullScreen(false);
 			this.hide();
 			this.blur();
 		}
@@ -356,10 +375,18 @@
 			return this.isVisible();
 		}
 		setFullScreen(flag) {
-			this.ui.root.classList.toggle("fullscreen", flag); // TODO: Fullscreen windows
+			Elements.Bar.classList.toggle("d-flex", !flag)
+			if(Elements.Bar.classList.toggle("d-none", flag)) {
+				this.maximize();
+				this.setAlwaysOnTop(true);
+			} else {
+				this.restore();
+				this.setAlwaysOnTop(false);
+			}
+			this.fullscreen = flag;
 		}
 		isFullScreen() {
-			return this.ui.root.classList.contains("fullscreen");
+			return this.fullscreen;
 		}
 		setBounds(rect) {
 			this.setSize(rect.width, rect.height);
@@ -381,10 +408,10 @@
 			let pos = this.getContentPosition();
 			let size = this.getContentSize();
 			return {
-				x: pos.x,
-				y: pos.y,
-				width: size.width,
-				height: size.height
+				x: pos[0],
+				y: pos[1],
+				width: size[0],
+				height: size[1]
 			};
 		}
 		setEnabled(enable) {
@@ -457,10 +484,10 @@
 			return this.options.closable;
 		}
 		setAlwaysOnTop(flag) {
-			this.options.alwaysOnTop = flag; // TODO: Always On Top windows
+			this.alwaysOnTop = flag; // TODO: Always On Top windows
 		}
 		isAlwaysOnTop() {
-			return this.options.alwaysOnTop;
+			return this.alwaysOnTop;
 		}
 		center() {
 			if(this.isMaximized()) return;
@@ -480,7 +507,7 @@
 			this.ui.root.style.top = y + this._offsets.top + "px";
 		}
 		getContentPosition() {
-			return [this.ui.root.offsetLeft + this._offsets.left, this.ui.root.offsetTop + this._offsets.top]
+			return [this.ui.root.offsetLeft + this._offsets.left, this.ui.root.offsetTop + this.ui.body.offsetTop]
 		}
 		setTitle(title) {
 			this.ui.title.innerHTML = title;
@@ -510,10 +537,20 @@
 		}
 		moveTop() {
 			let zCount = 0;
-			document.querySelectorAll("window").forEach(function(item) {
-				let z = parseInt(item.style.zIndex);
-				if(z > zCount) zCount = z;
-			})
+				AppWindow.getAllWindows().forEach(win => {
+					if(!win) return;
+					if(win.isAlwaysOnTop()) return;
+					let z = parseInt(win.ui.root.style.zIndex);
+					if(z > zCount) zCount = z;
+				});
+			if(this.alwaysOnTop) {
+				AppWindow.getAllWindows().forEach(win => {
+					if(!win) return;
+					if(!win.isAlwaysOnTop()) return;
+					let z = parseInt(win.ui.root.style.zIndex);
+					if(z > zCount) zCount = z;
+				});
+			}
 			this.ui.root.style.zIndex = zCount + 1;
 		}
 		_toggle() {

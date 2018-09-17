@@ -1,10 +1,10 @@
-const fs = require('fs-extra');
+const fs = require('fs').promises;
 const path = require('path');
+const wc = require("electron").remote.getCurrentWebContents();
 
 	Elements.MenuBar = document.createElement("aside");
 	Elements.MenuBar.className = "position-fixed m-2 d-flex flex-column-reverse hide fly up";
-	Elements.MenuBar.style.minWidth = "350px";
-	Elements.MenuBar.style.maxWidth = "400px";
+	Elements.MenuBar.style.width = "350px";
 	Elements.MenuBar.style.zIndex = "990";
 
 	Elements.MenuBar.toggle = function() {
@@ -55,10 +55,21 @@ function renderQuickSection() { //TODO: Make more customizable
 	let itemSound = document.createElement("button");
 	let itemSettings = document.createElement("button");
 
-	itemBattery.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-battery-charging-80";
+	itemBattery.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-power-plug";
 	itemDND.className = "rounded-circle btn btn-secondary mdi mdi-24px mdi-do-not-disturb";
+	itemDND.onclick = e => {
+		window.NOTIFICATIONS_MUTED = !window.NOTIFICATIONS_MUTED
+		itemDND.classList.toggle("btn-primary", window.NOTIFICATIONS_MUTED);
+		itemDND.classList.toggle("btn-secondary", !window.NOTIFICATIONS_MUTED);
+	}
 	itemSound.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-volume-high";
-	itemSettings.className = "rounded-circle btn btn-secondary mdi mdi-24px mdi-settings";
+	itemSound.onclick = e => {
+		let muted = wc.isAudioMuted();
+		wc.setAudioMuted(!muted);
+		itemSound.classList.toggle("btn-primary", muted);
+		itemSound.classList.toggle("btn-secondary", !muted);
+	}
+	itemSettings.className = "rounded-circle btn btn-info mdi mdi-24px mdi-settings";
 	itemSettings.onclick = openSettings;
 	Elements.MenuBar.quickItems.append(itemBattery, itemDND, itemSound, itemSettings);
 	Elements.MenuBar.appendChild(Elements.MenuBar.quickItems)

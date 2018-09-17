@@ -1,0 +1,14 @@
+const fs = require("fs");
+const path = require("path");
+const registry = new Registry("system");
+let {wallpaper} = registry.get();
+setTitle("Wallpaper settings");
+let main = document.createElement('main');
+main.className = "flex-grow-1 d-flex flex-column px-2";
+root.append(main);
+let wp = document.createElement("img");
+wp.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAQAAACRI2S5AAAAEElEQVR42mNkIAAYRxWAAQAG9gAKqv6+AwAAAABJRU5ErkJggg==";
+wp.style.backgroundImage = "url(file:///" + wallpaper.path + ")";
+wp.style.backgroundSize = "cover";
+wp.className = "w-100 rounded";
+main.append(wp);

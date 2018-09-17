@@ -1,5 +1,5 @@
 const path = require("path"),
-	fs = require("fs-extra");
+	fs = require("fs").promises;
 
 let elems = {
 	Container: document.createElement("button"),
@@ -10,9 +10,9 @@ let elems = {
 root.className = "d-flex align-items-center"
 elems.Container.className = "btn btn-dark shadow-sm p-2 d-flex align-items-stretch";
 elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
-elems.NIcons.className = "pr-1 fly left show d-inline-flex";
-elems.Date.className = "pr-2 fly left show lh-r1 d-none";
-elems.Clock.className = "pl-2 border-left lh-r1 border-light font-weight-bold";
+elems.NIcons.className = "fly left show d-inline-flex";
+elems.Date.className = "pr-1 fly left show lh-r1 d-none";
+elems.Clock.className = "pl-1 lh-r1 font-weight-bold";
 elems.Clock.style.height = "19px";
 elems.Container.addEventListener("click", e => {
 	e.stopPropagation();
@@ -39,10 +39,9 @@ setInterval(function() {
 
 window.TrayItem = class TrayItem {
 	constructor(icon) {
-		let iconSize = "18px";
-		this.elem = document.createElement("i");
-		this.elem.className = `mdi mdi-${icon} mdi-${iconSize} mr-1`;
-		this.elem.style.lineHeight = iconSize;
+		let iconSize = 18;
+		this.elem = document.createElement("icon");
+		this.elem.className = `mdi mdi-${icon} mdi-${iconSize}px mr-1 lh-${iconSize} d-flex`;
 		elems.NIcons.append(this.elem);
 	}
 	remove() {
@@ -56,10 +55,12 @@ window.addEventListener("keypress", e => {
 		Elements.MenuBar.toggle();
 	}
 });
+let batteryLevel = document.createElement("div");
+batteryLevel.className = "ml-1 lh-r1";
+batteryLevel.innerText = "78%";
+new TrayItem("battery-80").elem.append(batteryLevel);
 
-new TrayItem("account-circle")
-new TrayItem("battery-80")
-new TrayItem("wifi-strength-3")
-
-fs.readFile(__dirname + "/menu.js", "utf-8").then(code => new Function('root', '__dirname', code)(root, __dirname));
+fs.readFile(__dirname + "/menu.js", "utf-8").then(code => {
+	new Function('root', '__dirname', code)(root, __dirname);
+});
 return elems;

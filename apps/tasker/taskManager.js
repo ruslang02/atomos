@@ -14,6 +14,9 @@ window.TaskManager = class TaskManager {
 		this.window.on("title-updated", title => this.setTitle(title));
 		this.window.on("icon-updated", icon => this.setIcon(icon));
 		root.appendChild(this.task);
+		new BSN.Tooltip(this.task, {
+			delay: 250
+		});
 		this.menu = new Menu([{
 			label: "Maximize",
 			icon: "window-maximize",
@@ -54,12 +57,15 @@ window.TaskManager = class TaskManager {
 		});
 		this.window.on('blur', e => this.task.classList.remove("active"));
 		this.window.on('focus', e => this.task.classList.add("active"));
+		this.window.on('thumbnail-changed', e => this.setTitle())
 	}
 	destroy() {
 		this.task.remove();
 	}
-	setTitle(title) {
-		if(title) this.task.title = title;
+	setTitle(title = this.window.ui.title.innerText) {
+		let markup = "<div style='max-width: 250px; max-height: 200px; margin: -0.25rem -0.5rem' class='text-left rounded scrollable-0'><img class='w-100 mb-1' src='" + this.window.thumbnail + "'/><div class='mb-1 ml-1'>" + title + 
+			`</div></div>`;
+		this.task.dataset.originalTitle = markup;
 	}
 	setIcon(iconURL) {
 		if(iconURL)

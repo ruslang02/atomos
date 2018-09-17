@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const fs = require("fs").promises;
 const path = require("path");
 const MAX_SIZE = 51240;
 let win = AppWindow.fromId(WINDOW_ID);
@@ -63,6 +63,7 @@ function renderMain() {
   el.textarea = document.createElement("textarea");
   el.textarea.className = "flex-grow-1 w-100 h-100 border-0";
   el.textarea.style.resize = "none";
+	el.textarea.autofocus = true;
   el.textarea.style.outline = 0;
   el.textarea.addEventListener('contextmenu', e => menu.popup());
   root.appendChild(el.textarea);
@@ -91,10 +92,9 @@ function renderFileItem() {
   }, {
     label: "Save",
     click() {
-      if (currentFile) {
-        fs.writeFile(currentFile, el.textarea.innerText, "utf-8")
-          .then(console.log, console.error)
-      } else menu.getMenuItemById("saveAs").click();
+      if (currentFile) 
+        fs.writeFile(currentFile, el.textarea.innerText, "utf-8");
+      else menu.getMenuItemById("saveAs").click();
     },
     id: "save",
     icon: "content-save",

@@ -34,19 +34,24 @@ window.Notification = class Notification {
 		this.ui.app.displayName.innerText = options.app;
 		this.ui.time.innerText = "• now";
 		this.ui.time.className = "text-muted smaller";
-		this.ui.message.className = "text-secondary smaller px-3 pb-2";
+		this.ui.message.className = "text-secondary smaller px-3 pb-2 position-relative text-truncate";
 		this.ui.messageTitle.innerText = options.title;
 		this.ui.messageTitle.className = "px-3";
-		this.ui.message.innerHTML = options.message;
+		this.ui.message.style.maxHeight = "150px";
+		this.ui.message.append(options.message || "");
+		if(options.image) {
+			this.ui.classList.add("type-image");
+			this.ui.messageTitle.classList.add("mb-2")
+		}
 		this.ui.app.append(this.ui.app.icon, this.ui.app.displayName);
 		appTimeBar.append(this.ui.app, this.ui.time);
 		this.ui.append(appTimeBar, this.ui.messageTitle, this.ui.message);
 		if (options.actions) {
 			this.ui.actions = document.createElement('notification-actions');
-			this.ui.actions.className = "bg-light py-2 px-3";
+			this.ui.actions.className = "bg-light py-2 px-3 d-flex justify-content-between";
 			options.actions.forEach(action => {
 				let btn = document.createElement("button");
-				btn.className = "btn btn-link px-0 mr-2";
+				btn.className = "btn btn-link px-0 mr-2 flex-grow-1";
 				btn.style.color = options.color;
 				btn.style.fontWeight = 600;
 				btn.innerText = action.label;
@@ -75,6 +80,7 @@ window.Notification = class Notification {
 		setTimeout(e => this.ui.remove(), FLY_ANIMATION_DURATION);
 	}
 	notify() {
+		if(window.NOTIFICATIONS_MUTED) return;
 		this.ui.classList.replace("hide", "show")
 		if (Elements.MenuBar.classList.contains("show")) return;
 		Elements.MenuBar.childNodes.forEach(node => {

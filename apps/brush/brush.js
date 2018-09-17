@@ -6,10 +6,7 @@ let guides = true;
 let background = true;
 let script = document.createElement("script");
 script.src = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.js");
-script.onload = function() {
-initCropper();
-
-}
+script.onload = initCropper;
 let css = document.createElement("link");
 css.href = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.css");
 css.rel = "stylesheet"
@@ -74,7 +71,11 @@ appButton.menu = new Menu(
     }
   }]);
 win.ui.header.prepend(appButton);
-win.ui.header.classList.remove("border-bottom")
+win.ui.header.classList.remove("border-bottom");
+let badge = document.createElement("div");
+badge.className = "badge badge-primary mr-2";
+badge.innerText = "beta";
+win.ui.buttons.prepend(badge);
 function gen(icon) {
   let btn = document.createElement("button");
   btn.className = "btn btn-secondary mdi mdi-" + icon + " mdi-18px lh-18 d-flex";
@@ -82,6 +83,8 @@ function gen(icon) {
 }
 let nav = document.createElement("nav");
 nav.className = "p-2 border-bottom d-flex";
+nav.setAttribute("data-draggable", "true");
+root.append(nav);
 let group1 = document.createElement("div");
 group1.className = "btn-group btn-group-sm mr-2";
 nav.crop = gen("crop");
@@ -172,7 +175,6 @@ applyButtons.apply.onclick = e => {
 }
 applyButtons.append(applyButtons.cancel, applyButtons.apply);
 nav.append(group1, group2, group3, group4, applyButtons);
-root.append(nav);
 let cropperElem = document.createElement("main");
 let image = new Image();
 cropperElem.className = "flex-grow-1 d-flex text-truncate rounded-bottom bg-white";

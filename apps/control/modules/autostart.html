@@ -102,8 +102,7 @@
 	});
 	$('#ASEdit').click(function() {
 		$("#ASModal .modal-title").text("Edit AutoStart Item");
-		$("#ASModal .btn-primary").html(
-			`<i class="material-icons">edit</i> Edit Item`);
+		$("#ASModal .btn-primary").html(`<i class="material-icons">edit</i> Edit Item`);
 		let selected = ASregs[$("#autoStart .ui-selected").attr("data-id")];
 		$("#autostart-name").val(selected.name);
 		$("#script").val(selected.src);

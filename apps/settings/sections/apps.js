@@ -1,9 +1,8 @@
-const fs = require("fs-extra");
+const fs = require("fs").promises;
 const path = require("path");
 setTitle("Apps and notifications")
 let main = document.createElement("main");
 root.append(main)
-let info = fs.readdirSync(path.join(osRoot, "apps")).length;
 let osinfo = document.createElement("section");
 osinfo.className = "d-flex flex-column flex-shrink-0 align-items-center p-3";
 osinfo.icon = document.createElement("icon");
@@ -11,7 +10,6 @@ osinfo.icon.className = "mdi mdi-application mdi-36px d-flex rounded-circle py-2
 osinfo.icon.style.background = "var(--orange)";
 osinfo.icon.style.paddingLeft = "calc(0.5rem - 0.6px)"; // An awful workaround. Question materialdesignicons.com why I should do this
 osinfo.osname = document.createElement("div");
-osinfo.osname.innerText = info + " apps installed";
 osinfo.osname.className = "h5 m-0";
 osinfo.append(osinfo.icon, osinfo.osname);
 main.append(osinfo);
@@ -28,7 +26,13 @@ list.assocs = newSmallListItem({
 	icon: "link",
 	title: "File associations"
 });
-list.append(list.default, list.assocs);
+list.autostart = newSmallListItem({
+	color: "var(--warning)",
+	icon: "auto-fix",
+	title: "Auto-start management",
+	onclick: e => openSection("apps-autostart")
+});
+list.append(list.autostart);
 main.append(list);
 
 let amLabel = document.createElement("label");
@@ -39,9 +43,11 @@ main.append(amLabel);
 let appList = document.createElement("section");
 appList.className = "list-group scrollable-x-0";
 async function listApps() {
-	for(const item of await fs.readdir(path.join(osRoot, "apps"))) {
+	let apps = await fs.readdir(path.join(osRoot, "apps"));
+	osinfo.osname.innerText = apps.length + " apps installed";
+	for(const item of apps) {
     try {
-      let package = await fs.readJson(path.join(osRoot, "apps", item, "package.json"));
+      let package = JSON.parse(await fs.readFile(path.join(osRoot, "apps", item, "package.json")));
       let elem = document.createElement("button");
       elem.className = "list-group-item fly left show flex-shrink-0 rounded-0 list-group-item-action border-left-0 border-right-0 d-flex align-items-center px-3 py-2"
       elem.icon = new Image(48, 48);

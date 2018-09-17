@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const fs = require("fs").promises;
 const path = require("path");
 const appPath = path.join(osRoot, "apps");
 const registry = new Registry('start');
@@ -62,17 +62,28 @@ function render() {
   renderApps();
   renderSearchSection();
   renderNotFound();
+	renderNewApp();
   renderActions();
 
   return Elements.StartMenu;
 }
+require("fs").watch(appPath, (a, b) => {
+	renderApps();
+	renderActions();
+})
 async function renderApps() {
+	if(root.Apps) {
+		root.Apps.innerHTML = "";
+	} else {
   root.Apps = document.createElement("apps");
   active = root.Apps;
   root.Apps.className = "justify-content-around align-items-center flex-grow-1 flex-wrap py-2 px-1 flex-grow-1 card shadow flex-row scrollable";
   root.appendChild(root.Apps);
+	}
   let dirs = await fs.readdir(appPath);
   for (const item of dirs) {
+		let stat = await fs.lstat(path.join(appPath, item));
+		if(!stat.isDirectory()) continue;
     let appEntry = document.createElement("button");
     let appIcon = new Image(48, 48);
     let appName = document.createElement("div");
@@ -85,7 +96,7 @@ async function renderApps() {
       Elements.BarItems.start.click();
     });
     try {
-      let config = await fs.readJson(path.join(appPath, item, "package.json"));
+      let config = JSON.parse(await fs.readFile(path.join(appPath, item, "package.json")));
       if (config.hidden || config.type !== "app")
         continue;
       appIcon.src = config.icon.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", item));
@@ -103,9 +114,10 @@ async function renderApps() {
   }
 }
 async function renderActions() {
+	allActions = [];
   for (const item of await fs.readdir(path.join(osRoot, "apps"))) {
     try {
-      let package = await fs.readJson(path.join(osRoot, "apps", item, "package.json"));
+      let package = JSON.parse(await fs.readFile(path.join(osRoot, "apps", item, "package.json")));
       for (const action of package.actions)
         allActions.push(Object.assign(action, {
           app: item,
@@ -129,7 +141,14 @@ function renderSearch() {
   let igp = document.createElement("label");
   igp.className = "input-group-prepend m-0 d-flex align-items-center";
   igp.htmlFor = "__searchInput"
-
+  root.AddButton = document.createElement("a");
+	root.AddButton.href = "#";
+  root.AddButton.className = "input-group-append close mdi mdi-plus mdi-24px lh-24 m-0 d-flex align-items-center px-2";
+  root.AddButton.onclick = e => {
+		root.AddButton.classList.toggle("mdi-apps")
+		if(!root.AddButton.classList.toggle("mdi-plus"))
+		showSection(root.NewApp); else home();
+	};
   let igt = document.createElement("div");
   igt.className = "mdi mdi-magnify mdi-18px input-group-text material-icons text-muted border-white bg-white pr-1 border-0 py-0";
 
@@ -139,7 +158,7 @@ function renderSearch() {
   root.Search.Input.id = "__searchInput";
 
   igp.appendChild(igt);
-  root.Search.append(igp, root.Search.Input);
+  root.Search.append(igp, root.Search.Input, root.AddButton);
   root.Search.Input.addEventListener("input", search)
   root.Search.Input.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") {
@@ -177,7 +196,18 @@ function renderSearch() {
   });
   root.appendChild(root.Search);
 }
-
+function renderNewApp() {
+	root.NewApp = document.createElement("section");
+  root.NewApp.className = "card shadow justify-content-center align-items-center flex-grow-1";
+  root.NewApp.style.display = "none";
+	let icon = document.createElement("icon");
+	icon.className = "mdi mdi-shape-plus display-1 text-secondary";
+	let header = document.createElement("p");
+	header.className = "text-secondary mx-5 px-4 text-center";
+	header.innerHTML = "To install a new application, drag and drop '.wapp' archive here or select it from File Manager.";
+	root.NewApp.append(icon, header);
+	root.append(root.NewApp);
+}
 function renderNotFound() {
 
   root.NotFound = document.createElement("section");
@@ -196,19 +226,21 @@ function renderNotFound() {
   searchBtn.className = "btn btn-outline-success";
   searchBtn.innerText = "Search in Store";
   searchBtn.onclick = e => AppWindow.launch("market", {
-    q: root.Search.lastChild.value
+    q: root.Search.Input.value
   });
   root.NotFound.append(icon, title, uselessinfo, searchBtn);
   root.appendChild(root.NotFound)
 }
 
 function home() {
+		root.AddButton.classList.replace("mdi-apps", "mdi-plus")
   showSection(root.Apps);
-  root.Search.lastChild.value = "";
+  root.Search.Input.value = "";
 }
 
-function search() {
-  let q = root.Search.lastChild.value.toLowerCase().trim();
+async function search() {
+		root.AddButton.classList.replace("mdi-apps", "mdi-plus")
+  let q = root.Search.Input.value.toLowerCase().trim();
   root.NotFound.querySelector("h5").innerText = `"${q}" was not found`;
   let res = [];
   console.log(q)
@@ -229,7 +261,9 @@ function search() {
     showSection(root.NotFound);
   else {
     let items = [];
-    res.forEach((item, i) => {
+		for(const i of res.keys()) {
+			const item = res[i];
+			
       let elem = document.createElement("button");
       elem.icon = (item.main ? document.createElement("icon") : new Image(24, 24));
       elem.header = document.createElement("div");
@@ -252,12 +286,13 @@ function search() {
       elem.addEventListener("mouseleave", function() {
         elem.additional.classList.remove("show")
       });
-      if (item.main) elem.icon.className = "mdi mdi-24px lh-24 d-flex mdi-" + item.icon;
+      if (item.main) 
+				elem.icon.className = "mdi mdi-24px lh-24 d-flex mdi-" + item.icon;
       else elem.icon.src = item.icon;
       elem.header.innerText = item.name;
       elem.append(elem.icon, elem.header, elem.additional);
       items.push(elem);
-    });
+		}
     items.sort(function(a, b) {
       return a.header.innerText.toLowerCase().localeCompare(b.header.innerText.toLowerCase());
     })
@@ -273,6 +308,7 @@ function showSection(elem) {
   root.NotFound.style.display = "none";
   root.SearchSection.style.display = "none";
   root.Apps.style.display = "none";
+  root.NewApp.style.display = "none";
   elem.style.display = "flex";
 }
 return render();

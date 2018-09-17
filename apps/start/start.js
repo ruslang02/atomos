@@ -1,5 +1,5 @@
 const path = require("path"),
-fs = require("fs-extra");
+fs = require("fs").promises;
 
 let button = document.createElement("button");
 let icon = new Image(48, 48);
@@ -42,5 +42,7 @@ window.addEventListener("keyup", e => {
 	if(e.key === "Meta" && !window.__MetaKeyOverriden) Elements.StartMenu.toggle();
 });
 
-fs.readFile(__dirname + "/menu.js", "utf-8").then(code => new Function('body', '__dirname', code)(root, __dirname));
+fs.readFile(__dirname + "/menu.js", "utf-8").then(code => {
+	new Function('body', '__dirname', code)(root, __dirname)
+});
 return button;

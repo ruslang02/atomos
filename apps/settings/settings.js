@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('fs').promises;
 const path = require('path');
 let sectionHistory = [];
 root.footer = document.createElement("footer");
@@ -30,10 +30,10 @@ function newSmallListItem(options) {
 	return elem;
 }
 async function openSection(id, log = true) {
-	console.log(id)
-	if(id === undefined) {
+	if(!id) {
 		Elements.MenuBar.quickItems.classList.remove("d-none");
 		root.remove();
+		return;
 	}
 	function setTitle(title) {
 		root.footer.header.innerText = title;
@@ -41,9 +41,14 @@ async function openSection(id, log = true) {
 
 	let sectionPath = path.join(osRoot, "apps", "settings", "sections", id + ".js");
 	root.body.innerHTML = "";
-	new Function('root', 'setTitle', 'openSection', 'newSmallListItem', await fs.readFile(sectionPath))(root.body, setTitle, openSection, newSmallListItem);
+	if(root.footer.specialButton) root.footer.specialButton.remove();
+	await new AsyncFunction('root', 'setTitle', 'setActionButton', 'openSection', 'newSmallListItem', await fs.readFile(sectionPath))(root.body, setTitle, setActionButton, openSection, newSmallListItem);
 	if(log) sectionHistory.push(id);
 		console.log(sectionHistory)
+}
+function setActionButton(elem) {
+	root.footer.specialButton = elem;
+	root.footer.append(root.footer.specialButton);
 }
 
 openSection("menu");

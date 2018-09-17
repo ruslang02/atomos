@@ -46,6 +46,9 @@ app.on('ready', function() {
   win.on("close", e => {
     if (!global.shutdown) e.preventDefault();
   });
+	win.webContents.on('devtools-opened', () => {
+    win.webContents.addWorkSpace(__dirname)
+  })
   win.webContents.on('will-navigate', ev => {
     ev.preventDefault()
   });

@@ -1,6 +1,6 @@
-const fs = require("fs-extra");
+//const fs = require("fs");
 const path = require("path");
-setTitle("Apps and notifications")
+setTitle("Display")
 let main = document.createElement("main");
 root.append(main)
 
@@ -9,7 +9,8 @@ list.className = "list-group flex-shrink-0 rounded-0";
 list.wallpaper = newSmallListItem({
 	color: "var(--success)",
 	icon: "image-filter-hdr",
-	title: "Wallpaper"
+	title: "Wallpaper",
+	onclick: e => openSection("display-wallpaper")
 });
 list.themes = newSmallListItem({
 	color: "var(--warning)",
@@ -21,5 +22,5 @@ list.wm = newSmallListItem({
 	icon: "transition",
 	title: "Effects"
 });
-list.append(list.wallpaper, list.themes, list.wm);
+list.append(list.wallpaper);
 main.append(list);

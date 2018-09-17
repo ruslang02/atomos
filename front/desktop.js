@@ -9,66 +9,68 @@ const FADE_ANIMATION_DURATION = 150;
 const FLY_ANIMATION_DURATION = 200;
 const osRoot = require("electron").remote.app.getAppPath();
 const isDebug = require("electron").remote.getGlobal("isDebug");
-(function() {
+
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+
+(async function() {
 	const {
 		remote
 	} = require("electron");
-
+	
 	const {
 		app
 	} = remote;
-	const fs = require("fs-extra");
+	const fs = require("fs").promises;
 	const path = require("path");
 	const taskbarPath = path.join(app.getAppPath(), "apps/bar");
-	LoadCSS().then(async function() {
-		for(const api of await fs.readdir(__dirname + "/api")) {
-			new Function(await fs.readFile(path.join(__dirname, "api", api)))();
-		}
-		renderWall();
-		new Function('root', '__dirname', await fs.readFile(taskbarPath + "/bar.js", "utf-8"))
-		(document.body, taskbarPath);
-		document.title = "AtomOS (Render complete)";
-	}).catch(console.error);
-
+	await LoadCSS();
+	for(const api of await fs.readdir(__dirname + "/api")) {
+		new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
+	}
+	renderWall();
+	new AsyncFunction('root', '__dirname', await fs.readFile(taskbarPath + "/bar.js", "utf-8"))
+	(document.body, taskbarPath);
+	document.title = "AtomOS (Render complete)";
+	
 	function renderWall() {
 		let registry = new Registry("system");
 		if(!Object.getOwnPropertyNames(registry.get().wallpaper || {}).length)
 			registry.set(Object.assign(registry.get(), {
 				wallpaper: {
 					path: path.join(app.getAppPath(), "wallpaper.jpg"),
-					positioning: "scalencrop",
-					color: 'black'
+																 positioning: "scalencrop",
+															color: 'black'
 				}
 			}));
-		let wpSettings = registry.get().wallpaper;
-		let wpURL = "url('" + new URL("file://" + wpSettings.path).href + "')";
-		switch(wpSettings.positioning) {
-			case "scale":
-				document.body.style.background = `${wpSettings.color} ${wpURL} 100% 100% no-repeat`;
-				break;
-			case "scalencrop":
-				document.body.style.background = `${wpSettings.color} ${wpURL} center/cover no-repeat`;
-				break;
-			case "scalencontain":
-				document.body.style.background = `${wpSettings.color} ${wpURL} center/contain no-repeat`;
-				break;
-			case "center":
-				document.body.style.background = `${wpSettings.color} ${wpURL} no-repeat center`;
-				break;
-			case "tile":
-				document.body.style.background = `${wpSettings.color} ${wpURL}`;
-				break;
-		}
+			let wpSettings = registry.get().wallpaper;
+			let wpURL = "url('" + new URL("file://" + wpSettings.path).href + "')";
+			switch(wpSettings.positioning) {
+				case "scale":
+					document.body.style.background = `${wpSettings.color} ${wpURL} 100% 100% no-repeat`;
+					break;
+				case "scalencrop":
+					document.body.style.background = `${wpSettings.color} ${wpURL} center/cover no-repeat`;
+					break;
+				case "scalencontain":
+					document.body.style.background = `${wpSettings.color} ${wpURL} center/contain no-repeat`;
+					break;
+				case "center":
+					document.body.style.background = `${wpSettings.color} ${wpURL} no-repeat center`;
+					break;
+				case "tile":
+					document.body.style.background = `${wpSettings.color} ${wpURL}`;
+					break;
+			}
 	}
-
+	
 	function LoadCSS() {
 		document.title = "AtomOS (Rendering...)";
 		let cssList = [
-			"node_modules/bootstrap/dist/css/bootstrap.min.css",
-			"node_modules/@mdi/font/css/materialdesignicons.min.css",
-			"node_modules/source-sans-pro/source-sans-pro.css",
-			//"node_modules/jquery-ui-dist/jquery-ui.min.css",
-			"front/desktop.css"
+		"node_modules/bootstrap/dist/css/bootstrap.min.css",
+ "node_modules/@mdi/font/css/materialdesignicons.min.css",
+ "node_modules/source-sans-pro/source-sans-pro.css",
+ //"node_modules/jquery-ui-dist/jquery-ui.min.css",
+ "front/desktop.css"
 		];
 		let promises = [];
 		cssList.forEach(function(item) {

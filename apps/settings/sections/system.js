@@ -1,8 +1,8 @@
-const fs = require("fs-extra");
+const fs = require("fs").promises;
 const path = require("path");
 
 setTitle("System");
-let info = fs.readJsonSync(path.join(osRoot, "package.json"));
+let info = JSON.parse(await fs.readFile(path.join(osRoot, "package.json")));
 let osinfo = document.createElement("section");
 osinfo.className = "d-flex flex-column align-items-center p-3 mb-2";
 osinfo.icon = document.createElement("icon");
@@ -18,6 +18,12 @@ root.append(osinfo);
 
 let list = document.createElement("section");
 list.className = "list-group mb-2 rounded-0";
+list.dat = newSmallListItem({
+	color: "var(--secondary)",
+	icon: "clock-outline",
+	title: "Date and time",
+	onclick: e => openSection("system-time")
+});
 list.pcinfo = newSmallListItem({
 	color: "var(--primary)",
 	icon: "memory",
@@ -33,5 +39,5 @@ list.author = newSmallListItem({
 	icon: "account",
 	title: "Developer's contacts"
 });
-list.append(list.pcinfo, list.sources, list.author);
+list.append(list.dat);
 root.append(list);

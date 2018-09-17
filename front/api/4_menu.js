@@ -115,7 +115,7 @@
 	          if (item.icon && registry.get().menu.showIcons) {
 	            menuItem.classList.add("px-3")
 	            let menuIcon = document.createElement("icon");
-	            menuIcon.className = "mdi mdi-18px flex-shrink-0 lh-18 mr-1 mdi-" + item.icon;
+	            menuIcon.className = "mdi mdi-18px flex-shrink-0 d-flex lh-18 mr-1 mdi-" + item.icon;
 	            menuItem.append(menuIcon);
 	          }
 	          let menuTitle = document.createElement("div");
@@ -134,7 +134,12 @@
 	          let separator = document.createElement("div");
 	          separator.className = "dropdown-divider";
 	          _this.menu.append(separator);
-	        } else if (item.type === "checkbox") {
+					} else if (item.type === "header") {
+						let header = document.createElement("div");
+	          header.className = "dropdown-header font-weight-bolder";
+						header.innerText = item.label;
+	          _this.menu.append(header);
+					} else if (item.type === "checkbox") {
 	          let menuItem = document.createElement("button");
 	          menuItem.className = "dropdown-item d-flex align-items-center custom-control custom-checkbox pl-4";
 	          let menuInput = document.createElement("input");

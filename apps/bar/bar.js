@@ -1,4 +1,4 @@
-const fs = require('fs-extra'), path = require("path");
+const fs = require('fs').promises, path = require("path");
 let registry = new Registry("taskbar");
 if(!Object.getOwnPropertyNames(registry.get()).length)
 	registry.set({
@@ -15,22 +15,22 @@ function render() {
 	root.appendChild(Elements.Bar);
 }
 
-function loadPlugins() {
-	registry.get().items.forEach((id, i) => {
-		fs.readJSON(path.join(osRoot, "apps", id, "package.json"), "utf-8").then(pkg => {
-			if(pkg.type !== "bar-plugin")
-				return;
+async function loadPlugins() {
+	let items = registry.get().items;
+	for(const id of items.values()) {
+		let file = await fs.readFile(path.join(osRoot, "apps", id, "package.json"), "utf-8");
+		let pkg = JSON.parse(file)
+		if(pkg.type !== "bar-plugin") 
+			return;
+		try {
+			let script = await fs.readFile(path.join(osRoot, "apps", id, pkg.main), "utf-8");
 			let plugin = document.createElement("plugin");
-			fs.readFile(path.join(osRoot, "apps", id, pkg.main), "utf-8").then(file => {
-				try {
-					Elements.BarItems[id] = new Function("root", "__dirname", file)(plugin, path.join(osRoot, "apps", id))
-					plugin.id = id;
-					plugin.style.order = i;
-					Elements.Bar.appendChild(plugin);
-				} catch(e) {
-					console.error(id, "was not loaded.", e);
-				}
-			});
-		});
-	});
+			Elements.BarItems[id] = await new AsyncFunction("root", "__dirname", script)
+			(plugin, path.join(osRoot, "apps", id));
+			plugin.id = id;
+			Elements.Bar.appendChild(plugin);
+		} catch(e) {
+			console.error(id, "was not loaded.", e);
+		}
+	}
 }
