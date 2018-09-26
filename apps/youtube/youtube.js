@@ -10,7 +10,8 @@ let loggedin = fs.existsSync(TOKEN_PATH);
 
 let credentials = JSON.parse(await fsp.readFile(osRoot + '/client_secret.json'));
 let oauth2Client = new OAuth2Client(credentials.web.client_id, credentials.web.client_secret, "http://atomos.org.uk/ytcallback");
-fsp.readFile(TOKEN_PATH).catch(err => {
+let token = await fsp.readFile(TOKEN_PATH).catch(console.error);
+oauth2Client.credentials = JSON.parse(token);
 		let authUrl = oauth2Client.generateAuthUrl({
 			access_type: 'offline',
 			scope: SCOPES
@@ -39,7 +40,7 @@ fsp.readFile(TOKEN_PATH).catch(err => {
 		ipcRenderer.sendToHost("log-in", authUrl);
 		$("body").addClass("p-3").css({
 			display: "flex",
-			flexDirection: "column",
+			flexDirection: "column",n
 			alignItems: "center",
 			justifyContent: "center"
 		}).append("<h1>Welcome to YouTube!</h1><p>To proceed watching videos, please log in to Google and permit \"AtomOS Youtube\" to use yourself as YouTube.</p><br /><button class='btn btn-danger' onclick='location.reload()'>Sign In</button>")
@@ -54,15 +55,6 @@ fsp.readFile(TOKEN_PATH).catch(err => {
 				app.window.reload();
 			});
 		})
-}), function (err, token) {
-			if (err) {
-				;
-			} else {
-				$("body").append('<h5 class="m-3">Trending</h5>');
-				oauth2Client.credentials = JSON.parse(token);
-				callback(oauth2Client);
-			}
-		});
 authorize(, getChannel);
 let modal;
 win.on('close', e => {

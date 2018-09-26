@@ -21,23 +21,23 @@ list.className = "list-group mb-2 rounded-0";
 list.dat = newSmallListItem({
 	color: "var(--secondary)",
 	icon: "clock-outline",
-	title: "Date and time",
-	onclick: e => openSection("system-time")
+	label: "Date and time",
+	click: e => openSection("system-time")
 });
 list.pcinfo = newSmallListItem({
 	color: "var(--primary)",
 	icon: "memory",
-	title: "Device specifications"
+	label: "Device specifications"
 });
 list.sources = newSmallListItem({
 	color: "var(--success)",
 	icon: "source-branch",
-	title: "Open source licenses"
+	label: "Open source licenses"
 });
 list.author = newSmallListItem({
 	color: "var(--dark)",
 	icon: "account",
-	title: "Developer's contacts"
+	label: "Developer's contacts"
 });
 list.append(list.dat);
 root.append(list);

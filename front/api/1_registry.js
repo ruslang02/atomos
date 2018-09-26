@@ -13,8 +13,23 @@
 				this.emit('changed', that.storage);
 			});
 		}
-		static getSystemRegistry() {
-			return new Registry("system");
+		static set(key, value) {
+			let keys = key.split(".");
+			let registry = new Registry(keys.shift());
+			let prefs = registry.get();
+			let prop = keys.pop();
+			keys.reduce(function (cur, key) {
+        return cur[key];
+    	}, prefs)[prop] = value
+			registry.set(prefs);
+			return prefs;
+		}
+		static get(key) {
+			let keys = key.split(".");
+			let registry = new Registry(keys.shift());
+			return keys.reduce(function (cur, key) {
+        return cur[key];
+    	}, registry.get());
 		}
 		get() {
 			return this.storage;

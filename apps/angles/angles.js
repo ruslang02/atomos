@@ -11,13 +11,16 @@ css_beautify = require('js-beautify').css,
 path = require("path");
 win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
-			 else if (args.file) loadFile(args.file, newTab());
+			 else if (args.file) newTab(args.file);
 			 win.show();
 })
 win.once('closed', function() {
 	window.removeEventListener("keydown", altEvent);
 	prefs.remove();
 });
+win.on('resize', function() {
+	tabs.active.editor.resize();
+})
 const registry = new Registry("angles");
 let prefs;
 if (!Object.keys(registry.get()).length) registry.set({
@@ -38,7 +41,7 @@ let ofdPath = process.env.HOME;
 let tabs = [];
 let fileMenu, editMenu, viewMenu;
 let tabCollection = document.createElement("section");
-tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 flex-shrink-0 text-truncate ml-3";
+tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 flex-shrink-0 scrollable-0 ml-3";
 tabCollection.style.marginBottom = "-1px";
 tabCollection.style.width = 0;
 tabCollection.style.zIndex = "100";
@@ -73,53 +76,20 @@ window.addEventListener("keydown", altEvent)
 function init() {
 	require("ace-builds/src-min/ace");
 	ace.config.set('basePath', osRoot + "/node_modules/ace-builds/src-min");
-	if (win.arguments.file) loadFile(win.arguments.file, newTab());
+	if (win.arguments.file) newTab(win.arguments.file);
 	else newTab();
 	renderPreferencesDialog();
 }
 setImmediate(init);
 
-async function loadFile(file, tab) {
-	let f = path.parse(file);
-	ofdPath = f.dir;
-	let data = await fs.readFile(file, tab.editor.encoding);
-	tab.name.innerText = f.base;
-	tab.editor.setValue(data);
-	tab.url = file;
-	tab.isRemote = true;
-	tab.editor.session.setMode("ace/mode/" + (f.ext === ".js" ? "javascript" : f.ext.substring(1)));
-	tab.reload();
-	tab.classList.remove("active", "font-italic");
-	win.setTitle(f.base + " - Angles");
-	
-}
 
-async function writeFile(tab, url) {
-	await fs.writeFile(url, tab.editor.getValue(), tab.editor.encoding);
-	tab.classList.remove("font-italic");
-	tab.reload();
-	tab.url = url;
-	new Notification({
-		title: "File was successfully saved",
-		icon: "code-tags",
-		app: "Angles",
-		actions: [{
-			label: "Open in folder",
-			click() {
-				shell.showItemInFolder(url);
-			}
-		}],
-		color: "var(--success)"
-	});
-}
-
-function newTab() {
-	let tab = document.createElement("div");
+function newTab(url) {
+	let tab = document.createElement("tab");
 	tab.addEventListener("mousedown", function(e) {
 		e.stopPropagation();
 		tab.activate();
 	})
-	tab.className = "d-flex px-2 pb-1 us-0 mt-1 mr-1 align-items-center bg-dark text-white border-top border-left border-right border-secondary rounded-top";
+	tab.className = "d-flex px-2 pb-1 us-0 mt-1 mr-1 align-items-center position-relative bg-dark text-white border-top border-left border-right border-secondary very-rounded-top";
 	tab.name = document.createElement("div");
 	tab.name.innerText = "untitled";
 	tab.deactivate = function() {
@@ -127,8 +97,35 @@ function newTab() {
 		tab.classList.add("pb-1", "mt-1", "border-bottom");
 		tab.tab.classList.add("d-none");
 	}
+	tab.load = async function(file) {
+		let f = path.parse(file);
+		ofdPath = f.dir;
+		let data = await fs.readFile(file, tab.editor.encoding);
+		tab.name.innerText = f.base;
+		tab.editor.setValue(data);
+		tab.url = file;
+		tab.isRemote = true;
+		tab.editor.session.setMode("ace/mode/" + (f.ext === ".js" ? "javascript" : f.ext.substring(1)));
+		tab.reload();
+		tab.classList.remove("active", "font-italic");
+		win.setTitle(f.base + " - Angles");
+	}
+	tab.write = async function(url) {
+		await fs.writeFile(url, tab.editor.getValue(), tab.editor.encoding);
+		tab.classList.remove("font-italic");
+		tab.reload();
+		tab.url = url;
+		let bname = path.basename(url);
+		new Snackbar({
+			message: "File " + (bname.length < 25 ? `"${bname}" ` : "") + "saved",
+			window: win,
+			buttonText: "View",
+			click() {
+				shell.openItemInFolder(url)
+			}
+		})
+	}
 	tab.close = function() {
-		console.log(tabs);
 		if (tabs.length === 1) newTab();
 		else if (tab.previousSibling) tab.previousSibling.activate();
 		else if (tab.nextSibling) tab.nextSibling.activate();
@@ -142,6 +139,7 @@ function newTab() {
 		tab.classList.add("py-1");
 		tab.classList.remove("pb-1", "mt-1", "border-bottom");
 		tab.tab.classList.remove("d-none");
+		tab.editor.resize();
 		tabs.active = tab;
 		tab.editor.focus();
 	}
@@ -175,7 +173,8 @@ function newTab() {
 	tab.editor.setTheme("ace/theme/" + settings.theme);
 	tab.reload();
 	tab.activate();
-	tabs.push(tab)
+	tabs.push(tab);
+	if(url) tab.load(url);
 	return tab;
 }
 
@@ -194,7 +193,7 @@ async function renderPreferencesDialog() {
 	prefs.className = "modal fade";
 	prefs.tabIndex = -1;
 	prefs.setAttribute("aria-hidden", "true");
-	
+
 	prefs.dialog.className = "modal-dialog modal-dialog-centered";
 	prefs.content.className = "modal-content";
 	prefs.header.className = "modal-header";
@@ -232,7 +231,7 @@ async function renderPreferencesDialog() {
 	e1.className = "form-group row custom-control custom-checkbox p-0 mx-0";
 	prefs.indentTab = document.createElement("input");
 	prefs.indentTab.type = "checkbox";
-	prefs.indentTab.id = '_' + Math.random().toString(36).substr(2, 9);
+	prefs.indentTab.id = shell.uniqueId();
 	prefs.indentTab.className = "custom-control-input";
 	prefs.indentTab.required = true;
 	prefs.indentTab.value = settings.indentTab;
@@ -249,7 +248,7 @@ async function renderPreferencesDialog() {
 	prefs.indentSize.min = 1;
 	prefs.indentSize.max = 8;
 	prefs.indentSize.value = settings.indentSize;
-	prefs.indentSize.id = '_' + Math.random().toString(36).substr(2, 9);
+	prefs.indentSize.id = shell.uniqueId();
 	prefs.indentSize.className = "form-control";
 	prefs.indentSize.required = true;
 	e2.label = document.createElement("label");
@@ -258,7 +257,7 @@ async function renderPreferencesDialog() {
 	e2.label.innerHTML = "Indent Size";
 	e2.col9.append(prefs.indentSize);
 	e2.append(e2.label, e2.col9)
-	
+
 	e3.className = "form-group row";
 	e3.col9 = document.createElement("div");
 	e3.col9.className = "col-sm-8";
@@ -267,7 +266,7 @@ async function renderPreferencesDialog() {
 	prefs.wrapLength.min = 40;
 	prefs.wrapLength.value = settings.wrapLength;
 	prefs.wrapLength.required = true;
-	prefs.wrapLength.id = '_' + Math.random().toString(36).substr(2, 9);
+	prefs.wrapLength.id = shell.uniqueId();
 	prefs.wrapLength.className = "form-control";
 	e3.label = document.createElement("label");
 	e3.label.className = "col-sm-4 col-form-label";
@@ -275,7 +274,7 @@ async function renderPreferencesDialog() {
 	e3.label.innerHTML = "Wrap Length";
 	e3.col9.append(prefs.wrapLength);
 	e3.append(e3.label, e3.col9);
-	
+
 	prefs.body.append(e1, e2, e3);
 	let style = document.createElement("style");
 	style.innerText = `
@@ -288,7 +287,7 @@ async function generateMenus() {
 	fileMenu = document.createElement("button");
 	fileMenu.className = "btn btn-outline-light border-0 mr-1";
 	fileMenu.innerText = "File";
-	fileMenu.menu = new Menu([{
+	fileMenu.menu = new Menu(win, [{
 		label: "New Tab",
 		accelerator: "Ctrl+N",
 		click: newTab,
@@ -299,7 +298,7 @@ async function generateMenus() {
 		label: "Open...",
 		accelerator: "Ctrl+O",
 		click() {
-			shell.selectFile(shell.ACTION_OPEN).then(file => loadFile(file, newTab()))
+			shell.selectFile(shell.ACTION_OPEN).then(newTab)
 		},
 		icon: "folder-outline"
 	}, {
@@ -308,7 +307,7 @@ async function generateMenus() {
 		label: "Save",
 		accelerator: "Ctrl+S",
 		click() {
-			if (tabs.active.url) writeFile(tabs.active, tab.url); else 
+			if (tabs.active.url) tabs.active.write(tabs.active.url); else
 				fileMenu.menu.getMenuItemById("saveAs").click();
 		},
 		icon: "content-save"
@@ -321,7 +320,7 @@ async function generateMenus() {
 				defaultPath: file || ofdPath
 			}).then(result => {
 				tabs.active.name.innerText = path.basename(result);
-				writeFile(tabs.active, result);
+				tabs.active.write(result);
 			});
 		},
 		icon: "content-save-settings"
@@ -334,11 +333,11 @@ async function generateMenus() {
 			y: fileMenu.offsetTop + fileMenu.offsetHeight + pos[1]
 		});
 	})
-	
+
 	editMenu = document.createElement("button");
 	editMenu.className = "btn btn-outline-light border-0 mr-1";
 	editMenu.innerText = "Edit";
-	editMenu.menu = new Menu([{
+	editMenu.menu = new Menu(win, [{
 		label: "Find",
 		icon: "magnify",
 		click() {
@@ -391,11 +390,11 @@ async function generateMenus() {
 			y: editMenu.offsetTop + editMenu.offsetHeight + pos[1]
 		});
 	})
-	
+
 	viewMenu = document.createElement("button");
 	viewMenu.className = "btn btn-outline-light border-0 mr-1";
 	viewMenu.innerText = "View";
-	viewMenu.menu = new Menu([{
+	viewMenu.menu = new Menu(win, [{
 		label: "Show toolbar",
 		type: "checkbox",
 		id: "angles-showtoolbar",

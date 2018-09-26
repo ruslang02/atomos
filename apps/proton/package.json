@@ -5,7 +5,7 @@
 	"type": "app",
 	"version": "1.0.0",
 	"description": "Your way to the Internet",
-	"icon": "$APP_ROOT/logo.png",
+	"icon": "logo.png",
 	"width": 900,
 	"height": 650,
 	"minHeight": 400,

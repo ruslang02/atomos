@@ -8,7 +8,6 @@
 		height: 300,
 		main: "app.js",
 		title: "Application",
-		icon: "$SYSTEM_ROOT/icons/Application.png",
 		x: 100,
 		y: 100,
 		minWidth: 150,
@@ -64,8 +63,10 @@
 			clearTimeout(this.resizeTimeout);
 			this.resizeTimeout = setTimeout(e => {
 				this.updateThumbnail();
-			}, 200)
+				this.emit('resized');
+			}, 500)
 			if(Menu.getFocusedMenu()) Menu.getFocusedMenu().close();
+			this.emit('resize');
 		}
 		_update(p, n) {
 			switch (p) {
@@ -128,7 +129,6 @@
 			}
 		}
 		_paint() {
-			console.log(this.ui.root.className)
 			document.body.appendChild(this.ui.root);
 			this._calculateOffsets();
 			this.focus();
@@ -144,8 +144,7 @@
 
 			this.ui.root = document.createElement("window");
 			this.ui.root.id = this.id;
-			this.ui.root.style.overflow = "hidden";
-			this.ui.root.className = "shadow-sm border fade card position-absolute bg-semiwhite";
+			this.ui.root.className = "shadow-sm border scrollable-0 fade card position-absolute bg-semiwhite";
 
 			this.ui.header = document.createElement("window-header");
 			this.ui.header.className = "d-flex align-items-center flex-shrink-0 border-bottom px-2 py-1";
@@ -215,8 +214,15 @@
 			const winID = wCount++;
 			const appRoot = path.join(osRoot, 'apps', prog);
 			let appOptions = JSON.parse(await fs.readFile(appRoot + "/package.json"));
-			let options = Object.assign({}, defaultOptions, appOptions, launchOptions, {arguments: args})
-			await fs.access(appRoot + "/" + options.main);
+			let options = Object.assign({}, defaultOptions, appOptions, launchOptions, {arguments: args});
+
+			if(options.main.ui) {
+				await fs.access(appRoot + "/" + options.main.ui);
+				if(options.main.worker)
+					await fs.access(appRoot + "/" + options.main.worker);
+			} else
+				await fs.access(appRoot + "/" + options.main);
+
 			windows[winID] = new Proxy(options, {
 				get: function(obj, prop) {
 					return prop in obj ? obj[prop] : false;
@@ -231,7 +237,12 @@
 			win._render();
 			windowCollection[winID] = win;
 			win._paint();
-			await win._loadFile(appRoot + "/" + win.options.main);
+			win.file = path.join(osRoot, "apps", prog, options.main.ui || options.main);
+			console.time("app render")
+			if(options.main.worker)
+				win.worker = new Worker(path.join(osRoot, "apps", prog, options.main.worker));
+			await new AsyncFunction("__dirname", "root", "WINDOW_ID", await fs.readFile(win.file))(path.join(win.file, ".."), win.ui.body, win.id);
+			console.timeEnd("app render")
 			win._initEvents();
 			win._update("draggable", win.options.draggable);
 			win._update("resizable", win.options.resizable);
@@ -258,16 +269,8 @@
 		static fromId(wID) {
 			return windowCollection[wID];
 		}
-		async _loadFile(file) {
-			this.ui.body.innerHTML = "";
-			this.file = file;
-			console.time("app render")
-			await new AsyncFunction("__dirname", "root", "WINDOW_ID", await fs.readFile(file))(path.join(file, ".."), this.ui.body, this.id);
-			console.timeEnd("app render")
-		}
 
 		destroy() {
-
 				this.hide();
 				setTimeout(e => {
 					this.ui.root.remove();
@@ -313,11 +316,12 @@
 		}
 		updateThumbnail() {
 			let _this = this;
+			if(!Registry.get("system.enableThumbnails")) return;
 			wc.capturePage(this.getContentBounds(), image => {
 				_this.thumbnail = image.toDataURL();
 				_this.emit("thumbnail-changed");
 			})
-			
+
 		}
 		isFocused() {
 			return this.ui.root.classList.contains("shadow");
@@ -341,7 +345,7 @@
 		hide() {
 			this.ui.root.classList.remove("show");
 			Elements.Bar.classList.remove("maximized");
-			setImmediate(e => this.ui.root.classList.add("d-none"));
+			setTimeout(e => this.ui.root.classList.add("d-none"), FADE_ANIMATION_DURATION);
 		}
 		isVisible() {
 			return this.ui.root.classList.contains("show") && !this.isDestroyed();

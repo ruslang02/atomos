@@ -1,56 +1,54 @@
 const {
-  BrowserWindow,
-  app,
-  session
+	BrowserWindow,
+	app,
+	session
 } = require('electron');
 const fs = require("fs");
 const path = require("path");
-global.isDebug = (process.argv[2] ? process.argv[2].trim().toLowerCase() == "-d" : false);
+let isDebug = global.isDebug = (process.argv[2] ? process.argv[2].trim().toLowerCase() == "-d" : false);
 global.shutdown = {
-  confirmed: false
+	confirmed: false
 };
 let win;
-//app.disableHardwareAcceleration()
 app.on('ready', function() {
-  /*const {
-	 *		width,
-	 *		height,
-	 *		x,
-	 *		y
-} = require("electron").screen.getPrimaryDisplay().bounds;*/
-  win = new BrowserWindow({
-    //frame: false,
-    //kiosk: true,
-    //resizable: false,
-    //movable: false,
-    //minimizable: false,
-    //maximizable: false,
-    //closable: false,
-    show: true,
-    title: 'AtomOS (Launching...)',
-    //type: "desktop",
-    //x: x,
-    //y: y,
-    //width: width,
-    //height: height,
-    //skipTaskbar: true,
-    backgroundColor: '#bbd8e8',
-    webPreferences: {
-      defaultFontSize: 16
-    }
-  });
-  win.maximize();
-  win.loadFile("front/desktop.html");
-  win.toggleDevTools();
-  global.desktopID = win.webContents.id;
-  win.on("close", e => {
-    if (!global.shutdown) e.preventDefault();
-  });
+	const {
+		width,
+		height,
+		x,
+		y
+	} = require("electron").screen.getPrimaryDisplay().bounds;
+
+	win = new BrowserWindow({
+		frame: isDebug,
+		resizable: isDebug,
+		movable: isDebug,
+		minimizable: isDebug,
+		maximizable: isDebug,
+		closable: isDebug,
+		show: true,
+		title: 'AtomOS (Launching...)',
+		x: isDebug ? 100 : x,
+		y: isDebug ? 100 : y,
+		width: isDebug ? 1280 : width,
+		height: isDebug ? 720 : width,
+		backgroundColor: '#000000',
+		webPreferences: {
+			defaultFontSize: 16,
+			nodeIntegrationInWorker: true,
+			experimentalFeatures: true
+		}
+	});
+	win.maximize();
+	win.loadFile("front/desktop.html");
+	if(isDebug) win.toggleDevTools(); else win.setMenu(null);
+	win.on("close", e => {
+		if (!global.shutdown) e.preventDefault();
+	});
 	win.webContents.on('devtools-opened', () => {
-    win.webContents.addWorkSpace(__dirname)
-  })
-  win.webContents.on('will-navigate', ev => {
-    ev.preventDefault()
-  });
-  //win.setSize(width, height);
+		win.webContents.addWorkSpace(__dirname)
+	})
+	win.webContents.on('will-navigate', ev => {
+		ev.preventDefault()
+	});
+	if(!isDebug) win.setSize(width, height);
 });

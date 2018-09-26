@@ -39,7 +39,7 @@
 				$("section[data-location=\"Control Center / Taskbar\"] .dropdown-item").on("contextmenu", function (e) {
 					e.preventDefault();
 					let that = this;
-					Menu.buildFromTemplate([{
+					Menu.buildFromTemplate(win, [{
 						label: "Remove",
 						click() {
 							$(that).remove();
@@ -77,7 +77,7 @@
 				$(this).addClass("active");
 			})
 		});
-	
+
 </script>
 
 <div class="modal fade" id="WidgetModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"

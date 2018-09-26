@@ -2,7 +2,7 @@
   "title": "Control Center",
   "name": "Control Center",
   "description": "Modify your system whatever you like",
-  "icon": "$APP_ROOT/logo.png",
+  "icon": "logo.png",
   "height": 545,
   "width": 600,
   "minHeight": 400,

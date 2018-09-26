@@ -5,7 +5,7 @@
 	"type": "app",
 	"version": "1.0.0",
 	"description": "Enjoy the videos you love, upload original content, and share it all with the world",
-	"icon": "$APP_ROOT/logo.png",
+	"icon": "logo.png",
 	"width": 700,
 	"height": 650,
 	"minHeight": 500,

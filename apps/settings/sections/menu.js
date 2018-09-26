@@ -2,14 +2,13 @@ setTitle("Settings");
 
 function newItem(title, descr, icon, color, onclick) {
 	let elem = document.createElement("button");
-	elem.className = "btn-block btn btn-white d-flex p-2 align-items-center m-0 rounded-0 flex-shrink-0";
+	elem.className = "btn-block btn btn-white d-flex p-2 align-items-stretch m-0 rounded-0 flex-shrink-0";
 	elem.icon = document.createElement("icon");
-	elem.icon.className = "rounded-circle text-white d-flex mdi mdi-18px mdi-" + icon + " p-2 lh-18 flex-shrink-0 ml-1 mr-2";
+	elem.icon.className = "rounded-circle text-white d-flex mdi mdi-21px mdi-" + icon + " p-2 lh-21 flex-shrink-0 ml-1 mr-2";
 	elem.icon.style.backgroundColor = color;
 	elem.textContainer = document.createElement("div");
-	elem.textContainer.className = "d-flex flex-column flex-grow-1 text-left align-items-start ml-1";
+	elem.textContainer.className = "d-flex flex-column flex-grow-1 text-left justify-content-around ml-1 lh-r1";
 	elem.header = document.createElement("header");
-	elem.header.className = "lh-18";
 	elem.header.innerText = title;
 	elem.footer = document.createElement("footer");
 	elem.footer.className = "small text-muted";

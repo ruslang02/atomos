@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const registry = new Registry("system");
-if(!registry.get().autostart) 
+if(!registry.get().autostart)
 	registry.set(Object.assign({
 		autostart: []
 	}, registry.get()));
@@ -34,10 +34,11 @@ newButton.onclick = e => {
 		if(button === "Create") {
 			let oldReg = registry.get();
 			const fields = document.querySelectorAll("message-box input");
-			if(fs.existsSync(fields[1].value)) shell.showMessageBox({
+			console.log(fields)
+			if(!fs.existsSync(fields[1].value)) shell.showMessageBox({
 				type: "error",
 				message: "Script does not exist."
-			}).then(newButton.click); else {
+			}).then(e => newButton.click()); else {
 				oldReg.autostart.push({
 					name: fields[0].value,
 					src: fields[1].value

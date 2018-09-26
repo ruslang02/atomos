@@ -4,13 +4,23 @@ let saveState, cropper, file;
 let toBuffer = require('blob-to-buffer');
 let guides = true;
 let background = true;
-let script = document.createElement("script");
-script.src = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.js");
-script.onload = initCropper;
 let css = document.createElement("link");
 css.href = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.css");
 css.rel = "stylesheet"
-root.append(script, css);
+let script = document.createElement("script");
+script.src = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.js");
+script.onload = e => {
+if (win.arguments.file) loadFile(win.arguments.file);
+};
+let styles = document.createElement("style");
+styles.innerHTML = `
+window[id='${win.id}'] .cropper-container {
+  flex-grow: 2 !important;
+  height: auto !important;
+  width: 100% !important;
+}
+`
+root.append(script, css, styles);
 
 let appButton = document.createElement("button");
 appButton.className = "btn btn-outline-primary d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-brush border-0 rounded";
@@ -22,7 +32,7 @@ appButton.addEventListener("click", e => {
     y: appButton.offsetTop + appButton.offsetHeight + pos[1]
   });
 });
-appButton.menu = new Menu(
+appButton.menu = new Menu(win,
   [{
     label: "New Window",
     icon: "new-box",
@@ -186,7 +196,7 @@ function loadFile(path) {
   saveState = "";
   file = path;
   win.setTitle(require("path").basename(file) + " - Brush");
-  cropper.destroy();
+  if(cropper) cropper.destroy();
   image.src = path;
   initCropper();
 }
@@ -215,14 +225,4 @@ function initCropper() {
     }
   });
 }
-if (win.arguments.path) loadFile(win.arguments.path);
-let styles = document.createElement("style");
-styles.innerHTML = `
-window[id='${win.id}'] .cropper-container {
-  flex-grow: 2 !important;
-  height: auto !important;
-  width: 100% !important;
-}
-`
-root.appendChild(styles);
 win.show();

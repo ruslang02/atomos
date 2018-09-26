@@ -21,7 +21,7 @@ let preferences = new Proxy(registry.get(), {
 				$("datalist").append("<option>" + item + "</option>");
 			});
 		}
-		
+
 		t[p] = v;
 		registry.set(preferences)
 		return true;
@@ -76,7 +76,7 @@ nav.menu.addEventListener("click", e => {
 		y: nav.menu.offsetTop + nav.menu.offsetHeight + pos[1]
 	});
 });
-nav.menu.menu = new Menu([{
+nav.menu.menu = new Menu(win, [{
 	label: "Home",
 	icon: "home-outline",
 	visible: false,
@@ -104,7 +104,7 @@ nav.menu.menu = new Menu([{
 	icon: "fullscreen",
 	click() {
 		win.setFullScreen(!win.isFullScreen());
-	} 
+	}
 }, {
 	label: "Toggle Night mode",
 	icon: "eye",
@@ -139,7 +139,7 @@ root.append(nav, tabCollection, urlTooltip);
 setImmediate(e => newTab(win.arguments.file || win.arguments.url))
 win.show();
 
-let tabMenu = new Menu([{
+let tabMenu = new Menu(win, [{
 	label: "Refresh",
 	icon: "refresh",
 	accelerator: "F5",
@@ -209,7 +209,7 @@ function newTab(url = "https://www.startpage.com") {
 			} else tab.update();
 		});
 		tab.webview.addEventListener("load-commit", e => {
-			if(!preferences.saveHistory) 
+			if(!preferences.saveHistory)
 				return;
 			let _this = tab.webview;
 			if (!_this.getURL().startsWith("about:") && !_this.getURL().startsWith("proton:") && e.isMainFrame) {
@@ -221,7 +221,7 @@ function newTab(url = "https://www.startpage.com") {
 			}
 		});
 	}
-	tab.initEvents();	
+	tab.initEvents();
 	address.focus();
 	tabs.active = tab;
 	tab.close = function() {
@@ -232,7 +232,7 @@ function newTab(url = "https://www.startpage.com") {
 		setTimeout(e => tab.remove(), FADE_ANIMATION_DURATION);
 		tab.webview.remove();
 		tabs.active.activate();
-			
+
 		}
 	}
 	tab.activate = function() {
@@ -260,20 +260,20 @@ function newTab(url = "https://www.startpage.com") {
 		tab.classList.remove("bg-white", "shadow-lg");
 		tab.closeButton.classList.replace("d-flex", "d-none");
 		tab.webview.classList.replace("d-inline-flex", "d-none");
-		
+
 	}
 	tab.navigate = function(url) {
 		if (url.startsWith("http:") || url.startsWith("ftp:") || url.startsWith(
 				"https:") || url.startsWith("//") || url.startsWith("file:")) 1 + 1;
-		else if (url.startsWith("/")) 
+		else if (url.startsWith("/"))
 			url = "file://" + url;
-		else if (url.indexOf(".") === -1) 
+		else if (url.indexOf(".") === -1)
 			url = "http://google.com/search?q=" + url;
-		else 
+		else
 			url = "http://" + url;
-		tab.webview.src = url;			
+		tab.webview.src = url;
 	}
-	
+
 	return tab.webview;
 }
 let css = document.createElement("style");

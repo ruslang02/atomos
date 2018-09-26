@@ -9,15 +9,15 @@ window.TaskManager = class TaskManager {
 		this.task.className = "p-0 border-0 bg-transparent mr-3 position-relative active fade show";
 		this.task.setAttribute("data-id", this.window.id);
 		this.taskIcon = new Image(48, 48);
-		this.setIcon(this.window.options.icon);
+		this.setIcon(this.window.options.icon || noAppIcon);
 		this.task.appendChild(this.taskIcon);
 		this.window.on("title-updated", title => this.setTitle(title));
-		this.window.on("icon-updated", icon => this.setIcon(icon));
+		this.window.on("icon-updated", icon => this.setIcon(icon || noAppIcon));
 		root.appendChild(this.task);
 		new BSN.Tooltip(this.task, {
 			delay: 250
 		});
-		this.menu = new Menu([{
+		this.menu = new Menu(null, [{
 			label: "Maximize",
 			icon: "window-maximize",
 			click: e => this.window.maximize()
@@ -63,13 +63,23 @@ window.TaskManager = class TaskManager {
 		this.task.remove();
 	}
 	setTitle(title = this.window.ui.title.innerText) {
-		let markup = "<div style='max-width: 250px; max-height: 200px; margin: -0.25rem -0.5rem' class='text-left rounded scrollable-0'><img class='w-100 mb-1' src='" + this.window.thumbnail + "'/><div class='mb-1 ml-1'>" + title + 
-			`</div></div>`;
+		let thumbnail = Registry.get("system.enableThumbnails");
+		let markup = "";
+		if(thumbnail === undefined) Registry.set("system.enableThumbnails", false);
+		if(thumbnail) {
+		markup = `
+		<div style='max-width: 250px; max-height: 200px; margin: -0.25rem -0.5rem' class='text-left rounded scrollable-0'>
+			<img class='w-100 mb-1' src='${this.window.thumbnail}'/>
+			<div class='mb-1 ml-1 text-truncate'>${title}</div>
+		</div>`;
+	} else {
+		markup = title;
+	}
 		this.task.dataset.originalTitle = markup;
 	}
 	setIcon(iconURL) {
 		if(iconURL)
-			this.taskIcon.src = iconURL.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", this.window.app));
+			this.taskIcon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
 	}
 	focus() {
 		this.task.classList.add("active");
@@ -78,3 +88,4 @@ window.TaskManager = class TaskManager {
 		this.task.classList.remove("active");
 	}
 }
+const noAppIcon = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALBSURBVHhe7ZDBiRZhFAT/SAzDBDYVgzEhQ/ImLIJ4VT5oGLbovQw0DHQX1O1BP+o1xhhjjDHGGGOMMcZnfPvx99/8XGXK4UbnpTLlcKPzUplyuNF5qUw53OgT/fL9p/Xu3Z+3r1beKVMODj5VF/V4987FP/JOmXJw8Km6qMe7dy7+kXfKlIODT9VFPd69c/GPvFOmHBx8qi7q8e6di3/knTLl4OBTdVGPd+9c/CPvlCkHB+dHlSmHG52XypTDjc5LZcrhRuelMuXg4K/339WyhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysFB91ST7KFMOTjonmqSPZQpBwfdU02yhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysFB91ST7KFMOTjonmqSPZQpBwfdU02yhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysFB91ST7KFMOTjonmqSPZQpBwfdU02yhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysFB91ST7KFMOTjonmqSPZQpBwfdU02yhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysFB91ST7KFMOTjonmqSPZQpBwfdU02yhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysFB91ST7KFMOTjonmqSPZQpBwfdU02yhzLl4KB7qkn2UKYcHHRPNckeypSDg+6pJtlDmXJw0D3VJHsoUw4OuqeaZA9lysHB+VFlyuFG56Uy5XCj81KZcrjRealMY4wxxhhjjDHGGGOA1+s/pqSbQlhFbH0AAAAASUVORK5CYII=`;

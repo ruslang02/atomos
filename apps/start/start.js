@@ -3,7 +3,7 @@ fs = require("fs").promises;
 
 let button = document.createElement("button");
 let icon = new Image(48, 48);
-let menu = Menu.buildFromTemplate([{
+let menu = Menu.buildFromTemplate(null, [{
 	label: "Toggle Developer Tools",
 	click: e => {
 		require("electron").remote.getCurrentWindow().toggleDevTools();
@@ -21,7 +21,7 @@ let menu = Menu.buildFromTemplate([{
 	}
 }]);
 button.className = "btn p-0 m-0 border-0 bg-transparent rounded-circle mr-3";
-icon.src = iconDB.retrieveIconURL("Slide Up");
+icon.src = path.join(__dirname, "images/Slide Up.png");
 button.appendChild(icon);
 button.title = "All Apps (<i class='mdi mdi-atom'></i>)";
 button.addEventListener("click", e => {

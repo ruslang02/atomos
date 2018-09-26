@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const fsp = fs.promises;
 let _this = this;
+let prevNotification;
 setImmediate(() => {
 	_this.xml2js = require('xml2js');
 	_this.js2xml = require('jstoxml');
@@ -13,6 +14,9 @@ const win = AppWindow.fromId(WINDOW_ID);
 win.on('second-instance', (e, args) => {
 	load(args.file);
 });
+win.on('close', e => {
+	prevNotification.dismiss();
+})
 let appButton = document.createElement("button");
 appButton.className = "btn btn-outline-danger d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-boombox border-0 rounded";
 appButton.addEventListener("click", e => {
@@ -23,14 +27,14 @@ appButton.addEventListener("click", e => {
 		y: appButton.offsetTop + appButton.offsetHeight + pos[1]
 	});
 });
-appButton.menu = new Menu([{
+appButton.menu = new Menu(win, [{
 	label: "Open...",
 	icon: "folder-outline",
 	accelerator: "Ctrl+O",
 	click() {
 		shell.selectFile(shell.ACTION_OPEN, {
 			defaultPath: ofdDefaultPath,
-				buttonLabel: "Play"
+			buttonLabel: "Play"
 		}).then(file => {
 			if (!file.url)
 				ofdDefaultPath = path.dirname(file);
@@ -51,15 +55,15 @@ appButton.menu = new Menu([{
 		let trackList = [];
 		let file = await shell.selectFile(shell.ACTION_SAVE, {
 			defaultPath: ofdDefaultPath,
-				buttonLabel: "Export"
+			buttonLabel: "Export"
 		});
 		for (const track of playlist.childNodes) {
 			trackList.push({
 				track: {
 					location: new URL((!file.location.startsWith("http") ? "file://" : "") +
-					escape(file.location)).href,
-										 title: escape(track.innerText),
-										 creator: escape(track.creator)
+						escape(file.location)).href,
+					title: escape(track.innerText),
+					creator: escape(track.creator)
 				}
 			});
 		}
@@ -77,17 +81,17 @@ appButton.menu = new Menu([{
 			indent: "	"
 		});
 		await fsp.writeFile(url, playlist, 'utf-8');
-		new Notification({
+		new Notification(win, {
 			title: "Playlist successfully saved",
 			app: "Boombox",
 			color: "var(--danger)",
-										 icon: "boombox",
-									 actions: [{
-										 label: "Show in folder",
-									 click() {
-										 shell.showItemInFolder(url);
-									 }
-									 }]
+			icon: "boombox",
+			actions: [{
+				label: "Show in folder",
+				click() {
+					shell.showItemInFolder(url);
+				}
+			}]
 		});
 	}
 }]);
@@ -139,8 +143,8 @@ controls.play.className = "btn btn-sm btn-danger mdi mdi-pause mdi-24px lh-24 d-
 controls.play.style.zIndex = "5";
 controls.play.addEventListener("click", e => {
 	if (!playlist.active) controls.next.click();
-															 else if (player.paused) player.play();
-															 else player.pause();
+	else if (player.paused) player.play();
+	else player.pause();
 });
 controls.append(controls.previous, controls.play, controls.next);
 current.append(current.audio, current.artist);
@@ -173,75 +177,62 @@ function generate(file) {
 	track.artist = file.artist || "No artist";
 	track.innerText = file.title || "Unknown title";
 	track.onclick = e => {
-		if(playlist.active) playlist.active.classList.remove("active");
+		if (playlist.active) playlist.active.classList.remove("active");
 		track.classList.add("active");
 		playlist.active = track;
-		let file = decodeURIComponent(track.location);
-		player.src = file;
-		player.play();
-		if (file.startsWith("http:") || file.startsWith("https:")) {
-			current.artist.innerText = this.artist;
-			current.audio.innerText = this.innerText;
-			new Notification({
-				title: current.audio.innerText,
-				message: current.artist.innerText + " playing",
-				app: "Boombox",
-				icon: "boombox",
-				color: "var(--danger)",
-											 actions: [{
-												 label: "Play",
-										click() {
-											if (player.paused) player.play();
-											 else player.pause();
-										}
-											 }, {
-												 label: "Previous track",
-										click() {
-											controls.previous.click();
-										}
-											 }, {
-												 label: "Next track",
-										click() {
-											controls.next.click();
-										}
-											 }]
-			});
-		} else
-			renderID3(fs.createReadStream(file), function(err, tags) {
-				current.artist.innerText = tags.artist[0] || playlist.active.artist || "No artist";
-				current.audio.innerText = tags.title || playlist.active.innerText;
-				
-				new Notification({
-					title: current.audio.innerText,
-					message: current.artist.innerText + " playing",
-					app: "Boombox",
-					icon: "boombox",
-					color: "var(--danger)",
-												 actions: [{
-													 label: "Play",
-										 click() {
-											 if (player.paused) player.play();
-												 else player.pause();
-										 }
-												 }, {
-													 label: "Previous track",
-										 click() {
-											 controls.previous.click();
-										 }
-												 }, {
-													 label: "Next track",
-										 click() {
-											 controls.next.click();
-										 }
-												 }]
-				});
-				if (tags.picture[0])
-					cover.image.src = "data:image/" + tags.picture[0].format +
-					";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
-				else cover.image.src = "";
-			});
+		loadFromPlaylist();
 	}
 	playlist.append(track);
+}
+
+async function loadFromPlaylist() {
+	let track = playlist.active;
+	let file = decodeURIComponent(track.location);
+	player.src = file;
+	player.play();
+	if (file.startsWith("http:") || file.startsWith("https:")) {
+		current.artist.innerText = this.artist;
+		current.audio.innerText = this.innerText;
+	} else {
+		let tags = await new Promise((resolve, reject) => renderID3(fs.createReadStream(file), (e, res) => {
+			if (e) reject(e);
+			else resolve(res);
+		}));
+		current.artist.innerText = tags.artist[0] || playlist.active.artist || "No artist";
+		current.audio.innerText = tags.title || playlist.active.innerText;
+
+		if (tags.picture[0])
+			cover.image.src = "data:image/" + tags.picture[0].format +
+			";base64," + btoa(String.fromCharCode.apply(null, tags.picture[0].data));
+		else cover.image.src = "";
+	}
+
+	if (prevNotification) prevNotification.dismiss();
+	prevNotification = new Notification(win, {
+		title: current.audio.innerText,
+		message: current.artist.innerText + " playing",
+		app: "Boombox",
+		icon: "boombox",
+		dismissable: false,
+		color: "var(--danger)",
+		actions: [{
+			label: "Play",
+			click() {
+				if (player.paused) player.play();
+				else player.pause();
+			}
+		}, {
+			label: "Previous track",
+			click() {
+				controls.previous.click();
+			}
+		}, {
+			label: "Next track",
+			click() {
+				controls.next.click();
+			}
+		}]
+	});
 }
 
 async function load(file) {
@@ -264,7 +255,7 @@ async function load(file) {
 					generate({
 						url: track.location[0],
 						artist: unescape(track.creator),
-									 title: unescape(track.title)
+						title: unescape(track.title)
 					});
 				});
 				controls.next.click();
@@ -285,27 +276,22 @@ async function load(file) {
 }
 
 
-if (!shell.isDefaultApp("music") && new Registry("boombox").get().isAsked === undefined)
-	shell.setAsDefaultApp("music").then(result => {
-		new Registry("boombox").set({
-			isAsked: true
-		});
-	})
-	
-	let styling = document.createElement("style");
-styling.type = 'text/css'
+if (!shell.isDefaultApp("music") && Registry.get("boombox.firstRun") === undefined)
+	shell.setAsDefaultApp("music");
+Registry.set("boombox.firstRun", true);
+
+let styling = document.createElement("style");
 styling.innerHTML = `
 window[id='${win.id}'] progress {
 	height: 4px;
 	-webkit-appearance: none;
 }
-
 window[id='${win.id}'] progress[value]::-webkit-progress-value {
 	background: var(--danger);
 }
 window[id='${win.id}'] .dropdown-item.active,
 window[id='${win.id}'] .dropdown-item:active {
-	background-color: var(--danger);
+	background-color: var(--danger) !important;
 }
 `;
 root.append(styling);

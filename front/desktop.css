@@ -6,21 +6,29 @@ button, button:focus, button:hover:focus, button:active:focus {
   user-select: none !important;
 }
 
+.us {
+  user-select: all !important;
+}
+
 :root, body {
   --font-family-sans-serif: Source Sans Pro, sans-serif;
   font-family: Source Sans Pro, sans-serif;
   overflow: hidden;
+	transition: background-image 2s linear;
 }
 
 .lh-18 {
   line-height: 18px;
 }
+
 .lh-21 {
   line-height: 21px;
 }
+
 .mdi-21px.mdi-set, .mdi-21px.mdi {
-    font-size: 21px;
+  font-size: 21px;
 }
+
 .lh-24 {
   line-height: 24px;
 }
@@ -32,11 +40,37 @@ button, button:focus, button:hover:focus, button:active:focus {
 .lh-48 {
   line-height: 48px;
 }
+
 .text-decoration-none {
-	text-decoration: none !important;
+  text-decoration: none !important;
 }
+
 .lh-r1 {
   line-height: 1rem;
+}
+
+.very-rounded {
+  border-radius: .5rem !important;
+}
+
+.very-rounded-bottom {
+  border-radius: 0 0 .5rem .5rem !important;
+}
+
+.very-rounded-top {
+  border-radius: .5rem .5rem 0 0 !important;
+}
+
+.very-rounded-left {
+  border-radius: .5rem 0 0 .5rem !important;
+}
+
+.very-rounded-right {
+  border-radius: 0 .5rem .5rem 0 !important;
+}
+
+.rounded-max {
+  border-radius: 10000px !important
 }
 
 .scrollable {
@@ -92,7 +126,6 @@ button, button:focus, button:hover:focus, button:active:focus {
 }
 
 /* Handle */
-
 ::-webkit-scrollbar-thumb {
   background: #ddd;
 }
@@ -113,7 +146,6 @@ taskbar {
 /*taskbar:hover {
 	transform:translateY(0px);
 }*/
-
 taskbar.maximized {
   box-shadow: inset 0 -4px 0 0 black;
   background: var(--light);
@@ -168,13 +200,13 @@ window.maximized.bg-semiwhite {
 }
 
 notification.type-image notification-message::after {
-	content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 100%;
-		background: linear-gradient(transparent, var(--light));
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(transparent, var(--light));
 }
 
 .fly {
@@ -203,8 +235,9 @@ notification.type-image notification-message::after {
   pointer-events: none;
   transition-delay: .5s;
 }
+
 .tooltip * {
-	pointer-events:initial;
+  pointer-events: initial;
 }
 
 .tooltip .arrow {
@@ -217,6 +250,7 @@ notification.type-image notification-message::after {
     visibility: hidden;
     opacity: 0;
   }
+
   100% {
     opacity: 1;
     transform: translateY(0px);
@@ -229,6 +263,7 @@ notification.type-image notification-message::after {
     visibility: hidden;
     opacity: 0;
   }
+
   0% {
     opacity: 1;
     transform: translateY(0px);
@@ -241,6 +276,7 @@ notification.type-image notification-message::after {
     visibility: hidden;
     opacity: 0;
   }
+
   100% {
     opacity: 1;
     transform: translateX(0px);
@@ -253,6 +289,7 @@ notification.type-image notification-message::after {
     visibility: hidden;
     opacity: 0;
   }
+
   0% {
     opacity: 1;
     transform: translateX(0px);
@@ -272,7 +309,7 @@ notification.type-image notification-message::after {
 }
 
 .btn-white:focus, .btn-white.focus {
-  box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(74, 144, 216, 0.18);
 }
 
 .btn-white.disabled, .btn-white:disabled {
@@ -288,5 +325,14 @@ notification.type-image notification-message::after {
 }
 
 .btn-white:not(:disabled):not(.disabled):active:focus, .btn-white:not(:disabled):not(.disabled).active:focus, .show>.btn-white.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(74, 144, 216, 0.18);
+}
+
+.list-group-item.custom-checkbox .custom-control-label::before,
+.list-group-item.custom-checkbox .custom-control-label::after {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+	left:auto;
 }

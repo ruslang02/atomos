@@ -1,9 +1,7 @@
 const fs = require('fs').promises, path = require("path");
-let registry = new Registry("taskbar");
-if(!Object.getOwnPropertyNames(registry.get()).length)
-	registry.set({
-		items: ["start", "tasker", "tray"]
-	});
+new Registry("taskbar");
+if(!Registry.get("taskbar.items"))
+	Registry.set('taskbar.items', ["start", "tasker", "tray"]);
 
 render();
 
@@ -16,11 +14,11 @@ function render() {
 }
 
 async function loadPlugins() {
-	let items = registry.get().items;
+	let items = Registry.get("taskbar.items");
 	for(const id of items.values()) {
 		let file = await fs.readFile(path.join(osRoot, "apps", id, "package.json"), "utf-8");
 		let pkg = JSON.parse(file)
-		if(pkg.type !== "bar-plugin") 
+		if(pkg.type !== "bar-plugin")
 			return;
 		try {
 			let script = await fs.readFile(path.join(osRoot, "apps", id, pkg.main), "utf-8");

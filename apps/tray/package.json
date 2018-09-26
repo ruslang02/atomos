@@ -5,7 +5,7 @@
   "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
   "license": "GPL-3.0",
   "homepage": "https://apps.atomos.org.uk/package/tray",
-  "icon": "$APP_ROOT/logo.png",
+  "icon": "logo.png",
   "main": "tray.js",
 	"type": "bar-plugin",
 	"removable": "false",

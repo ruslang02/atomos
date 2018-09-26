@@ -1,0 +1,16 @@
+{
+  "productName": "Wallpaper Engine for the \"α clock\" by Sony",
+  "name": "@atomos/alphaclock",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "version": "1.0.0",
+  "homepage": "https://apps.atomos.org.uk/package/alphaclock",
+  "icon": "logo.png",
+  "main": "aclock.js",
+  "description": "Code Editor based on Ace",
+  "dependencies": {
+    "atomos": "~0.7.0"
+  },
+  "type": "worker",
+	"subtype": "wallpaper"
+}

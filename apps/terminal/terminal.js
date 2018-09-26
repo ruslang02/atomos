@@ -25,7 +25,7 @@ let commandContainer = document.createElement("div");
 commandContainer.className = "bg-dark text-white border-top border-secondary flex-shrink-0 d-flex pl-2 py-1 align-items-center"
 commandContainer.append(cwd, commandArrow, command);
 let dataset = document.createElement("datalist");
-dataset.id = '_' + Math.random().toString(36).substr(2, 9);
+dataset.id = shell.uniqueId();
 command.setAttribute("list", dataset.id);
 root.append(commands, commandContainer, dataset);
 win.show();

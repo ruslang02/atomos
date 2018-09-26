@@ -12,7 +12,7 @@ App.className = "d-inline-flex p-3 bg-white";
 let LeftPanel = document.createElement("section");
 
 let Icon = new Image(64, 64);
-Icon.src = iconDB.retrieveIconURL("AtomOS");
+Icon.src = path.join(__dirname, "AtomOS.png");
 Icon.className = "mr-3";
 
 let RightPanel = document.createElement("main");
@@ -30,5 +30,5 @@ CloseButton.addEventListener("click", e => win.close());
 LeftPanel.appendChild(Icon);
 RightPanel.appendChild(CloseButton);
 App.append(LeftPanel, RightPanel);
-win.ui.body.appendChild(App);
+root.appendChild(App);
 win.show();

@@ -5,7 +5,7 @@
   "type": "app",
   "version": "1.0.0",
   "description": "Make a note or edit a file easily",
-  "icon": "$APP_ROOT/logo.png",
+  "icon": "logo.png",
   "width": 550,
   "height": 450,
   "minHeight": 400,

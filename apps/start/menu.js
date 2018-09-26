@@ -99,7 +99,7 @@ async function renderApps() {
       let config = JSON.parse(await fs.readFile(path.join(appPath, item, "package.json")));
       if (config.hidden || config.type !== "app")
         continue;
-      appIcon.src = config.icon.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", item));
+      appIcon.src = path.join(osRoot, "apps", item, config.icon);
       allApps.push({
         name: config.productName || config.name,
         icon: appIcon.src,
@@ -214,7 +214,7 @@ function renderNotFound() {
   root.NotFound.className = "card shadow justify-content-center align-items-center flex-grow-1";
   root.NotFound.style.display = "none";
   let icon = new Image(64, 64);
-  icon.src = iconDB.retrieveIconURL("Nothing Found");
+  icon.src = path.join(__dirname, "images/Nothing Found.png");
   let title = document.createElement("h5");
   title.className = "font-weight-normal";
   title.innerText = '"" was not found';
@@ -243,18 +243,17 @@ async function search() {
   let q = root.Search.Input.value.toLowerCase().trim();
   root.NotFound.querySelector("h5").innerText = `"${q}" was not found`;
   let res = [];
-  console.log(q)
-  if (q == "") {
+  if (!q.trim()) {
     showSection(root.Apps);
     return;
   }
   root.SearchSection.innerHTML = "";
   allActions.forEach((item, i) => {
-    if (item.name.trim().toLowerCase().includes(q))
+    if (item.name.search(new RegExp(q, "gi")) !== -1)
       res.push(item);
   });
   allApps.forEach((app, i) => {
-    if (app.name.trim().toLowerCase().includes(q))
+    if (app.name.search(new RegExp(q, "gi")) !== -1)
       res.push(app);
   });
   if (!res.length)
@@ -263,7 +262,7 @@ async function search() {
     let items = [];
 		for(const i of res.keys()) {
 			const item = res[i];
-			
+
       let elem = document.createElement("button");
       elem.icon = (item.main ? document.createElement("icon") : new Image(24, 24));
       elem.header = document.createElement("div");
@@ -286,10 +285,10 @@ async function search() {
       elem.addEventListener("mouseleave", function() {
         elem.additional.classList.remove("show")
       });
-      if (item.main) 
+      if (item.main)
 				elem.icon.className = "mdi mdi-24px lh-24 d-flex mdi-" + item.icon;
       else elem.icon.src = item.icon;
-      elem.header.innerText = item.name;
+      elem.header.innerHTML = item.name;
       elem.append(elem.icon, elem.header, elem.additional);
       items.push(elem);
 		}

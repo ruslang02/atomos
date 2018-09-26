@@ -11,7 +11,7 @@
   "dependencies": {
     "atomos": "~0.7.0"
   },
-  "icon": "$APP_ROOT/logo.png",
+  "icon": "logo.png",
   "width": 550,
   "height": 350,
   "minWidth": 450,

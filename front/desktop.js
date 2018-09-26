@@ -4,46 +4,64 @@ let jui = document.createElement("script");
 jui.src = "../node_modules/jquery-ui-dist/jquery-ui.min.js";
 document.body.append(jui);*/
 let Elements = {};
-let shutdown = false
+let shutdown = false;
+let autoStartWorkers = [];
 const FADE_ANIMATION_DURATION = 150;
 const FLY_ANIMATION_DURATION = 200;
 const osRoot = require("electron").remote.app.getAppPath();
 const isDebug = require("electron").remote.getGlobal("isDebug");
 
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-
 (async function() {
 	const {
 		remote
 	} = require("electron");
-	
 	const {
 		app
 	} = remote;
-	const fs = require("fs").promises;
+	const fso = require("fs");
+	const fs = fso.promises;
 	const path = require("path");
 	const taskbarPath = path.join(app.getAppPath(), "apps/bar");
-	await LoadCSS();
+	LoadCSS();
 	for(const api of await fs.readdir(__dirname + "/api")) {
-		new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
+		await new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
 	}
+		for(const worker of (Registry.get("system.autostart") || [])) {
+			let work = new Worker(worker.src);
+			autoStartWorkers.push({
+				name: worker.name,
+				src: worker.src,
+				worker: work
+			})
+		}
+
+		new AsyncFunction('root', '__dirname', await fs.readFile(taskbarPath + "/bar.js", "utf-8"))
+		(document.body, taskbarPath);
+	let wFile = path.join(process.env.HOME, ".config", "wallpaper.jpg");
+	let time;
 	renderWall();
-	new AsyncFunction('root', '__dirname', await fs.readFile(taskbarPath + "/bar.js", "utf-8"))
-	(document.body, taskbarPath);
-	document.title = "AtomOS (Render complete)";
-	
+	fso.watch(wFile, e => {
+		if(!time) time = setTimeout(renderWall, 1000);
+	});
+
 	function renderWall() {
+		clearTimeout(time);
 		let registry = new Registry("system");
-		if(!Object.getOwnPropertyNames(registry.get().wallpaper || {}).length)
-			registry.set(Object.assign(registry.get(), {
+		let settings = registry.get();
+		if(!fso.existsSync(wFile)) {
+			console.log(wFile);
+			fso.copyFileSync(path.join(osRoot, "resources", "wallpaper.jpg"), wFile);
+		}
+		if(!Object.getOwnPropertyNames(settings.wallpaper || {}).length)
+			registry.set(Object.assign(settings, {
 				wallpaper: {
-					path: path.join(app.getAppPath(), "wallpaper.jpg"),
 																 positioning: "scalencrop",
 															color: 'black'
 				}
 			}));
-			let wpSettings = registry.get().wallpaper;
-			let wpURL = "url('" + new URL("file://" + wpSettings.path).href + "')";
+			let wpSettings = settings.wallpaper;
+			let wpURL = "url('" + new URL("file://" + wFile).href + "?" + shell.uniqueId() + "')";
 			switch(wpSettings.positioning) {
 				case "scale":
 					document.body.style.background = `${wpSettings.color} ${wpURL} 100% 100% no-repeat`;
@@ -62,7 +80,7 @@ const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 					break;
 			}
 	}
-	
+
 	function LoadCSS() {
 		document.title = "AtomOS (Rendering...)";
 		let cssList = [
@@ -84,4 +102,4 @@ const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 		});
 		return Promise.all(promises);
 	}
-})()
+})().then(e => document.title = "AtomOS (Render complete)");

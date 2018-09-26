@@ -19,18 +19,18 @@ list.className = "list-group flex-shrink-0 rounded-0";
 list.default = newSmallListItem({
 	color: "var(--primary)",
 	icon: "open-in-app",
-	title: "Default applications"
+	label: "Default applications"
 });
 list.assocs = newSmallListItem({
 	color: "var(--success)",
 	icon: "link",
-	title: "File associations"
+	label: "File associations"
 });
 list.autostart = newSmallListItem({
 	color: "var(--warning)",
 	icon: "auto-fix",
-	title: "Auto-start management",
-	onclick: e => openSection("apps-autostart")
+	label: "Auto-start management",
+	click() {openSection("apps-autostart")}
 });
 list.append(list.autostart);
 main.append(list);
@@ -47,16 +47,20 @@ async function listApps() {
 	osinfo.osname.innerText = apps.length + " apps installed";
 	for(const item of apps) {
     try {
-      let package = JSON.parse(await fs.readFile(path.join(osRoot, "apps", item, "package.json")));
+      let pkg = JSON.parse(await fs.readFile(path.join(osRoot, "apps", item, "package.json")));
       let elem = document.createElement("button");
+			elem.onclick = e => {
+				root.currentApp = item;
+				openSection("apps-app");
+			}
       elem.className = "list-group-item fly left show flex-shrink-0 rounded-0 list-group-item-action border-left-0 border-right-0 d-flex align-items-center px-3 py-2"
       elem.icon = new Image(48, 48);
       elem.icon.className = "mr-2";
-      elem.icon.src = package.icon.replace("$SYSTEM_ROOT", osRoot).replace("$APP_ROOT", path.join(osRoot, "apps", item));
+      elem.icon.src = path.join(osRoot, "apps", item, pkg.icon);
       elem.header = document.createElement("header");
-      elem.header.innerText = package.productName || package.name;
+      elem.header.innerText = pkg.productName || pkg.name;
       elem.footer = document.createElement("footer");
-      elem.footer.innerText = package.version;
+      elem.footer.innerText = pkg.version;
       elem.footer.className = "smaller text-muted";
       elem.header.append(elem.footer);
       elem.append(elem.icon, elem.header);

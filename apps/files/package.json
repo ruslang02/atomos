@@ -5,7 +5,7 @@
 	"type": "app",
 	"version": "1.0.0",
 	"description": "Lightweight File Manager",
-	"icon": "$APP_ROOT/logo.png",
+	"icon": "logo.png",
 	"width": 600,
 	"height": 500,
 	"minHeight": 330,

@@ -14,7 +14,7 @@ appButton.addEventListener("click", e => {
 		y: appButton.offsetTop + appButton.offsetHeight + pos[1]
 	});
 });
-appButton.menu = new Menu([{
+appButton.menu = new Menu(win, [{
 	type: "header",
 	label: "Screenshot"
 }, {
@@ -59,7 +59,7 @@ image.style.backgroundPosition = "center center";
 image.style.backgroundSize = "contain";
 image.addEventListener("contextmenu", function() {
 	e.stopPropagation();
-	appButton.menu.popup();	
+	appButton.menu.popup();
 });
 let imageRes;
 let url;
@@ -85,12 +85,12 @@ captureButton.addEventListener("click", e => {
 				let thumbnail = new Image();
 				thumbnail.src = output;
 				thumbnail.className = "mw-100";
-				
+
 				imageRes = result;
 				appButton.menu.getMenuItemById("showInFiles").enabled = true;
 				appButton.menu.getMenuItemById("copyClipboard").enabled = true;
-				
-				new Notification({
+
+				new Notification(win, {
 					title: "Screenshot has been successfully taken",
 					app: "Camcorder",
 					icon: "camera-iris",
@@ -110,7 +110,7 @@ captureButton.addEventListener("click", e => {
 				});
 			} catch(e) {
 				console.error(e);
-				new Notification({
+				new Notification(win, {
 					title: "Screenshot not taken",
 					app: "Camcorder",
 					icon: "camera-iris",
@@ -131,6 +131,6 @@ captureButton.append(captureButton.icon, captureButton.header);
 footer.append(captureButton);
 root.append(image, footer);
 
-if(registry.get().autoCapture || win.arguments.capture) 
+if(registry.get().autoCapture || win.arguments.capture)
 	captureButton.click();
 else win.show();
