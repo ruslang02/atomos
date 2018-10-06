@@ -290,7 +290,7 @@ async function generateMenus() {
 	fileMenu.menu = new Menu(win, [{
 		label: "New Tab",
 		accelerator: "Ctrl+N",
-		click: newTab,
+		click: e => newTab(),
 		icon: "new-box"
 	}, {
 		type: "separator"
@@ -317,7 +317,7 @@ async function generateMenus() {
 		id: "saveAs",
 		click() {
 			shell.selectFile(shell.ACTION_SAVE, {
-				defaultPath: file || ofdPath
+				defaultPath: tabs.active.url || ofdPath
 			}).then(result => {
 				tabs.active.name.innerText = path.basename(result);
 				tabs.active.write(result);
@@ -403,9 +403,6 @@ async function generateMenus() {
 			nav.classList.toggle("d-none", !item.checked)
 			tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up", item.checked);
 		}
-	}, {
-		label: "Configure layouts...",
-		icon: "layers-outline"
 	}]);
 	viewMenu.addEventListener("click", e => {
 		let pos = win.getPosition();

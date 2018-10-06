@@ -9,6 +9,7 @@
 	"minHeight": 530,
 	"frame": false,
 	"transparent": true,
+	"hidden": true,
 	"version": "1.0.3",
 	"dependencies": {
 		"googleapis": "25.0.0",

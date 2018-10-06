@@ -6,6 +6,7 @@ document.body.append(jui);*/
 let Elements = {};
 let shutdown = false;
 let autoStartWorkers = [];
+let isMobile = false;
 const FADE_ANIMATION_DURATION = 150;
 const FLY_ANIMATION_DURATION = 200;
 const osRoot = require("electron").remote.app.getAppPath();

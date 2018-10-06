@@ -7,7 +7,7 @@ button, button:focus, button:hover:focus, button:active:focus {
 }
 
 .us {
-  user-select: all !important;
+  user-select: text !important;
 }
 
 :root, body {
@@ -102,11 +102,11 @@ button, button:focus, button:hover:focus, button:active:focus {
 }
 
 .bg-semiwhite {
-  background: rgba(255, 255, 255, 0.88) !important;
+  /* background: rgba(255, 255, 255, 0.88) !important; */
 }
 
 .bg-semiwhite.shadow {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: var(--light);
 }
 
 .bg-semidark {

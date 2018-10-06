@@ -16,5 +16,6 @@
   "height": 500,
   "minWidth": 550,
 	"minHeight": 300,
+	"hidden": true, 
   "type": "app"
 }

@@ -15,7 +15,7 @@ win.on('second-instance', (e, args) => {
 	load(args.file);
 });
 win.on('close', e => {
-	prevNotification.dismiss();
+	if(prevNotification) prevNotification.dismiss();
 })
 let appButton = document.createElement("button");
 appButton.className = "btn btn-outline-danger d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-boombox border-0 rounded";
@@ -216,7 +216,7 @@ async function loadFromPlaylist() {
 		dismissable: false,
 		color: "var(--danger)",
 		actions: [{
-			label: "Play",
+			label: "Play/Pause",
 			click() {
 				if (player.paused) player.play();
 				else player.pause();

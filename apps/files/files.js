@@ -461,8 +461,11 @@ async function renderAccessSection() {
 }
 
 async function renderDeviceSection() {
-  const files = await fsp.readdir("/dev/disk/by-label");
+	try {
   const byLabel = fs.existsSync("/dev/disk/by-label");
+	let files;
+	if(byLabel)
+  	files = await fsp.readdir("/dev/disk/by-label");
   for (const link of await fsp.readdir("/dev/disk/by-uuid")) {
     let loc = await fsp.readlink("/dev/disk/by-uuid/" + link);
     let device = path.resolve("/dev/disk/by-uuid/", loc);
@@ -528,6 +531,12 @@ async function renderDeviceSection() {
     });
     sidebar.devicesSection.append(item);
   }
+} catch(e) {
+	let noItems = document.createElement("div");
+	noItems.className = "dropdown-item disabled";
+	noItems.innerText = "No external devices";
+	sidebar.devicesSection.append(noItems);
+	}
 }
 
 function renderContainer() {

@@ -74,9 +74,11 @@
 				case "minHeight":
 				case "maxWidth":
 				case "maxHeight":
+					if(isMobile) return;
 					this.ui.root.style[p] = n;
 					break;
 				case 'resizable':
+					if(isMobile) return;
 					if(n) interact(this.ui.root).resizable({
 						edges: {
 							top: true,
@@ -94,6 +96,7 @@
 					}); else interact(this.ui.root).resizable({enabled: false})
 					break;
 				case 'draggable':
+					if(isMobile) return;
 					if(n) interact(this.ui.root).draggable({
 						allowFrom: "[data-draggable]",
 						ignoreFrom: "button:not([data-draggable='true']), input:not([data-draggable='true']), [data-draggable='false']",
@@ -145,11 +148,10 @@
 			this.ui.root = document.createElement("window");
 			this.ui.root.id = this.id;
 			this.ui.root.className = "shadow-sm border scrollable-0 fade card position-absolute bg-semiwhite";
-
 			this.ui.header = document.createElement("window-header");
 			this.ui.header.className = "d-flex align-items-center flex-shrink-0 border-bottom px-2 py-1";
 			this.ui.header.setAttribute("data-draggable", true);
-
+			this.ui.header.addEventListener("dblclick", e => this._toggle());
 			this.ui.title = document.createElement("window-title");
 			this.ui.title.className = "flex-grow-1";
 			this.ui.title.style["user-select"] = "none";
@@ -244,6 +246,7 @@
 			await new AsyncFunction("__dirname", "root", "WINDOW_ID", await fs.readFile(win.file))(path.join(win.file, ".."), win.ui.body, win.id);
 			console.timeEnd("app render")
 			win._initEvents();
+			if(isMobile) win.maximize();
 			win._update("draggable", win.options.draggable);
 			win._update("resizable", win.options.resizable);
 			if(win.options.center) win.center();
@@ -251,6 +254,7 @@
 			win.ready = true;
 			win.emit('ready-to-show');
 			if(win._awaitingShow) win.show();
+			setInterval(e => win.updateThumbnail(), 500)
 			console.timeEnd("full render");
 			return win;
 		}
@@ -307,7 +311,6 @@
 		}
 		blur() {
 			if(this.isFocused()) {
-			setImmediate(e => this.updateThumbnail());
 				this.ui.root.classList.replace("shadow", "shadow-sm");
 				this.ui.buttons.maximize.classList.add("btn-outline-success");
 				this.ui.buttons.minimize.classList.add("btn-outline-warning");
@@ -316,6 +319,7 @@
 		}
 		updateThumbnail() {
 			let _this = this;
+			if(isMobile && !this.isFocused()) return;
 			if(!Registry.get("system.enableThumbnails")) return;
 			wc.capturePage(this.getContentBounds(), image => {
 				_this.thumbnail = image.toDataURL();
@@ -354,7 +358,7 @@
 			// TODO: Modal windows
 		}
 		unmaximize() {
-			// TODO: Idk what this should mean
+			this.restore();
 		}
 		isMaximized() {
 			return this.ui.root.classList.contains("maximized");
@@ -364,6 +368,7 @@
 			this.show();
 			this.ui.root.classList.add("maximized");
 			Elements.Bar.classList.add("maximized");
+			this.emit('maximize');
 		}
 		minimize() {
 			if(this.fullscreen) this.setFullScreen(false);
@@ -372,8 +377,11 @@
 		}
 		restore() {
 			this.show();
+			if(isMobile) return;
 			this.ui.root.classList.remove("maximized");
 			Elements.Bar.classList.remove("maximized");
+			this.emit('restore');
+			this.emit('unmaximize');
 		}
 		isMinimized() {
 			return this.isVisible();
@@ -422,6 +430,7 @@
 			// TODO: What?
 		}
 		setSize(width, height) {
+			if(isMobile) return;
 			this.ui.root.style.width = width + "px";
 			this.ui.root.style.height = height + "px";
 			this.emit('resize');
@@ -430,6 +439,7 @@
 			return [this.ui.root.clientWidth, this.ui.root.clientHeight];
 		}
 		setContentSize(width, height) {
+			if(isMobile) return;
 			this.ui.root.style.width = width + this._offsets.left + this._offsets.right + "px";
 			this.ui.root.style.height = height + this._offsets.top + this._offsets.bottom + "px";
 			this.emit('resize');
@@ -494,12 +504,14 @@
 			return this.alwaysOnTop;
 		}
 		center() {
+			if(isMobile) return;
 			if(this.isMaximized()) return;
 			this.ui.root.style.left = (document.body.clientWidth - this.ui.root.clientWidth) / 2 + "px"
 			this.ui.root.style.top = (document.body.clientHeight - this.ui.root.clientHeight) / 2 - document.querySelector("taskbar").clientHeight + "px"
 			console.log("centered");
 		}
 		setPosition(x, y) {
+			if(isMobile) return;
 			this.ui.root.style.left = x + "px";
 			this.ui.root.style.top = y + "px";
 		}
@@ -507,11 +519,12 @@
 			return [this.ui.root.offsetLeft, this.ui.root.offsetTop];
 		}
 		setContentPosition(x, y) {
+			if(isMobile) return;
 			this.ui.root.style.left = x + this._offsets.left + "px";
 			this.ui.root.style.top = y + this._offsets.top + "px";
 		}
 		getContentPosition() {
-			return [this.ui.root.offsetLeft + this._offsets.left, this.ui.root.offsetTop + this.ui.body.offsetTop]
+			return [this.ui.root.offsetLeft + this._offsets.left, this.ui.root.offsetTop + this.ui.body.offsetTop + (isMobile ? -29 : 0)]
 		}
 		setTitle(title) {
 			this.ui.title.innerHTML = title;

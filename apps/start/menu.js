@@ -9,14 +9,21 @@ let allActions = [];
 
 if (!Object.getOwnPropertyNames(registry.get()).length) registry.set({
   height: 400,
-  width: 400
+  width: 400,
+	firstRun: true
 });
-
+const firstRun = Registry.get("start.firstRun");
+if(firstRun) Registry.set("start.firstRun", false)
 function render() {
   Elements.StartMenu = document.createElement("startmenu");
   root = Elements.StartMenu;
-  Elements.StartMenu.className = "position-fixed d-flex flex-column m-2 hide fly up";
-
+  Elements.StartMenu.className = "position-fixed d-flex flex-column p-2 hide fly up";
+	if(isMobile) {
+		Elements.StartMenu.classList.add("w-100");
+		setTimeout(function() {
+			Elements.StartMenu.style.height = "calc(100% - " + CSS.px(Elements.Bar.offsetHeight + Elements.MenuBar.offsetTop) + ")";
+		},500);
+	}
   Elements.StartMenu.toggle = function() {
     let condition = Elements.StartMenu.classList.contains("show");
     if (condition)
@@ -28,6 +35,7 @@ function render() {
     //document.body.click()
     Elements.StartMenu.classList.replace("hide", "show")
     Elements.StartMenu.Search.Input.value = "";
+		if(root.Search.Input.tooltip) root.Search.Input.tooltip.show();
     home();
     Elements.BarItems["start"].childNodes[0].style.transform = "rotate(180deg)";
     setTimeout(e => Elements.StartMenu.Search.Input.focus(), 50);
@@ -56,7 +64,7 @@ function render() {
   body.appendChild(Elements.StartMenu);
 
   updatePosition();
-  new ResizeObserver(updatePosition).observe(Elements.Bar);
+  if(!isMobile) {new ResizeObserver(updatePosition).observe(Elements.Bar);}
 
   renderSearch();
   renderApps();
@@ -156,7 +164,10 @@ function renderSearch() {
   root.Search.Input.placeholder = "Search apps or execute any action...";
   root.Search.Input.className = "form-control border-white py-2 px-1 shadow-none";
   root.Search.Input.id = "__searchInput";
-
+	if(firstRun) {
+		root.Search.Input.title = "Use Quick Search to browse through apps and actions";
+		root.Search.Input.tooltip = new BSN.Tooltip(root.Search.Input);
+	}
   igp.appendChild(igt);
   root.Search.append(igp, root.Search.Input, root.AddButton);
   root.Search.Input.addEventListener("input", search)

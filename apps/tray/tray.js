@@ -7,13 +7,23 @@ let elems = {
 	Clock: document.createElement("clock"),
 	Date: document.createElement("date")
 };
-root.className = "d-flex align-items-center"
-elems.Container.className = "btn btn-dark shadow-sm p-2 d-flex align-items-stretch";
-elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
+if(isMobile) {
+	root.className = "position-fixed w-100";
+	root.style.top = 0;
+	root.style.left = 0;
+	elems.Container.className = "btn btn-dark shadow-sm px-2 py-1 w-100 rounded-0 d-flex align-items-stretch";
+	elems.Clock.className = "lh-r1 font-weight-bold ml-auto";
+	elems.NIcons.style.maxWidth = "calc(18px * 6 + .25rem * 5)";
+	elems.NIcons.style.order = -1;
+} else {
+	root.className = "d-flex align-items-center"
+	elems.Container.className = "btn btn-dark shadow-sm p-2 d-flex align-items-stretch";
+	elems.Clock.className = "lh-r1 font-weight-bold mr-1";
+	elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
+	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
+}
 elems.NIcons.className = "fly left show d-inline-flex mr-1 text-truncate";
-elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
 elems.Date.className = "fly left show lh-r1 d-none mr-2";
-elems.Clock.className = "lh-r1 font-weight-bold mr-1";
 elems.Clock.style.height = "19px";
 elems.Container.addEventListener("click", e => {
 	e.stopPropagation();
@@ -23,14 +33,15 @@ elems.Container.addEventListener("click", e => {
 });
 elems.Container.append(elems.Date, elems.NIcons, elems.Clock);
 root.appendChild(elems.Container);
-BSN.Tooltip(elems.Container);
+if(!isMobile) BSN.Tooltip(elems.Container);
 
 setInterval(function() {
-	elems.Clock.innerText = new Date().toLocaleTimeString({}, {
+if(isMobile) document.body.style.paddingTop = elems.Container.offsetHeight + "px";
+	elems.Clock.innerText = new Date().toLocaleTimeString("en-US", {
 		hour: '2-digit',
 		minute: '2-digit'
 	});
-	elems.Date.innerText = new Date().toLocaleDateString({}, {
+	elems.Date.innerText = new Date().toLocaleDateString("en-US", {
 		weekday: 'long',
 		year: 'numeric',
 		month: 'short',

@@ -1,13 +1,49 @@
 const path = require("path");
-root.className = "flex-grow-1";
+if(!isMobile) root.className = "flex-grow-1"; else root.className = "d-none";
+let tasks = document.createElement("div");
+tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
+tasks.className = "w-100 position-fixed fade px-3 d-none";
+document.body.append(tasks);
 window.TaskManager = class TaskManager {
+	static show() {
+		tasks.classList.remove("d-none");
+		tasks.classList.add("show");
+	}
+		static hide() {
+			tasks.classList.remove("show");
+			setTimeout(e => tasks.classList.add("d-none"), FADE_ANIMATION_DURATION)
+		}
+			static toggle() {
+				if(tasks.classList.contains("show")) TaskManager.hide(); else TaskManager.show();
+			}
 	constructor(wID) {
 		let _this = this;
 		this.window = AppWindow.fromId(wID);
 		this.task = document.createElement('button');
+		if(isMobile) {
+			this.mtask = document.createElement("div");
+			this.mtask.className = "d-inline-flex flex-column text-white mt-2 mr-2";
+			this.mtask.icon = new Image(24, 24);
+			this.mtask.appName = document.createElement("div");
+			this.mtask.appName.className = "flex-grow-1 text-center";
+			this.mtask.header = document.createElement("div");
+			this.mtask.header.className = "d-flex";
+			this.mtask.dataset.id = this.window.id;
+			this.mtask.thumb = new Image();
+			this.mtask.thumb.style.width = "200px";
+			this.mtask.thumb.className = "rounded";
+			this.mtask.header.className = "d-flex mb-2";
+			this.mtask.onclick = e => {
+				this.window.show();
+				TaskManager.hide();
+			}
+			this.mtask.header.append(this.mtask.icon, this.mtask.appName)
+			this.mtask.append(this.mtask.header, this.mtask.thumb);
+			tasks.append(this.mtask)
+		}
 		this.setTitle(this.window.options.title);
 		this.task.className = "p-0 border-0 bg-transparent mr-3 position-relative active fade show";
-		this.task.setAttribute("data-id", this.window.id);
+		this.task.dataset.id = this.window.id;
 		this.taskIcon = new Image(48, 48);
 		this.setIcon(this.window.options.icon || noAppIcon);
 		this.task.appendChild(this.taskIcon);
@@ -38,10 +74,12 @@ window.TaskManager = class TaskManager {
 		}]);
 		this.task.addEventListener("contextmenu", function(e) {
 			e.stopPropagation();
+			_this.menu.renderMenu();
 			_this.menu.popup();
 		});
 		this.window.ui.header.addEventListener("contextmenu", function(e) {
 			e.stopPropagation();
+			_this.menu.renderMenu();
 			_this.menu.popup();
 		});
 		this.window.ui.buttons.addEventListener("contextmenu", e => e.stopPropagation());
@@ -57,10 +95,11 @@ window.TaskManager = class TaskManager {
 		});
 		this.window.on('blur', e => this.task.classList.remove("active"));
 		this.window.on('focus', e => this.task.classList.add("active"));
-		this.window.on('thumbnail-changed', e => this.setTitle())
+		this.window.on('thumbnail-changed', e => this.setTitle());
 	}
 	destroy() {
 		this.task.remove();
+			this.mtask.remove();
 	}
 	setTitle(title = this.window.ui.title.innerText) {
 		let thumbnail = Registry.get("system.enableThumbnails");
@@ -72,14 +111,22 @@ window.TaskManager = class TaskManager {
 			<img class='w-100 mb-1' src='${this.window.thumbnail}'/>
 			<div class='mb-1 ml-1 text-truncate'>${title}</div>
 		</div>`;
+		if(isMobile) {
+			this.mtask.thumb.src = this.window.thumbnail;
+			this.mtask.appName.innerText = title;
+		}
 	} else {
 		markup = title;
 	}
 		this.task.dataset.originalTitle = markup;
 	}
 	setIcon(iconURL) {
-		if(iconURL)
+		if(iconURL) {
 			this.taskIcon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
+			if(isMobile) {
+				this.mtask.icon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
+			}
+		}
 	}
 	focus() {
 		this.task.classList.add("active");

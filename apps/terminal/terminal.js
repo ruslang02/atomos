@@ -6,7 +6,7 @@ win.ui.root.classList.replace("bg-semiwhite", "bg-semidark")
 win.ui.header.classList.replace("border-bottom", "text-white")
 win.ui.root.classList.add("border-secondary")
 let commands = document.createElement("kbd");
-commands.className = "d-block flex-grow-1 bg-transparent rounded-0 border-0 scrollable-y h-25";
+commands.className = "d-block flex-grow-1 bg-transparent rounded-0 border-0 scrollable-y h-25 us";
 let cwd = document.createElement("span");
 cwd.innerText = app.getPath("home") || win.arguments.cwd;
 cwd.className = "text-white ";
@@ -119,7 +119,7 @@ async function execute() {
 			setTimeout(e => {
 				stderr += chunk;
 				noErr = false;
-			}, 10);			
+			}, 10);
 		}).on('end', function() {
 			if(!noErr) addMessage("<div class='text-danger'>" + stderr + "</div>");
 					noErr = true;
