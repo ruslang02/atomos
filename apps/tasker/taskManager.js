@@ -99,7 +99,7 @@ window.TaskManager = class TaskManager {
 	}
 	destroy() {
 		this.task.remove();
-			this.mtask.remove();
+		if(this.mtask) this.mtask.remove();
 	}
 	setTitle(title = this.window.ui.title.innerText) {
 		let thumbnail = Registry.get("system.enableThumbnails");
@@ -123,9 +123,8 @@ window.TaskManager = class TaskManager {
 	setIcon(iconURL) {
 		if(iconURL) {
 			this.taskIcon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
-			if(isMobile) {
+			if(isMobile)
 				this.mtask.icon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
-			}
 		}
 	}
 	focus() {
