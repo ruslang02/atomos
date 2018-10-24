@@ -6,7 +6,8 @@
   "license": "GPL-3.0",
   "version": "1.0.0",
   "homepage": "https://apps.atomos.org.uk/package/angles",
-  "icon": "logo.png",
+  "icon": "code-tags",
+	"color": "var(--primary)",
   "main": "angles.js",
   "description": "Code Editor based on Ace",
   "dependencies": {

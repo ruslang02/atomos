@@ -7,11 +7,11 @@
   "license": "GPL-3.0",
   "version": "1.0.0",
   "homepage": "https://apps.atomos.org.uk/package/camcorder",
-  "main": "camcorder.js",
+  "icon": "camera-iris",
+	"color": "#0277bd",
   "dependencies": {
     "atomos": "~0.7.0"
   },
-  "icon": "logo.png",
   "width": 500,
   "height": 400,
   "minWidth": 300,

@@ -1,8 +1,8 @@
 {
   "name": "atomos",
   "productName": "AtomOS (Material)",
-  "version": "0.7",
-  "buildversion": "170",
+  "version": "0.7.0",
+  "buildversion": "171",
   "description": "Open-source operating system based on Electron.",
   "main": "index.js",
   "repository": {

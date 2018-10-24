@@ -6,7 +6,8 @@
     "license": "GPL-3.0",
     "version": "1.0.0",
     "homepage": "https://apps.atomos.org.uk/package/boombox",
-    "icon": "logo.png",
+	  "icon": "music-note",
+		"color": "var(--danger)",
     "main": "boombox.js",
     "description": "A music player for all your tracks",
     "dependencies": {

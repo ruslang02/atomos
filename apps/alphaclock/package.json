@@ -5,7 +5,8 @@
   "license": "GPL-3.0",
   "version": "1.0.0",
   "homepage": "https://apps.atomos.org.uk/package/alphaclock",
-  "icon": "logo.png",
+  "icon": "alpha",
+	"color": "var(--dark)",
   "main": "aclock.js",
   "description": "Code Editor based on Ace",
   "dependencies": {

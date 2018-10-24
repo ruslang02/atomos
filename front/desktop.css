@@ -147,7 +147,7 @@ taskbar {
 	transform:translateY(0px);
 }*/
 taskbar.maximized {
-  box-shadow: inset 0 -4px 0 0 black;
+  box-shadow: inset -4px 0 0 0 black;
   background: var(--light);
 }
 
@@ -174,25 +174,27 @@ plugin#tasker>button::before {
   left: 0;
   transition: background .25s ease;
 }
-
+plugin#tasker>button:not(.active) {
+	opacity: 0.85;
+}
 plugin#tasker>button, plugin#start>button {
-  transition: filter .25s ease;
+  transition: filter .25s ease, opacity .25s ease;
 }
 
-plugin#tasker>button:hover, plugin#start>button:hover {
+plugin#tasker>button:not(.active):hover, plugin#start>button:hover {
   filter: brightness(120%);
 }
 
-plugin#tasker>button:active, plugin#start>button:active {
+plugin#tasker>button:not(.active):active, plugin#start>button:active {
   filter: brightness(90%);
 }
 
 window.maximized {
   order: -1;
   position: static !important;
-  width: 100% !important;
+  height: 100% !important;
   border-radius: 0 !important;
-  flex-grow: 2;
+  flex-grow: 1;
 }
 
 window.maximized.bg-semiwhite {

@@ -93,11 +93,10 @@ async function renderApps() {
 		let stat = await fs.lstat(path.join(appPath, item));
 		if(!stat.isDirectory()) continue;
     let appEntry = document.createElement("button");
-    let appIcon = new Image(48, 48);
+    let appIcon = document.createElement("icon");
     let appName = document.createElement("div");
     appName.className = "text-truncate text-center";
-    appIcon.className = "align-self-center";
-    appEntry.className = "btn btn-white py-1 px-2 btn-sm flex-shrink-0 d-flex flex-column align-items-stretch justify-content-center";
+    appEntry.className = "btn btn-white py-1 px-2 btn-sm flex-shrink-0 d-flex flex-column align-items-center justify-content-center";
     appEntry.style.width = '23%';
     appEntry.addEventListener("click", e => {
       AppWindow.launch(item);
@@ -107,7 +106,8 @@ async function renderApps() {
       let config = JSON.parse(await fs.readFile(path.join(appPath, item, "package.json")));
       if (config.hidden || config.type !== "app")
         continue;
-      appIcon.src = path.join(osRoot, "apps", item, config.icon);
+		  appIcon.className = "mdi mdi-24px rounded-max text-white d-flex p-2 lh-24 my-1 mdi-" + config.icon;
+			appIcon.style.background = config.color;
       allApps.push({
         name: config.productName || config.name,
         icon: appIcon.src,

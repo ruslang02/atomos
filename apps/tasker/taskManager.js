@@ -23,7 +23,8 @@ window.TaskManager = class TaskManager {
 		if(isMobile) {
 			this.mtask = document.createElement("div");
 			this.mtask.className = "d-inline-flex flex-column text-white mt-2 mr-2";
-			this.mtask.icon = new Image(24, 24);
+			this.mtask.icon = document.createElement("icon");
+			this.mtask.icon.className = "mdi mdi-24px lh-24 d-flex text-white mdi-" + this.window.options.icon;
 			this.mtask.appName = document.createElement("div");
 			this.mtask.appName.className = "flex-grow-1 text-center";
 			this.mtask.header = document.createElement("div");
@@ -44,7 +45,8 @@ window.TaskManager = class TaskManager {
 		this.setTitle(this.window.options.title);
 		this.task.className = "p-0 border-0 bg-transparent mr-3 position-relative active fade show";
 		this.task.dataset.id = this.window.id;
-		this.taskIcon = new Image(48, 48);
+		this.taskIcon = document.createElement("icon");
+		this.taskIcon.style.background = this.window.options.color;
 		this.setIcon(this.window.options.icon || noAppIcon);
 		this.task.appendChild(this.taskIcon);
 		this.window.on("title-updated", title => this.setTitle(title));
@@ -75,7 +77,10 @@ window.TaskManager = class TaskManager {
 		this.task.addEventListener("contextmenu", function(e) {
 			e.stopPropagation();
 			_this.menu.renderMenu();
-			_this.menu.popup();
+			_this.menu.popup({
+				x: (_this.task.offsetLeft + _this.task.offsetWidth) / 2,
+				y: window.innerHeight - _this.task.offsetHeight - 16
+			});
 		});
 		this.window.ui.header.addEventListener("contextmenu", function(e) {
 			e.stopPropagation();
@@ -122,9 +127,9 @@ window.TaskManager = class TaskManager {
 	}
 	setIcon(iconURL) {
 		if(iconURL) {
-			this.taskIcon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
+		this.taskIcon.className = "rounded-max mdi mdi-24px lh-24 d-flex text-white p-2 my-1 mdi-" + this.window.options.icon;
 			if(isMobile)
-				this.mtask.icon.src = path.join(osRoot, "apps", this.window.app, this.window.options.icon);
+				this.mtask.icon.className = "mdi mdi-24px lh-24 d-flex text-white mdi-" + this.window.options.icon;
 		}
 	}
 	focus() {
