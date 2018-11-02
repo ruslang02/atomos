@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "homepage": "https://apps.atomos.org.uk/package/angles",
   "icon": "code-tags",
-	"color": "var(--primary)",
+	"color": "linear-gradient(135deg, var(--gray-dark), var(--gray))",
   "main": "angles.js",
   "description": "Code Editor based on Ace",
   "dependencies": {

@@ -1,16 +1,18 @@
 const fs = require("fs");
 const path = require("path");
-const aclock = path.join(osRoot, "apps", "alphaclock", "aclock.js");
-const aclockIndex = Registry.get("system.autostart").findIndex(e => {
+const aclock = path.join(osRoot, "apps", "alphaclock", "aclock.js")
+const aclockIndex = (Registry.get("system.autostart") || []).findIndex(e => {
 	return path.normalize(e.src) === aclock && fs.existsSync(aclock);
 });
+const wpFile = path.join(app.getPath("appData"), "wallpaper.jpg");
+if(!fs.existsSync(wpFile)) await fs.copy(path.join(osRoot, "resources", "wallpaper.jpg"), wpFile);
 setTitle("Wallpaper");
 root.append(newSmallListItem({
 	label: "Choose a new wallpaper",
 	sublabel: "From local storage",
 	click() {
 		shell.selectFile(shell.ACTION_OPEN).then(file => {
-			fs.promises.copyFile(file, path.join(app.getPath("appData"), "wallpaper.jpg")).then(e => {
+			fs.promises.copyFile(file, wpFile).then(e => {
 				new Snackbar("Wallpaper have been changed");
 			});
 		});

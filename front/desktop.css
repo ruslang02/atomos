@@ -102,11 +102,11 @@ button, button:focus, button:hover:focus, button:active:focus {
 }
 
 .bg-semiwhite {
-  /* background: rgba(255, 255, 255, 0.88) !important; */
+  background: rgba(255, 255, 255, 0.8) !important;
 }
 
 .bg-semiwhite.shadow {
-  background: var(--light);
+  background: rgba(255, 255, 255, 0.88) !important;
 }
 
 .bg-semidark {
@@ -147,7 +147,7 @@ taskbar {
 	transform:translateY(0px);
 }*/
 taskbar.maximized {
-  box-shadow: inset -4px 0 0 0 black;
+  box-shadow: inset 0 -4px 0 0 black;
   background: var(--light);
 }
 
@@ -192,7 +192,7 @@ plugin#tasker>button:not(.active):active, plugin#start>button:active {
 window.maximized {
   order: -1;
   position: static !important;
-  height: 100% !important;
+  width: 100% !important;
   border-radius: 0 !important;
   flex-grow: 1;
 }

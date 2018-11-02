@@ -111,7 +111,7 @@ function renderQuickSection() { //TODO: Make more customizable
   if(!isMobile) Elements.MenuBar.appendChild(Elements.MenuBar.quickItems);
 	else Elements.MenuBar.prepend(Elements.MenuBar.quickItems)
 }
-
+let settingsInst;
 async function openSettings() {
   Elements.MenuBar.settings = document.createElement("section");
   Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute w-100";
@@ -123,7 +123,18 @@ async function openSettings() {
 	}
 	setTimeout(e => Elements.MenuBar.settings.classList.add("show"), FADE_ANIMATION_DURATION);
   Elements.MenuBar.settings.style.height = "450px";
-  new Function('root', await fs.readFile(path.join(osRoot, "apps", "settings", "settings.js")))(Elements.MenuBar.settings);
+  window.__settingsInst = new Function('root', await fs.readFile(path.join(osRoot, "apps", "settings", "settings.js")))(Elements.MenuBar.settings);
+	shell.openAppInfo = function(app) {
+		console.log("tr2")
+		setTimeout(async function() {
+			Elements.MenuBar.open();
+
+	//	if(!window.__settingsInst) await openSettings()
+		Elements.MenuBar.settings.body.currentApp = app;
+		window.__settingsInst.openSection('apps-app');
+
+	}, 500)
+	}
   Elements.MenuBar.prepend(Elements.MenuBar.settings);
 }
 

@@ -20,9 +20,9 @@ async function renderApp() {
   let pkg = JSON.parse( await fs.readFile(pkgFile) );
   let header = document.createElement("header");
   header.className = "d-flex align-items-center px-3 pt-2 pb-3";
-  header.icon = new Image(48, 48);
-  header.icon.src = path.join(osRoot, "apps", root.currentApp, pkg.icon);
-  header.icon.className = "flex-shrink-0 mr-2";
+  header.icon = document.createElement("icon");
+	header.icon.className = "mdi mdi-36px rounded-max flex-shrink-0 text-white d-flex p-2 lh-36 my-1 mr-2 mdi-" + pkg.icon;
+	header.icon.style.background = pkg.color;
   header.right = document.createElement("div");
   header.right.className = "d-flex flex-column";
   header.appName = document.createElement("div");

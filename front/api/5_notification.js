@@ -17,7 +17,8 @@ window.Snackbar = class Snackbar {
 		this.ui.style.bottom = options.window ? 0 : window.getComputedStyle(Elements.Bar).height;
 		this.ui.style.left = 0;
 		this.ui.style.right = 0;
-		this.ui.style.maxWidth = "300px";
+		this.ui.style.maxWidth = CSS.px(300);
+		this.ui.style.zIndex = 1010
     this.ui.message = document.createElement("div");
     this.ui.button = document.createElement("button");
     this.ui.className = "bg-light very-rounded shadow d-flex position-absolute align-items-center mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
@@ -70,7 +71,7 @@ window.Notification = class Notification {
     this.ui.message.className = "text-secondary smaller px-3 pb-2 position-relative text-truncate";
     this.ui.messageTitle.innerText = options.title;
     this.ui.messageTitle.className = "px-3";
-    this.ui.message.style.maxHeight = "150px";
+    this.ui.message.style.maxHeight = CSS.px(150);
     this.ui.message.append(options.message || "");
     if (options.image) {
       this.ui.classList.add("type-image");

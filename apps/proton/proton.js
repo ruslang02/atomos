@@ -1,5 +1,11 @@
 const registry = new Registry("proton");
 const win = AppWindow.fromId(WINDOW_ID);
+win.on('second-instance', (e, args) => {
+	if (args.newWindow) e.preventDefault();
+			 else if (args.file) newTab(args.file);
+			 win.show();
+})
+
 if (!Object.keys(registry.get()).length) registry.set({
 	history: [],
 	nightMode: 1,

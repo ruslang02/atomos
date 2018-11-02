@@ -61,6 +61,10 @@ window.shell = class Shell {
 			return Shell.uniqueId();
 		else return uuid;
 	}
+	static async openAppInfo(app) {
+				Elements.MenuBar.quickItems.lastChild.click();
+				Shell.openAppInfo(app)
+	}
 	static async openItem(file) {
 		let settings = registry.get();
 		settings.associations = settings.associations || {};

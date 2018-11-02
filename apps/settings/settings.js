@@ -60,6 +60,7 @@ async function openSection(id, log = true) {
 	if (!id) {
 		root.classList.remove("show");
 		setTimeout(e => root.remove(), FADE_ANIMATION_DURATION);
+		window.__settingsInst = undefined;
 		return;
 	}
 
@@ -81,3 +82,4 @@ function setActionButton(elem) {
 }
 
 openSection("menu");
+return {openSection: openSection}

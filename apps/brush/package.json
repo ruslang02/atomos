@@ -12,7 +12,6 @@
   "dependencies": {
     "atomos": "~0.7.0"
   },
-  "icon": "logo.png",
   "width": 600,
   "height": 500,
   "minWidth": 550,

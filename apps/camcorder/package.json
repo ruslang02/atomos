@@ -8,7 +8,8 @@
   "version": "1.0.0",
   "homepage": "https://apps.atomos.org.uk/package/camcorder",
   "icon": "camera-iris",
-	"color": "#0277bd",
+	"color": "linear-gradient(135deg, var(--primary), var(--cyan))",
+	"main": "camcorder.js",
   "dependencies": {
     "atomos": "~0.7.0"
   },

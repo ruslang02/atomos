@@ -1,4 +1,5 @@
-const fs = require("fs").promises;
+const fso = require("fs");
+const fs = fso.promises;
 const path = require("path");
 const appPath = path.join(osRoot, "apps");
 const registry = new Registry('start');
@@ -79,6 +80,23 @@ require("fs").watch(appPath, (a, b) => {
 	renderApps();
 	renderActions();
 })
+let delete_r = async function(input) {
+  let stat = await fs.lstat(input);
+  if (stat.isFile()) {
+    fs.unlink(input);
+  } else {
+    let files = await fs.readdir(input);
+    for (const file of files) {
+      var curPath = path.join(input, file);
+      let stats = await fs.lstat(curPath);
+      if (stats.isDirectory())
+        await delete_r(curPath);
+      else
+        await fs.unlink(curPath);
+    }
+    await fs.rmdir(input);
+  }
+};
 async function renderApps() {
 	if(root.Apps) {
 		root.Apps.innerHTML = "";
@@ -102,6 +120,27 @@ async function renderApps() {
       AppWindow.launch(item);
       Elements.BarItems.start.click();
     });
+		appEntry.menu = new Menu(null, [{
+			label: "Launch",
+			icon: "open-in-app"
+		}, {
+			type: "separator"
+		}, {
+			label: "Uninstall",
+			icon: "delete",
+			click() {
+				delete_r(path.join(appPath, item))
+			}
+		}, {
+			label: "Info",
+			icon: "information-variant",
+			click() {
+				shell.openAppInfo(item)
+			}
+		}]);
+		appEntry.addEventListener("contextmenu", e => {
+			appEntry.menu.popup();
+		})
     try {
       let config = JSON.parse(await fs.readFile(path.join(appPath, item, "package.json")));
       if (config.hidden || config.type !== "app")
@@ -110,7 +149,7 @@ async function renderApps() {
 			appIcon.style.background = config.color;
       allApps.push({
         name: config.productName || config.name,
-        icon: appIcon.src,
+        icon: config.icon,
         item: item
       });
       appName.innerText = config.productName || config.name || "App";
@@ -199,9 +238,8 @@ function renderSearch() {
       prev.nextSibling.scrollIntoView(false);
       prev.nextSibling.additional.classList.add("show")
     }
-    if (e.key === "Escape") {
+    if (e.key === "Escape")
       Elements.StartMenu.close();
-    }
     if (e.key === "Enter" && active.querySelector(".active"))
       active.querySelector(".active").click();
   });
@@ -275,7 +313,7 @@ async function search() {
 			const item = res[i];
 
       let elem = document.createElement("button");
-      elem.icon = (item.main ? document.createElement("icon") : new Image(24, 24));
+      elem.icon = document.createElement("icon");
       elem.header = document.createElement("div");
       elem.additional = document.createElement("div");
       elem.additional.innerText = (item.main ? item.appName : "Open");
@@ -296,9 +334,8 @@ async function search() {
       elem.addEventListener("mouseleave", function() {
         elem.additional.classList.remove("show")
       });
-      if (item.main)
-				elem.icon.className = "mdi mdi-24px lh-24 d-flex mdi-" + item.icon;
-      else elem.icon.src = item.icon;
+      elem.icon.className = "mdi mdi-24px lh-24 d-flex mdi-" + item.icon;
+      elem.icon.style.color = item.color || "black";
       elem.header.innerHTML = item.name;
       elem.append(elem.icon, elem.header, elem.additional);
       items.push(elem);
