@@ -12,7 +12,7 @@ There is also an operating system available based on this.
 
 Clone:
 ```
-$ git clone https://github.com/ruslang02/atomos.git -b 0.7-dev
+$ git clone https://github.com/ruslang02/atomos.git
 ```
 
 Firstly, you should have Node.JS and NPM installed (instructions for Ubuntu-based systems):
