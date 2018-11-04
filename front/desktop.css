@@ -173,6 +173,7 @@ plugin#tasker > button::before {
     position: absolute;
     bottom: -0.5rem;
     left: 0;
+    background: rgba(255, 255, 255, 0.6);
     transition: background .25s ease;
 }
 
