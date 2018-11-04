@@ -1,7 +1,7 @@
 {
 	"title": "YouTube",
 	"name": "YouTube",
-	"icon": "$APP_ROOT/logo.png",
+	"icon": "logo.png",
 	"description": "Enjoy the videos you love, upload original content, and share it all with the world",
 	"height": 570,
 	"width": 800,
@@ -9,6 +9,7 @@
 	"minHeight": 530,
 	"frame": false,
 	"transparent": true,
+	"hidden": true,
 	"version": "1.0.3",
 	"dependencies": {
 		"googleapis": "25.0.0",

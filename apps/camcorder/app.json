@@ -1,8 +1,0 @@
-{
-  "title": "Camcorder Screen Capturer",
-  "name": "Camcorder",
-  "description": "Take a screenshot of your own shining system",
-	"icon": "$APP_ROOT/logo.png",
-	"frame": false,
-	"transparent": true
-}

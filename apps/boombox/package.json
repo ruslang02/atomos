@@ -1,0 +1,21 @@
+{
+    "title": "Boombox Music Player",
+    "productName": "Boombox",
+    "name": "@atomos/boombox",
+    "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+    "license": "GPL-3.0",
+    "version": "1.0.0",
+    "homepage": "https://apps.atomos.org.uk/package/boombox",
+	  "icon": "music-note",
+  "color": "linear-gradient(135deg, #b71c1c, orange)",
+    "main": "boombox.js",
+    "description": "A music player for all your tracks",
+    "dependencies": {
+  		"atomos": "~0.7.0"
+    },
+    "width": 600,
+    "height": 500,
+    "minWidth": 500,
+    "minHeight": 450,
+  	"type": "app"
+}

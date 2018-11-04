@@ -1,4 +1,11 @@
 # Changelog
+## 0.7.0
+ - Full reset, 90% code rewritten
+ - JS-based rendering
+ - Quick Search
+ - Single-instance architecture
+ - Settings as a menu
+ - Redesign, Material Design usage
 
 ## 0.6.1
  - Fixed transparency issues on some systems

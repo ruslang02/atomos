@@ -1,0 +1,18 @@
+{
+	"title": "Proton Web Browser",
+	"productName": "Proton",
+	"name": "@atomos/proton",
+	"type": "app",
+	"version": "1.0.0",
+	"description": "Your way to the Internet",
+  "icon": "earth",
+  "color": "linear-gradient(135deg, #1b5e20, #689f38)",
+	"width": 900,
+	"height": 650,
+	"minHeight": 400,
+	"minWidth": 600,
+	"main": "proton.js",
+	"dependencies": {
+		"atomos": "~0.7.0"
+	}
+}

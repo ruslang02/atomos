@@ -1,8 +1,0 @@
-{
-    "title": "Boombox Music Player",
-    "name":"Boombox",
-    "icon": "$APP_ROOT/logo.png",
-    "description": "A music player for all your tracks",
-    "frame": false,
-    "transparent": true
-}

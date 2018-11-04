@@ -1,0 +1,16 @@
+{
+	"name": "@atomos/tasker",
+	"productName": "Task Manager Bar Widget",
+	"version": "1.0.0",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "homepage": "https://apps.atomos.org.uk/package/tasker",
+  "icon": "checkbox-multiple-blank-outline",
+	"color": "#4527a0",
+  "main": "taskManager.js",
+	"type": "bar-plugin",
+	"removable": "false",
+	"dependencies": {
+		"atomos": "~0.7.0"
+	}
+}
