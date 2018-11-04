@@ -17,7 +17,7 @@ if(isMobile) {
 	elems.NIcons.style.order = -1;
 } else {
 	root.className = "d-flex align-items-center"
-	elems.Container.className = "btn btn-dark shadow-sm p-2 d-flex align-items-stretch";
+	elems.Container.className = "btn btn-dark shadow-sm text-white border-0 p-2 d-flex align-items-stretch";
 	elems.Clock.className = "lh-r1 font-weight-bold mr-1";
 	elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";

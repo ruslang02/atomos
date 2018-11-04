@@ -7,7 +7,7 @@
     "version": "1.0.0",
     "homepage": "https://apps.atomos.org.uk/package/boombox",
 	  "icon": "music-note",
-		"color": "linear-gradient(135deg, var(--danger), orange)",
+  "color": "linear-gradient(135deg, #b71c1c, orange)",
     "main": "boombox.js",
     "description": "A music player for all your tracks",
     "dependencies": {

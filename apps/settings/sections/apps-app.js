@@ -15,13 +15,13 @@ const delete_r = async function(input) {
 setTitle("App info");
 
 async function renderApp() {
-  const pkgFile = path.join(osRoot, "apps", root.currentApp, "package.json");
+	const pkgFile = path.join(osRoot, "apps", window.__currentApp, "package.json");
   root.innerHTML = "";
   let pkg = JSON.parse( await fs.readFile(pkgFile) );
   let header = document.createElement("header");
   header.className = "d-flex align-items-center px-3 pt-2 pb-3";
   header.icon = document.createElement("icon");
-	header.icon.className = "mdi mdi-36px rounded-max flex-shrink-0 text-white d-flex p-2 lh-36 my-1 mr-2 mdi-" + pkg.icon;
+	header.icon.className = "mdi mdi-24px rounded-max flex-shrink-0 text-white d-flex p-2 lh-24 my-1 mr-2 mdi-" + pkg.icon;
 	header.icon.style.background = pkg.color;
   header.right = document.createElement("div");
   header.right.className = "d-flex flex-column";
@@ -48,7 +48,7 @@ async function renderApp() {
     }).then(([button, checkbox]) => {
       console.log(button, checkbox)
       if(button === "Proceed" && checkbox) {
-        delete_r(path.join(osRoot, "apps", root.currentApp));
+				delete_r(path.join(osRoot, "apps", window.__currentApp));
         new Snackbar(`App "${header.appName.innerText}" was deleted`);
         goBack();
       } else new Snackbar('Action canceled.');
@@ -58,6 +58,9 @@ async function renderApp() {
   actions.launch = document.createElement("button");
   actions.launch.className = "btn w-100 mx-3 btn-primary";
   actions.launch.innerText = "Launch";
+	if (pkg.type === "app") actions.launch.addEventListener("click", e => {
+		AppWindow.launch(window.__currentApp);
+	}); else actions.launch.disabled = true;
   actions.append(actions.uninstall, actions.launch);
   let notifCheck = newSmallListItem({
 		type: "checkbox",
@@ -72,7 +75,7 @@ async function renderApp() {
 	});
 
   let size = document.createElement("div");
-  size.innerHTML = "<span class='mr-2 font-weight-bolder'>App size</span>" + require("child_process").execSync("du -sh " + path.join(osRoot, "apps", root.currentApp)).toString().split("	")[0];
+	size.innerHTML = "<span class='mr-2 font-weight-bolder'>App size</span>" + require("child_process").execSync("du -sh " + path.join(osRoot, "apps", window.__currentApp)).toString().split("	")[0];
   size.className = "px-4 mt-3";
   root.append(header, actions, notifCheck, size);
 }

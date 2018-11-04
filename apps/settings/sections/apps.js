@@ -50,7 +50,7 @@ async function listApps() {
       let pkg = JSON.parse(await fs.readFile(path.join(osRoot, "apps", item, "package.json")));
       let elem = document.createElement("button");
 			elem.onclick = e => {
-				root.currentApp = item;
+				window.__currentApp = item;
 				openSection("apps-app");
 			}
       elem.className = "list-group-item fly left show flex-shrink-0 rounded-0 list-group-item-action border-left-0 border-right-0 d-flex align-items-center px-3 py-2"

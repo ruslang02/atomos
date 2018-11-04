@@ -1,16 +1,54 @@
 const fs = require('fs').promises, path = require("path");
-new Registry("taskbar");
+let registry = new Registry("taskbar");
 if(!Registry.get("taskbar.items"))
-	Registry.set('taskbar.items', ["start", "tasker", "tray"]);
-
+	Registry.set('taskbar.items', ["start", "launcher", "tasker", "tray"]);
+let autoHide = Registry.get("taskbar.autoHide") || false;
+registry.on("changed", updatePosition);
 render();
 
 function render() {
 	Elements.Bar = document.createElement("taskbar");
 	Elements.BarItems = {};
 	loadPlugins();
-	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto";
+	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto w-100";
+	Elements.Bar.transition = "bottom 1s ease";
+	updatePosition();
+	new ResizeObserver(updatePosition).observe(Elements.Bar);
+	Elements.Bar.menu = new Menu(null, [{
+		type: "checkbox",
+		label: "Automatically hide taskbar",
+		checked: autoHide || false,
+		click(checked) {
+			Registry.set("taskbar.autoHide", !autoHide)
+		}
+	}]);
+	Elements.Bar.addEventListener("contextmenu", () => {
+		Elements.Bar.menu.popup();
+	});
 	root.appendChild(Elements.Bar);
+}
+
+function showBar() {
+	Elements.Bar.style.bottom = CSS.px(0);
+}
+
+function hideBar() {
+	Elements.Bar.style.bottom = "-" + CSS.px(Elements.Bar.offsetHeight - 4);
+}
+
+function updatePosition() {
+	autoHide = Registry.get("taskbar.autoHide") || false;
+	Elements.Bar.classList.toggle("position-absolute", autoHide);
+	if (autoHide) {
+		hideBar();
+		Elements.Bar.addEventListener("mouseenter", showBar);
+		Elements.Bar.addEventListener("mouseleave", hideBar);
+	}
+	else {
+		showBar();
+		Elements.Bar.removeEventListener("mouseenter", showBar);
+		Elements.Bar.removeEventListener("mouseleave", hideBar);
+	}
 }
 
 async function loadPlugins() {

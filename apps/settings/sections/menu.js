@@ -24,7 +24,7 @@ items.account = newItem("Account", "Sign in to Atom Link", "account-box", "var(-
 items.apps = newItem("Apps & notifications", "Default apps, package manager", "apps", "var(--orange)", () => openSection("apps"));
 //items.battery = newItem("Battery", "100% - fully charged", "battery", "var(--cyan)", () => {});
 items.display = newItem("Display", "Wallpaper, themes, brightness", "brightness-6", "var(--yellow)", () => openSection("display"));
-//items.sound = newItem("Sound", "Volume, ringtone, external speakers", "volume-high", "var(--teal)", () => {});
+items.sound = newItem("Sound", "Volume, ringtone, external speakers", "volume-high", "var(--teal)", () => openSection("sound"));
 //items.storage = newItem("Storage", "36% used - 3.85 GB free", "dns", "var(--purple)", () => {});
 //items.security = newItem("Security & protection", "Screen lock, encryption", "lock", "var(--success)", () => {});
 items.system = newItem("System", "About device, OS version, debug info", "information-outline", "var(--secondary)", () => openSection("system"));

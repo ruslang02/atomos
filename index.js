@@ -39,7 +39,7 @@ app.on('ready', function() {
 		}
 	});
 	win.maximize();
-	win.loadFile("front/desktop.html");
+	win.loadFile(path.join(__dirname, "front/desktop.html"));
 	if(isDebug) win.toggleDevTools(); else win.setMenu(null);
 	win.on("close", e => {
 		if (!global.shutdown) e.preventDefault();

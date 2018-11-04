@@ -6,7 +6,7 @@
 	"version": "1.0.0",
 	"description": "Lightweight File Manager",
 	"icon": "folder-outline",
-	"color": "linear-gradient(135deg, orange, var(--warning))",
+  "color": "linear-gradient(135deg, #f57f17, #ffb300)",
 	"width": 600,
 	"height": 500,
 	"minHeight": 330,

@@ -12,7 +12,7 @@
     "atomos": "~0.7.0"
   },
   "icon": "console-line",
-	"color": "#263238",
+  "color": "linear-gradient(135deg, #212121, #616161)",
   "width": 550,
   "height": 350,
   "minWidth": 450,

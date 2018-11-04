@@ -1,7 +1,6 @@
 const path = require("path"),
 fs = require("fs").promises;
 let button = document.createElement("button");
-let icon = new Image(48, 48);
 let menu = Menu.buildFromTemplate(null, [{
 	label: "Toggle Developer Tools",
 	shortLabel: "Dev Tools",
@@ -22,9 +21,9 @@ let menu = Menu.buildFromTemplate(null, [{
 		window.close();
 	}
 }]);
-button.className = "btn p-0 m-0 border-0 bg-transparent rounded-circle";
-icon.src = path.join(__dirname, "images/Slide Up.png");
-button.appendChild(icon);
+button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 d-flex align-items-center justify-content-center text-white p-0 my-1 ml-2 mdi-chevron-up";
+button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
+button.style.height = button.style.width = CSS.px(40);
 if(!isMobile) button.title = "All Apps (<i class='mdi mdi-atom'></i>)";
 button.addEventListener("click", e => {
 	e.stopPropagation();
@@ -34,7 +33,7 @@ button.addEventListener("contextmenu", e => {
 	e.stopPropagation();
 	menu.popup();
 })
-icon.style.transition = "transform .25s linear";
+button.style.transition = "transform .25s linear";
 root.appendChild(button);
 if(isMobile) {
 	root.className = "d-flex justify-content-around flex-grow-1";

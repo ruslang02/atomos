@@ -34,7 +34,7 @@ let preferences = new Proxy(registry.get(), {
 	}
 });
 let tabs = document.createElement("section");
-tabs.className = "d-flex scrollable-x-0 flex-shrink-0 text-truncate px-3";
+tabs.className = "d-flex scrollable-x-0 flex-shrink-0 text-truncate pl-3 pr-1";
 tabs.style.marginBottom = "-1px";
 tabs.style.zIndex = "100";
 tabs.style.maxWidth = "calc(100% - 100px)"
@@ -180,26 +180,26 @@ function newTab(url = "https://www.startpage.com") {
 	tab.webview.className = "position-absolute w-100 h-100 d-inline-flex rounded-bottom bg-white";
 	tab.webview.src = "about:blank";
 	tab.webview.autosize = true;
-	tabCollection.appendChild(tab.webview)
-	console.log(tabCollection, tab.webview)
-	tab.className = "nav-item shadow-lg nav-link bg-white position-relative d-flex fade";
+	tabCollection.appendChild(tab.webview);
+	console.log(tabCollection, tab.webview);
+	tab.className = "nav-item shadow-sm nav-link bg-white position-relative d-flex fade";
 	tab.style.transition = "all .2s linear";
 	setTimeout(e => tab.classList.add("show"), FADE_ANIMATION_DURATION);
 	tab.style.borderRadius = "0.5rem 0.5rem 0 0";
 	tab.header = document.createElement("div");
-	tab.header.className = "flex-grow-1 text-truncate lh-r1"
+	tab.header.className = "flex-grow-1 text-truncate lh-r1";
 	tab.header.innerText = "untitled";
 	tab.addEventListener("contextmenu", e => {
 		e.stopPropagation();
 		tabMenu.popup();
-	})
-	tab.addEventListener("mousedown", e => tab.activate());
-	tab.addEventListener("click", e => e.stopPropagation())
+	});
+	tab.addEventListener("mousedown", () => tab.activate());
+	tab.addEventListener("click", e => e.stopPropagation());
 	tab.closeButton = document.createElement("button");
 	tab.closeButton.className = "btn btn-outline-danger border-0 text-decoration-none rounded mdi-close mdi mdi-18px lh-18 p-0 ml-2 d-flex";
-	tab.closeButton.onclick = e => tab.close()
+	tab.closeButton.onclick = () => tab.close();
 	tab.append(tab.header, tab.closeButton);
-	tabs.append(tab)
+	tabs.append(tab);
 	tab.initEvents = function() {
 		tab.webview.addEventListener("will-navigate", tab.update);
 		tab.webview.addEventListener("did-navigate", tab.update);
@@ -243,7 +243,7 @@ function newTab(url = "https://www.startpage.com") {
 	}
 	tab.activate = function() {
 		if(tabs.active) tabs.active.deactivate();
-		tab.classList.add("bg-white", "shadow-lg");
+		tab.classList.add("bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-none", "d-flex");
 		tab.webview.classList.replace("d-none", "d-inline-flex");
 		tabs.active = tab;
@@ -263,7 +263,7 @@ function newTab(url = "https://www.startpage.com") {
 		}
 	}
 	tab.deactivate = function() {
-		tab.classList.remove("bg-white", "shadow-lg");
+		tab.classList.remove("bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-flex", "d-none");
 		tab.webview.classList.replace("d-inline-flex", "d-none");
 

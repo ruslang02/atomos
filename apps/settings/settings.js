@@ -81,5 +81,5 @@ function setActionButton(elem) {
 	root.footer.append(root.footer.specialButton);
 }
 
+if (this.sectionToOpen) openSection(sectionToOpen); else
 openSection("menu");
-return {openSection: openSection}

@@ -3,13 +3,14 @@ window.$ = window.jQuery = require("jquery");
 let jui = document.createElement("script");
 jui.src = "../node_modules/jquery-ui-dist/jquery-ui.min.js";
 document.body.append(jui);*/
+const path = require("path");
 let Elements = {};
 let shutdown = false;
 let autoStartWorkers = [];
 let isMobile = false;
 const FADE_ANIMATION_DURATION = 150;
 const FLY_ANIMATION_DURATION = 200;
-const osRoot = require("electron").remote.app.getAppPath();
+const osRoot = path.join(__dirname, "..");
 const isDebug = require("electron").remote.getGlobal("isDebug");
 
 const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
@@ -22,8 +23,7 @@ const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 	} = remote;
 	const fso = require("fs");
 	const fs = fso.promises;
-	const path = require("path");
-	const taskbarPath = path.join(app.getAppPath(), "apps/bar");
+	const taskbarPath = path.join(osRoot, "apps/bar");
 	LoadCSS();
 	for(const api of await fs.readdir(__dirname + "/api")) {
 		await new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
@@ -96,7 +96,7 @@ const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
 			promises.push(new Promise(resolve => {
 				let style = document.createElement("link");
 				style.rel = "stylesheet";
-				style.href = path.join(app.getAppPath(), item);
+				style.href = path.join(osRoot, item);
 				style.onload = resolve;
 				document.head.appendChild(style);
 			}));
