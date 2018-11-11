@@ -12,7 +12,7 @@ if (!Object.getOwnPropertyNames(registry.get()).length) registry.set({
 	firstRun: true
 });
 const firstRun = Registry.get("start.firstRun");
-if (firstRun) Registry.set("start.firstRun", false)
+if (firstRun) Registry.set("start.firstRun", false);
 
 function render() {
 	Elements.StartMenu = document.createElement("startmenu");
@@ -20,6 +20,7 @@ function render() {
 	Elements.StartMenu.className = "position-fixed d-flex flex-column p-2 hide fly up";
 	Elements.StartMenu.style.height = "400px";
 	Elements.StartMenu.style.width = "400px";
+	Elements.StartMenu.addEventListener("contextmenu", e => e.stopPropagation());
 	if (isMobile) {
 		Elements.StartMenu.classList.add("w-100");
 		setTimeout(function () {
@@ -139,7 +140,7 @@ async function renderApps() {
 			icon: "information-variant",
 			click() {
 				window.__currentApp = item;
-				setTimeout(() => shell.openSettings("apps-app"), 100);
+				shell.openSettings("apps-app");
 			}
 		}]);
 		appEntry.addEventListener("contextmenu", e => {
@@ -190,9 +191,9 @@ function renderSearchSection() {
 }
 
 function renderSearch() {
-	root.Search = document.createElement("search")
+	root.Search = document.createElement("search");
 	root.Search.className = "input-group card flex-row shadow mb-2 flex-shrink-0";
-
+	root.Search.dataset.editMenu = "false";
 	let igp = document.createElement("label");
 	igp.className = "input-group-prepend m-0 d-flex align-items-center";
 	igp.htmlFor = "__searchInput"

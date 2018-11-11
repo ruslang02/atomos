@@ -114,21 +114,24 @@ function renderQuickSection() { //TODO: Make more customizable
 }
 
 shell.openSettings = function (section) {
-	Elements.MenuBar.open();
-  Elements.MenuBar.settings = document.createElement("section");
-  Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute w-100";
-  Elements.MenuBar.settings.style.zIndex = 100;
-	if(isMobile) {
-		Elements.MenuBar.settings.style.top = 0;
-		Elements.MenuBar.settings.style.left = 0;
-		Elements.MenuBar.settings.classList.add("flex-column-reverse")
-	}
-	setTimeout(e => Elements.MenuBar.settings.classList.add("show"), FADE_ANIMATION_DURATION);
-  Elements.MenuBar.settings.style.height = "450px";
-	fs.readFile(path.join(osRoot, "apps", "settings", "settings.js")).then(code => {
-		new Function('root', 'sectionToOpen', code.toString())(Elements.MenuBar.settings, section);
-	});
-	Elements.MenuBar.prepend(Elements.MenuBar.settings);
+	setTimeout(e => {
+		Elements.MenuBar.open();
+		Elements.MenuBar.settings = document.createElement("section");
+		Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute w-100";
+		Elements.MenuBar.settings.style.zIndex = 100;
+		if (isMobile) {
+			Elements.MenuBar.settings.style.top = 0;
+			Elements.MenuBar.settings.style.left = 0;
+			Elements.MenuBar.settings.classList.add("flex-column-reverse")
+		}
+		setTimeout(e => Elements.MenuBar.settings.classList.add("show"), FADE_ANIMATION_DURATION);
+		Elements.MenuBar.settings.style.height = "450px";
+		fs.readFile(path.join(osRoot, "apps", "settings", "settings.js")).then(code => {
+			new Function('root', 'sectionToOpen', code.toString())(Elements.MenuBar.settings, section);
+		});
+		Elements.MenuBar.prepend(Elements.MenuBar.settings);
+
+	}, FADE_ANIMATION_DURATION);
 };
 
 function renderNotifications() {

@@ -61,10 +61,6 @@ window.shell = class Shell {
 			return Shell.uniqueId();
 		else return uuid;
 	}
-	static async openAppInfo(app) {
-				Elements.MenuBar.quickItems.lastChild.click();
-				Shell.openAppInfo(app)
-	}
 	static async openItem(file) {
 		let settings = registry.get();
 		settings.associations = settings.associations || {};
@@ -555,11 +551,11 @@ window.shell = class Shell {
 			customCheckbox.label.className = "custom-control-label";
 			customCheckbox.append(customCheckbox.checkbox, customCheckbox.label);
 			for (const i of options.buttons.keys()) {
-				function send() {
+				let send = function () {
 					if (options.checkboxLabel)
 						resolve([options.buttons[i], customCheckbox.checkbox.checked]);
 					else resolve(options.buttons[i]);
-				}
+				};
 				let button = document.createElement("button");
 				button.className = "btn " + (options.defaultId === i ? "btn-primary" : "btn-secondary");
 				button.innerText = options.buttons[i];

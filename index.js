@@ -1,7 +1,6 @@
 const {
 	BrowserWindow,
-	app,
-	session
+	app
 } = require('electron');
 const fs = require("fs");
 const path = require("path");

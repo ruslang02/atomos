@@ -1,19 +1,11 @@
 const fs = require("fs").promises;
 const path = require("path");
-root.className = "d-flex"
+root.className = "d-flex";
 
 async function renderLauncher() {
+	root.innerHTML = "";
 	let items = Registry.get("launcher.items") || [];
-	if (!items.length) {
-		let elem = document.createElement('div');
-		elem.className = "text-white mr-3 position-relative active fade show";
-		elem.title = "Add new item";
-		elem.icon = document.createElement("icon");
-		elem.icon.className = "rounded-max mdi btn btn-secondary border-0 mdi-24px lh-24 d-flex text-white p-2 my-1 mdi-plus";
-		elem.appendChild(elem.icon);
-		root.append(elem);
-
-	} else {
+	if (items.length) {
 		for (const item of items) {
 			let json = await fs.readFile(path.join(osRoot, "apps", item, "package.json"));
 			let pkg = JSON.parse(json.toString());
@@ -35,3 +27,4 @@ async function renderLauncher() {
 }
 
 renderLauncher();
+new Registry("launcher").on("changed", renderLauncher);

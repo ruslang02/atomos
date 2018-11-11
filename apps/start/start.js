@@ -17,7 +17,6 @@ let menu = Menu.buildFromTemplate(null, [{
 	label: "Quit AtomOS",
 	shortLabel: "Quit",
 	click: e => {
-		shutdown = true;
 		window.close();
 	}
 }]);

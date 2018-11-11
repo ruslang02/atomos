@@ -35,6 +35,7 @@
 	  constructor(win, template = []) {
 	    super();
 	    let _this = this;
+			this.activeElement = document.activeElement;
 	    template.forEach((item, i, arr) => {
 	      arr[i] = Object.assign({}, defaultOptions, item);
 	    });
@@ -67,6 +68,8 @@
 	      if (event.returnValue) _this.closePopup();
 	    });
 	    this.window = win;
+			this.id = shell.uniqueId();
+			this.menu.id = this.id;
 	    this.renderMenu();
 	  }
 	  static getFocusedMenu() {
@@ -85,7 +88,7 @@
 	      if (_this.window && !_this.window.isFocused()) return;
 	      shortcuts.forEach(acc => {
 	        if ((e.ctrlKey ^ !acc.ctrl) && (e.shiftKey ^ !acc.shift) && (e.altKey ^ !acc.alt) && (e.key.toLowerCase() === acc.key.toLowerCase()))
-	          acc.click.call(acc.menuItem);
+						acc.click.call(acc.menuItem, _this.window, _this.activeElement);
 	      })
 	      //}
 	    }
@@ -107,7 +110,7 @@
 	          menuItem.className = "dropdown-item d-flex align-items-center";
 	          menuItem.disabled = !item.enabled;
 	          menuItem.onclick = e => {
-	            (item.click || (e => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, e);
+							(item.click || (e => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, _this.activeElement);
 	          };
 	          menuItem.id = "dm_" + (item.id || Math.random().toString(36).substr(2, 9));
 	          menuItem.style.order = item.position || 0;
