@@ -2,12 +2,12 @@ const fs = require('fs').promises;
 const path = require('path');
 let sectionHistory = [];
 root.footer = document.createElement("footer");
-if (!isMobile)
-	root.footer.className = "shadow-lg d-flex border-top flex-shrink-0";
+if (!shell.isMobile)
+	root.footer.className = "shadow-lg d-flex border-top flex-shrink-0 " + (shell.ui.darkMode ? "border-secondary" : "");
 else
 	root.footer.className = "d-flex border-bottom flex-shrink-0";
 root.footer.backButton = document.createElement("button");
-root.footer.backButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-arrow-left btn btn-white rounded-circle d-flex";
+root.footer.backButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-arrow-left btn rounded-circle d-flex " + (shell.ui.darkMode ? "btn-dark" : "btn-white");
 root.footer.backButton.onclick = e => {
 	sectionHistory.pop()
 	openSection(sectionHistory[sectionHistory.length - 1], false);
@@ -23,24 +23,25 @@ root.append(root.body, root.footer);
 function newSmallListItem(options) {
 	let elem = document.createElement("label");
 	if (options.type === "checkbox") {
-		elem.className = "list-group-item rounded-0 list-group-item-action border-left-0 border-right-0 d-flex align-items-center py-2 custom-control custom-checkbox";
+		elem.className = "rounded-0 border-top d-flex align-items-center text-left py-2 px-3 mb-0 btn custom-control custom-checkbox " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
 		elem.input = document.createElement("input");
 		elem.input.type = "checkbox";
 		elem.input.id = shell.uniqueId();
 		elem.input.checked = options.checked;
 		elem.input.className = "custom-control-input";
 		elem.label = document.createElement("div");
+		elem.label.className = shell.ui.darkMode ? "text-light" : "";
 		elem.label.innerHTML = `<div>${options.label}</div>`;
-		if (options.sublabel) elem.label.innerHTML += `<div class='text-muted small'>${options.sublabel}</div>`
+		if (options.sublabel) elem.label.innerHTML += `<div class='text-muted small'>${options.sublabel}</div>`;
 		elem.htmlFor = elem.input.id;
 		elem.label.className = "custom-control-label d-flex flex-column w-100";
 		elem.append(elem.input, elem.label);
-		elem.input.onchange = e => options.click(elem.input.checked);
+		elem.input.onchange = () => options.click(elem.input.checked);
 	} else if (options.type === "header") {
-		elem.className = "bg-light lh-r1 font-weight-bolder dropdown-header";
+		elem.className = "lh-r1 font-weight-bolder dropdown-header " + (shell.ui.darkMode ? "bg-secondary text-white" : "bg-light");
 		elem.innerText = options.label;
 	} else {
-		elem.className = "list-group-item rounded-0 list-group-item-action border-left-0 border-right-0 d-flex align-items-center py-2";
+		elem.className = "rounded-0 border-top d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
 		elem.header = document.createElement('div');
 		if (options.icon) {
 			elem.icon = document.createElement('icon');
@@ -50,6 +51,7 @@ function newSmallListItem(options) {
 			elem.onclick = options.click;
 		}
 		elem.onclick = options.click;
+		elem.header.className = shell.ui.darkMode ? "text-white" : "";
 		elem.header.innerHTML = `<div>${options.label}</div>` + (options.sublabel ? `<div class='small text-muted'>${options.sublabel}</div>` : "");
 		elem.append(elem.header);
 
@@ -59,7 +61,7 @@ function newSmallListItem(options) {
 async function openSection(id, log = true) {
 	if (!id) {
 		root.classList.remove("show");
-		setTimeout(e => root.remove(), FADE_ANIMATION_DURATION);
+		setTimeout(e => root.remove(), shell.ui.fadeAnimation);
 		window.__settingsInst = undefined;
 		return;
 	}

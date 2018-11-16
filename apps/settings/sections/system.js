@@ -11,7 +11,7 @@ osinfo.osname = document.createElement("div");
 osinfo.osname.innerText = info.productName || info.name;
 osinfo.osname.className = "h5";
 osinfo.osver = document.createElement("div");
-osinfo.osver.innerText = `Version ${info.version}. Build ${info.buildversion}`;
+osinfo.osver.innerText = `v. ${info.version}`;
 osinfo.osver.className = "text-muted smaller";
 osinfo.append(osinfo.icon, osinfo.osname, osinfo.osver);
 root.append(osinfo);

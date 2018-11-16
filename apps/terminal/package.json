@@ -17,5 +17,6 @@
   "height": 350,
   "minWidth": 450,
 	"minHeight": 250,
-  "type": "app"
+  "type": "app",
+  "darkMode": true
 }

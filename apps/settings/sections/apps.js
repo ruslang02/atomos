@@ -35,9 +35,10 @@ list.autostart = newSmallListItem({
 list.append(list.autostart);
 main.append(list);
 
-let amLabel = document.createElement("label");
-amLabel.className = "dropdown-header flex-shrink-0 px-3 font-weight-bolder";
-amLabel.innerText = "Application Manager"
+let amLabel = newSmallListItem({
+	label: "Application Manager",
+	type: "header"
+});
 main.append(amLabel);
 
 let appList = document.createElement("section");
@@ -53,8 +54,8 @@ async function listApps() {
 				window.__currentApp = item;
 				openSection("apps-app");
 			}
-      elem.className = "list-group-item fly left show flex-shrink-0 rounded-0 list-group-item-action border-left-0 border-right-0 d-flex align-items-center px-3 py-2"
-      elem.icon = document.createElement("icon")
+			elem.className = "rounded-0 border-top d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
+			elem.icon = document.createElement("icon");
       elem.icon.className = "mdi mdi-24px rounded-max text-white d-flex p-2 lh-24 my-1 mr-2 mdi-" + pkg.icon;
 			elem.icon.style.background = pkg.color;
       elem.header = document.createElement("header");

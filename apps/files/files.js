@@ -1,8 +1,7 @@
 const win = AppWindow.fromId(WINDOW_ID);
 let registry = new Registry("files");
 const {
-	remote,
-	ipcRenderer
+	remote
 } = require("electron");
 const {
 	clipboard
@@ -10,7 +9,6 @@ const {
 const fs = require("fs");
 const fsp = fs.promises;
 const path = require("path");
-const proc = require("child_process");
 let sidebar, container, statusBar, fileMenu, nav, main, FCBar, activeItem, mainMenu;
 let watcher = "";
 let history = {
@@ -18,10 +16,23 @@ let history = {
 	items: []
 };
 if (!Object.keys(registry.get()).length) {
-	let defaultFile = await
-	fsp.readFile(__dirname + "/default.json");
+	let defaultFile = fs.readFileSync(__dirname + "/default.json");
 	registry.set(JSON.parse(defaultFile));
 }
+win.task.menu.insert(-2, {
+	label: "Edit location",
+	icon: "pencil",
+	click() {
+		nav.pathField.dispatchEvent(new MouseEvent('dblclick', {
+			'view': window,
+			'bubbles': true,
+			'cancelable': true
+		}));
+	}
+});
+win.task.menu.insert(-1, {
+	type: "separator"
+});
 let settings = new Proxy(registry.get(), {
 	set(t, p, v) {
 		t[p] = v;
@@ -42,15 +53,15 @@ let copy_r = async function (src, dest) {
 		}
 	} else
 		await fsp.copyFile(src, dest);
-}
+};
 let delete_r = async function (input) {
 	let stat = await fsp.lstat(input);
-	if (stat.isFile()) {
+	if (!stat.isDirectory()) {
 		fsp.unlink(input);
 	} else {
 		let files = await fsp.readdir(input);
 		for (const file of files) {
-			var curPath = path.join(input, file);
+			let curPath = path.join(input, file);
 			let stats = await fsp.lstat(curPath);
 			if (stats.isDirectory())
 				await delete_r(curPath);
@@ -65,12 +76,12 @@ init();
 
 function init() {
 	renderNav();
-	renderContainer()
+	renderContainer();
 	if (win.arguments.callback)
 		renderFCBar();
 	renderStatusbar();
 	win.show();
-	navigate(win.arguments.file || app.getPath("home"));
+	navigate(win.arguments.file || app.getPath("home")).then(() => console.log("Files loaded."));
 	renderMainMenu();
 }
 
@@ -125,6 +136,8 @@ async function navigate(url) {
 		selectFile = path.basename(url);
 		url = path.dirname(url);
 	}
+	nav.pathField.blur();
+	nav.pathField.edited = false;
 	nav.pathField.value = url;
 	try {
 		watcher = fs.watch(url, (a, b) => {
@@ -141,19 +154,18 @@ async function navigate(url) {
 		let item = document.createElement("button");
 		item.stat = await fsp.lstat(file);
 		item.draggable = true;
-		item.className = 'dropdown-item px-2 py-1 rounded mb-1 d-flex align-items-center';
+		item.className = 'dropdown-item px-2 py-1 rounded mb-1 d-flex align-items-center' + (win.options.darkMode ? " text-white" : "");
 		item.isDirectory = item.stat.isDirectory();
 		item.isShortcut = path.extname(file).substring(1).toUpperCase() === "LNK";
 		item.disabled = (win.arguments.open === shell.DIRECTORY && item.stat.isFile());
 		item.path = file;
 
-		fs.access(item.path, fs.constants.R_OK, e => item.readable = e ? false : true);
-		fs.access(item.path, fs.constants.W_OK, e => item.writable = e ? false : true);
-		fs.access(item.path, fs.constants.X_OK, e => item.executable = e ? false : true);
+		fs.access(item.path, fs.constants.R_OK, e => item.readable = !e);
+		fs.access(item.path, fs.constants.W_OK, e => item.writable = !e);
+		fs.access(item.path, fs.constants.X_OK, e => item.executable = !e);
 
-		if (item.isShortcut) {
+		if (item.isShortcut)
 			item.shortcut = JSON.parse(await fsp.readFile(file));
-		}
 		item.addEventListener("click", function () {
 			if (FCBar) {
 				FCBar.textField.value = item.fileName.innerText;
@@ -167,11 +179,11 @@ async function navigate(url) {
 			item.classList.add("active");
 			activeItem = item;
 			renderFileMenu();
-		})
+		});
 		item.addEventListener('contextmenu', e => {
 			e.stopPropagation();
 			fileMenu.popup();
-		})
+		});
 		item.addEventListener('dragstart', function (e) {
 			e.dataTransfer.effectAllowed = 'move';
 			e.dataTransfer.setData("application/file", file);
@@ -179,7 +191,7 @@ async function navigate(url) {
 		});
 		item.delete = function () {
 			delete_r(item.path);
-		}
+		};
 		item.openProperties = function () {
 			let container = document.createElement("main");
 			container.className = "d-flex flex-column";
@@ -197,7 +209,7 @@ async function navigate(url) {
 			size.innerText = "Size: " + item.stat.size + " bytes";
 
 			function formatDate(date) {
-				return new Date(date).toLocaleDateString({}, {
+				return new Date(date).toLocaleDateString([], {
 					weekday: 'long',
 					year: 'numeric',
 					month: 'short',
@@ -208,7 +220,7 @@ async function navigate(url) {
 			}
 
 			let atime = document.createElement("div");
-			atime.innerText = "Last Access Time: " + formatDate(item.stat.atime)
+			atime.innerText = "Last Access Time: " + formatDate(item.stat.atime);
 			let mtime = document.createElement("div");
 			mtime.innerText = "Last Modification Time: " + formatDate(item.stat.mtime);
 			let perms = document.createElement("div");
@@ -219,25 +231,25 @@ async function navigate(url) {
 				message: container,
 				type: "none"
 			});
-		}
+		};
 		item.cut = function () {
 			clipboard.write({
 				text: item.path,
 				html: "<action>cut</action>"
 			});
-		}
+		};
 		item.copy = function () {
 			clipboard.write({
 				text: item.path,
 				html: "<action>copy</action>"
 			});
-		}
+		};
 		item.install = function () {
 			if (!item.isDirectory && path.extname(item.path) === ".wapp")
 				AppWindow.launch("install", {
 					file: item.path
 				});
-		}
+		};
 		item.compress = function () {
 			if (!item.isDirectory) return;
 			shell.selectFile(shell.ACTION_SAVE, {
@@ -248,7 +260,7 @@ async function navigate(url) {
 					gzip: true,
 					file: file,
 					C: item.path
-				}, await fsp.readdir(item.path)).then(e => new Notification(win, {
+				}, await fsp.readdir(item.path)).then(() => new Notification(win, {
 					app: "Archive Manager",
 					icon: "archive",
 					title: "Archive was successfully created",
@@ -256,7 +268,7 @@ async function navigate(url) {
 					color: "var(--success)"
 				})).catch(console.error)
 			})
-		}
+		};
 		item.extract = function () {
 			if (item.isDirectory) return;
 			shell.selectFile(shell.ACTION_FOLDER, {
@@ -275,9 +287,9 @@ async function navigate(url) {
 			});
 		};
 		item.open = function () {
-			if (this.isDirectory) {
+			if (this.isDirectory)
 				navigate(file);
-			} else {
+			else {
 				if (win.arguments.callback) sendBack();
 				else if (this.shortcut) {
 					AppWindow.launch(item.shortcut.app, item.shortcut.args);
@@ -287,7 +299,7 @@ async function navigate(url) {
 		};
 		item.openWith = function () {
 			shell.openItemIn(file);
-		}
+		};
 		item.addEventListener("dblclick", item.open);
 		item.icon = document.createElement("icon");
 		item.icon.className = "mdi mdi-18px mdi-" + (item.isDirectory ? 'folder-outline' : 'file-outline') + " lh-18 mr-2";
@@ -320,10 +332,10 @@ async function navigate(url) {
 	}
 	statusBar.text.innerText = `${files.length} elements`;
 	items.sort((a, b) => {
-		var o1 = a.isDirectory;
-		var o2 = b.isDirectory;
-		var p1 = a.fileName.innerText.trim().toLowerCase();
-		var p2 = b.fileName.innerText.trim().toLowerCase();
+		let o1 = a.isDirectory
+			, o2 = b.isDirectory
+			, p1 = a.fileName.innerText.trim().toLowerCase()
+			, p2 = b.fileName.innerText.trim().toLowerCase();
 		if (o1 < o2)
 			return settings.foldersFirst ? 1 : 0;
 		if (o1 > o2)
@@ -348,7 +360,7 @@ function renderFCBar() {
 		e.preventDefault();
 		sendBack();
 		return false;
-	}
+	};
 	FCBar.igPrepend = document.createElement("span");
 	FCBar.igPrepend.className = "input-group-prepend";
 	FCBar.cancelButton = document.createElement("button");
@@ -362,7 +374,6 @@ function renderFCBar() {
 	FCBar.textField.className = "form-control form-control-sm";
 
 	function validate() {
-
 		FCBar.submitButton.disabled = !(!!FCBar.textField.value.trim());
 	}
 
@@ -426,7 +437,7 @@ async function sendBack(force = false) {
 
 function renderMain() {
 	main = document.createElement("section");
-	main.className = "p-2 flex-grow-1 scrollable bg-white border-top";
+	main.className = "p-2 flex-grow-1 scrollable border-top" + (win.options.darkMode ? " bg-dark border-secondary" : " bg-white");
 	main.oncontextmenu = e => {
 		e.stopPropagation();
 		mainMenu.popup();
@@ -435,7 +446,7 @@ function renderMain() {
 		if (!activeItem) return;
 		activeItem.classList.remove("active");
 		activeItem = undefined;
-	}
+	};
 	container.append(main);
 }
 
@@ -446,7 +457,7 @@ async function renderAccessSection() {
 		if (item.type === "item") {
 			let location = item.location.replace("$HOME_DIR", homeDir).replace("$SYSTEM_ROOT", osRoot);
 			dItem = document.createElement("button");
-			dItem.className = 'dropdown-item d-flex py-2 align-items-center';
+			dItem.className = 'dropdown-item d-flex py-2 align-items-center' + (win.options.darkMode ? " text-white" : "");
 			dItem.onclick = e => navigate(location);
 			dItem.location = location;
 			dItem.icon = document.createElement("icon");
@@ -489,17 +500,31 @@ async function renderDeviceSection() {
 			let mountDir = path.normalize("/mnt/" + process.env.USER + "/" + link);
 			let item = document.createElement("button");
 			let isMounted = false;
+			let that = this;
 			try {
 				isMounted = require("child_process").execSync(`grep -s '/mnt/${process.env.USER}/${label}' /proc/mounts`);
 			} catch (e) {
 			}
-			item.className = "dropdown-item d-flex align-items-center";
+			item.className = "dropdown-item d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
 			item.title = 'Click to mount/open drive';
 			item.icon = document.createElement("icon");
 			item.icon.className = "mdi mdi-18px mr-1 lh-18 mdi-usb";
 			item.header = document.createElement("div");
 			item.header.innerText = label || link;
-			item.header.className = "text-truncate flex-grow-1"
+			item.header.className = "text-truncate flex-grow-1";
+			item.menu = new Menu([{
+				label: "Open/Mount",
+				click() {
+					that.click();
+				}
+			}, {
+				label: "Unmount",
+				click() {
+					shell.execAsRoot("umount '" + mountDir + "'", {
+						title: "Authentication is needed to unmount drives"
+					}).then(renderDeviceSection);
+				}
+			}]);
 			item.append(item.icon, item.header);
 			new BSN.Tooltip(item, {placement: "right"});
 			item.addEventListener('click', function () {
@@ -519,21 +544,7 @@ async function renderDeviceSection() {
 				}
 			});
 			item.addEventListener('contextmenu', function (e) {
-				e.stopPropagation();
-				var that = this;
-				Menu.buildFromTemplate([{
-					label: "Open/Mount",
-					click() {
-						that.click();
-					}
-				}, {
-					label: "Unmount",
-					click() {
-						shell.execAsRoot("umount '" + mountDir + "'", {
-							title: "Authentication is needed to unmount drives"
-						}).then(renderDeviceSection);
-					}
-				}]).popup();
+				item.menu.popup();
 			});
 			sidebar.devicesSection.append(item);
 		}
@@ -557,7 +568,7 @@ function renderContainer() {
 
 function renderStatusbar() {
 	statusBar = document.createElement("footer");
-	statusBar.className = "bg-light border-top d-flex align-items-end flex-shrink-0 rounded-bottom";
+	statusBar.className = "border-top d-flex align-items-end flex-shrink-0 rounded-bottom" + (win.options.darkMode ? " text-white bg-dark border-secondary" : " bg-light text-dark");
 	statusBar.text = document.createElement("div");
 	statusBar.text.className = "flex-grow-1 smaller p-1 text-truncate";
 	statusBar.text.innerText = "Loading...";
@@ -569,7 +580,7 @@ function renderStatusbar() {
 
 function renderSidebar() {
 	sidebar = document.createElement("aside");
-	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + " border-right py-1";
+	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + " border-right py-1" + (win.options.darkMode ? " border-secondary" : "");
 	sidebar.style.width = "25%";
 	sidebar.style.maxWidth = "270px";
 	sidebar.style.minWidth = "170px";
@@ -585,7 +596,7 @@ function renderSidebar() {
 }
 
 function renderNav() {
-	nav = document.createElement('nav');
+	nav = document.createElement('form');
 	nav.remove();
 	nav.className = "btn-toolbar flex-nowrap align-items-center flex-grow-1";
 	if (win.arguments.open) {
@@ -605,31 +616,35 @@ function renderNav() {
 				modal: true,
 				parent: win
 			});
-		}
+		};
 		nav.append(nav.sbToggleButton);
 	}
 	nav.backButton = document.createElement("button");
 	nav.backButton.className = "btn btn-outline-primary btn-sm mdi mdi-arrow-left mdi-18px lh-18";
 	nav.backButton.disabled = true;
+	nav.backButton.type = "button";
 	nav.backButton.onclick = e => navigate(":back");
 
 	nav.forwardButton = document.createElement("button");
 	nav.forwardButton.className = "btn btn-outline-primary btn-sm mdi mdi-arrow-right mdi-18px lh-18";
 	nav.forwardButton.disabled = true;
+	nav.forwardButton.type = "button";
 	nav.forwardButton.onclick = e => navigate(":forward");
 
 	nav.refreshButton = document.createElement("button");
+	nav.refreshButton.type = "submit";
 	nav.refreshButton.className = "btn btn-outline-primary btn-sm mdi mdi-refresh mdi-18px lh-18";
-	nav.refreshButton.onclick = e => navigate(nav.pathField.getAttribute("edited") === "true" ? nav.pathField.value : ":REFRESH");
+	nav.refreshButton.onclick = e => navigate(nav.pathField.edited ? nav.pathField.value : ":REFRESH");
 
 	nav.mainBar = document.createElement("div");
 	nav.mainBar.className = "btn-group align-items-stretch flex-shrink-0";
 	nav.mainBar.append(nav.backButton, nav.forwardButton, nav.refreshButton);
 
 	nav.pathField = document.createElement("input");
-	nav.pathField.className = "form-control border-0 py-1 px-2 mx-2 us-0 flex-grow-1 text-center bg-transparent h-auto lh-r1";
+	nav.pathField.className = "form-control form-control-sm border-0 px-2 shadow-sm mx-5 us-0 flex-grow-1 text-center" + (win.options.darkMode ? " bg-dark text-white" : "");
 	nav.pathField.oninput = e => nav.pathField.setAttribute("edited", "true");
 	nav.pathField.setAttribute("data-draggable", "true");
+	nav.pathField.dataset.editMenu = "false";
 	nav.pathField.style.cursor = "inherit";
 	nav.pathField.addEventListener("mousedown", function (e) {
 		if (nav.pathField.classList.contains("bg-transparent")) {
@@ -638,19 +653,28 @@ function renderNav() {
 			nav.pathField.blur();
 		}
 	}, true);
+	nav.pathField.oninput = () => nav.pathField.edited = true;
 	nav.pathField.addEventListener("dblclick", function (e) {
 		e.stopPropagation();
 		nav.pathField.style.pointerEvents = "initial";
+		nav.pathField.dataset.editMenu = "true";
 		nav.pathField.setAttribute("data-draggable", "false");
-		nav.pathField.classList.remove("bg-transparent", "text-center");
+		nav.pathField.classList.replace("text-center", "shadow");
+		nav.pathField.classList.remove("us-0");
 		nav.pathField.style.cursor = "text";
 		nav.pathField.focus();
 	});
+	nav.pathField.addEventListener("contextmenu", e => {
+		if (nav.pathField.dataset.editMenu === "true") e.stopPropagation()
+	});
 	nav.pathField.addEventListener("blur", function () {
-		nav.pathField.classList.add("bg-transparent", "text-center");
+		if (document.querySelector("menu.dropdown-menu")) return;
+		nav.pathField.classList.replace("shadow", "text-center");
+		nav.pathField.classList.add("us-0");
 		nav.pathField.setAttribute("data-draggable", "true");
 		nav.pathField.style.cursor = "inherit";
-	})
+		nav.pathField.dataset.editMenu = "false";
+	});
 	nav.append(nav.mainBar);
 	if (win.arguments.open) nav.append(nav.folderButton);
 	nav.append(nav.pathField);

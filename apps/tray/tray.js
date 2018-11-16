@@ -7,7 +7,7 @@ let elems = {
 	Clock: document.createElement("clock"),
 	Date: document.createElement("date")
 };
-if(isMobile) {
+if (shell.isMobile) {
 	root.className = "position-fixed w-100";
 	root.style.top = 0;
 	root.style.left = 0;
@@ -33,10 +33,10 @@ elems.Container.addEventListener("click", e => {
 });
 elems.Container.append(elems.Date, elems.NIcons, elems.Clock);
 root.appendChild(elems.Container);
-if(!isMobile) BSN.Tooltip(elems.Container);
+if (!shell.isMobile) BSN.Tooltip(elems.Container);
 
 setInterval(function() {
-if(isMobile) document.body.style.paddingTop = elems.Container.offsetHeight + "px";
+	if (shell.isMobile) document.body.style.paddingTop = elems.Container.offsetHeight + "px";
 	elems.Clock.innerText = new Date().toLocaleTimeString("en-US", {
 		hour: '2-digit',
 		minute: '2-digit'

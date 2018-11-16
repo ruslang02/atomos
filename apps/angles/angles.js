@@ -51,13 +51,10 @@ tabCollection.toolbarToggle.className = "btn btn-sm btn-outline-light p-0 mb-2 r
 tabCollection.toolbarToggle.addEventListener("click", e => {
 	tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up", viewMenu.menu.getMenuItemById("angles-showtoolbar").checked = !nav.classList.toggle("d-none"));
 });
-win.ui.root.classList.replace("bg-semiwhite", "bg-semidark")
-win.ui.root.classList.add("border-secondary")
 win.ui.root.style.overflow = "unset";
 win.ui.header.classList.remove("border-bottom", "py-1");
 win.ui.header.classList.add("pt-2");
 win.ui.buttons.style.marginTop = "-0.5rem";
-win.ui.body.classList.add("bg-dark")
 win.ui.title.classList.add("d-none");
 win.ui.header.prepend(tabCollection, tabCollection.toolbarToggle);
 let nav = document.createElement("nav");
@@ -70,8 +67,8 @@ generateMenus();
 win.show();
 let altEvent = function(e) {
 	if(win.isFocused() && e.key === "Alt") tabCollection.toolbarToggle.click();
-}
-window.addEventListener("keydown", altEvent)
+};
+window.addEventListener("keydown", altEvent);
 
 function init() {
 	require("ace-builds/src-min/ace");

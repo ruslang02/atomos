@@ -27,7 +27,7 @@ wc.on("context-menu", (e, params) => {
 			label: "Cut",
 			icon: "content-cut",
 			enabled: params.editFlags.canCut,
-			click() {
+			click(item, win, elem) {
 				elem.focus();
 				document.execCommand('cut', false)
 			}
@@ -35,7 +35,7 @@ wc.on("context-menu", (e, params) => {
 			label: "Copy",
 			icon: "content-copy",
 			enabled: params.editFlags.canCopy,
-			click() {
+			click(item, win, elem) {
 				elem.focus();
 				document.execCommand('copy', false)
 			}
@@ -43,7 +43,7 @@ wc.on("context-menu", (e, params) => {
 			label: "Paste",
 			icon: "content-paste",
 			enabled: params.editFlags.canPaste,
-			click() {
+			click(item, win, elem) {
 				elem.focus();
 				document.execCommand('paste', false)
 			}
@@ -53,12 +53,13 @@ wc.on("context-menu", (e, params) => {
 			label: "Select All",
 			icon: "select-all",
 			enabled: params.editFlags.canSelectAll,
-			click() {
+			click(item, win, elem) {
 				elem.focus();
 				document.execCommand('selectAll', false)
 			}
 		}]);
 		previousMenu.popup();
+		previousMenu.menu.addEventListener("click", e => e.stopPropagation())
 	}
 
 });

@@ -4,7 +4,8 @@ const {
 } = require('electron');
 const fs = require("fs");
 const path = require("path");
-let isDebug = global.isDebug = (process.argv[2] ? process.argv[2].trim().toLowerCase() == "-d" : false);
+let isDebug = global.isDebug = process.argv[2] && process.argv[2].trim().toLowerCase() === "-d";
+let isMobile = global.isMobile = process.argv[2] && process.argv[2].trim().toLowerCase() === "--mobile";
 global.shutdown = {
 	confirmed: false
 };

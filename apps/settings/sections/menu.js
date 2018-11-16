@@ -2,7 +2,7 @@ setTitle("Settings");
 
 function newItem(title, descr, icon, color, onclick) {
 	let elem = document.createElement("button");
-	elem.className = "btn-block btn btn-white d-flex p-2 align-items-stretch m-0 rounded-0 flex-shrink-0";
+	elem.className = "btn-block btn btn-white d-flex p-2 align-items-stretch m-0 rounded-0 flex-shrink-0 " + (shell.ui.darkMode ? "text-white" : "");
 	elem.icon = document.createElement("icon");
 	elem.icon.className = "rounded-circle text-white d-flex mdi mdi-21px mdi-" + icon + " p-2 lh-21 flex-shrink-0 ml-1 mr-2";
 	elem.icon.style.backgroundColor = color;

@@ -11,18 +11,17 @@ window.Snackbar = class Snackbar {
   constructor(options) {
 		if(typeof options === "string") options = {message: options};
 		let self = this;
-		let timeout = 3000;
-		if(options.message.length > 20) timeout = options.message.length * 150;
+		let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
     this.ui = document.createElement("snackbar");
 		this.ui.style.bottom = options.window ? 0 : window.getComputedStyle(Elements.Bar).height;
-		this.ui.style.left = 0;
-		this.ui.style.right = 0;
-		this.ui.style.maxWidth = CSS.px(300);
-		this.ui.style.zIndex = 1010
+		this.ui.style.left = CSS.px(0);
+		this.ui.style.right = CSS.px(0);
+		this.ui.style.maxWidth = CSS.px(450);
+		this.ui.style.zIndex = "1010";
     this.ui.message = document.createElement("div");
     this.ui.button = document.createElement("button");
-    this.ui.className = "bg-light very-rounded shadow d-flex position-absolute align-items-center mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
-    this.ui.message.className = "flex-grow-1 text-truncate lh-36";
+		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "bg-light") + " very-rounded shadow d-flex position-absolute align-items-stretch mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
+		this.ui.message.className = "flex-grow-1 d-flex align-items-center justify-content-center";
     this.ui.message.innerText = options.message;
     this.ui.append(this.ui.message);
     if (options.buttonText) {
@@ -31,12 +30,12 @@ window.Snackbar = class Snackbar {
       this.ui.button.innerText = options.buttonText;
 			this.ui.button.onclick = options.click || console.log;
       this.ui.append(this.ui.button);
-    } else this.ui.message.classList.add("text-center")
+		} else this.ui.message.classList.add("text-center");
 		if(options.window) options.window.ui.body.append(this.ui); else
-    document.body.append(this.ui);
-		setTimeout(e => {
+			document.body.appendChild(this.ui);
+		setTimeout(() => {
 			self.ui.classList.add("hide");
-			setTimeout(e => self.ui.remove(), FLY_ANIMATION_DURATION);
+			setTimeout(() => self.ui.remove(), shell.ui.flyAnimation);
 		}, timeout)
   }
 };
@@ -49,7 +48,6 @@ window.Notification = class Notification {
      * - Global (Default) Options
      */
     let options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, specificOptions);
-    let _this = this;
 		this.window = win;
     if (options.title === null && options.message === null) return;
     this.ui = document.createElement("notification");
@@ -61,7 +59,7 @@ window.Notification = class Notification {
     this.ui.message = document.createElement("notification-message");
     let appTimeBar = document.createElement("div");
     appTimeBar.className = "d-flex px-3 pt-2";
-    this.ui.className = "card shadow scrollable-0 mb-2 position-relative fly left hide";
+		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "") + " card shadow scrollable-0 mb-2 position-relative fly left hide";
     this.ui.app.className = "align-items-center d-flex mr-1 smaller";
     this.ui.app.style.color = options.color;
     this.ui.app.icon.className = "mdi mdi-18px lh-18 mr-1 mdi-" + options.icon;
@@ -75,6 +73,7 @@ window.Notification = class Notification {
     this.ui.message.append(options.message || "");
     if (options.image) {
       this.ui.classList.add("type-image");
+			if (shell.ui.darkMode) this.ui.classList.add("dark");
       this.ui.messageTitle.classList.add("mb-2")
     }
     this.ui.app.append(this.ui.app.icon, this.ui.app.displayName);
@@ -101,9 +100,9 @@ window.Notification = class Notification {
       this.ui.close.style.top = 0;
       this.ui.close.style.right = 0;
       this.ui.close.style.height = "32px";
-      this.ui.close.onclick = e => this.dismiss();
-      this.ui.onmouseenter = e => this.ui.close.classList.add("show");
-      this.ui.onmouseleave = e => this.ui.close.classList.remove("show");
+			this.ui.close.onclick = () => this.dismiss();
+			this.ui.onmouseenter = () => this.ui.close.classList.add("show");
+			this.ui.onmouseleave = () => this.ui.close.classList.remove("show");
       this.ui.append(this.ui.close);
     }
     Elements.MenuBar.notifications.append(this.ui);
@@ -113,7 +112,7 @@ window.Notification = class Notification {
   dismiss() {
     this.ui.classList.replace("show", "hide");
 		this.trayItem.remove();
-    setTimeout(e => this.ui.remove(), FLY_ANIMATION_DURATION);
+		setTimeout(e => this.ui.remove(), shell.ui.flyAnimation);
   }
   notify() {
     if (this.window )
@@ -147,7 +146,7 @@ window.Notification = class Notification {
           if (node.classList.contains("d-none") && node.classList.contains("notification-showing"))
             node.classList.remove("d-none", "notification-showing");
         });
-      }, FLY_ANIMATION_DURATION);
+			}, shell.ui.flyAnimation);
     }, NOTIFICATION_DELAY);
   }
 }

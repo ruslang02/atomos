@@ -9,14 +9,14 @@ setImmediate(() => {
 	_this.js2xml = require('jstoxml');
 	_this.renderID3 = require('musicmetadata');
 	if (win.arguments.file) load(win.arguments.file);
-})
+});
 const win = AppWindow.fromId(WINDOW_ID);
 win.on('second-instance', (e, args) => {
 	load(args.file);
 });
 win.on('close', e => {
 	if(prevNotification) prevNotification.dismiss();
-})
+});
 let appButton = document.createElement("button");
 appButton.className = "btn btn-outline-danger d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-boombox border-0 rounded";
 appButton.addEventListener("click", e => {
@@ -106,12 +106,12 @@ playlist.className = "col-4 px-0 py-2";
 playlist.style.minWidth = "12rem";
 playlist.style.maxWidth = "20rem";
 let cover = document.createElement("section");
-cover.className = "flex-grow-1 bg-white d-flex align-items-center border-left border-top justify-content-center";
+cover.className = "flex-grow-1 d-flex align-items-center border-left border-top justify-content-center" + (win.options.darkMode ? " bg-dark border-secondary" : " bg-light");
 cover.image = new Image();
 cover.image.className = "position-absolute m-auto mw-100 mh-100";
 cover.appendChild(cover.image);
 let footer = document.createElement("footer");
-footer.className = "bg-light d-flex flex-column";
+footer.className = "d-flex flex-column" + (win.options.darkMode ? " bg-dark" : " bg-light");
 footer.progress = document.createElement("progress");
 footer.progress.className = "w-100";
 footer.progress.max = 100;
@@ -127,13 +127,13 @@ current.artist.className = "text-truncate w-100";
 let controls = document.createElement("div");
 controls.className = "d-flex align-items-center m-2 justify-content-center";
 controls.previous = document.createElement("button");
-controls.previous.className = "btn btn-sm btn-light mdi mdi-skip-previous mdi-24px d-flex lh-24 py-1 px-2";
+controls.previous.className = "btn btn-sm mdi mdi-skip-previous mdi-24px d-flex lh-24 py-1 px-2" + (win.options.darkMode ? " btn-dark" : " btn-light");
 controls.previous.addEventListener("click", e => {
 	if (playlist.active)
 		if (playlist.active.previousSibling) playlist.active.previousSibling.click();
 });
 controls.next = document.createElement("button");
-controls.next.className = "btn btn-sm btn-light mdi mdi-skip-next mdi-24px lh-24 py-1 px-2";
+controls.next.className = "btn btn-sm mdi mdi-skip-next mdi-24px lh-24 d-flex py-1 px-2" + (win.options.darkMode ? " btn-dark" : " btn-light");
 controls.next.addEventListener("click", e => {
 	if (playlist.active)
 		if (playlist.active.nextSibling) playlist.active.nextSibling.click();
@@ -155,7 +155,7 @@ root.append(main, footer);
 win.show();
 
 let player = document.createElement("audio");
-root.append(player)
+root.append(player);
 player.ontimeupdate = function() {
 	footer.progress.value = player.currentTime || 0;
 	footer.progress.max = player.duration || 0;
@@ -171,7 +171,7 @@ player.onpause = function() {
 
 function generate(file) {
 	let track = document.createElement("button");
-	track.className = 'dropdown-item text-truncate d-inline-block';
+	track.className = 'dropdown-item text-truncate d-inline-block' + (win.options.darkMode ? " text-white" : "");
 	track.id = file.id;
 	track.location = file.url;
 	track.artist = file.artist || "No artist";

@@ -53,7 +53,7 @@ let menu = new Menu(win, [{
 		}
 	}]);
 	el.textarea = document.createElement("textarea");
-	el.textarea.className = "flex-grow-1 w-100 h-100 border-0";
+el.textarea.className = "flex-grow-1 w-100 h-100 p-2 border-0" + (shell.ui.darkMode ? " text-white bg-dark" : "");
 	el.textarea.style.resize = "none";
 	el.textarea.autofocus = true;
 	el.textarea.style.outline = 0;

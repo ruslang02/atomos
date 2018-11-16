@@ -33,7 +33,7 @@ window.Registry = class Registry extends EventEmitter {
 	}
 
 	static eraseAll() {
-		if (isDebug) window.localStorage.setItem("registry", "{}");
+		if (shell.isDebug) window.localStorage.setItem("registry", "{}");
 		else console.info("What the hell are you doing?");
 	}
 

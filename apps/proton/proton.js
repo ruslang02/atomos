@@ -4,7 +4,8 @@ win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
 			 else if (args.file) newTab(args.file);
 			 win.show();
-})
+});
+const isDarkMode = win.options.darkMode;
 
 if (!Object.keys(registry.get()).length) registry.set({
 	history: [],
@@ -29,7 +30,7 @@ let preferences = new Proxy(registry.get(), {
 		}
 
 		t[p] = v;
-		registry.set(preferences)
+		registry.set(preferences);
 		return true;
 	}
 });
@@ -37,22 +38,22 @@ let tabs = document.createElement("section");
 tabs.className = "d-flex scrollable-x-0 flex-shrink-0 text-truncate pl-3 pr-1";
 tabs.style.marginBottom = "-1px";
 tabs.style.zIndex = "100";
-tabs.style.maxWidth = "calc(100% - 100px)"
+tabs.style.maxWidth = "calc(100% - 100px)";
 tabs.onmousewheel = e => tabs.scrollLeft += e.deltaY;
 win.ui.root.style.overflow = "unset";
 win.ui.header.classList.remove("border-bottom", "py-1");
 win.ui.header.classList.add("pt-2");
-win.ui.header.style.boxShadow = "inset 0px 0px 0px 50px #6c757d2b"
+win.ui.header.style.boxShadow = "inset 0px 0px 0px 50px #6c757d2b";
 win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.title.classList.add("d-none");
 let ntbtn = document.createElement("button");
-ntbtn.className = "btn btn-white p-0 mdi mdi-plus mdi-24px d-flex text-dark";
+ntbtn.className = "btn btn-white p-0 mdi mdi-plus mdi-24px d-flex " + (isDarkMode ? "text-white" : "text-dark");
 ntbtn.style.lineHeight = "24px";
-ntbtn.onclick = e => newTab();
+ntbtn.onclick = () => newTab();
 win.ui.header.prepend(tabs, ntbtn);
 
 let nav = document.createElement("form");
-nav.className = "bg-white d-flex p-1 scrollable-y-0 align-items-center shadow-sm";
+nav.className = "d-flex p-1 scrollable-y-0 align-items-center shadow-sm " + (isDarkMode ? "bg-dark" : "bg-white");
 nav.style.zIndex = 1;
 nav.back = document.createElement("button");
 nav.forward = document.createElement("button");
@@ -60,20 +61,20 @@ nav.back.type = "button";
 nav.forward.type = "button";
 nav.back.onclick = e => tabs.active.webview.goBack();
 nav.forward.onclick = e => tabs.active.webview.goForward();
-nav.back.className = "btn btn-white mr-1 mdi mdi-arrow-left rounded-circle mdi-21px lh-21 d-flex p-1";
-nav.forward.className = "btn btn-white mr-1 mdi mdi-arrow-right rounded-circle mdi-21px lh-21 d-flex p-1";
+nav.back.className = "btn mr-1 mdi mdi-arrow-left rounded-circle mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
+nav.forward.className = "btn mr-1 mdi mdi-arrow-right rounded-circle mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
 nav.back.disabled = true;
 nav.forward.disabled = true;
 nav.refresh = document.createElement("button");
 nav.refresh.type = "submit";
-nav.refresh.className = "btn btn-white mr-2 mdi rounded-circle mdi-refresh mdi-21px lh-21 d-flex p-1";
+nav.refresh.className = "btn mr-2 mdi rounded-circle mdi-refresh mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
 let address = document.createElement("input");
-address.className = "form-control mr-2 form-control-sm bg-light border-0 h-auto py-1 px-3";
+address.className = "form-control mr-2 form-control-sm border-0 h-auto py-1 px-3 " + (isDarkMode ? "bg-secondary text-white" : "bg-light");
 address.style.borderRadius = "100px";
 
 nav.menu = document.createElement("button");
-nav.menu.className = "btn btn-white mdi mdi-dots-vertical rounded-circle mdi-21px lh-21 d-flex p-1";
-nav.menu.type = "button"
+nav.menu.className = "btn mdi mdi-dots-vertical rounded-circle mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
+nav.menu.type = "button";
 nav.menu.addEventListener("click", e => {
 	e.stopPropagation();
 	const pos = win.getPosition();
@@ -139,10 +140,10 @@ nav.append(nav.back, nav.forward, nav.refresh, address, nav.menu);
 let tabCollection = document.createElement("main");
 tabCollection.className = "flex-grow-1 h-100 position-relative";
 let urlTooltip = document.createElement("label");
-urlTooltip.className = "p-1 m-0 text-truncate bg-light fade show";
-urlTooltip.style.cssText = "bottom:0;left:0;position:absolute;max-width: 400px;outline: 1px solid lightgray;";
+urlTooltip.className = "p-1 m-0 text-truncate fade show " + (isDarkMode ? "bg-dark text-white" : "bg-light");
+urlTooltip.style.cssText = "bottom:0;left:0;position:absolute;max-width: 400px;border: 1px solid lightgray; border-bottom-left-radius: .25rem";
 root.append(nav, tabCollection, urlTooltip);
-setImmediate(e => newTab(win.arguments.file || win.arguments.url))
+setImmediate(() => newTab(win.arguments.file || win.arguments.url));
 win.show();
 
 let tabMenu = new Menu(win, [{
@@ -158,9 +159,7 @@ let tabMenu = new Menu(win, [{
 	label: "Close other tabs",
 	icon: "notification-clear-all",
 	click() {
-		tabs.children.forEach(tab => {
-			if(tab !== tabs.active) tab.close();
-		})
+		for (const tab of tabs.children) if (tab !== tabs.active) tab.close();
 	}
 }, {
 	label: "Close tab",
@@ -177,14 +176,14 @@ function newTab(url = "https://www.startpage.com") {
 	tab.dataset.draggable = false;
 	tab.loaded = false;
 	tab.webview = document.createElement("webview");
-	tab.webview.className = "position-absolute w-100 h-100 d-inline-flex rounded-bottom bg-white";
+	tab.webview.className = "position-absolute w-100 h-100 d-inline-flex rounded-bottom bg-white scrollable-0";
 	tab.webview.src = "about:blank";
 	tab.webview.autosize = true;
 	tabCollection.appendChild(tab.webview);
 	console.log(tabCollection, tab.webview);
-	tab.className = "nav-item shadow-sm nav-link bg-white position-relative d-flex fade";
+	tab.className = "nav-item shadow-sm nav-link position-relative d-flex fade " + (isDarkMode ? "bg-dark text-white" : "bg-white");
 	tab.style.transition = "all .2s linear";
-	setTimeout(e => tab.classList.add("show"), FADE_ANIMATION_DURATION);
+	setTimeout(e => tab.classList.add("show"), shell.ui.fadeAnimation);
 	tab.style.borderRadius = "0.5rem 0.5rem 0 0";
 	tab.header = document.createElement("div");
 	tab.header.className = "flex-grow-1 text-truncate lh-r1";
@@ -226,7 +225,7 @@ function newTab(url = "https://www.startpage.com") {
 				});
 			}
 		});
-	}
+	};
 	tab.initEvents();
 	address.focus();
 	tabs.active = tab;
@@ -235,20 +234,19 @@ function newTab(url = "https://www.startpage.com") {
 		else {
 		tabs.active = (tabs.active.nextSibling || tabs.active.previousSibling);
 		tab.classList.remove("show");
-		setTimeout(e => tab.remove(), FADE_ANIMATION_DURATION);
+			setTimeout(() => tab.remove(), shell.ui.fadeAnimation);
 		tab.webview.remove();
 		tabs.active.activate();
-
 		}
-	}
+	};
 	tab.activate = function() {
 		if(tabs.active) tabs.active.deactivate();
-		tab.classList.add("bg-white", "shadow-sm");
+		tab.classList.add(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-none", "d-flex");
 		tab.webview.classList.replace("d-none", "d-inline-flex");
 		tabs.active = tab;
 		tab.update();
-	}
+	};
 	tab.update = function() {
 		let w = tab.webview;
 		tab.header.innerText = w.getTitle();
@@ -256,21 +254,21 @@ function newTab(url = "https://www.startpage.com") {
 			if(!w.getURL().includes("/proton/webpages"))
 				address.value = w.getURL();
 			else
-				address.value = "proton://" + path.parse(w.getURL()).name
+				address.value = "proton://" + path.parse(w.getURL()).name;
 				win.setTitle(w.getTitle() + " - Proton Web Browser");
-			nav.back.disabled = !w.canGoBack()
+			nav.back.disabled = !w.canGoBack();
 			nav.forward.disabled = !w.canGoForward();
 		}
-	}
+	};
 	tab.deactivate = function() {
-		tab.classList.remove("bg-white", "shadow-sm");
+		tab.classList.remove(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-flex", "d-none");
 		tab.webview.classList.replace("d-inline-flex", "d-none");
 
-	}
+	};
 	tab.navigate = function(url) {
 		if (url.startsWith("http:") || url.startsWith("ftp:") || url.startsWith(
-				"https:") || url.startsWith("//") || url.startsWith("file:")) 1 + 1;
+			"https:") || url.startsWith("//") || url.startsWith("file:")) ;
 		else if (url.startsWith("/"))
 			url = "file://" + url;
 		else if (url.indexOf(".") === -1)
@@ -278,7 +276,7 @@ function newTab(url = "https://www.startpage.com") {
 		else
 			url = "http://" + url;
 		tab.webview.src = url;
-	}
+	};
 
 	return tab.webview;
 }
@@ -317,5 +315,11 @@ window[id='${id}'] tab.bg-white:before {
 window[id='${id}'] tab.bg-white:after {
   box-shadow: -2px 2px 0 white;
 }
-`
+window[id='${id}'] tab.bg-dark:before {
+  box-shadow: 2px 2px 0 var(--dark);
+}
+window[id='${id}'] tab.bg-dark:after {
+  box-shadow: -2px 2px 0 var(--dark);
+}
+`;
 root.append(css);

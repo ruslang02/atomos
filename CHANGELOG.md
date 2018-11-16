@@ -1,4 +1,10 @@
 # Changelog
+## 0.7.1
+ - Bugfixes, patches
+ - Removal of all Icons8 files
+ - Dark Mode systemwide
+ - Text selection context menu
+
 ## 0.7.0
  - Full reset, 90% code rewritten
  - JS-based rendering

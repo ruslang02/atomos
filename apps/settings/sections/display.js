@@ -26,6 +26,24 @@ list.generalLabel = newSmallListItem({
 	label: "General settings",
 	type: "header"
 });
+list.darkMode = newSmallListItem({
+	label: "Dark mode",
+	sublabel: "EXPERIMENTAL. Restart needed.",
+	type: "checkbox",
+	checked: Registry.get("system.isDarkMode") || false,
+	click(checked) {
+		Registry.set("system.isDarkMode", checked);
+		new Snackbar({
+			message: "UI restart is needed to apply changes",
+			buttonText: "Restart",
+			buttonColor: "var(--danger)",
+			timeout: 1000 * 60 * 60 * 24,
+			click() {
+				require("electron").remote.getCurrentWindow().reload();
+			}
+		})
+	}
+});
 list.thumbEnabled = newSmallListItem({
 	label: "Thumbnails",
 	sublabel: "View small shots of running apps",
@@ -43,5 +61,5 @@ list.menuIcons = newSmallListItem({
 		Registry.set("system.showMenuIcons", checked);
 	}
 });
-list.append(list.wallpaper, list.generalLabel, list.thumbEnabled, list.menuIcons);
+list.append(list.wallpaper, list.generalLabel, list.darkMode, list.thumbEnabled, list.menuIcons);
 main.append(list);

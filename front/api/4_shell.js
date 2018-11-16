@@ -506,6 +506,15 @@ window.shell = class Shell {
 		});
 		control.show();
 	}
+
+	static get ui() {
+		return {
+			fadeAnimation: Registry.get("system.fadeAnimationDuration") || 150,
+			flyAnimation: Registry.get("system.flyAnimationDuration") || 200,
+			darkMode: Registry.get("system.isDarkMode") || false
+		}
+	}
+
 	static showMessageBox(options) {
 		return new Promise(resolve => {
 
@@ -559,13 +568,13 @@ window.shell = class Shell {
 				let button = document.createElement("button");
 				button.className = "btn " + (options.defaultId === i ? "btn-primary" : "btn-secondary");
 				button.innerText = options.buttons[i];
-				button.type = options.defaultId === i ? "submit" : "button"
+				button.type = options.defaultId === i ? "submit" : "button";
 				modal.footer.append(button);
 				button.addEventListener("click", function() {
 					send();
 					if (options.cancelId === i)
 						modal.controller.hide();
-					modal.addEventListener("hidden.bs.modal", modal.remove)
+					modal.addEventListener("hidden.bs.modal", modal.remove);
 					modal.controller.hide();
 				});
 				if (options.defaultId === i) {
@@ -650,3 +659,10 @@ Object.defineProperty(window.shell, "DIRECTORY", {
 Object.defineProperty(window.shell, "ACTION_FOLDER", {
 	value: 2
 });
+Object.defineProperty(window.shell, "isMobile", {
+	value: require("electron").remote.getGlobal("isMobile")
+});
+Object.defineProperty(window.shell, "isDebug", {
+	value: require("electron").remote.getGlobal("isDebug")
+});
+if (shell.ui.darkMode) document.body.classList.add("dark");

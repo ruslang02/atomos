@@ -2,9 +2,6 @@ const win = AppWindow.fromId(WINDOW_ID);
 const path = require("path");
 const fs = require("fs").promises;
 const {exec} = require("child_process");
-win.ui.root.classList.replace("bg-semiwhite", "bg-semidark")
-win.ui.header.classList.replace("border-bottom", "text-white")
-win.ui.root.classList.add("border-secondary")
 let commands = document.createElement("kbd");
 commands.className = "d-block flex-grow-1 bg-transparent rounded-0 border-0 scrollable-y h-25 us";
 let cwd = document.createElement("span");
@@ -46,7 +43,7 @@ setImmediate(async function() {
 			dataset.append(new Option(item));
 		} catch(e) {}
 	}
-})
+});
 function addMessage(text) {
 	let message = document.createElement("div");
 	if (text.length > 1000) {
@@ -77,7 +74,7 @@ async function execute() {
 		let dir = oldValue.split(" ")[1];
 		let newDir = path.resolve(cwd.innerText, dir.trim());
 		try {
-			await fs.access(newDir)
+			await fs.access(newDir);
 			cwd.innerText = newDir;
 		} catch(e) {
 			addMessage("<div class='text-danger'>No such file or directory.</div>");
@@ -101,7 +98,7 @@ async function execute() {
 		}).on('error', err => {
 			addMessage("<div class='text-danger'>" + err + "</div>");
 		}).on('exit', (code, signal) => {
-			console.log(code, oldValue.substring(0, spaceCheck).trim())
+			console.log(code, oldValue.substring(0, spaceCheck).trim());
 			if(code === 127 && shell.isAppInstalled(oldValue.substring(0, spaceCheck).trim())) {
 				noErr = true;
 				console.log(noErr);
@@ -116,7 +113,7 @@ async function execute() {
 		let stdout = "";
 		let stderr = "";
 		proc.stderr.on('data', chunk => {
-			setTimeout(e => {
+			setTimeout(() => {
 				stderr += chunk;
 				noErr = false;
 			}, 10);

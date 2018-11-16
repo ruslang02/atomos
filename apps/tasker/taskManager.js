@@ -1,5 +1,5 @@
 const path = require("path");
-if(!isMobile) root.className = "flex-grow-1"; else root.className = "d-none";
+if (!shell.isMobile) root.className = "flex-grow-1"; else root.className = "d-none";
 let tasks = document.createElement("div");
 tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
 tasks.className = "w-100 position-fixed fade px-3 d-none";
@@ -9,18 +9,11 @@ window.TaskManager = class TaskManager {
 		tasks.classList.remove("d-none");
 		tasks.classList.add("show");
 	}
-		static hide() {
-			tasks.classList.remove("show");
-			setTimeout(e => tasks.classList.add("d-none"), FADE_ANIMATION_DURATION)
-		}
-			static toggle() {
-				if(tasks.classList.contains("show")) TaskManager.hide(); else TaskManager.show();
-			}
 	constructor(wID) {
 		let _this = this;
 		this.window = AppWindow.fromId(wID);
 		this.task = document.createElement('button');
-		if(isMobile) {
+		if (shell.isMobile) {
 			this.mtask = document.createElement("div");
 			this.mtask.className = "d-inline-flex flex-column text-white mt-2 mr-2";
 			this.mtask.icon = document.createElement("icon");
@@ -96,16 +89,26 @@ window.TaskManager = class TaskManager {
 		this.window.on('closed', function() {
 			document.body.click();
 			_this.task.classList.remove("show");
-			setTimeout(e => _this.destroy(), FADE_ANIMATION_DURATION)
+			setTimeout(e => _this.destroy(), shell.ui.fadeAnimation)
 		});
 		this.window.on('blur', e => this.task.classList.remove("active"));
 		this.window.on('focus', e => this.task.classList.add("active"));
 		this.window.on('thumbnail-changed', e => this.setTitle());
 	}
+
+	static toggle() {
+		if (tasks.classList.contains("show")) TaskManager.hide(); else TaskManager.show();
+	}
+
+	static hide() {
+		tasks.classList.remove("show");
+		setTimeout(e => tasks.classList.add("d-none"), shell.ui.fadeAnimation)
+	}
 	destroy() {
 		this.task.remove();
 		if(this.mtask) this.mtask.remove();
 	}
+
 	setTitle(title = this.window.ui.title.innerText) {
 		let thumbnail = Registry.get("system.enableThumbnails");
 		let markup = "";
@@ -116,7 +119,7 @@ window.TaskManager = class TaskManager {
 			<img class='w-100 mb-1' src='${this.window.thumbnail}'/>
 			<div class='mb-1 ml-1 text-truncate'>${title}</div>
 		</div>`;
-		if(isMobile) {
+			if (shell.isMobile) {
 			this.mtask.thumb.src = this.window.thumbnail;
 			this.mtask.appName.innerText = title;
 		}
@@ -128,7 +131,7 @@ window.TaskManager = class TaskManager {
 	setIcon(iconURL) {
 		if(iconURL) {
 		this.taskIcon.className = "rounded-max mdi mdi-24px lh-24 d-flex text-white p-2 my-1 mdi-" + this.window.options.icon;
-			if(isMobile)
+			if (shell.isMobile)
 				this.mtask.icon.className = "mdi mdi-24px lh-24 d-flex text-white mdi-" + this.window.options.icon;
 		}
 	}
