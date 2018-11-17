@@ -143,6 +143,9 @@ taskbar {
 / / transform: translateY(59 px);
 / / transition-delay: 2 s;
 }
+body.dark taskbar {
+	background: rgba(91, 91, 91, 0.85);
+}
 
 /*taskbar:hover {
 	transform:translateY(0px);
@@ -167,8 +170,8 @@ plugin#tasker > button.active::before {
 	padding-left: 0.9rem;
 }
 
-.dropdown-item:hover:not(.active):not(:active),
-.dropdown-item:focus:not(.active):not(:active) {
+.dropdown-item:hover:not(.active):not(:active):not(:disabled):not(.disabled),
+.dropdown-item:focus:not(.active):not(:active):not(:disabled):not(.disabled) {
 	background-color: rgba(177, 177, 177, 0.3)
 }
 

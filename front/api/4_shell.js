@@ -468,13 +468,12 @@ window.shell = class Shell {
 				let pkg = JSON.parse(await fsp.readFile(path.join(osRoot, "apps", item, "package.json")));
 				if (pkg.type !== "app" || pkg.hidden)
 					continue;
-				pkg.icon = path.join(osRoot, "apps", item, pkg.icon);
 				let elem = document.createElement("button");
 				elem.appID = item;
 				elem.className = "dropdown-item d-flex align-items-center px-2";
-				elem.icon = new Image(24, 24);
-				elem.icon.src = new URL("file://" + pkg.icon).href;
-				elem.icon.className = "mr-2"
+				elem.icon = document.createElement("icon");
+				elem.icon.className = "mr-2 rounded p-1 lh-18 mdi-18px mdi shadow text-white mdi-" + pkg.icon;
+				elem.icon.style.background = pkg.color;
 				elem.app = document.createElement("div");
 				elem.app.innerText = pkg.productName || pkg.name;
 				elem.app.className = "flex-grow-1 text-truncate";

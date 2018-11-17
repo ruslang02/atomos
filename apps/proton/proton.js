@@ -181,12 +181,15 @@ function newTab(url = "https://www.startpage.com") {
 	tab.webview.autosize = true;
 	tabCollection.appendChild(tab.webview);
 	console.log(tabCollection, tab.webview);
-	tab.className = "nav-item shadow-sm nav-link position-relative d-flex fade " + (isDarkMode ? "bg-dark text-white" : "bg-white");
+	tab.className = "nav-item shadow-sm nav-link align-items-center position-relative d-flex fade " + (isDarkMode ? "bg-dark text-white" : "bg-white");
 	tab.style.transition = "all .2s linear";
 	setTimeout(e => tab.classList.add("show"), shell.ui.fadeAnimation);
 	tab.style.borderRadius = "0.5rem 0.5rem 0 0";
+	tab.icon = new Image(18,18);
+	tab.icon.className = "rounded-circle mr-2";
 	tab.header = document.createElement("div");
-	tab.header.className = "flex-grow-1 text-truncate lh-r1";
+	tab.header.className = "flex-grow-1 text-truncate lh-r1 smaller";
+	tab.header.style.maxWidth = CSS.px(150);
 	tab.header.innerText = "untitled";
 	tab.addEventListener("contextmenu", e => {
 		e.stopPropagation();
@@ -197,12 +200,15 @@ function newTab(url = "https://www.startpage.com") {
 	tab.closeButton = document.createElement("button");
 	tab.closeButton.className = "btn btn-outline-danger border-0 text-decoration-none rounded mdi-close mdi mdi-18px lh-18 p-0 ml-2 d-flex";
 	tab.closeButton.onclick = () => tab.close();
-	tab.append(tab.header, tab.closeButton);
+	tab.append(tab.icon, tab.header, tab.closeButton);
 	tabs.append(tab);
 	tab.initEvents = function() {
 		tab.webview.addEventListener("will-navigate", tab.update);
 		tab.webview.addEventListener("did-navigate", tab.update);
 		tab.webview.addEventListener("page-title-updated", tab.update);
+		tab.webview.addEventListener("page-favicon-updated", e => {
+			tab.icon.src = e.favicons[0];
+		});
 		tab.webview.addEventListener("close", e => tab.close());
 		tab.webview.addEventListener("update-target-url", e => {
 			if(tabs.active === tab) urlTooltip.innerText = e.url;
