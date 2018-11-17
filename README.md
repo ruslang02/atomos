@@ -19,14 +19,10 @@ Firstly, you should have Node.JS and NPM installed (instructions for Ubuntu-base
 ```
 # apt install -y nodejs npm
 ```
-Then you need Electron to work:
-```
-$ npm install -g electron
-```
 Install the libraries and launch:
 ```
 $ cd atomos
-atomos/$ npm update
+atomos/$ npm install
 atomos/$ npm start
 ```
 
