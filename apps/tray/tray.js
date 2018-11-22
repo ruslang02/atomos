@@ -16,15 +16,14 @@ if (shell.isMobile) {
 	elems.NIcons.style.maxWidth = "calc(18px * 6 + .25rem * 5)";
 	elems.NIcons.style.order = -1;
 } else {
-	root.className = "d-flex align-items-center"
-	elems.Container.className = "btn btn-dark shadow-sm text-white border-0 p-2 d-flex align-items-stretch";
-	elems.Clock.className = "lh-r1 font-weight-bold mr-1";
+	root.className = "d-flex align-items-center";
+	elems.Container.className = "btn btn-dark shadow-sm text-white border-0 p-2 d-flex align-items-center";
+	elems.Clock.className = "font-weight-bold mr-1";
 	elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
 }
 elems.NIcons.className = "fly left show d-inline-flex mr-1 text-truncate";
-elems.Date.className = "fly left show lh-r1 d-none mr-2";
-elems.Clock.style.height = "19px";
+elems.Date.className = "fly left show d-none mr-2";
 elems.Container.addEventListener("click", e => {
 	e.stopPropagation();
 	let win = AppWindow.getFocusedWindow();

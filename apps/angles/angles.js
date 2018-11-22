@@ -41,24 +41,24 @@ let ofdPath = process.env.HOME;
 let tabs = [];
 let fileMenu, editMenu, viewMenu;
 let tabCollection = document.createElement("section");
-tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 flex-shrink-0 scrollable-0 ml-3";
+tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 flex-shrink-0 scrollable-0";
 tabCollection.style.marginBottom = "-1px";
 tabCollection.style.width = 0;
 tabCollection.style.zIndex = "100";
 tabCollection.onmousewheel = e => tabCollection.scrollLeft += e.deltaY;
 tabCollection.toolbarToggle = document.createElement("button");
-tabCollection.toolbarToggle.className = "btn btn-sm btn-outline-light p-0 mb-2 rounded border-0 mdi mdi-chevron-double-up mdi-chevron-double-down d-flex mdi-18px lh-18 mx-2";
+tabCollection.toolbarToggle.className = "btn btn-outline-light p-0 mb-2 rounded-circle border-0 mdi mdi-chevron-double-up mdi-chevron-double-down d-flex mdi-18px lh-18 ml-2";
 tabCollection.toolbarToggle.addEventListener("click", e => {
 	tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up", viewMenu.menu.getMenuItemById("angles-showtoolbar").checked = !nav.classList.toggle("d-none"));
 });
 win.ui.root.style.overflow = "unset";
-win.ui.header.classList.remove("border-bottom", "py-1");
-win.ui.header.classList.add("pt-2");
+win.ui.header.classList.remove("p-2");
+win.ui.header.classList.add("px-2","pt-2");
 win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.title.classList.add("d-none");
 win.ui.header.prepend(tabCollection, tabCollection.toolbarToggle);
 let nav = document.createElement("nav");
-nav.className = "bg-dark border-bottom-0 border-top p-1 border-secondary scrollable-y-0";
+nav.className = "bg-dark p-1 crollable-y-0";
 win.ui.body.append(nav);
 let tabsContainer = document.createElement("main");
 tabsContainer.className = "flex-grow-1 d-flex border-top border-secondary";
@@ -149,7 +149,7 @@ function newTab(url) {
 				tab.classList.toggle("font-italic", tab.editor.getValue().length !== len);
 		})
 	}
-	tab.setAttribute("data-draggable", "false")
+	tab.dataset.draggable = "false";
 	tab.closeButton = document.createElement("button");
 	tab.closeButton.className = 'mdi mdi-close mdi-18px lh-18 d-flex btn btn-outline-danger border-0 p-0 ml-2';
 	tab.closeButton.addEventListener("click", tab.close)
@@ -200,13 +200,13 @@ async function renderPreferencesDialog() {
 	prefs.heading.innerText = "Preferences";
 	prefs.dismissButton.className = "close";
 	prefs.dismissButton.innerHTML = "&times;";
-	prefs.dismissButton.setAttribute("data-dismiss", "modal");
-	prefs.applyButton.className = "btn btn-primary"
-	prefs.cancelButton.className = "btn btn-secondary"
-	prefs.applyButton.innerText = "Save changes"
-	prefs.cancelButton.innerText = "Discard"
-	prefs.cancelButton.setAttribute("data-dismiss", "modal");
-	prefs.applyButton.type = "submit"
+	prefs.dismissButton.dataset.dismiss = "modal";
+	prefs.applyButton.className = "btn btn-primary";
+	prefs.cancelButton.className = "btn btn-secondary";
+	prefs.applyButton.innerText = "Save changes";
+	prefs.cancelButton.innerText = "Discard";
+	prefs.cancelButton.dataset.dismiss = "modal";
+	prefs.applyButton.type = "submit";
 	prefs.cancelButton.type = "button";
 	prefs.content.addEventListener("submit", e => {
 		e.preventDefault();

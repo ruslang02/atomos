@@ -342,7 +342,7 @@ window.shell = class Shell {
 				elem.tab.icon = document.createElement("icon");
 				elem.tab.icon.className = "mdi mdi-24px lh-24 p-2 d-flex rounded-circle bg-info text-white mdi-file-outline mr-3"
 				elem.tab.input = document.createElement("input");
-				elem.tab.input.className = "form-control w-25 flex-grow-1";
+				elem.tab.input.className = "form-control w-25 flex-grow-1" + (shell.ui.darkMode ? " bg-secondary text-white" : "" );
 				elem.tab.invalidLabel = document.createElement("div");
 				elem.tab.invalidLabel.className = "invalid-feedback ml-5 pl-3";
 				elem.tab.input.addEventListener("input", function() {
@@ -356,30 +356,30 @@ window.shell = class Shell {
 					else return;
 					elem.tab.input.classList.add("is-invalid");
 					confirmButton.disabled = true;
-				})
+				});
 				elem.tab.append(elem.tab.icon, elem.tab.input, elem.tab.invalidLabel);
 				return elem;
 			}
 			let file = generate();
-			file.innerText = "File"
+			file.innerText = "File";
 
 			let folder = generate();
-			folder.innerText = "Folder"
+			folder.innerText = "Folder";
 			folder.tab.icon.classList.add("text-black", "bg-warning", "mdi-folder-outline");
 			folder.tab.icon.classList.remove("bg-info", "mdi-file-outline", "text-white");
 
-			nav.append(file, folder)
+			nav.append(file, folder);
 			container.append(nav, file.tab, folder.tab);
 			if (options.defaultTab)
-				new Function(options.defaultTab + ".click()")();
+				eval(options.defaultTab + ".click()");
 			else file.click();
 
 			modal.className = "modal fade";
 			modal.tabIndex = -1;
 			modal.setAttribute("aria-hidden", "true");
 			modal.dialog.className = "modal-dialog modal-dialog-centered";
-			modal.content.className = "modal-content";
-			modal.footer.className = "modal-footer";
+			modal.content.className = "modal-content" + (shell.ui.darkMode ? " bg-dark text-white" : "" );
+			modal.footer.className = "modal-footer" + (shell.ui.darkMode ? " border-secondary" : "" );
 
 			confirmButton.className = "btn btn-primary ml-2 flex-shrink-0";
 			cancelButton.className = "btn btn-secondary ml-2 flex-shrink-0";
@@ -487,7 +487,7 @@ window.shell = class Shell {
 			} catch (e) {}
 		};
 		modal.defaultCheckbox.append(modal.defaultCheckbox.check, modal.defaultCheckbox.label);
-		modal.footer.append(modal.defaultCheckbox, modal.cancelButton, modal.selectButton)
+		modal.footer.append(modal.defaultCheckbox, modal.cancelButton, modal.selectButton);
 		modal.content.append(modal.header, modal.apps, modal.footer);
 		modal.dialog.append(modal.content);
 		modal.append(modal.dialog)
@@ -532,11 +532,11 @@ window.shell = class Shell {
 			modal.footer = document.createElement("div");
 			modal.header = document.createElement("h5");
 			modal.dialog.className = "modal-dialog modal-dialog-centered";
-			modal.content.className = "modal-content";
+			modal.content.className = "modal-content" + (shell.ui.darkMode ? " bg-dark text-white" : "");
 			modal.body.className = "modal-body d-flex";
 			modal.header.innerText = options.title;
-			modal.header.className = "mb-1"
-			modal.footer.className = "modal-footer";
+			modal.header.className = "mb-1";
+			modal.footer.className = "modal-footer" + (shell.ui.darkMode ? " border-secondary" : "");
 			modal.className = "modal fade";
 			modal.tabIndex = -1;
 			modal.setAttribute("aria-hidden", "true");
@@ -566,6 +566,7 @@ window.shell = class Shell {
 				};
 				let button = document.createElement("button");
 				button.className = "btn " + (options.defaultId === i ? "btn-primary" : "btn-secondary");
+				button.style.minWidth = CSS.px(60);
 				button.innerText = options.buttons[i];
 				button.type = options.defaultId === i ? "submit" : "button";
 				modal.footer.append(button);

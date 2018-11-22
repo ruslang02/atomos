@@ -81,7 +81,7 @@ window.Notification = class Notification {
     this.ui.append(appTimeBar, this.ui.messageTitle, this.ui.message);
     if (options.actions) {
       this.ui.actions = document.createElement('notification-actions');
-      this.ui.actions.className = "bg-light py-2 px-3 d-flex justify-content-between";
+      this.ui.actions.className = "py-2 px-3 d-flex justify-content-between" + (shell.ui.darkMode ? " bg-dark" : " bg-light");
       options.actions.forEach(action => {
         let btn = document.createElement("button");
         btn.className = "btn btn-link px-0 mr-2 flex-grow-1";

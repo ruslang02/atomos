@@ -35,19 +35,19 @@ let preferences = new Proxy(registry.get(), {
 	}
 });
 let tabs = document.createElement("section");
-tabs.className = "d-flex scrollable-x-0 flex-shrink-0 text-truncate pl-3 pr-1";
+tabs.className = "d-flex scrollable-x-0 flex-shrink-0 text-truncate px-1";
 tabs.style.marginBottom = "-1px";
 tabs.style.zIndex = "100";
-tabs.style.maxWidth = "calc(100% - 100px)";
+tabs.style.maxWidth = "calc(100% - 110px)";
 tabs.onmousewheel = e => tabs.scrollLeft += e.deltaY;
 win.ui.root.style.overflow = "unset";
-win.ui.header.classList.remove("border-bottom", "py-1");
-win.ui.header.classList.add("pt-2");
+win.ui.header.classList.remove("border-bottom", "p-2");
+win.ui.header.classList.add("pt-2", "px-2");
 win.ui.header.style.boxShadow = "inset 0px 0px 0px 50px #6c757d2b";
 win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.title.classList.add("d-none");
 let ntbtn = document.createElement("button");
-ntbtn.className = "btn btn-white p-0 mdi mdi-plus mdi-24px d-flex " + (isDarkMode ? "text-white" : "text-dark");
+ntbtn.className = "btn btn-white p-0 mdi mdi-plus rounded-circle ml-1 mdi-24px d-flex " + (isDarkMode ? "text-white" : "text-dark");
 ntbtn.style.lineHeight = "24px";
 ntbtn.onclick = () => newTab();
 win.ui.header.prepend(tabs, ntbtn);
@@ -183,7 +183,7 @@ function newTab(url = "https://www.startpage.com") {
 	console.log(tabCollection, tab.webview);
 	tab.className = "nav-item shadow-sm nav-link align-items-center position-relative d-flex fade " + (isDarkMode ? "bg-dark text-white" : "bg-white");
 	tab.style.transition = "all .2s linear";
-	setTimeout(e => tab.classList.add("show"), shell.ui.fadeAnimation);
+	setTimeout(() => tab.classList.add("show"), shell.ui.fadeAnimation);
 	tab.style.borderRadius = "0.5rem 0.5rem 0 0";
 	tab.icon = new Image(18,18);
 	tab.icon.className = "rounded-circle mr-2";

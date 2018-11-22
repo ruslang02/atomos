@@ -7,8 +7,14 @@ fileButton.addEventListener('click', e => {
 		defaultPath: app.getPath("documents")
 	}).then(renderDocument);
 });
-fileButton.className = "btn btn-outline-primary border-0 p-1 mdi mdi-folder-outline mdi-18px lh-18 mr-2";
+fileButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-folder-outline mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+fileButton.title = "Open PDF (Ctrl+O)";
 win.ui.header.prepend(fileButton);
+function openAccelerator(e) {
+	if(e.ctrlKey && e.code === "KeyO") fileButton.click();
+}
+window.addEventListener("keypress", openAccelerator);
+new BSN.Tooltip(fileButton, {placement: "bottom"});
 function renderDocument(url) {
 	if(!url) return;
 	root.innerHTML = "";
@@ -25,6 +31,9 @@ function renderDocument(url) {
 	doc.className = "flex-grow-1 position-absolute w-100 h-100 d-inline-flex";
 	root.append(doc);
 }
-root.className = "h-100 position-relative"
+root.className = "h-100 position-relative" + (win.options.darkMode ? " bg-dark" : " bg-light");
 renderDocument(win.arguments.file);
 win.show();
+win.on('close', e => {
+	window.removeEventListener("keypress", openAccelerator);
+});

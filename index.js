@@ -33,7 +33,7 @@ app.on('ready', function() {
 		height: isDebug ? 720 : width,
 		backgroundColor: '#000000',
 		webPreferences: {
-			defaultFontSize: 16,
+			defaultFontSize: 14,
 			nodeIntegrationInWorker: true,
 			experimentalFeatures: true
 		}

@@ -79,10 +79,10 @@ const AsyncFunction = Object.getPrototypeOf(async function () {
 	function LoadCSS() {
 		document.title = "AtomOS (Rendering...)";
 		let cssList = [
+			"front/desktop-pre.css",
 			"node_modules/bootstrap/dist/css/bootstrap.min.css",
 			"node_modules/@mdi/font/css/materialdesignicons.min.css",
 			"node_modules/source-sans-pro/source-sans-pro.css",
-			//"node_modules/jquery-ui-dist/jquery-ui.min.css",
 			"front/desktop.css"
 		];
 		let promises = [];

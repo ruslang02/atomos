@@ -123,10 +123,10 @@ async function navigate(url) {
 	nav.forwardButton.disabled = (history.current === history.items.length - 1);
 	if (!fs.existsSync(url)) {
 		main.innerHTML = `
-				<div class="text-muted h-100 d-flex justify-content-center align-items-center flex-column">
-				<icon class="mdi mdi-folder-outline display-1"></icon>
+				<div class="h-100 d-flex justify-content-center align-items-center flex-column">
+				<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px white;"></icon>
 				This folder does not exist.
-				<button class='btn btn-outline-primary d-flex align-items-center mt-3' onclick='require("fs").mkdir("${url}", e => new Snackbar("Directory created"))'><icon class='mdi mdi-plus mdi-18px lh-18 mr-2'></icon><div class="lh-r1">Create</div></button>
+				<button class='btn btn-outline-primary d-flex align-items-center mt-3' onclick='require("fs").mkdir("${url}", e => new Snackbar("Directory created"))'><icon class='mdi d-flex mdi-plus mdi-18px lh-18 mr-2'></icon><div class="lh-r1">Create</div></button>
 				</div>`;
 		return;
 	}
@@ -137,7 +137,7 @@ async function navigate(url) {
 		url = path.dirname(url);
 	}
 	nav.pathField.blur();
-	nav.pathField.edited = false;
+	nav.pathField.dataset.edited = "false";
 	nav.pathField.value = url;
 	try {
 		watcher = fs.watch(url, (a, b) => {
@@ -148,7 +148,8 @@ async function navigate(url) {
 		return;
 	}
 
-	statusBar.text.innerText = "Retrieving folder contents...";
+	statusBar.classList.add("mdi-loading", "lh-18");
+	statusBar.innerText = "";
 
 	async function generateItem(file) {
 		let item = document.createElement("button");
@@ -312,13 +313,14 @@ async function navigate(url) {
 	}
 
 	let files = await fsp.readdir(url);
-	statusBar.text.innerText = '0 elements';
+	statusBar.classList.remove("mdi-loading", "lh-18");
+	statusBar.innerText = "0 elements";
 	activeItem = undefined;
 	main.innerHTML = "";
 	if (files.length === 0) {
 		main.innerHTML = `
-			<div class="text-muted h-100 d-flex justify-content-center align-items-center flex-column">
-			<icon class="mdi mdi-folder-outline display-1"></icon>
+			<div class="h-100 d-flex justify-content-center align-items-center flex-column">
+			<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px white;"></icon>
 			This folder is empty.
 			</div>`;
 		return;
@@ -326,11 +328,9 @@ async function navigate(url) {
 	let items = [];
 	for (const i of files.keys()) {
 		let file = files[i];
-		statusBar.text.innerText = `Retrieving folder contents: ${i} of ${files.length}`;
 		if (file.startsWith(".") && !settings.showHidden) return;
 		items.push(await generateItem(path.join(url, file)));
 	}
-	statusBar.text.innerText = `${files.length} elements`;
 	items.sort((a, b) => {
 		let o1 = a.isDirectory
 			, o2 = b.isDirectory
@@ -347,6 +347,8 @@ async function navigate(url) {
 		return 0;
 	});
 	main.append(...items);
+	statusBar.classList.remove("mdi-loading", "lh-18");
+	statusBar.innerText = `${files.length} elements`;
 	if (activeItem) {
 		activeItem.focus();
 		activeItem.classList.add("active");
@@ -355,23 +357,20 @@ async function navigate(url) {
 
 function renderFCBar() {
 	FCBar = document.createElement("form");
-	FCBar.className = "input-group p-1 m-0 bg-light border border-left-0 border-right-0 border-bottom-0 needs-validation flex-shrink-0";
+	FCBar.className = "p-2 m-0 d-flex flex-shrink-0";
 	FCBar.onsubmit = function (e) {
 		e.preventDefault();
 		sendBack();
 		return false;
 	};
-	FCBar.igPrepend = document.createElement("span");
-	FCBar.igPrepend.className = "input-group-prepend";
 	FCBar.cancelButton = document.createElement("button");
-	FCBar.cancelButton.className = "btn btn-sm btn-secondary btn-block";
+	FCBar.cancelButton.className = "btn btn-secondary shadow-sm";
 	FCBar.cancelButton.onclick = e => win.close();
 	FCBar.cancelButton.type = "button";
 	FCBar.cancelButton.innerText = "Cancel" || win.arguments.cancelText;
-	FCBar.igPrepend.append(FCBar.cancelButton);
 	FCBar.textField = document.createElement("input");
 	FCBar.textField.type = "text";
-	FCBar.textField.className = "form-control form-control-sm";
+	FCBar.textField.className = "form-control mx-2 shadow-sm" + (win.options.darkMode ? " bg-dark border-secondary" : "");
 
 	function validate() {
 		FCBar.submitButton.disabled = !(!!FCBar.textField.value.trim());
@@ -384,15 +383,12 @@ function renderFCBar() {
 	FCBar.tooltip.style.top = 0;
 	FCBar.tooltip.style.right = "50px";
 	FCBar.tooltip.innerText = "File or folder does not exist";
-	FCBar.igAppend = document.createElement("span");
-	FCBar.igAppend.className = "input-group-append";
 	FCBar.submitButton = document.createElement("button");
-	FCBar.submitButton.className = "btn btn-sm btn-primary btn-block";
+	FCBar.submitButton.className = "btn btn-primary shadow-sm";
 	FCBar.submitButton.type = "submit";
 	FCBar.submitButton.innerText = win.arguments.buttonLabel;
-	FCBar.submitButton.addEventListener("click", sendBack)
-	FCBar.igAppend.append(FCBar.submitButton);
-	FCBar.append(FCBar.igPrepend, FCBar.textField, FCBar.tooltip, FCBar.igAppend);
+	FCBar.submitButton.addEventListener("click", sendBack);
+	FCBar.append(FCBar.cancelButton, FCBar.textField, FCBar.tooltip, FCBar.submitButton);
 	win.ui.body.append(FCBar);
 }
 
@@ -408,8 +404,8 @@ async function sendBack(force = false) {
 	if (!exists) {
 		if (win.arguments.open === shell.FILE) {
 			if (win.arguments.checkFileExists) {
-				statusBar.text.classList.add("text-danger", "font-weight-bold");
-				statusBar.text.innerText = "File does not exist.";
+				statusBar.classList.remove("mdi-loading", "lh-18");
+				statusBar.innerText = "File does not exist.";
 			} else send();
 		} else if (win.arguments.open === shell.DIRECTORY) {
 			if (win.arguments.createDirectory)
@@ -437,7 +433,7 @@ async function sendBack(force = false) {
 
 function renderMain() {
 	main = document.createElement("section");
-	main.className = "p-2 flex-grow-1 scrollable border-top" + (win.options.darkMode ? " bg-dark border-secondary" : " bg-white");
+	main.className = "p-2 flex-grow-1 scrollable mx-2 mb-2 very-rounded shadow" + (win.options.darkMode ? " bg-dark" : " bg-white");
 	main.oncontextmenu = e => {
 		e.stopPropagation();
 		mainMenu.popup();
@@ -512,7 +508,7 @@ async function renderDeviceSection() {
 			item.header = document.createElement("div");
 			item.header.innerText = label || link;
 			item.header.className = "text-truncate flex-grow-1";
-			item.menu = new Menu([{
+			item.menu = new Menu(win, [{
 				label: "Open/Mount",
 				click() {
 					that.click();
@@ -568,20 +564,17 @@ function renderContainer() {
 
 function renderStatusbar() {
 	statusBar = document.createElement("footer");
-	statusBar.className = "border-top d-flex align-items-end flex-shrink-0 rounded-bottom" + (win.options.darkMode ? " text-white bg-dark border-secondary" : " bg-light text-dark");
-	statusBar.text = document.createElement("div");
-	statusBar.text.className = "flex-grow-1 smaller p-1 text-truncate";
-	statusBar.text.innerText = "Loading...";
-	let drag = document.createElement("icon");
-	drag.className = "mdi mdi-24px lh-24 text-muted mdi-drag float-right"
-	statusBar.append(statusBar.text, drag)
+	statusBar.className = "py-1 px-2 m-3 text-truncate very-rounded mdi mdi-18px lh-18 shadow mdi-spin position-absolute border" + (win.options.darkMode ? " text-white border-secondary bg-dark" : " bg-light text-dark");
+	statusBar.style.bottom = win.arguments.callback ? CSS.rem(3.5) : CSS.px(0);
+	statusBar.style.right = 0;
 	win.ui.body.append(statusBar);
 }
 
 function renderSidebar() {
 	sidebar = document.createElement("aside");
-	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + " border-right py-1" + (win.options.darkMode ? " border-secondary" : "");
+	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + " py-1";
 	sidebar.style.width = "25%";
+	sidebar.dataset.draggable = "true";
 	sidebar.style.maxWidth = "270px";
 	sidebar.style.minWidth = "170px";
 	container.append(sidebar);
@@ -598,7 +591,8 @@ function renderSidebar() {
 function renderNav() {
 	nav = document.createElement('form');
 	nav.remove();
-	nav.className = "btn-toolbar flex-nowrap align-items-center flex-grow-1";
+	nav.className = "btn-toolbar flex-nowrap align-items-stretch flex-grow-1";
+	nav.style.height = "28px";
 	if (win.arguments.open) {
 		nav.sbToggleButton = document.createElement("button");
 		nav.sbToggleButton.className = "btn btn-outline-primary btn-sm mr-1 mdi mdi-menu mdi-18px lh-18";
@@ -607,45 +601,48 @@ function renderNav() {
 			sidebar.classList.toggle("d-block");
 			this.classList.toggle("active");
 		};
-		nav.folderButton = document.createElement("div");
-		nav.folderButton.className = "btn btn-outline-primary btn-sm ml-1 mdi mdi-folder-outline mdi-18px lh-18";
-		nav.folderButton.onclick = function () {
-			AppWindow.launch("aos-creator", {
-				path: nav.pathField.value
-			}, {
-				modal: true,
-				parent: win
-			});
-		};
-		nav.append(nav.sbToggleButton);
 	}
+
 	nav.backButton = document.createElement("button");
-	nav.backButton.className = "btn btn-outline-primary btn-sm mdi mdi-arrow-left mdi-18px lh-18";
+	nav.backButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-arrow-left mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.backButton.disabled = true;
 	nav.backButton.type = "button";
 	nav.backButton.onclick = e => navigate(":back");
+	nav.backButton.title = "Previous (Ctrl+<i class='mdi mdi-chevron-left'></i>)";
 
 	nav.forwardButton = document.createElement("button");
-	nav.forwardButton.className = "btn btn-outline-primary btn-sm mdi mdi-arrow-right mdi-18px lh-18";
+	nav.forwardButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-arrow-right mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.forwardButton.disabled = true;
 	nav.forwardButton.type = "button";
 	nav.forwardButton.onclick = e => navigate(":forward");
+	nav.forwardButton.title = "Next (Ctrl+<i class='mdi mdi-chevron-right'></i>)";
+
+	nav.mainBar = document.createElement("div");
+	nav.mainBar.className = "btn-group align-items-stretch flex-shrink-0 mr-2";
+	nav.mainBar.append(nav.backButton, nav.forwardButton);
+
+	nav.folderButton = document.createElement("button");
+	nav.folderButton.className = "btn btn-sm mdi d-flex mr-1 shadow-sm align-items-center mdi-folder-plus-outline mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.folderButton.onclick = function () {
+		shell.createFile(nav.pathField.value, {
+			defaultTab: "folder"
+		});
+	};
+	nav.folderButton.type = "button";
+	nav.folderButton.title = "Create folder (Ctrl+N)";
 
 	nav.refreshButton = document.createElement("button");
 	nav.refreshButton.type = "submit";
-	nav.refreshButton.className = "btn btn-outline-primary btn-sm mdi mdi-refresh mdi-18px lh-18";
-	nav.refreshButton.onclick = e => navigate(nav.pathField.edited ? nav.pathField.value : ":REFRESH");
-
-	nav.mainBar = document.createElement("div");
-	nav.mainBar.className = "btn-group align-items-stretch flex-shrink-0";
-	nav.mainBar.append(nav.backButton, nav.forwardButton, nav.refreshButton);
-
+	nav.refreshButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-refresh mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.refreshButton.onclick = e => navigate(nav.pathField.dataset.edited === "true" ? nav.pathField.value : ":REFRESH");
+	nav.refreshButton.title = "Refresh page (F5)";
+	nav.refreshButton.style.borderRadius = "0 .25rem .25rem 0";
 	nav.pathField = document.createElement("input");
-	nav.pathField.className = "form-control form-control-sm border-0 px-2 shadow-sm mx-5 us-0 flex-grow-1 text-center" + (win.options.darkMode ? " bg-dark text-white" : "");
-	nav.pathField.oninput = e => nav.pathField.setAttribute("edited", "true");
-	nav.pathField.setAttribute("data-draggable", "true");
+	nav.pathField.className = "form-control border-0 h-100 px-2 shadow-sm ml-2 us-0 flex-grow-1 text-center" + (win.options.darkMode ? " bg-dark text-white" : " bg-light");
+	nav.pathField.oninput = () => nav.pathField.dataset.edited = "true";
+	nav.pathField.style.cssText = "border-radius: .25rem 0 0 .25rem; z-index: -1";
+	nav.pathField.dataset.draggable = "true";
 	nav.pathField.dataset.editMenu = "false";
-	nav.pathField.style.cursor = "inherit";
 	nav.pathField.addEventListener("mousedown", function (e) {
 		if (nav.pathField.classList.contains("bg-transparent")) {
 			e.preventDefault();
@@ -653,15 +650,12 @@ function renderNav() {
 			nav.pathField.blur();
 		}
 	}, true);
-	nav.pathField.oninput = () => nav.pathField.edited = true;
 	nav.pathField.addEventListener("dblclick", function (e) {
 		e.stopPropagation();
-		nav.pathField.style.pointerEvents = "initial";
 		nav.pathField.dataset.editMenu = "true";
-		nav.pathField.setAttribute("data-draggable", "false");
+		nav.pathField.dataset.draggable = "false";
 		nav.pathField.classList.replace("text-center", "shadow");
-		nav.pathField.classList.remove("us-0");
-		nav.pathField.style.cursor = "text";
+		nav.pathField.style.zIndex = "0";
 		nav.pathField.focus();
 	});
 	nav.pathField.addEventListener("contextmenu", e => {
@@ -670,17 +664,25 @@ function renderNav() {
 	nav.pathField.addEventListener("blur", function () {
 		if (document.querySelector("menu.dropdown-menu")) return;
 		nav.pathField.classList.replace("shadow", "text-center");
-		nav.pathField.classList.add("us-0");
-		nav.pathField.setAttribute("data-draggable", "true");
-		nav.pathField.style.cursor = "inherit";
+		nav.pathField.style.zIndex = "-1";
+		nav.pathField.dataset.draggable = "true";
 		nav.pathField.dataset.editMenu = "false";
 	});
-	nav.append(nav.mainBar);
-	if (win.arguments.open) nav.append(nav.folderButton);
-	nav.append(nav.pathField);
+	nav.append(nav.mainBar, nav.folderButton, nav.pathField, nav.refreshButton);
 	win.ui.header.prepend(nav);
-	win.ui.header.classList.add("pl-1", "pr-2");
-	win.ui.header.classList.remove("border-bottom", "px-2");
+	new BSN.Tooltip(nav.refreshButton, {
+		placement: "bottom"
+	});
+	new BSN.Tooltip(nav.folderButton, {
+		placement: "bottom"
+	});
+	new BSN.Tooltip(nav.backButton, {
+		placement: "bottom"
+	});
+	new BSN.Tooltip(nav.forwardButton, {
+		placement: "bottom"
+	});
+	win.ui.header.classList.remove("border-bottom");
 	win.ui.title.classList.add("d-none");
 }
 
@@ -688,7 +690,6 @@ function renderMainMenu() {
 	mainMenu = new Menu(win, [{
 		label: "Duplicate",
 		icon: "open-in-new",
-		accelerator: "Ctrl+N",
 		click() {
 			AppWindow.launch("files", {
 				file: nav.pathField.value
@@ -747,6 +748,7 @@ function renderMainMenu() {
 		}
 	}, {
 		label: "Create Folder",
+		accelerator: "Ctrl+N",
 		icon: "folder-outline",
 		click() {
 			shell.createFile(nav.pathField.value, {

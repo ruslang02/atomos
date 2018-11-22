@@ -118,7 +118,7 @@ async function renderApps() {
 		let appIcon = document.createElement("icon");
 		let appName = document.createElement("div");
 		appName.className = "text-truncate text-center";
-		appEntry.className = "btn py-1 px-2 btn-sm flex-shrink-0 d-flex flex-column align-items-center justify-content-center" + (shell.ui.darkMode ? " btn-dark" : " btn-white");
+		appEntry.className = "btn py-1 px-2 flex-shrink-0 d-flex flex-column align-items-center justify-content-center" + (shell.ui.darkMode ? " btn-dark" : " btn-white");
 		appEntry.style.width = '23%';
 		appEntry.addEventListener("click", e => {
 			AppWindow.launch(item);
@@ -330,7 +330,7 @@ async function search() {
 			elem.additional.innerText = (item.main ? item.appName : "Open");
 			elem.additional.className = "text-muted flex-shrink-0 ml-auto fade mr-1";
 			elem.header.className = "text-truncate text-left ml-2";
-			elem.className = "btn p-1 btn-sm flex-shrink-0 w-100 d-flex align-items-center" + (shell.ui.darkMode ? " btn-dark text-white" : " btn-white");
+			elem.className = "btn p-1 flex-shrink-0 w-100 d-flex align-items-center" + (shell.ui.darkMode ? " btn-dark text-white" : " btn-white");
 			elem.addEventListener("click", e => {
 				if (item.main) {
 					fs.readFile(path.join(osRoot, "apps", item.app, item.main)).then(script => {

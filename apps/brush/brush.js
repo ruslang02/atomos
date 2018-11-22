@@ -93,7 +93,7 @@ function gen(icon) {
 }
 let nav = document.createElement("nav");
 nav.className = "p-2 border-bottom d-flex";
-nav.setAttribute("data-draggable", "true");
+nav.dataset.draggable = "true";
 root.append(nav);
 let group1 = document.createElement("div");
 group1.className = "btn-group btn-group-sm mr-2";

@@ -82,9 +82,8 @@ window.Menu = class Menu extends EventEmitter {
 
 		function acceleratorEvent(e) {
 			if (!(e.ctrlKey || e.shiftKey || e.altKey)) return;
-			if (_this.window) {
+			if (_this.window)
 				if (!_this.window.isFocused()) return;
-			}
 			shortcuts.forEach(acc => {
 				if ((e.ctrlKey ^ !acc.ctrl) && (e.shiftKey ^ !acc.shift) && (e.altKey ^ !acc.alt) && (e.key.toLowerCase() === acc.key.toLowerCase()))
 					acc.click.call(acc.menuItem, _this.window, _this.activeElement);
@@ -92,22 +91,24 @@ window.Menu = class Menu extends EventEmitter {
 		}
 
 		window.removeEventListener('keydown', acceleratorEvent);
-
-		this.items.forEach(item => {
-
+		let hasAccelerators = false;
+		for (const item of this.items) {
 			if (item.visible) {
 				let menuItem;
 				if (item.type === "normal") {
-					if (item.accelerator && item.setKeyboardEvents) shortcuts.push({
-						click: item.click,
-						ctrl: item.accelerator.includes("Ctrl+"),
-						alt: item.accelerator.includes("Alt+"),
-						shift: item.accelerator.includes("Shift+"),
-						key: item.accelerator.substring(item.accelerator.lastIndexOf("+") + 1),
-						menuItem: item
-					});
+					if (item.accelerator && item.setKeyboardEvents) {
+						hasAccelerators = true;
+						shortcuts.push({
+							click: item.click,
+							ctrl: item.accelerator.includes("Ctrl+"),
+							alt: item.accelerator.includes("Alt+"),
+							shift: item.accelerator.includes("Shift+"),
+							key: item.accelerator.substring(item.accelerator.lastIndexOf("+") + 1),
+							menuItem: item
+						});
+					}
 					menuItem = document.createElement("button");
-					menuItem.className = "dropdown-item d-flex align-items-center" + (shell.ui.darkMode ? " text-white" : "");
+					menuItem.className = "dropdown-item d-flex align-items-center";
 					menuItem.onclick = () => {
 						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, _this.activeElement);
 					};
@@ -156,9 +157,9 @@ window.Menu = class Menu extends EventEmitter {
 				menuItem.style.order = item.position || 0;
 				_this.menu.append(menuItem);
 			}
-		});
+		}
 
-		window.addEventListener('keydown', acceleratorEvent);
+		if (hasAccelerators) window.addEventListener('keydown', acceleratorEvent);
 	}
 
 	append(item) {
@@ -186,6 +187,7 @@ window.Menu = class Menu extends EventEmitter {
 			y: shell.getCursorScreenPoint().y,
 			callback: null
 		};
+		//this.activeElement.classList.add("active");
 		options = Object.assign({}, defaultPopUpOptions, options);
 		this.window = options.window;
 		let event = {
@@ -210,6 +212,7 @@ window.Menu = class Menu extends EventEmitter {
 
 	closePopup() {
 		this.menu.classList.remove("show");
+		//this.activeElement.classList.remove("active");
 		setTimeout(() => this.menu.remove(), shell.ui.fadeAnimation);
 	}
 

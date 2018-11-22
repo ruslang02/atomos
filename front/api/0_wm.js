@@ -226,39 +226,45 @@ window.AppWindow = class Window extends EventEmitter {
 
 	_render() {
 		let _this = this;
-		this.ui = this.ui || {}
+		this.ui = this.ui || {};
 
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
-		this.ui.root.className = "shadow-sm border scrollable-0 fade card position-absolute " + (this.options.darkMode ? "bg-semidark border-secondary" : "bg-semiwhite");
+		this.ui.root.className = "shadow-sm very-rounded border scrollable-0 fade card position-absolute " + (this.options.darkMode ? "bg-semidark border-secondary" : "bg-semiwhite");
 		this.ui.header = document.createElement("window-header");
-		this.ui.header.className = "d-flex align-items-center flex-shrink-0 border-bottom px-2 py-1" + (this.options.darkMode ? " border-secondary text-white" : "");
-		this.ui.header.setAttribute("data-draggable", true);
+		this.ui.header.className = "d-flex align-items-center flex-shrink-0 border-bottom p-2" + (this.options.darkMode ? " border-secondary text-white" : "");
+		this.ui.header.dataset.draggable = "true";
 		this.ui.header.addEventListener("dblclick", e => this._toggle());
 		this.ui.title = document.createElement("window-title");
-		this.ui.title.className = "flex-grow-1";
-		this.ui.title.style["user-select"] = "none";
+		this.ui.title.className = "flex-grow-1 text-center us-0";
 		this.ui.title.innerText = this.options.title;
 
 		this.ui.buttons = document.createElement("window-buttons");
-		this.ui.buttons.className = "ml-auto d-flex flex-shrink-0";
-		this.ui.buttons.setAttribute("data-draggable", false);
+		this.ui.buttons.style.order = "-10";
+		this.ui.buttons.className = "ml-2 mr-3 d-flex flex-shrink-0 flex-row-reverse";
+		this.ui.buttons.dataset.draggable = "false";
 
 
 		this.ui.buttons.minimize = document.createElement("button");
 		this.ui.buttons.maximize = document.createElement("button");
 		this.ui.buttons.close = document.createElement("button");
 
-		this.ui.buttons.minimize.className = "btn btn-warning p-2 " + (this.options.minimizable ? "" : " d-none");
+		this.ui.buttons.minimize.className = "btn btn-warning rounded-max ml-2" + (this.options.minimizable ? "" : " d-none");
+		this.ui.buttons.minimize.style.padding = "7px";
 		this.ui.buttons.minimize.addEventListener("click", e => {
 			e.stopPropagation();
 			_this.minimize();
 		});
-		this.ui.buttons.maximize.className = "btn btn-success p-2 ml-2" + (this.options.maximizable ? "" : " d-none");
+		this.ui.buttons.minimize.title = "Minimize (<i class='mdi mdi-atom'></i>+Down)";
+		this.ui.buttons.maximize.className = "btn btn-success rounded-max ml-2" + (this.options.maximizable ? "" : " d-none");
+		this.ui.buttons.maximize.style.padding = "7px";
+		this.ui.buttons.maximize.title = "Maximize (<i class='mdi mdi-atom'></i>+Up)";
 		this.ui.buttons.maximize.addEventListener("click", e => {
 			_this._toggle();
 		});
-		this.ui.buttons.close.className = "btn btn-danger p-2 ml-2" + (this.options.closable ? "" : " d-none");
+		this.ui.buttons.close.className = "btn btn-danger rounded-max" + (this.options.closable ? "" : " d-none");
+		this.ui.buttons.close.style.padding = "7px";
+		this.ui.buttons.close.title = "Close (Alt+F4)";
 		this.ui.buttons.close.addEventListener("click", e => {
 			e.stopPropagation();
 			_this.close();
@@ -268,10 +274,14 @@ window.AppWindow = class Window extends EventEmitter {
 		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0";
 		//this.ui.body.setAttribute("data-draggable", false);
 
-		this.ui.buttons.append(this.ui.buttons.minimize, this.ui.buttons.maximize, this.ui.buttons.close);
-		this.ui.header.append(this.ui.title, this.ui.buttons);
+		this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
+		this.ui.header.append(this.ui.buttons, this.ui.title);
 		this.ui.root.append(this.ui.header, this.ui.body);
-
+		this.on('ready-to-show', () => {
+			new BSN.Tooltip(this.ui.buttons.maximize);
+			new BSN.Tooltip(this.ui.buttons.minimize);
+			new BSN.Tooltip(this.ui.buttons.close);
+		});
 		console.log("rendered")
 
 	}

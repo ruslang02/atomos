@@ -1,0 +1,6 @@
+.dark .dropdown-item,
+.dark .dropdown-item:hover:not(.disabled):not(:disabled),
+.dark .dropdown-item:active:not(.disabled):not(:disabled),
+.dark .dropdown-item:focus:not(.disabled):not(:disabled){
+	color:white;
+}

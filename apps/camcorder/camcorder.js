@@ -4,69 +4,44 @@ const fs = require("fs").promises;
 const {clipboard, remote} = require("electron");
 const wc = remote.getCurrentWebContents();
 const registry = new Registry("camcorder");
-let appButton = document.createElement("button");
-appButton.className = "btn d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-camcorder border-0 rounded" + (win.options.darkMode ? " btn-outline-light" : " btn-outline-primary");
-appButton.addEventListener("click", e => {
-	e.stopPropagation();
-	const pos = win.getPosition();
-	appButton.menu.popup({
-		x: appButton.offsetLeft + pos[0],
-		y: appButton.offsetTop + appButton.offsetHeight + pos[1]
-	});
+let nav = document.createElement("nav");
+nav.className = "d-flex";
+nav.copyClipboard = document.createElement("button");
+nav.copyClipboard.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-content-copy mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+nav.copyClipboard.onclick = () => clipboard.writeImage(imageRes);
+nav.copyClipboard.disabled = true;
+nav.copyClipboard.title = "Copy to Clipboard (Ctrl+C)";
+nav.showInFiles = document.createElement("button");
+nav.showInFiles.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-folder-outline mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+nav.showInFiles.onclick = () => shell.showItemInFolder(url);
+nav.showInFiles.disabled = true;
+nav.showInFiles.title = "Show in File Manager (Ctrl+N)";
+nav.share = document.createElement("button");
+nav.share.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-share mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+nav.share.onclick; // shell.shareContent() TODO: API for sharing content
+nav.share.disabled = true;
+nav.share.title = "Share (Ctrl+S)";
+nav.append(nav.copyClipboard, nav.showInFiles, nav.share);
+new BSN.Tooltip(nav.copyClipboard, {
+	placement: "bottom"
 });
-appButton.menu = new Menu(win, [{
-	type: "header",
-	label: "Screenshot"
-}, {
-	label: "Copy to Clipboard",
-	icon: "content-copy",
-	enabled: false,
-	id: "copyClipboard",
-	click() {
-		clipboard.writeImage(imageRes);
-	}
-}, {
-	label: "Show in File Manager",
-	enabled: false,
-	icon: "folder-outline",
-	id: "showInFiles",
-	click() {
-		shell.showItemInFolder(url);
-	}
-}, {
-	label: "Share...",
-	icon: "share",
-	enabled: false,
-	click() {
-		// shell.shareContent() TODO: API for sharing content
-	}
-}, {
-	type: "header",
-	label: "Preferences"
-}, {
-	label: "Capture on launch",
-	type: "checkbox",
-	checked: registry.get().autoCapture,
-	click(item) {
-		registry.set({autoCapture: item.checked});
-	}
-}]);
-win.ui.header.prepend(appButton);
+new BSN.Tooltip(nav.showInFiles, {
+	placement: "bottom"
+});
+new BSN.Tooltip(nav.share, {
+	placement: "bottom"
+});
+win.ui.header.prepend(nav);
+win.ui.header.classList.add("border-0");
 let image = document.createElement("div");
-image.className = "flex-grow-1" + (win.options.darkMode ? " bg-dark" : " bg-white");
+image.className = "flex-grow-1 mx-2 rounded shadow-sm" + (win.options.darkMode ? " bg-dark" : " bg-white");
 image.style.backgroundRepeat = "no-repeat";
 image.style.backgroundPosition = "center center";
 image.style.backgroundSize = "contain";
-image.addEventListener("contextmenu", e => {
-	e.stopPropagation();
-	appButton.menu.popup();
-});
 let imageRes;
 let url;
-let footer = document.createElement("footer");
-footer.className = "p-2 border-top " + (win.options.darkMode ? " bg-dark border-secondary" : " bg-light");
 let captureButton = document.createElement("button");
-captureButton.className = "btn btn-success btn-block btn-lg py-1 d-flex align-items-center justify-content-center";
+captureButton.className = "btn btn-success btn-lg m-2 d-flex align-items-center justify-content-center";
 captureButton.icon = document.createElement("icon");
 captureButton.icon.className = "mdi mdi-24px mdi-camera-iris mr-2 lh-24 d-flex";
 captureButton.header = document.createElement("div");
@@ -87,8 +62,8 @@ captureButton.addEventListener("click", e => {
 				thumbnail.className = "mw-100";
 
 				imageRes = result;
-				appButton.menu.getMenuItemById("showInFiles").enabled = true;
-				appButton.menu.getMenuItemById("copyClipboard").enabled = true;
+				nav.showInFiles.disabled = false;
+				nav.copyClipboard.disabled = false;
 
 				new Notification(win, {
 					title: "Screenshot has been successfully taken",
@@ -126,11 +101,7 @@ captureButton.addEventListener("click", e => {
 			}
 		});
 	}, 1000);
-})
+});
 captureButton.append(captureButton.icon, captureButton.header);
-footer.append(captureButton);
-root.append(image, footer);
-
-if (registry.get().autoCapture || win.arguments.capture)
-	captureButton.click();
-else win.show();
+root.append(image, captureButton);
+win.show();

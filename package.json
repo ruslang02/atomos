@@ -10,7 +10,7 @@
   },
   "readme": "./README.md",
   "scripts": {
-    "start": "electron . --disable-gpu",
+    "start": "electron .",
     "test": "electron . -d --disable-gpu"
   },
   "author": "Ruslan",
