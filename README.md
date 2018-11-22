@@ -1,8 +1,10 @@
 # atomOS Desktop Environment
+MacOS-styled design and minor bugfixes/changes.
+
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/0.7-dev/PREVIEW.png)
 **Tested on Electron 3.0. Previous versions of Electron are not guaranteed to work with AtomOS 0.7.**
 
-Latest version: 0.7.1. [Download .iso (0.6)](https://github.com/ruslang02/atomos/releases).
+Latest version: 0.7.2. [Download .iso (0.6)](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with absolute Node.JS access.
@@ -12,7 +14,7 @@ There is also an operating system available based on this.
 
 Clone:
 ```
-$ git clone https://github.com/ruslang02/atomos.git
+$ git clone https://github.com/ruslang02/atomos.git -b mac-design-test
 ```
 
 Firstly, you should have Node.JS and NPM installed (instructions for Ubuntu-based systems):

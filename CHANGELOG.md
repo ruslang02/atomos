@@ -1,4 +1,11 @@
 # Changelog
+
+## 0.7.2 _preview_
+ - macOS-styled apps and windows
+ - defaultFontSize changed from 16 to 14 pixels
+ - Optimized UI for changed font size
+ - Dark Mode improved
+ 
 ## 0.7.1
  - Bugfixes, patches
  - Removal of all Icons8 files

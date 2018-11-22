@@ -17,92 +17,84 @@ win.on('second-instance', (e, args) => {
 win.on('close', e => {
 	if(prevNotification) prevNotification.dismiss();
 });
-let appButton = document.createElement("button");
-appButton.className = "btn btn-outline-danger d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-boombox border-0 rounded";
-appButton.addEventListener("click", e => {
-	e.stopPropagation();
-	const pos = win.getPosition();
-	appButton.menu.popup({
-		x: appButton.offsetLeft + pos[0],
-		y: appButton.offsetTop + appButton.offsetHeight + pos[1]
+let nav = document.createElement("nav");
+nav.className = "d-flex";
+nav.openFile = document.createElement("button");
+nav.openFile.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-folder-outline mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+nav.openFile.onclick = () => {
+	shell.selectFile(shell.ACTION_OPEN, {
+		defaultPath: ofdDefaultPath,
+		buttonLabel: "Play"
+	}).then(file => {
+		if (!file.url)
+			ofdDefaultPath = path.dirname(file);
+		load(file);
+	})
+};
+nav.openFile.title = "Open (Ctrl+O)";
+nav.saveFile = document.createElement("button");
+nav.saveFile.className = "btn mdi d-flex btn-sm shadow-sm align-items-center mdi-playlist-play mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+nav.saveFile.onclick = async function() {
+	let trackList = [];
+	let file = await shell.selectFile(shell.ACTION_SAVE, {
+		defaultPath: ofdDefaultPath,
+		buttonLabel: "Export"
 	});
-});
-appButton.menu = new Menu(win, [{
-	label: "Open...",
-	icon: "folder-outline",
-	accelerator: "Ctrl+O",
-	click() {
-		shell.selectFile(shell.ACTION_OPEN, {
-			defaultPath: ofdDefaultPath,
-			buttonLabel: "Play"
-		}).then(file => {
-			if (!file.url)
-				ofdDefaultPath = path.dirname(file);
-			load(file);
-		})
-	}
-}, {
-	label: "Open in Play Music",
-	icon: "music-box-outline",
-	enabled: false
-}, {
-	type: "separator"
-}, {
-	label: "Export playlist...",
-	icon: "playlist-play",
-	accelerator: "Ctrl+S",
-	click: async function() {
-		let trackList = [];
-		let file = await shell.selectFile(shell.ACTION_SAVE, {
-			defaultPath: ofdDefaultPath,
-			buttonLabel: "Export"
-		});
-		for (const track of playlist.childNodes) {
-			trackList.push({
-				track: {
-					location: new URL((!file.location.startsWith("http") ? "file://" : "") +
-						escape(file.location)).href,
-					title: escape(track.innerText),
-					creator: escape(track.creator)
-				}
-			});
-		}
-		let playlist = js2xml.toXML({
-			playlist: {
-				_attrs: {
-					xmlns: "http://xspf.org/ns/0/",
-					version: "1"
-				},
-				title: title || "Playlist",
-				trackList: trackList
+	for (const track of playlist.childNodes) {
+		trackList.push({
+			track: {
+				location: new URL((!file.location.startsWith("http") ? "file://" : "") +
+					escape(file.location)).href,
+				title: escape(track.innerText),
+				creator: escape(track.creator)
 			}
-		}, {
-			header: true,
-			indent: "	"
-		});
-		await fsp.writeFile(url, playlist, 'utf-8');
-		new Notification(win, {
-			title: "Playlist successfully saved",
-			app: "Boombox",
-			color: "var(--danger)",
-			icon: "boombox",
-			actions: [{
-				label: "Show in folder",
-				click() {
-					shell.showItemInFolder(url);
-				}
-			}]
 		});
 	}
-}]);
-win.ui.header.prepend(appButton);
+	let playlist = js2xml.toXML({
+		playlist: {
+			_attrs: {
+				xmlns: "http://xspf.org/ns/0/",
+				version: "1"
+			},
+			title: title || "Playlist",
+			trackList: trackList
+		}
+	}, {
+		header: true,
+		indent: "	"
+	});
+	await fsp.writeFile(url, playlist, 'utf-8');
+	new Notification(win, {
+		title: "Playlist successfully saved",
+		app: "Boombox",
+		color: "var(--danger)",
+		icon: "boombox",
+		actions: [{
+			label: "Show in folder",
+			click() {
+				shell.showItemInFolder(url);
+			}
+		}]
+	});
+};
+nav.saveFile.title = "Export playlist (Ctrl+S)";
+nav.append(nav.openFile, nav.saveFile);
+win.ui.header.prepend(nav);
 win.ui.header.classList.remove("border-bottom");
+win.ui.header.classList.add("position-absolute", "w-100");
+win.ui.header.style.zIndex = 10;
+new BSN.Tooltip(nav.openFile, {
+	placement: "bottom"
+});
+new BSN.Tooltip(nav.saveFile, {
+	placement: "bottom"
+});
 
 
 let main = document.createElement("main");
 main.className = "row m-0 flex-grow-1 p-0";
 let playlist = document.createElement("section");
-playlist.className = "col-4 px-0 py-2";
+playlist.className = "col-4 px-0 pt-5";
 playlist.style.minWidth = "12rem";
 playlist.style.maxWidth = "20rem";
 let cover = document.createElement("section");
