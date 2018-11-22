@@ -1,7 +1,7 @@
 # atomOS Desktop Environment
 MacOS-styled design and minor bugfixes/changes.
 
-![alt text](https://raw.githubusercontent.com/ruslang02/atomos/0.7-dev/PREVIEW.png)
+![alt text](https://raw.githubusercontent.com/ruslang02/atomos/mac-design-test/PREVIEW.png)
 **Tested on Electron 3.0. Previous versions of Electron are not guaranteed to work with AtomOS 0.7.**
 
 Latest version: 0.7.2. [Download .iso (0.6)](https://github.com/ruslang02/atomos/releases).
