@@ -21,7 +21,7 @@ window.Snackbar = class Snackbar {
     this.ui.message = document.createElement("div");
     this.ui.button = document.createElement("button");
 		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "bg-light") + " very-rounded shadow d-flex position-absolute align-items-stretch mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
-		this.ui.message.className = "flex-grow-1 d-flex align-items-center justify-content-center";
+		this.ui.message.className = "flex-grow-1 text-truncate lh-36";
     this.ui.message.innerText = options.message;
     this.ui.append(this.ui.message);
     if (options.buttonText) {

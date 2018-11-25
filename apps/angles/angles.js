@@ -408,6 +408,6 @@ async function generateMenus() {
 			x: viewMenu.offsetLeft + pos[0],
 			y: viewMenu.offsetTop + viewMenu.offsetHeight + pos[1]
 		});
-	})
+	});
 	nav.append(fileMenu, editMenu, viewMenu);
 }
