@@ -144,7 +144,7 @@ window.Menu = class Menu extends EventEmitter {
 					menuInput.type = "checkbox";
 					menuItem.onclick = () => {
 						menuInput.checked = item.checked = !menuInput.checked;
-						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, _this.activeElement);
+						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item.checked, _this.window, _this.activeElement);
 					};
 					menuInput.checked = item.checked;
 					let menuTitle = document.createElement("label");

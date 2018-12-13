@@ -58,7 +58,7 @@ win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.title.classList.add("d-none");
 win.ui.header.prepend(tabCollection, tabCollection.toolbarToggle);
 let nav = document.createElement("nav");
-nav.className = "bg-dark p-1 crollable-y-0";
+nav.className = "bg-dark p-1 border-top border-secondary";
 win.ui.body.append(nav);
 let tabsContainer = document.createElement("main");
 tabsContainer.className = "flex-grow-1 d-flex border-top border-secondary";
@@ -396,9 +396,9 @@ async function generateMenus() {
 		type: "checkbox",
 		id: "angles-showtoolbar",
 		checked: true,
-		click(item) {
-			nav.classList.toggle("d-none", !item.checked)
-			tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up", item.checked);
+		click(ch) {
+			nav.classList.toggle("d-none", !ch)
+			tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up", ch);
 		}
 	}]);
 	viewMenu.addEventListener("click", e => {

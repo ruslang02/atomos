@@ -11,6 +11,7 @@ const fsp = fs.promises;
 const path = require("path");
 let sidebar, container, statusBar, fileMenu, nav, main, FCBar, activeItem, mainMenu;
 let watcher = "";
+let backFolder;
 let history = {
 	current: -1,
 	items: []
@@ -19,6 +20,7 @@ if (!Object.keys(registry.get()).length) {
 	let defaultFile = fs.readFileSync(__dirname + "/default.json");
 	registry.set(JSON.parse(defaultFile));
 }
+win.ui.body.classList.add("position-relative");
 win.task.menu.insert(-2, {
 	label: "Edit location",
 	icon: "pencil",
@@ -123,8 +125,8 @@ async function navigate(url) {
 	nav.forwardButton.disabled = (history.current === history.items.length - 1);
 	if (!fs.existsSync(url)) {
 		main.innerHTML = `
-				<div class="h-100 d-flex justify-content-center align-items-center flex-column">
-				<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px white;"></icon>
+				<div class="h-100 d-flex justify-content-center align-items-center flex-column ${win.options.darkMode ? "text-white" : "text-dark"}">
+				<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px ${win.options.darkMode ? "var(--dark)" : "white"};"></icon>
 				This folder does not exist.
 				<button class='btn btn-outline-primary d-flex align-items-center mt-3' onclick='require("fs").mkdir("${url}", e => new Snackbar("Directory created"))'><icon class='mdi d-flex mdi-plus mdi-18px lh-18 mr-2'></icon><div class="lh-r1">Create</div></button>
 				</div>`;
@@ -139,17 +141,24 @@ async function navigate(url) {
 	nav.pathField.blur();
 	nav.pathField.dataset.edited = "false";
 	nav.pathField.value = url;
+	statusBar.innerText = "";
 	try {
 		watcher = fs.watch(url, (a, b) => {
 			if (a !== "change") navigate(":refresh")
 		});
 	} catch (e) {
-		console.log(e);
+		if(e.code === "EACCES") {
+			main.innerHTML = `
+				<div class="h-100 d-flex justify-content-center align-items-center flex-column ${win.options.darkMode ? "text-white" : "text-dark"}">
+				<icon class="mdi mdi-cancel" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px ${win.options.darkMode ? "var(--dark)" : "white"};"></icon>
+				Permission denied
+				</div>`;
+		}
+		console.dir(e);
 		return;
 	}
 
 	statusBar.classList.add("mdi-loading", "lh-18");
-	statusBar.innerText = "";
 
 	async function generateItem(file) {
 		let item = document.createElement("button");
@@ -319,16 +328,21 @@ async function navigate(url) {
 	main.innerHTML = "";
 	if (files.length === 0) {
 		main.innerHTML = `
-			<div class="h-100 d-flex justify-content-center align-items-center flex-column">
-			<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px white;"></icon>
+			<div class="h-100 d-flex justify-content-center align-items-center flex-column ${win.options.darkMode ? "text-white" : "text-dark"}">
+			<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px ${win.options.darkMode ? "var(--dark)" : "white"};"></icon>
 			This folder is empty.
 			</div>`;
 		return;
 	}
 	let items = [];
+	backFolder = await generateItem(url);
+	let hCount = 0;
 	for (const i of files.keys()) {
 		let file = files[i];
-		if (file.startsWith(".") && !settings.showHidden) return;
+		if (file.startsWith(".") && !settings.showHidden) {
+			hCount++
+			continue;
+		}
 		items.push(await generateItem(path.join(url, file)));
 	}
 	items.sort((a, b) => {
@@ -348,7 +362,7 @@ async function navigate(url) {
 	});
 	main.append(...items);
 	statusBar.classList.remove("mdi-loading", "lh-18");
-	statusBar.innerText = `${files.length} elements`;
+	statusBar.innerText = `${files.length} elements${hCount ? " (" + hCount + " hidden)" : ""}`;
 	if (activeItem) {
 		activeItem.focus();
 		activeItem.classList.add("active");
@@ -436,6 +450,7 @@ function renderMain() {
 	main.className = "p-2 flex-grow-1 scrollable mx-2 mb-2 very-rounded shadow" + (win.options.darkMode ? " bg-dark" : " bg-white");
 	main.oncontextmenu = e => {
 		e.stopPropagation();
+		renderMainMenu();
 		mainMenu.popup();
 	};
 	main.onmousedown = e => {
@@ -564,15 +579,16 @@ function renderContainer() {
 
 function renderStatusbar() {
 	statusBar = document.createElement("footer");
-	statusBar.className = "py-1 px-2 m-3 text-truncate very-rounded mdi mdi-18px lh-18 shadow mdi-spin position-absolute border" + (win.options.darkMode ? " text-white border-secondary bg-dark" : " bg-light text-dark");
+	statusBar.className = "py-1 px-2 m-2 text-truncate mdi mdi-18px lh-18 mdi-spin position-absolute border" + (win.options.darkMode ? " text-white border-secondary bg-dark" : " bg-light text-dark");
 	statusBar.style.bottom = win.arguments.callback ? CSS.rem(3.5) : CSS.px(0);
 	statusBar.style.right = 0;
+	statusBar.style.borderRadius = ".5rem 0 .5rem 0";
 	win.ui.body.append(statusBar);
 }
 
 function renderSidebar() {
 	sidebar = document.createElement("aside");
-	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + " py-1";
+	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + (win.options.darkMode ? " shadow bg-dark very-rounded-right mb-2" : "") + " py-1";
 	sidebar.style.width = "25%";
 	sidebar.dataset.draggable = "true";
 	sidebar.style.maxWidth = "270px";
@@ -622,7 +638,7 @@ function renderNav() {
 	nav.mainBar.append(nav.backButton, nav.forwardButton);
 
 	nav.folderButton = document.createElement("button");
-	nav.folderButton.className = "btn btn-sm mdi d-flex mr-1 shadow-sm align-items-center mdi-folder-plus-outline mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.folderButton.className = "btn btn-sm mdi d-flex mr-2 shadow-sm align-items-center mdi-folder-plus-outline mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.folderButton.onclick = function () {
 		shell.createFile(nav.pathField.value, {
 			defaultTab: "folder"
@@ -638,7 +654,7 @@ function renderNav() {
 	nav.refreshButton.title = "Refresh page (F5)";
 	nav.refreshButton.style.borderRadius = "0 .25rem .25rem 0";
 	nav.pathField = document.createElement("input");
-	nav.pathField.className = "form-control border-0 h-100 px-2 shadow-sm ml-2 us-0 flex-grow-1 text-center" + (win.options.darkMode ? " bg-dark text-white" : " bg-light");
+	nav.pathField.className = "form-control border-0 h-100 px-2 shadow-sm us-0 flex-grow-1 text-center" + (win.options.darkMode ? " bg-dark text-white" : " bg-light");
 	nav.pathField.oninput = () => nav.pathField.dataset.edited = "true";
 	nav.pathField.style.cssText = "border-radius: .25rem 0 0 .25rem; z-index: -1";
 	nav.pathField.dataset.draggable = "true";
@@ -684,6 +700,20 @@ function renderNav() {
 	});
 	win.ui.header.classList.remove("border-bottom");
 	win.ui.title.classList.add("d-none");
+	window.addEventListener("keydown", e => {
+		if (!win.isFocused() || win.isDestroyed()) return;
+		if (e.ctrlKey) {
+			if (e.code === "ArrowLeft") nav.backButton.click();
+			if (e.code === "ArrowRight") nav.forwardButton.click();
+			if (e.code === "KeyN") nav.folderButton.click();
+			if (e.code === "KeyV") mainMenu.getMenuItemById("paste").click();
+		}
+		if (e.altKey) {
+			if (e.code === "Enter") mainMenu.getMenuItemById("openProperties").click();
+
+		}
+		if (e.code === "F5") nav.refreshButton.click();
+	})
 }
 
 function renderMainMenu() {
@@ -700,14 +730,13 @@ function renderMainMenu() {
 	}, {
 		label: "Refresh",
 		icon: "refresh",
-		accelerator: "F5",
 		click() {
 			navigate(":refresh")
 		}
 	}, {
 		label: "Paste",
+		id: "paste",
 		icon: "content-paste",
-		accelerator: "Ctrl+V",
 		click: async function () {
 			let urls = clipboard.readText().split("\n");
 			let copying = new Notification(win, {
@@ -741,28 +770,29 @@ function renderMainMenu() {
 	}, {
 		type: "separator"
 	}, {
+		label: "Show hidden files",
+		checked: settings.showHidden,
+		type: "checkbox",
+		click(ch) {
+			settings.showHidden = ch;
+			console.log(settings.showHidden);
+		}
+	}, {
+		type: "separator"
+	}, {
 		label: "Create File",
 		icon: "file-outline",
 		click() {
 			shell.createFile(nav.pathField.value);
 		}
 	}, {
-		label: "Create Folder",
-		accelerator: "Ctrl+N",
-		icon: "folder-outline",
-		click() {
-			shell.createFile(nav.pathField.value, {
-				defaultTab: "folder"
-			});
-		}
-	}, {
 		label: "Properties",
 		icon: "details",
-		accelerator: "Alt+Enter",
+		id: "openProperties",
 		click() {
 			if (activeItem) activeItem.openProperties();
 			else {
-				// TODO: Props Window
+				backFolder.openProperties()
 			}
 		}
 	}]);

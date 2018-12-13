@@ -1,7 +1,6 @@
 const fs = require("fs").promises;
 const path = require("path");
 const EventEmitter = require("events");
-const interact = require("interactjs");
 const wc = require("electron").remote.getCurrentWebContents();
 const defaultOptions = {
 	width: 400,
@@ -25,18 +24,9 @@ const defaultOptions = {
 	autoSize: false,
 	darkMode: false,
 	arguments: {}
-}
+};
 let wCount = 1;
 let windowCollection = []; // Contains all AppWindow instances
-
-let windows = []; // Contains all options that windows have. NOT RECOMMENDED to rely on.
-function getError(errno, app) {
-	let errObj = {
-		errno: errno,
-		message: errors[errno].replace('$app', app)
-	};
-	return errObj.message;
-}
 
 window.AppWindow = class Window extends EventEmitter {
 	constructor(wID, prog) {
@@ -44,8 +34,6 @@ window.AppWindow = class Window extends EventEmitter {
 		super();
 		this.id = wID;
 		this.dateCreated = new Date().getTime();
-		this.options = windows[wID];
-		this.arguments = this.options.arguments;
 		this.ready = false;
 		this.app = prog;
 	}
@@ -81,18 +69,9 @@ window.AppWindow = class Window extends EventEmitter {
 		await fs.access(appRoot + "/" + (options.main || options.main.ui));
 		if (options.main.worker)
 			await fs.access(appRoot + "/" + options.main.worker);
-
-		windows[winID] = new Proxy(options, {
-			get: function (obj, prop) {
-				return prop in obj ? obj[prop] : false;
-			},
-			set: function (obj, prop, n) {
-				obj[prop] = n;
-				win._update(prop, n)
-			}
-		});
-
 		let win = new Window(winID, prog);
+		win.options = options;
+		win.arguments = win.options.arguments;
 		win._render();
 		windowCollection[winID] = win;
 		win._paint();
@@ -105,8 +84,9 @@ window.AppWindow = class Window extends EventEmitter {
 		console.timeEnd("app render");
 		win._initEvents();
 		if (shell.isMobile) win.maximize();
-		win._update("draggable", win.options.draggable);
-		win._update("resizable", win.options.resizable);
+		win.setMovable(win.options.draggable);
+		win.setResizable(win.options.resizable);
+		win.setMinimumSize(win.options.minWidth || 100, win.options.minHeight || 100);
 		if (win.options.center) win.center();
 		win.ready = true;
 		win.emit('ready-to-show');
@@ -118,90 +98,6 @@ window.AppWindow = class Window extends EventEmitter {
 
 	static fromId(wID) {
 		return windowCollection[wID];
-	}
-
-	_drag(event) {
-		if (!this.isFocused()) this.show()
-		this.ui.root.style.left = Math.round(event.dx + this.ui.root.offsetLeft) + 'px';
-		this.ui.root.style.top = Math.round(event.dy + this.ui.root.offsetTop) + 'px';
-		if (Menu.getFocusedMenu()) Menu.getFocusedMenu().close();
-	}
-
-	_resize(event) {
-		if (!this.isFocused()) this.show()
-		this.ui.root.style.width = event.rect.width + 'px';
-		this.ui.root.style.height = event.rect.height + 'px';
-		this.ui.root.style.left = event.rect.left + 'px';
-		this.ui.root.style.top = event.rect.top + 'px';
-		clearTimeout(this.resizeTimeout);
-		this.resizeTimeout = setTimeout(e => {
-			this.updateThumbnail();
-			this.emit('resized');
-		}, 500)
-		if (Menu.getFocusedMenu()) Menu.getFocusedMenu().close();
-		this.emit('resize');
-	}
-
-	_update(p, n) {
-		switch (p) {
-			case "minWidth":
-			case "minHeight":
-			case "maxWidth":
-			case "maxHeight":
-				if (shell.isMobile) return;
-				this.ui.root.style[p] = n;
-				break;
-			case 'resizable':
-				if (shell.isMobile) return;
-				if (n) interact(this.ui.root).resizable({
-					edges: {
-						top: true,
-						left: true,
-						bottom: true,
-						right: true
-					},
-					restrictSize: {
-						min: {
-							width: this.options.minWidth + this._offsets.left + this._offsets.right,
-							height: this.options.minHeight + this._offsets.top + this._offsets.bottom
-						},
-						max: {
-							width: this.options.maxWidth + this._offsets.left + this._offsets.right,
-							height: this.options.maxHeight + this._offsets.top + this._offsets.bottom
-						}
-					},
-					enabled: true,
-					onmove: e => this._resize(e),
-					onresizemove: e => this.show()
-				}); else interact(this.ui.root).resizable({enabled: false})
-				break;
-			case 'draggable':
-				if (shell.isMobile) return;
-				if (n) interact(this.ui.root).draggable({
-					allowFrom: "[data-draggable]",
-					ignoreFrom: "button:not([data-draggable='true']), input:not([data-draggable='true']), [data-draggable='false']",
-					enabled: true,
-					//inertia: true,
-					onmove: e => this._drag(e),
-					ondragmove: e => this.show()
-				}).pointerEvents({allowFrom: ''}); else interact(this.ui.root).draggable({enabled: false});
-				break;
-			case 'maximizable':
-				this.ui.buttons.querySelector('.btn-success').classList.toggle("d-none", !n);
-				break;
-			case 'minimizable':
-				this.ui.buttons.querySelector('.btn-warning').classList.toggle("d-none", !n);
-				break;
-			case 'closable':
-				this.ui.buttons.querySelector('.btn-danger').classList.toggle("d-none", !n);
-				break;
-			case 'title':
-				this.ui.title.innerHTML = n;
-				break;
-			case 'alwaysOnTop':
-				this.alwaysOnTop = n;
-				break;
-		}
 	}
 
 	_calculateOffsets() {
@@ -230,10 +126,9 @@ window.AppWindow = class Window extends EventEmitter {
 
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
-		this.ui.root.className = "shadow-sm very-rounded border scrollable-0 fade card position-absolute " + (this.options.darkMode ? "bg-semidark border-secondary" : "bg-semiwhite");
+		this.ui.root.className = "shadow-sm very-rounded border-0 scrollable-0 fade card position-absolute " + (this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
 		this.ui.header = document.createElement("window-header");
-		this.ui.header.className = "d-flex align-items-center flex-shrink-0 border-bottom p-2" + (this.options.darkMode ? " border-secondary text-white" : "");
-		this.ui.header.dataset.draggable = "true";
+		this.ui.header.className = "d-flex align-items-center flex-shrink-0 p-2" + (this.options.darkMode ? " text-white" : "");
 		this.ui.header.addEventListener("dblclick", e => this._toggle());
 		this.ui.title = document.createElement("window-title");
 		this.ui.title.className = "flex-grow-1 text-center us-0";
@@ -272,7 +167,7 @@ window.AppWindow = class Window extends EventEmitter {
 
 		this.ui.body = document.createElement("window-body");
 		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0";
-		//this.ui.body.setAttribute("data-draggable", false);
+		this.ui.body.dataset.draggable = "false";
 
 		this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
 		this.ui.header.append(this.ui.buttons, this.ui.title);
@@ -280,23 +175,15 @@ window.AppWindow = class Window extends EventEmitter {
 		this.on('ready-to-show', () => {
 			new BSN.Tooltip(this.ui.buttons.maximize);
 			new BSN.Tooltip(this.ui.buttons.minimize);
-			new BSN.Tooltip(this.ui.buttons.close);
+			// new BSN.Tooltip(this.ui.buttons.close); Tooltip are being left unclosed when window closes.
 		});
 		console.log("rendered")
-
 	}
 
 	_initEvents() {
-		let _this = this;
-		new ResizeObserver(function () {
-			_this.emit('resize');
-		}).observe(this.ui.root);
-		this.ui.root.addEventListener("click", function (e) {
-			_this.show();
-		});
-		Elements.Bar.addEventListener("click", function () {
-			_this.blur();
-		})
+		new ResizeObserver(() => this.emit('resize')).observe(this.ui.root);
+		this.ui.root.addEventListener("click", () => this.show());
+		Elements.Bar.addEventListener("click", () => this.blur())
 	}
 
 	destroy() {
@@ -325,6 +212,7 @@ window.AppWindow = class Window extends EventEmitter {
 	focus() {
 		let _this = this;
 		if (!this.isFocused()) {
+			this.flashFrame(false);
 			setTimeout(() => this.updateThumbnail(), 300);
 			windowCollection.forEach(win => {
 				if (_this !== win && win)
@@ -347,14 +235,6 @@ window.AppWindow = class Window extends EventEmitter {
 	}
 
 	updateThumbnail() {
-		let _this = this;
-		if (shell.isMobile && !this.isFocused()) return;
-		if (!Registry.get("system.enableThumbnails")) return;
-		wc.capturePage(this.getContentBounds(), image => {
-			_this.thumbnail = image.toDataURL();
-			_this.emit("thumbnail-changed");
-		})
-
 	}
 
 	isFocused() {
@@ -362,7 +242,7 @@ window.AppWindow = class Window extends EventEmitter {
 	}
 
 	isDestroyed() {
-		return document.body.contains(this.ui.root);
+		return !document.body.contains(this.ui.root);
 	}
 
 	show() {
@@ -430,7 +310,7 @@ window.AppWindow = class Window extends EventEmitter {
 	}
 
 	setFullScreen(flag) {
-		Elements.Bar.classList.toggle("d-flex", !flag)
+		Elements.Bar.classList.toggle("d-flex", !flag);
 		if (Elements.Bar.classList.toggle("d-none", flag)) {
 			this.maximize();
 			this.setAlwaysOnTop(true);
@@ -502,69 +382,191 @@ window.AppWindow = class Window extends EventEmitter {
 	}
 
 	setMinimumSize(width, height) {
-		this.options.minWidth = width;
-		this.options.minHeight = height;
+		this.ui.root.style.minWidth = width + this._offsets.left + this._offsets.right + "px";
+		this.ui.root.style.minHeight = height + this._offsets.top + this._offsets.bottom + "px";
 	}
 
 	getMinimumSize() {
-		return [this.options.minWidth, this.options.minHeight];
+		return [parseInt(this.ui.root.style.minWidth), parseInt(this.ui.root.style.minHeight)];
 	}
 
 	setMaximumSize(width, height) {
-		this.options.maxWidth = width;
-		this.options.maxHeight = height;
+		this.ui.root.style.maxWidth = width + "px";
+		this.ui.root.style.maxHeight = height + "px";
 	}
 
 	getMaximumSize() {
-		return [this.options.maxWidth, this.options.maxHeight];
+		return [parseInt(this.ui.root.style.maxWidth), parseInt(this.ui.root.style.maxHeight)];
 	}
 
 	setResizable(bool) {
-		this.options.resizable = bool;
+		let self = this;
+		if(this.isResizable() === bool) return;
+		if(bool) {
+			let prevX = 0, prevY = 0, size = 10, corners = {
+				topLeft: document.createElement("div"),
+				top: document.createElement("div"),
+				topRight: document.createElement("div"),
+				right: document.createElement("div"),
+				bottomRight: document.createElement("div"),
+				bottom: document.createElement("div"),
+				bottomLeft: document.createElement("div"),
+				left: document.createElement("div")
+			};
+			let triggerResizer = function(e) {
+				self.isResizing = e.currentTarget.resizer;
+				prevX = e.clientX;
+				prevY = e.clientY;
+			};
+			corners.topLeft.style.cssText = `position:absolute;top: -${size}px; left:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize`;
+			corners.topLeft.resizer = 1;
+			corners.topLeft.addEventListener("mousedown", triggerResizer);
+			corners.top.style.cssText = `position:absolute;top: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize`;
+			corners.top.addEventListener("mousedown", triggerResizer);
+			corners.top.resizer = 2;
+			corners.topRight.style.cssText = `position:absolute;top: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize`;
+			corners.topRight.addEventListener("mousedown", triggerResizer);
+			corners.topRight.resizer = 3;
+			corners.right.style.cssText = `position:absolute;top: ${size}px; right:-${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize`;
+			corners.right.addEventListener("mousedown", triggerResizer);
+			corners.right.resizer = 4;
+			corners.bottomRight.style.cssText = `position:absolute;bottom: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize`;
+			corners.bottomRight.addEventListener("mousedown", triggerResizer);
+			corners.bottomRight.resizer = 5;
+			corners.bottom.style.cssText = `position:absolute;bottom: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize`;
+			corners.bottom.addEventListener("mousedown", triggerResizer);
+			corners.bottom.resizer = 6;
+			corners.bottomLeft.style.cssText = `position:absolute;bottom: -${size}px; left: -${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize`;
+			corners.bottomLeft.addEventListener("mousedown", triggerResizer);
+			corners.bottomLeft.resizer = 7;
+			corners.left.style.cssText = `position:absolute;top: ${size}px; left: -${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize`;
+			corners.left.addEventListener("mousedown", triggerResizer);
+			corners.left.resizer = 8;
+			this.ui.root.append.apply(this.ui.root, Object.values(corners));
+			document.body.addEventListener("mouseup", e => self.isResizing = false);
+			this.resizerTrigger = e => {
+				let elem = self.ui.root;
+				if (!self.isResizing) return;
+				e.stopImmediatePropagation();
+				switch (self.isResizing) {
+					case 1:
+						elem.style.top = (elem.offsetTop + (e.clientY - prevY)) + "px";
+						elem.style.height = (elem.clientHeight - (e.clientY - prevY)) + "px";
+						elem.style.left = (elem.offsetLeft + (e.clientX - prevX)) + "px";
+						elem.style.width = (elem.clientWidth - (e.clientX - prevX)) + "px";
+						document.body.style.cursor = "";
+						break;
+					case 2:
+						elem.style.top = (elem.offsetTop + (e.clientY - prevY)) + "px";
+						elem.style.height = (elem.clientHeight - (e.clientY - prevY)) + "px";
+						break;
+					case 3:
+						elem.style.top = (elem.offsetTop + (e.clientY - prevY)) + "px";
+						elem.style.height = (elem.clientHeight - (e.clientY - prevY)) + "px";
+						elem.style.width = (elem.clientWidth + (e.clientX - prevX)) + "px";
+						break;
+					case 4:
+						elem.style.width = (elem.clientWidth + (e.clientX - prevX)) + "px";
+						break;
+					case 5:
+						elem.style.width = (elem.clientWidth + (e.clientX - prevX)) + "px";
+						elem.style.height = (elem.clientHeight + (e.clientY - prevY)) + "px";
+						break;
+					case 6:
+						elem.style.height = (elem.clientHeight + (e.clientY - prevY)) + "px";
+						break;
+					case 7:
+						elem.style.left = (elem.offsetLeft + (e.clientX - prevX)) + "px";
+						elem.style.width = (elem.clientWidth - (e.clientX - prevX)) + "px";
+						elem.style.height = (elem.clientHeight + (e.clientY - prevY)) + "px";
+						break;
+					case 8:
+						elem.style.width = (elem.clientWidth - (e.clientX - prevX)) + "px";
+						elem.style.left = (elem.offsetLeft + (e.clientX - prevX)) + "px";
+						break;
+				}
+				prevX = e.clientX;
+				prevY = e.clientY;
+			};
+			document.body.addEventListener("mousemove", this.resizerTrigger);
+		} else {
+			this.ui.root.querySelectorAll(":scope > div").forEach(elem => elem.remove());
+			document.body.removeEventListener("mousemove", this.resizerTrigger);
+		}
+		this._isResizable = bool;
 	}
 
 	isResizable() {
-		return this.options.resizable;
+		return this._isResizable;
 	}
 
 	setMovable(bool) {
-		this.options.draggable = bool;
+		let self = this;
+		if(this.isMovable() === bool) return;
+		if(bool) {
+			let prevX = 0, prevY = 0, isDragging = false, cancel = false, force = false;
+			self.drag = e => {
+				if (isDragging && !self.isResizing && (!cancel || force)) {
+					self.ui.root.style.left = CSS.px(e.clientX - prevX);
+					self.ui.root.style.top = CSS.px(e.clientY - prevY);
+				} else {
+					prevX = e.clientX - self.ui.root.offsetLeft;
+					prevY = e.clientY - self.ui.root.offsetTop;
+				}
+			};
+			self.mouseUpDrag = e => {
+				isDragging = false;
+				cancel = false;
+				force = false;
+				document.body.style.cursor = "default";
+			};
+			document.body.addEventListener("mouseup", self.mouseUpDrag);
+			document.body.addEventListener("mousemove", self.drag);
+			self.ui.root.addEventListener("mousedown", () => {
+				isDragging = true;
+				if (!self.isResizing && (!cancel || force)) document.body.style.cursor = "move";
+			});
+			self.ui.root.querySelectorAll("[data-draggable='true']").forEach(elem => {
+				elem.addEventListener("mousedown", () => force = true)
+			});
+			self.ui.root.querySelectorAll("[data-draggable='false']").forEach(elem => {
+				elem.addEventListener("mousedown", () => cancel = true)
+			});
+		} else {
+			if(self.drag)
+				document.body.removeEventListener("mousemove", self.drag);
+			if(self.mouseUpDrag)
+				document.body.removeEventListener("mouseup", self.mouseUpDrag);
+		}
+		this._isMovable = bool;
 	}
 
-	isResizable() {
-		return this.options.draggable;
+	isMovable() {
+		return this._isMovable;
 	}
 
 	setMinimizable(bool) {
-		this.options.minimizable = bool;
+		this.ui.buttons.minimize.classList.toggle("d-none", !bool);
 	}
 
 	isMinimizable() {
-		return this.options.minimizable;
+		return this.ui.buttons.minimize.classList.contains("d-none");
 	}
 
 	setMaximizable(bool) {
-		this.options.maximizable = bool;
+		this.ui.buttons.maximize.classList.toggle("d-none", !bool);
 	}
 
 	isMaximizable() {
-		return this.options.maximizable;
-	}
-
-	setFullScreenable(bool) {
-		this.options.fullscreenable = bool;
-	}
-
-	isFullScreenable() {
-		return this.options.fullscreenable;
+		return this.ui.buttons.maximize.classList.contains("d-none");
 	}
 
 	setClosable(bool) {
-		this.options.closable = bool;
+		this.ui.buttons.close.classList.toggle("d-none", !bool);
 	}
 
 	isClosable() {
-		return this.options.closable;
+		return this.ui.buttons.close.classList.contains("d-none");
 	}
 
 	setAlwaysOnTop(flag) {
@@ -578,8 +580,9 @@ window.AppWindow = class Window extends EventEmitter {
 	center() {
 		if (shell.isMobile) return;
 		if (this.isMaximized()) return;
-		this.ui.root.style.left = (document.body.clientWidth - this.ui.root.clientWidth) / 2 + "px"
-		this.ui.root.style.top = (document.body.clientHeight - this.ui.root.clientHeight) / 2 - document.querySelector("taskbar").clientHeight + "px"
+		let root = this.ui.root;
+		root.style.left = CSS.px(document.body.clientWidth - root.clientWidth);
+		root.style.top = CSS.px((document.body.clientHeight - root.clientHeight) / 2 - Elements.Bar.clientHeight);
 		console.log("centered");
 	}
 
@@ -600,7 +603,10 @@ window.AppWindow = class Window extends EventEmitter {
 	}
 
 	getContentPosition() {
-		return [this.ui.root.offsetLeft + this._offsets.left, this.ui.root.offsetTop + this.ui.body.offsetTop + (shell.isMobile ? -29 : 0)]
+		return [
+			this.ui.root.offsetLeft + this._offsets.left,
+			this.ui.root.offsetTop + this.ui.body.offsetTop + (shell.isMobile ? -29 : 0)
+		];
 	}
 
 	setTitle(title) {
@@ -608,32 +614,10 @@ window.AppWindow = class Window extends EventEmitter {
 		this.emit("title-updated", title);
 	}
 
-	getTitle() {
-		return this.options.title;
-	}
-
 	flashFrame(flag) {
-		// TODO: Flash frame windows
-	}
-
-	setSkipTaskbar(skip) {
-		this.options.skipTaskbar = skip;
-	}
-
-	setKiosk(flag) {
-		this.options.kiosk = flag;
-	}
-
-	isKiosk() {
-		return this.options.kiosk;
-	}
-
-	getFile() {
-		return this.file;
-	}
-
-	getAppName() {
-		return this.prog;
+		if(this.isFocused() || !this.task) return;
+		this.ui.root.classList.toggle("flash", flag);
+		this.task.task.classList.toggle("flash", flag);
 	}
 
 	moveTop() {
@@ -658,11 +642,4 @@ window.AppWindow = class Window extends EventEmitter {
 	_toggle() {
 		if (this.isMaximized()) this.restore(); else this.maximize();
 	}
-}
-
-
-const errors = [
-	"",
-	"Application $app does not have a valid JSON-based application file. Reinstalling the application is recommended.",
-	"Application $app does not have an entry file. Reinstalling the application is recommended."
-]
+};

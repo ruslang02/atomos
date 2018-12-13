@@ -1,5 +1,5 @@
 const path = require("path");
-if (!shell.isMobile) root.className = "flex-grow-1"; else root.className = "d-none";
+if (!shell.isMobile) root.className = "flex-grow-1 py-1"; else root.className = "d-none";
 let tasks = document.createElement("div");
 tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
 tasks.className = "w-100 position-fixed fade px-3 d-none";
@@ -36,12 +36,10 @@ window.TaskManager = class TaskManager {
 			tasks.append(this.mtask)
 		}
 		this.setTitle(this.window.options.title);
-		this.task.className = "p-0 border-0 bg-transparent mr-3 position-relative active fade show";
+		this.task.className = "btn mr-3 position-relative shadow fade show rounded-max mdi mdi-24px lh-24 d-inline-flex text-white p-2 active";
 		this.task.dataset.id = this.window.id;
-		this.taskIcon = document.createElement("icon");
-		this.taskIcon.style.background = this.window.options.color;
+		this.task.style.background = this.window.options.color;
 		this.setIcon(this.window.options.icon || noAppIcon);
-		this.task.appendChild(this.taskIcon);
 		this.window.on("title-updated", title => this.setTitle(title));
 		this.window.on("icon-updated", icon => this.setIcon(icon || noAppIcon));
 		root.appendChild(this.task);
@@ -130,7 +128,7 @@ window.TaskManager = class TaskManager {
 	}
 	setIcon(iconURL) {
 		if(iconURL) {
-		this.taskIcon.className = "rounded-max mdi mdi-24px lh-24 d-flex text-white p-2 my-1 mdi-" + this.window.options.icon;
+		this.task.className = "btn mr-3 position-relative shadow fade show rounded-max mdi mdi-24px lh-24 d-inline-flex text-white p-2 mdi-" + this.window.options.icon;
 			if (shell.isMobile)
 				this.mtask.icon.className = "mdi mdi-24px lh-24 d-flex text-white mdi-" + this.window.options.icon;
 		}
@@ -141,4 +139,4 @@ window.TaskManager = class TaskManager {
 	blur() {
 		this.task.classList.remove("active");
 	}
-}
+};

@@ -19,7 +19,8 @@ let menu = Menu.buildFromTemplate(null, [{
 		window.close();
 	}
 }]);
-button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 d-flex align-items-center justify-content-center text-white p-0 my-1 ml-2 mdi-chevron-up";
+root.className = "d-flex align-items-center ml-2";
+button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 shadow d-flex align-items-center justify-content-center text-white p-0 my-1 mdi-chevron-up";
 button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
 button.style.height = button.style.width = CSS.px(40);
 if (!shell.isMobile) button.title = "All Apps (<i class='mdi mdi-atom'></i>)";

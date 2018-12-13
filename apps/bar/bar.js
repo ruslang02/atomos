@@ -10,7 +10,7 @@ function render() {
 	Elements.Bar = document.createElement("taskbar");
 	Elements.BarItems = {};
 	loadPlugins();
-	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto w-100";
+	Elements.Bar.className = "px-2 py-1 d-flex flex-nowrap mt-auto w-100";
 	Elements.Bar.transition = "bottom 1s ease";
 	updatePosition();
 	new ResizeObserver(updatePosition).observe(Elements.Bar);
@@ -18,7 +18,7 @@ function render() {
 		type: "checkbox",
 		label: "Automatically hide taskbar",
 		checked: autoHide || false,
-		click(checked) {
+		click() {
 			Registry.set("taskbar.autoHide", !autoHide)
 		}
 	}]);

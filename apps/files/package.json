@@ -9,8 +9,8 @@
   "color": "linear-gradient(135deg, #f57f17, #ffb300)",
 	"width": 600,
 	"height": 500,
-	"minHeight": 330,
-	"minWidth": 430,
+	"minHeight": 400,
+	"minWidth": 450,
 	"main": "files.js",
 	"dependencies": {
 		"atomos": "~0.7.0"
