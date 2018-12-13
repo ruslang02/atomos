@@ -4,6 +4,9 @@
  - macOS-styled apps and windows
  - defaultFontSize changed from 16 to 14 pixels
  - Optimized UI for changed font size
+ - New UI design
+ - Bugfixes
+ - Removal of InteractJS libraries (little issues with own drag/resize)
  - Dark Mode improved
  
 ## 0.7.1
