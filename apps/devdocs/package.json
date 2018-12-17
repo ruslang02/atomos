@@ -1,0 +1,21 @@
+{
+  "name": "@atomos/devdocs",
+  "title": "DevDocs",
+  "productName": "DevDocs",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "version": "1.0.0",
+  "homepage": "https://apps.atomos.org.uk/package/devdocs",
+  "main": "devdocs.js",
+  "icon": "code-tags",
+  "color": "var(--dark)",
+  "dependencies": {
+    "atomos": "~0.7.0"
+  },
+  "minWidth": 800,
+  "minHeight": 400,
+  "width": 1200,
+  "height": 600,
+  "type": "app",
+  "darkMode": true
+}

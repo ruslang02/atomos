@@ -51,8 +51,8 @@ window.shell = class Shell {
 		let point = screen.getCursorScreenPoint();
 		let pos = win.getContentBounds();
 		return {
-			x: (point.x - pos.x) * window.zoomFactor,
-			y: (point.y - pos.y) * window.zoomFactor
+			x: (point.x - pos.x) / window.zoomFactor,
+			y: (point.y - pos.y) / window.zoomFactor
 		};
 	}
 	static uniqueId() {
@@ -450,13 +450,13 @@ window.shell = class Shell {
 		modal.setAttribute("aria-hidden", "true");
 
 		modal.dialog.className = "modal-dialog modal-dialog-centered";
-		modal.content.className = "modal-content";
-		modal.apps.className = "border py-2 m-3 rounded bg-white scrollable-y";
+		modal.content.className = "modal-content" + (shell.ui.darkMode ? " bg-dark text-white" : " bg-light");
+		modal.apps.className = " py-2 m-3 rounded scrollable-y" + (shell.ui.darkMode ? " bg-secondary border border-secondary text-white" : "bg-white shadow");
 		modal.apps.style.maxHeight = "400px";
 		modal.apps.style.minHeight = "200px";
 		modal.header.className = "text-muted px-3 pt-3 ml-1";
 		modal.header.innerText = "Open file in...";
-		modal.footer.className = "modal-footer";
+		modal.footer.className = "modal-footer" + (shell.ui.darkMode ? " border-secondary" : "");
 		modal.selectButton.className = "btn btn-primary ml-2";
 		modal.cancelButton.className = "btn btn-secondary ml-2";
 		modal.selectButton.innerText = "Launch";

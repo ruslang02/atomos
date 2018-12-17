@@ -53,6 +53,24 @@ list.thumbEnabled = newSmallListItem({
 		Registry.set("system.enableThumbnails", checked);
 	}
 });
+list.transparency = newSmallListItem({
+	label: "Transparency",
+	sublabel: "Semi-transparent windows, may affect performance",
+	type: "checkbox",
+	checked: Registry.get("system.enableTransparentWindows"),
+	click(checked) {
+		Registry.set("system.enableTransparentWindows", checked);
+	}
+});
+list.shadows = newSmallListItem({
+	label: "Shadows",
+	sublabel: "Cast shadows behind windows",
+	type: "checkbox",
+	checked: Registry.get("system.enableWindowShadows"),
+	click(checked) {
+		Registry.set("system.enableWindowShadows", checked);
+	}
+});
 list.menuIcons = newSmallListItem({
 	label: "Show icons in menus",
 	type: "checkbox",
@@ -61,5 +79,5 @@ list.menuIcons = newSmallListItem({
 		Registry.set("system.showMenuIcons", checked);
 	}
 });
-list.append(list.wallpaper, list.generalLabel, list.darkMode, list.thumbEnabled, list.menuIcons);
+list.append(list.wallpaper, list.generalLabel, list.darkMode, list.thumbEnabled, list.transparency, list.shadows, list.menuIcons);
 main.append(list);

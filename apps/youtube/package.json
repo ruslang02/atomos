@@ -11,7 +11,6 @@
 	"height": 650,
 	"minHeight": 500,
 	"minWidth": 500,
-	"hidden": true,
 	"main": "youtube.js",
 	"dependencies": {
 		"atomos": "~0.7.0",

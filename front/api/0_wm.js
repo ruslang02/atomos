@@ -126,7 +126,14 @@ window.AppWindow = class Window extends EventEmitter {
 
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
-		this.ui.root.className = "shadow-sm very-rounded border-0 scrollable-0 fade card position-absolute " + (this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
+		this.ui.root.className = "very-rounded border-0 scrollable-0 fade card position-absolute shadow-sm";
+		if (!Registry.get("system.enableWindowShadows")) this.ui.root.style.boxShadow = "none !important";
+		if (Registry.get("system.enableTransparentWindows")) {
+			this.ui.root.classList.add(this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
+		} else {
+			if (this.options.darkMode) this.ui.root.style.background = "#030303";
+			else this.ui.root.style.background = "#FAfAFA";
+		}
 		this.ui.header = document.createElement("window-header");
 		this.ui.header.className = "d-flex align-items-center flex-shrink-0 p-2" + (this.options.darkMode ? " text-white" : "");
 		this.ui.header.addEventListener("dblclick", e => this._toggle());
