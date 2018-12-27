@@ -15,5 +15,21 @@ list.muteSounds = newSmallListItem({
 		wc.setAudioMuted(checked);
 	}
 });
-list.append(list.muteSounds);
+list.notifVolume = newSmallListItem({
+	label: "Notification volume"
+});
+list.notifVolume.classList.remove("btn", "btn-white", "btn-dark", "align-items-center");
+list.notifVolume.classList.add("flex-column");
+list.notifRange = document.createElement("input");
+list.notifRange.type = "range";
+list.notifRange.className = "custom-range mt-2";
+list.notifRange.min = 0;
+list.notifRange.max = 1;
+list.notifRange.step = 0.1;
+list.notifRange.value = Registry.get("system.notificationsVolume") || 1;
+list.notifRange.onchange = () => {
+	Registry.set("system.notificationsVolume", list.notifRange.value);
+};
+list.notifVolume.append(list.notifRange);
+list.append(list.muteSounds, list.notifVolume);
 main.append(list);

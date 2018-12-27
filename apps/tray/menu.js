@@ -85,7 +85,7 @@ function update() {
 
 function renderQuickSection() { //TODO: Make more customizable
   Elements.MenuBar.quickItems = document.createElement("section");
-	Elements.MenuBar.quickItems.className = "card shadow flex-row p-3 fade show justify-content-around flex-shrink-0 " + (shell.ui.darkMode ? "bg-dark text-white" : "");
+	Elements.MenuBar.quickItems.className = "card shadow flex-row p-3 fade show justify-content-around mt-2 flex-shrink-0 " + (shell.ui.darkMode ? "bg-dark text-white" : "");
 	if (shell.isMobile) Elements.MenuBar.quickItems.classList.add("mb-2");
   let itemBattery = document.createElement("button");
   let itemDND = document.createElement("button");
@@ -138,7 +138,7 @@ function renderNotifications() {
   Elements.MenuBar.notifications = document.createElement("notifications");
   Elements.MenuBar.notifications.className = "flex-grow-1 scrollable-y scrollable-x-0";
   Elements.MenuBar.notifications.none = document.createElement("section");
-	Elements.MenuBar.notifications.none.className = "card shadow flex-column mb-2 p-3 text-center text-muted font-italic " + (shell.ui.darkMode ? "bg-dark text-white" : "");
+	Elements.MenuBar.notifications.none.className = "card shadow flex-column p-3 text-center text-muted font-italic " + (shell.ui.darkMode ? "bg-dark text-white" : "");
   Elements.MenuBar.notifications.none.innerText = "No new notifications";
   Elements.MenuBar.notifications.appendChild(Elements.MenuBar.notifications.none);
   Elements.MenuBar.appendChild(Elements.MenuBar.notifications)

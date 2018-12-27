@@ -55,23 +55,23 @@ asList.className = "list-group scrollable-x-0";
 function update() {
 	asList.innerHTML = "";
 	let astart = registry.get().autostart;
-	if(!astart.length) asList.innerHTML = "<div class='text-center text-muted list-group-item rounded-0 border-left-0 border-right-0 border-bottom-0'>No items to show.</div>";
+    if (!astart.length) asList.innerHTML = "<div class='text-center text-muted py-2 border-top border-secondary'>No items to show.</div>";
 	for(const i of astart.keys()) {
 		let item = astart[i];
-		let elem = document.createElement("div");
-		elem.className = "list-group-item flex-shrink-0 rounded-0 border-left-0 border-right-0 d-flex align-items-center px-3 py-2"
-		elem.header = document.createElement("header");
-		elem.header.className = "flex-grow-1"
-		elem.header.innerText = item.name;
+        let elem = newSmallListItem({
+            label: item.name
+        });
 		let deleteButton = document.createElement("button");
-		deleteButton.className = "close mdi mdi-delete-outline mdi-18px lh-18 fade flex-shrink-0";
+        deleteButton.className = "text-danger bg-transparent border-0 p-0 mdi btn mdi-delete-outline mdi-18px lh-18 mr-3 fade flex-shrink-0";
+        deleteButton.style.position = "absolute";
+        deleteButton.style.right = 0;
 		deleteButton.onclick = e => {
 			let oldReg = registry.get();
 			oldReg.autostart.splice(i, 1);
 			registry.set(oldReg);
 			update();
 		};
-		elem.append(elem.header, deleteButton);
+        elem.append(deleteButton);
 		elem.onmouseenter = e => deleteButton.classList.add("show");
 		elem.onmouseleave = e => deleteButton.classList.remove("show");
 		asList.append(elem);

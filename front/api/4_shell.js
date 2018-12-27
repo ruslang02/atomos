@@ -74,7 +74,7 @@ window.shell = class Shell {
 	}
 	static async installApp(file) {
 		let tempPath = path.join(app.getPath("temp"), "aos_appinstall");
-		let newFile = path.join(app.getPath("temp"), path.basename(file).replace(".wapp", ".tar.gz"))
+		let newFile = path.join(app.getPath("temp"), path.basename(file).replace(".wapp", ".tar.gz"));
 		await fsp.copyFile(file, newFile);
 		try {
 			await delete_r(tempPath)
@@ -122,10 +122,10 @@ window.shell = class Shell {
 				callback(file) {
 					resolve(file);
 				}
-			})
+			});
 			Object.assign(args, {
 				file: path.normalize(args.defaultPath)
-			})
+			});
 			AppWindow.launch("files", args, {
 				parent: AppWindow.getFocusedWindow(),
 				modal: true
@@ -622,7 +622,7 @@ window.shell = class Shell {
 
 			if (options.checkboxLabel)
 				modal.footer.prepend(customCheckbox);
-			container.prepend(modal.header)
+			container.prepend(modal.header);
 			modal.content.append(modal.body, modal.footer);
 			modal.dialog.append(modal.content);
 			modal.append(modal.dialog);

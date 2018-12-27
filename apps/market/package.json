@@ -11,6 +11,7 @@
   "height": 500,
   "minHeight": 400,
   "minWidth": 450,
+  "removable": "false",
   "main": "market.js",
   "dependencies": {
     "atomos": "~0.7.0"

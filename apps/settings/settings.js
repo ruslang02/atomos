@@ -23,7 +23,7 @@ root.append(root.body, root.footer);
 function newSmallListItem(options) {
 	let elem = document.createElement("label");
 	if (options.type === "checkbox") {
-		elem.className = "rounded-0 border-top d-flex align-items-center text-left py-2 px-3 mb-0 btn custom-control custom-checkbox " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
+		elem.className = "rounded-0 border-top border-bottom-0 border-left-0 border-right-0 d-flex align-items-center text-left py-2 px-3 mb-0 btn custom-control custom-checkbox " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
 		elem.input = document.createElement("input");
 		elem.input.type = "checkbox";
 		elem.input.id = shell.uniqueId();
@@ -41,7 +41,7 @@ function newSmallListItem(options) {
 		elem.className = "lh-r1 font-weight-bolder dropdown-header " + (shell.ui.darkMode ? "bg-secondary text-white" : "bg-light");
 		elem.innerText = options.label;
 	} else {
-		elem.className = "rounded-0 border-top d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
+		elem.className = "rounded-0 border-top border-bottom-0 border-left-0 border-right-0 d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
 		elem.header = document.createElement('div');
 		if (options.icon) {
 			elem.icon = document.createElement('icon');

@@ -47,38 +47,46 @@ window.Notification = class Notification {
 		 * -- Group Options (not in use)
 		 * - Global (Default) Options
 		 */
+		if (!(win instanceof AppWindow)) throw new Error("Two arguments needed to call Notification(): window instance and options object");
 		let options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, specificOptions);
 		this.window = win;
+		this.options = options;
 		if (options.title === null && options.message === null) return;
 		this.ui = document.createElement("notification");
-		this.ui.app = document.createElement("app");
-		this.ui.app.icon = document.createElement("icon");
-		this.ui.app.displayName = document.createElement("name");
-		this.ui.time = document.createElement("time");
-		this.ui.messageTitle = document.createElement("notification-title");
-		this.ui.message = document.createElement("notification-message");
-		let appTimeBar = document.createElement("div");
-		appTimeBar.className = "d-flex px-3 pt-2";
-		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "") + " card shadow scrollable-0 mb-2 position-relative fly left hide";
-		this.ui.app.className = "align-items-center d-flex mr-1 smaller";
-		this.ui.app.style.color = options.color;
-		this.ui.app.icon.className = "mdi mdi-18px lh-18 mr-1 mdi-" + options.icon;
-		this.ui.app.displayName.innerText = options.app;
-		this.ui.time.innerText = "• now";
-		this.ui.time.className = "text-muted smaller";
-		this.ui.message.className = "text-secondary smaller px-3 pb-2 position-relative text-truncate";
+		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "") + " toast shadow position-relative fly left hide";
+		this.ui.header = document.createElement("header");
+		this.ui.header.className = "toast-header pt-2" + (shell.ui.darkMode ? " bg-dark border-0 text-white" : " pb-2");
+		this.ui.app = document.createElement("strong");
+		this.ui.appIcon = document.createElement("icon");
+		this.ui.time = document.createElement("small");
+		this.ui.body = document.createElement("div");
+		this.ui.messageTitle = document.createElement("div");
+		this.ui.message = document.createElement("div");
+		this.ui.body.className = "toast-body px-0 pt-2 pb-2";
+		this.ui.app.className = "mr-auto";
+		this.ui.appIcon.className = "mdi mdi-18px lh-18 mr-1 d-flex align-items-center mdi-" + options.icon;
+		this.ui.app.innerText = options.app;
+		this.ui.time.innerText = "just now";
+		this.ui.time.className = "text-muted";
+		this.ui.message.className = "text-secondary smaller position-relative text-truncate px-3";
 		this.ui.messageTitle.innerText = options.title;
-		this.ui.messageTitle.className = "px-3";
-		this.ui.message.style.maxHeight = CSS.px(150);
-		this.ui.message.append(options.message || "");
+		this.ui.messageTitle.className = "font-weight-bold px-3";
+		if (typeof options.message === "object")
+			this.ui.message.append(options.message);
+		else this.ui.message.innerHTML = options.message;
 		if (options.image) {
 			this.ui.classList.add("type-image");
 			if (shell.ui.darkMode) this.ui.classList.add("dark");
-			this.ui.messageTitle.classList.add("mb-2")
+			this.ui.message.classList.replace("px-3", "mt-2");
+			this.ui.body.classList.replace("pb-2", "pb-0")
 		}
-		this.ui.app.append(this.ui.app.icon, this.ui.app.displayName);
-		appTimeBar.append(this.ui.app, this.ui.time);
-		this.ui.append(appTimeBar, this.ui.messageTitle, this.ui.message);
+		this.ui.close = document.createElement("button");
+		this.ui.close.className = "close mdi mdi-close ml-2" + (shell.ui.darkMode ? " text-white" : "");
+		this.ui.close.classList.toggle("d-none", !options.dismissable);
+		this.ui.close.onclick = () => this.dismiss();
+		this.ui.header.append(this.ui.appIcon, this.ui.app, this.ui.time, this.ui.close);
+		this.ui.body.append(this.ui.messageTitle, this.ui.message);
+		this.ui.append(this.ui.header, this.ui.body);
 		if (options.actions) {
 			this.ui.actions = document.createElement('notification-actions');
 			this.ui.actions.className = "py-2 px-3 d-flex justify-content-between" + (shell.ui.darkMode ? " bg-dark" : " bg-light");
@@ -93,18 +101,7 @@ window.Notification = class Notification {
 			});
 			this.ui.append(this.ui.actions);
 		}
-		if (options.dismissable) {
-			this.ui.close = document.createElement("button");
-			this.ui.close.className = "p-1 border-0 my-1 mx-2 btn btn-link mdi mdi-close fade mdi-24px lh-24 text-secondary";
-			this.ui.close.style.position = "absolute";
-			this.ui.close.style.top = 0;
-			this.ui.close.style.right = 0;
-			this.ui.close.style.height = "32px";
-			this.ui.close.onclick = () => this.dismiss();
-			this.ui.onmouseenter = () => this.ui.close.classList.add("show");
-			this.ui.onmouseleave = () => this.ui.close.classList.remove("show");
-			this.ui.append(this.ui.close);
-		}
+
 		Elements.MenuBar.notifications.append(this.ui);
 		this.trayItem = new TrayItem(options.icon);
 		this.notify();
@@ -116,21 +113,48 @@ window.Notification = class Notification {
 		setTimeout(e => this.ui.remove(), shell.ui.flyAnimation);
 	}
 
+	get title() {
+		return this.ui.messageTitle.innerText;
+	}
+
+	set title(title) {
+		this.ui.messageTitle.innerText = title;
+	}
+
+	get message() {
+		return this.ui.message.innerHTML;
+	}
+
+	set message(title) {
+		this.ui.message.innerHTML = title;
+	}
+
+	get dismissable() {
+		return this.ui.close.classList.contains("d-none");
+	}
+
+	set dismissable(bool) {
+		return this.ui.close.classList.toggle("d-none", bool);
+	}
+
 	notify() {
 		if (this.window)
 			if (this.window.options.notificationsDisabled) return;
 		if (window.NOTIFICATIONS_MUTED) return;
-		new Audio(osRoot + "/resources/notification.ogg").play();
-		this.ui.classList.replace("hide", "show")
+		if (!this.options.quiet) {
+			let notificationAlert = new Audio(osRoot + "/resources/notification.ogg");
+			notificationAlert.volume = Registry.get("system.notificationsVolume") || 1;
+			notificationAlert.play();
+		}
+		this.ui.classList.replace("hide", "show");
 		if (Elements.MenuBar.classList.contains("show")) return;
 		Elements.MenuBar.childNodes.forEach(node => {
 			if (!node.classList.contains("d-none") && node.tagName.toLowerCase() !== "notifications")
 				node.classList.add("d-none", "notification-showing");
-		})
-		Elements.MenuBar.notifications.childNodes.forEach((node, i, nodes) => {
+		});
+		Elements.MenuBar.notifications.childNodes.forEach((node) => {
 			if (node !== this.ui && node !== Elements.MenuBar.notifications.none) node.classList.add("d-none", "notification-showing");
-		})
-		this.ui.classList.remove("mb-2");
+		});
 		Elements.MenuBar.classList.replace("fly", "show");
 		Elements.BarItems["tray"].Container.classList.add("active");
 		setTimeout(e => {
@@ -138,7 +162,6 @@ window.Notification = class Notification {
 			Elements.MenuBar.classList.remove("show");
 			Elements.BarItems["tray"].Container.classList.remove("active");
 			setTimeout(e => {
-				this.ui.classList.add("mb-2")
 				Elements.MenuBar.notifications.classList.remove("mt-2");
 				Elements.MenuBar.querySelectorAll("section").forEach(elem => {
 					if (elem.classList.contains("d-none") && elem.classList.contains("notification-showing"))
@@ -151,4 +174,4 @@ window.Notification = class Notification {
 			}, shell.ui.flyAnimation);
 		}, NOTIFICATION_DELAY);
 	}
-}
+};

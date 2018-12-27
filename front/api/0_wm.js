@@ -176,6 +176,11 @@ window.AppWindow = class Window extends EventEmitter {
 		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0";
 		this.ui.body.dataset.draggable = "false";
 
+		this.ui.overlay = document.createElement("overlay");
+		this.ui.overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;"
+		this.ui.overlay.className = "d-none";
+		this.ui.root.append(this.ui.overlay);
+
 		this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
 		this.ui.header.append(this.ui.buttons, this.ui.title);
 		this.ui.root.append(this.ui.header, this.ui.body);
@@ -424,33 +429,37 @@ window.AppWindow = class Window extends EventEmitter {
 				self.isResizing = e.currentTarget.resizer;
 				prevX = e.clientX;
 				prevY = e.clientY;
+				self.ui.overlay.classList.remove("d-none");
 			};
-			corners.topLeft.style.cssText = `position:absolute;top: -${size}px; left:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize`;
+			corners.topLeft.style.cssText = `position:absolute;top: -${size}px; left:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize; z-index:101`;
 			corners.topLeft.resizer = 1;
 			corners.topLeft.addEventListener("mousedown", triggerResizer);
-			corners.top.style.cssText = `position:absolute;top: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize`;
+			corners.top.style.cssText = `position:absolute;top: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize; z-index:101`;
 			corners.top.addEventListener("mousedown", triggerResizer);
 			corners.top.resizer = 2;
-			corners.topRight.style.cssText = `position:absolute;top: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize`;
+			corners.topRight.style.cssText = `position:absolute;top: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize; z-index:101`;
 			corners.topRight.addEventListener("mousedown", triggerResizer);
 			corners.topRight.resizer = 3;
-			corners.right.style.cssText = `position:absolute;top: ${size}px; right:-${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize`;
+			corners.right.style.cssText = `position:absolute;top: ${size}px; right:-${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize; z-index:101`;
 			corners.right.addEventListener("mousedown", triggerResizer);
 			corners.right.resizer = 4;
-			corners.bottomRight.style.cssText = `position:absolute;bottom: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize`;
+			corners.bottomRight.style.cssText = `position:absolute;bottom: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize; z-index:101`;
 			corners.bottomRight.addEventListener("mousedown", triggerResizer);
 			corners.bottomRight.resizer = 5;
-			corners.bottom.style.cssText = `position:absolute;bottom: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize`;
+			corners.bottom.style.cssText = `position:absolute;bottom: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize; z-index:101`;
 			corners.bottom.addEventListener("mousedown", triggerResizer);
 			corners.bottom.resizer = 6;
-			corners.bottomLeft.style.cssText = `position:absolute;bottom: -${size}px; left: -${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize`;
+			corners.bottomLeft.style.cssText = `position:absolute;bottom: -${size}px; left: -${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize; z-index:101`;
 			corners.bottomLeft.addEventListener("mousedown", triggerResizer);
 			corners.bottomLeft.resizer = 7;
-			corners.left.style.cssText = `position:absolute;top: ${size}px; left: -${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize`;
+			corners.left.style.cssText = `position:absolute;top: ${size}px; left: -${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize; z-index:101`;
 			corners.left.addEventListener("mousedown", triggerResizer);
 			corners.left.resizer = 8;
 			this.ui.root.append.apply(this.ui.root, Object.values(corners));
-			document.body.addEventListener("mouseup", e => self.isResizing = false);
+			document.body.addEventListener("mouseup", () => {
+				self.isResizing = false;
+				self.ui.overlay.classList.add("d-none");
+			});
 			this.resizerTrigger = e => {
 				let elem = self.ui.root;
 				if (!self.isResizing) return;
@@ -516,6 +525,7 @@ window.AppWindow = class Window extends EventEmitter {
 				if (isDragging && !self.isResizing && (!cancel || force)) {
 					self.ui.root.style.left = CSS.px(e.clientX - prevX);
 					self.ui.root.style.top = CSS.px(e.clientY - prevY);
+					self.ui.overlay.classList.remove("d-none");
 				} else {
 					prevX = e.clientX - self.ui.root.offsetLeft;
 					prevY = e.clientY - self.ui.root.offsetTop;
@@ -525,6 +535,7 @@ window.AppWindow = class Window extends EventEmitter {
 				isDragging = false;
 				cancel = false;
 				force = false;
+				self.ui.overlay.classList.add("d-none");
 				document.body.style.cursor = "default";
 			};
 			document.body.addEventListener("mouseup", self.mouseUpDrag);

@@ -44,18 +44,6 @@ let settings = new Proxy(registry.get(), {
 	}
 });
 
-let copy_r = async function (src, dest) {
-	let exists = fs.existsSync(src);
-	let stats = exists && await fsp.stat(src);
-	let isDirectory = exists && stats.isDirectory();
-	if (exists && isDirectory) {
-		await fsp.mkdir(dest);
-		for (const i of (await fsp.readdir(src)).values()) {
-			await copy_r(path.join(src, i), path.join(dest, i))
-		}
-	} else
-		await fsp.copyFile(src, dest);
-};
 let delete_r = async function (input) {
 	let stat = await fsp.lstat(input);
 	if (!stat.isDirectory()) {
@@ -132,6 +120,8 @@ async function navigate(url) {
 				</div>`;
 		return;
 	}
+    statusBar.text.innerText = "";
+    statusBar.loader.classList.remove("d-none");
 	let stat = await fsp.stat(url);
 	let selectFile;
 	if (stat.isFile()) {
@@ -141,7 +131,6 @@ async function navigate(url) {
 	nav.pathField.blur();
 	nav.pathField.dataset.edited = "false";
 	nav.pathField.value = url;
-	statusBar.innerText = "";
 	try {
 		watcher = fs.watch(url, (a, b) => {
 			if (a !== "change") navigate(":refresh")
@@ -158,7 +147,6 @@ async function navigate(url) {
 		return;
 	}
 
-	statusBar.classList.add("mdi-loading", "lh-18");
 
 	async function generateItem(file) {
 		let item = document.createElement("button");
@@ -322,8 +310,6 @@ async function navigate(url) {
 	}
 
 	let files = await fsp.readdir(url);
-	statusBar.classList.remove("mdi-loading", "lh-18");
-	statusBar.innerText = "0 elements";
 	activeItem = undefined;
 	main.innerHTML = "";
 	if (files.length === 0) {
@@ -332,6 +318,8 @@ async function navigate(url) {
 			<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px ${win.options.darkMode ? "var(--dark)" : "white"};"></icon>
 			This folder is empty.
 			</div>`;
+        statusBar.loader.classList.add("d-none");
+        statusBar.text.innerText = "0 elements";
 		return;
 	}
 	let items = [];
@@ -361,8 +349,8 @@ async function navigate(url) {
 		return 0;
 	});
 	main.append(...items);
-	statusBar.classList.remove("mdi-loading", "lh-18");
-	statusBar.innerText = `${files.length} elements${hCount ? " (" + hCount + " hidden)" : ""}`;
+    statusBar.loader.classList.add("d-none");
+    statusBar.text.innerText = `${files.length} elements${hCount ? " (" + hCount + " hidden)" : ""}`;
 	if (activeItem) {
 		activeItem.focus();
 		activeItem.classList.add("active");
@@ -418,8 +406,8 @@ async function sendBack(force = false) {
 	if (!exists) {
 		if (win.arguments.open === shell.FILE) {
 			if (win.arguments.checkFileExists) {
-				statusBar.classList.remove("mdi-loading", "lh-18");
-				statusBar.innerText = "File does not exist.";
+                statusBar.loader.classList.add("d-none");
+                statusBar.text.innerText = "File does not exist.";
 			} else send();
 		} else if (win.arguments.open === shell.DIRECTORY) {
 			if (win.arguments.createDirectory)
@@ -579,10 +567,15 @@ function renderContainer() {
 
 function renderStatusbar() {
 	statusBar = document.createElement("footer");
-	statusBar.className = "py-1 px-2 m-2 text-truncate mdi mdi-18px lh-18 mdi-spin position-absolute border" + (win.options.darkMode ? " text-white border-secondary bg-dark" : " bg-light text-dark");
+    statusBar.className = "m-2 p-2 lh-r1 d-flex align-items-center position-absolute border" + (win.options.darkMode ? " text-white border-secondary bg-dark" : " bg-light text-dark");
 	statusBar.style.bottom = win.arguments.callback ? CSS.rem(3.5) : CSS.px(0);
 	statusBar.style.right = 0;
 	statusBar.style.borderRadius = ".5rem 0 .5rem 0";
+    statusBar.text = document.createElement("div");
+    statusBar.text.className = "text-truncate";
+    statusBar.loader = document.createElement("div");
+    statusBar.loader.className = "spinner-border spinner-border-sm";
+    statusBar.append(statusBar.text, statusBar.loader);
 	win.ui.body.append(statusBar);
 }
 
@@ -738,33 +731,38 @@ function renderMainMenu() {
 		id: "paste",
 		icon: "content-paste",
 		click: async function () {
-			let urls = clipboard.readText().split("\n");
-			let copying = new Notification(win, {
+            let url = clipboard.readText();
+            let copied = 0;
+            let notif = new Notification(win, {
 				icon: "sync",
 				app: "Files",
 				dismissable: false,
-				title: `Copying ${urls.length} item${urls.length > 1 ? 's' : ''}`,
-				message: "<div class='progress progress-bar-striped progress-bar-animated w-100 my-2 bg-primary' style='height:0.5rem'></div>",
-				actions: [{
-					label: "Cancel",
-					click() {
-						//TODO: How to do this?
-					}
-				}]
+                title: `Copied 0 items`,
+                quiet: true,
+                message: "<div class='progress progress-bar-striped progress-bar-animated w-100 my-2 bg-primary' style='height:0.5rem'></div>"
 			});
-			for (const i of urls.keys()) {
-				let url = urls[i];
-				await copy_r(url, path.join(nav.pathField.value, path.basename(url)));
-				if (clipboard.readHTML().includes("cut"))
-					await delete_r(url);
-			}
-			copying.dismiss();
-			new Notification(win, {
-				icon: "check_all",
-				app: "Files",
-				title: "All files successfully copied.",
-				message: promises.length + " are copied to the directory."
-			});
+            let copy_r = async function (src, dest) {
+                let exists = fs.existsSync(src);
+                let stats = exists && await fsp.stat(src);
+                let isDirectory = exists && stats.isDirectory();
+                if (exists && isDirectory) {
+                    await fsp.mkdir(dest);
+                    for (const i of (await fsp.readdir(src)).values()) {
+                        await copy_r(path.join(src, i), path.join(dest, i))
+                    }
+                } else
+                    await fsp.copyFile(src, dest);
+                copied++;
+            };
+            let count = setInterval(e => {
+                notif.title = `Copied ${copied} item${copied > 1 ? "s" : ""}`
+            }, 1000);
+            await copy_r(url, path.join(nav.pathField.value, path.basename(url)));
+            if (clipboard.readHTML().includes("cut"))
+                await delete_r(url);
+            notif.title = "All files successfully copied";
+            notif.message = `${copied} item${copied > 1 ? "s" : ""} are copied to the directory.`;
+            clearInterval(count);
 		},
 		enabled: path.isAbsolute(clipboard.readText().split("\n")[0])
 	}, {

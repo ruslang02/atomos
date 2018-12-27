@@ -232,7 +232,8 @@ window.maximized {
 window.maximized.bg-semiwhite {
 	background: rgba(230, 230, 230) !important
 }
-notification.type-image notification-message::after {
+
+notification.type-image .toast-body div.smaller::after {
 	content: "";
 	position: absolute;
 	bottom: -1px;
@@ -242,7 +243,7 @@ notification.type-image notification-message::after {
 	background: linear-gradient(transparent, var(--light));
 }
 
-notification.type-image.dark notification-message::after {
+notification.type-image.dark .toast-body div.smaller::after {
 	background: linear-gradient(transparent, var(--dark));
 }
 
@@ -260,12 +261,23 @@ notification.type-image.dark notification-message::after {
 	animation-name: fly-up-out
 }
 
+.fly.down.show {
+    animation-name: fly-down-in
+}
+
+.fly.down.hide {
+    animation-name: fly-down-out
+}
 .fly.left.show {
 	animation-name: fly-left-in
 }
 
 .fly.left.hide {
 	animation-name: fly-left-out
+}
+
+.toast {
+    font-size: 1rem;
 }
 
 .tooltip {
@@ -279,6 +291,11 @@ notification.type-image.dark notification-message::after {
 	display: inline-block;
 	height: 14px;
 	margin-top: -1px;
+}
+
+.mdi-spin-faster:before {
+    -webkit-animation: mdi-spin 1s infinite linear;
+    animation: mdi-spin 1s infinite linear;
 }
 
 .tooltip * {
@@ -316,6 +333,31 @@ notification.type-image.dark notification-message::after {
 	}
 }
 
+@keyframes fly-down-in {
+    0% {
+        transform: translateY(-30px);
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
+@keyframes fly-down-out {
+    100% {
+        transform: translateY(-30px);
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    0% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
 @keyframes fly-left-in {
 	0% {
 		transform: translateX(30px);

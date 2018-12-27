@@ -10,8 +10,9 @@
   "color": "linear-gradient(135deg, #263238, #616161)",
   "main": "angles.js",
   "description": "Code Editor based on Ace",
-  "dependencies": {
-    "atomos": "~0.7.0"
+  "nodeDependencies": {
+    "js-beautify": "^1.8.1",
+    "ace-builds": "^1.4.1"
   },
   "minWidth": 400,
   "minHeight": 300,

@@ -1,10 +1,23 @@
-//TODO: Save All using async/await/Promise
-
 const win = AppWindow.fromId(WINDOW_ID);
+try {
+	require.resolve("js-beautify");
+	require.resolve("ace-builds");
+} catch (e) {
+	shell.showMessageBox({
+		type: "error",
+		title: "Libraries required",
+		message: `
+In order to launch Angles, you should also install the following Node.JS libraries:<br>
+<ul><li>js-beautify</li><li>ace-builds</li></ul>
+You can do it by executing following commands:
+<pre class="bg-dark rounded text-white p-2"><code>$ cd _atomos-dir_
+atomos/$ npm i js-beautify ace-builds</code></pre>
+`
+	});
+	win.close();
+}
+
 const fs = require('fs').promises,
-{
-	clipboard
-} = require('electron'),
 html_beautify = require('js-beautify').html,
 js_beautify = require('js-beautify').js,
 css_beautify = require('js-beautify').css,
@@ -13,14 +26,14 @@ win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
 			 else if (args.file) newTab(args.file);
 			 win.show();
-})
+});
 win.once('closed', function() {
 	window.removeEventListener("keydown", altEvent);
 	prefs.remove();
 });
 win.on('resize', function() {
 	tabs.active.editor.resize();
-})
+});
 const registry = new Registry("angles");
 let prefs;
 if (!Object.keys(registry.get()).length) registry.set({
@@ -41,7 +54,7 @@ let ofdPath = process.env.HOME;
 let tabs = [];
 let fileMenu, editMenu, viewMenu;
 let tabCollection = document.createElement("section");
-tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 flex-shrink-0 scrollable-0";
+tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 pl-1 flex-shrink-0 scrollable-0";
 tabCollection.style.marginBottom = "-1px";
 tabCollection.style.width = 0;
 tabCollection.style.zIndex = "100";
@@ -55,13 +68,14 @@ win.ui.root.style.overflow = "unset";
 win.ui.header.classList.remove("p-2");
 win.ui.header.classList.add("px-2","pt-2");
 win.ui.buttons.style.marginTop = "-0.5rem";
+win.ui.buttons.classList.replace("mr-3", "mr-2");
 win.ui.title.classList.add("d-none");
 win.ui.header.prepend(tabCollection, tabCollection.toolbarToggle);
 let nav = document.createElement("nav");
-nav.className = "bg-dark p-1 border-top border-secondary";
+nav.className = "bg-dark p-1";
 win.ui.body.append(nav);
 let tabsContainer = document.createElement("main");
-tabsContainer.className = "flex-grow-1 d-flex border-top border-secondary";
+tabsContainer.className = "flex-grow-1 d-flex border-top border-dark";
 root.append(tabsContainer);
 generateMenus();
 win.show();
@@ -75,25 +89,25 @@ function init() {
 	ace.config.set('basePath', osRoot + "/node_modules/ace-builds/src-min");
 	if (win.arguments.file) newTab(win.arguments.file);
 	else newTab();
-	renderPreferencesDialog();
+	renderPreferencesDialog().then(() => console.log("Preferences window generated"));
 }
 setImmediate(init);
-
 
 function newTab(url) {
 	let tab = document.createElement("tab");
 	tab.addEventListener("mousedown", function(e) {
 		e.stopPropagation();
 		tab.activate();
-	})
-	tab.className = "d-flex px-2 pb-1 us-0 mt-1 mr-1 align-items-center position-relative bg-dark text-white border-top border-left border-right border-secondary very-rounded-top";
+	});
+	tab.className = "d-flex px-2 pb-1 us-0 mt-1 mr-1 align-items-center position-relative bg-dark text-white very-rounded-top";
 	tab.name = document.createElement("div");
 	tab.name.innerText = "untitled";
 	tab.deactivate = function() {
-		tab.classList.remove("py-1");
-		tab.classList.add("pb-1", "mt-1", "border-bottom");
+		tab.classList.remove("py-1", "shadow-lg", "bg-dark");
+		tab.classList.add("pb-1", "mt-1");
 		tab.tab.classList.add("d-none");
-	}
+		tab.closeButton.classList.replace("d-flex", "d-none");
+	};
 	tab.load = async function(file) {
 		let f = path.parse(file);
 		ofdPath = f.dir;
@@ -106,7 +120,7 @@ function newTab(url) {
 		tab.reload();
 		tab.classList.remove("active", "font-italic");
 		win.setTitle(f.base + " - Angles");
-	}
+	};
 	tab.write = async function(url) {
 		await fs.writeFile(url, tab.editor.getValue(), tab.editor.encoding);
 		tab.classList.remove("font-italic");
@@ -121,7 +135,7 @@ function newTab(url) {
 				shell.openItemInFolder(url)
 			}
 		})
-	}
+	};
 	tab.close = function() {
 		if (tabs.length === 1) newTab();
 		else if (tab.previousSibling) tab.previousSibling.activate();
@@ -130,16 +144,17 @@ function newTab(url) {
 		tab.remove();
 		tab.editor.destroy();
 		tabs.splice(tabs.indexOf(tab), 1);
-	}
+	};
 	tab.activate = function() {
 		if (tabs.active) tabs.active.deactivate();
-		tab.classList.add("py-1");
-		tab.classList.remove("pb-1", "mt-1", "border-bottom");
+		tab.classList.add("py-1", "shadow-lg", "bg-dark");
+		tab.classList.remove("pb-1", "mt-1");
 		tab.tab.classList.remove("d-none");
+		tab.closeButton.classList.replace("d-none", "d-flex");
 		tab.editor.resize();
 		tabs.active = tab;
 		tab.editor.focus();
-	}
+	};
 	tab.reload = function() {
 		tab.editor.eventNum++;
 		let len = tab.editor.getValue().length;
@@ -148,21 +163,21 @@ function newTab(url) {
 			if (tab.editor.eventNum === currentEvent)
 				tab.classList.toggle("font-italic", tab.editor.getValue().length !== len);
 		})
-	}
+	};
 	tab.dataset.draggable = "false";
 	tab.closeButton = document.createElement("button");
 	tab.closeButton.className = 'mdi mdi-close mdi-18px lh-18 d-flex btn btn-outline-danger border-0 p-0 ml-2';
-	tab.closeButton.addEventListener("click", tab.close)
+	tab.closeButton.addEventListener("click", tab.close);
 	tab.tab = document.createElement("section");
-	tab.tab.className = "flex-grow-1 mr-1 d-none"
+	tab.tab.className = "flex-grow-1 mr-1 d-none";
 	tab.append(tab.name, tab.closeButton);
-	tabCollection.append(tab)
+	tabCollection.append(tab);
 	tabsContainer.append(tab.tab);
 	tab.editor = ace.edit(tab.tab);
 	tab.editor.getSession().setWrapLimitRange(0, settings.wrapLength);
 	tab.editor.getSession().setUseSoftTabs(!settings.indentTab);
 	tab.editor.getSession().setTabSize(settings.indentSize);
-	tab.editor.setFontSize(14)
+	tab.editor.setFontSize(14);
 	tab.editor.encoding = "utf-8";
 	tab.url = "";
 	tab.editor.eventNum = 0;
@@ -171,13 +186,13 @@ function newTab(url) {
 	tab.reload();
 	tab.activate();
 	tabs.push(tab);
-	if(url) tab.load(url);
+	if (url) tab.load(url).then(() => console.log("File", url, "has been loaded"));
 	return tab;
 }
 
 async function renderPreferencesDialog() {
 	prefs = document.createElement("div");
-	prefs.id = "angles"
+	prefs.id = "angles";
 	prefs.dialog = document.createElement("div");
 	prefs.content = document.createElement("form");
 	prefs.header = document.createElement("div");
@@ -214,7 +229,7 @@ async function renderPreferencesDialog() {
 		settings.wrapLength = prefs.wrapLength.value;
 		settings.indentTab = prefs.indentTab.checked;
 		prefs.controller.hide();
-	})
+	});
 	prefs.append(prefs.dialog);
 	prefs.dialog.append(prefs.content);
 	prefs.content.append(prefs.header, prefs.body, prefs.footer);
@@ -235,8 +250,8 @@ async function renderPreferencesDialog() {
 	e1.label = document.createElement("label");
 	e1.label.className = "custom-control-label col-sm-4 p-0 position-static";
 	e1.label.htmlFor = prefs.indentTab.id;
-	e1.label.innerHTML = "Indent using <kbd>Tab</kbd>"
-	e1.append(prefs.indentTab, e1.label)
+	e1.label.innerHTML = "Indent using <kbd>Tab</kbd>";
+	e1.append(prefs.indentTab, e1.label);
 	e2.className = "form-group row";
 	e2.col9 = document.createElement("div");
 	e2.col9.className = "col-sm-8";
@@ -329,7 +344,7 @@ async function generateMenus() {
 			x: fileMenu.offsetLeft + pos[0],
 			y: fileMenu.offsetTop + fileMenu.offsetHeight + pos[1]
 		});
-	})
+	});
 
 	editMenu = document.createElement("button");
 	editMenu.className = "btn btn-outline-light border-0 mr-1";
@@ -386,7 +401,7 @@ async function generateMenus() {
 			x: editMenu.offsetLeft + pos[0],
 			y: editMenu.offsetTop + editMenu.offsetHeight + pos[1]
 		});
-	})
+	});
 
 	viewMenu = document.createElement("button");
 	viewMenu.className = "btn btn-outline-light border-0 mr-1";
@@ -411,3 +426,47 @@ async function generateMenus() {
 	});
 	nav.append(fileMenu, editMenu, viewMenu);
 }
+
+let css = document.createElement("style");
+let id = win.id;
+css.innerHTML = `
+window[id='${id}'] tab:before {
+  z-index: 1;
+}
+window[id='${id}'] tab:hover {
+	background: rgba(255,255,255,0.5)
+}
+window[id='${id}'] tab:before,
+window[id='${id}'] tab:after {
+  position: absolute;
+  bottom: -1px;
+  width: .5rem;
+  height: .5rem;
+  content: " ";
+}
+window[id='${id}'] tab:before {
+  left: -.5rem;
+}
+window[id='${id}'] tab:after {
+  right: -.5rem;
+}
+window[id='${id}'] tab:before {
+  border-bottom-right-radius: .5rem;
+}
+window[id='${id}'] tab:after {
+  border-bottom-left-radius: .5rem;
+}
+window[id='${id}'] tab.bg-white:before {
+  box-shadow: 2px 2px 0 white;
+}
+window[id='${id}'] tab.bg-white:after {
+  box-shadow: -2px 2px 0 white;
+}
+window[id='${id}'] tab.bg-dark:before {
+  box-shadow: 2px 2px 0 var(--dark);
+}
+window[id='${id}'] tab.bg-dark:after {
+  box-shadow: -2px 2px 0 var(--dark);
+}
+`;
+root.append(css);

@@ -53,8 +53,8 @@ async function listApps() {
 			elem.onclick = e => {
 				window.__currentApp = item;
 				openSection("apps-app");
-			}
-			elem.className = "rounded-0 border-top d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
+            };
+        elem.className = "rounded-0 border-top border-bottom-0 border-left-0 border-right-0 d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
 			elem.icon = document.createElement("icon");
       elem.icon.className = "mdi mdi-24px rounded-max text-white d-flex p-2 lh-24 my-1 mr-2 mdi-" + pkg.icon;
 			elem.icon.style.background = pkg.color;
