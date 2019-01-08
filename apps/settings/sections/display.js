@@ -28,7 +28,7 @@ list.generalLabel = newSmallListItem({
 });
 list.darkMode = newSmallListItem({
 	label: "Dark mode",
-	sublabel: "EXPERIMENTAL. Restart needed.",
+	sublabel: "<i>Restart will be needed</i>",
 	type: "checkbox",
 	checked: Registry.get("system.isDarkMode") || false,
 	click(checked) {
@@ -53,6 +53,8 @@ list.thumbEnabled = newSmallListItem({
 		Registry.set("system.enableThumbnails", checked);
 	}
 });
+list.thumbEnabled.input.disabled = true;
+list.thumbEnabled.classList.add("disabled");
 list.transparency = newSmallListItem({
 	label: "Transparency",
 	sublabel: "Semi-transparent windows, may affect performance",
@@ -71,6 +73,15 @@ list.shadows = newSmallListItem({
 		Registry.set("system.enableWindowShadows", checked);
 	}
 });
+list.liveTransforms = newSmallListItem({
+	label: "Live Transformations",
+	sublabel: "Transform window's content immediately.<br />Disabling this significantly improves UI performance.<br/><i>Restart will be needed</i>",
+	type: "checkbox",
+	checked: !Registry.get("system.disableLiveTransformations"),
+	click(checked) {
+		Registry.set("system.disableLiveTransformations", !checked);
+	}
+});
 list.menuIcons = newSmallListItem({
 	label: "Show icons in menus",
 	type: "checkbox",
@@ -79,5 +90,5 @@ list.menuIcons = newSmallListItem({
 		Registry.set("system.showMenuIcons", checked);
 	}
 });
-list.append(list.wallpaper, list.generalLabel, list.darkMode, list.thumbEnabled, list.transparency, list.shadows, list.menuIcons);
+list.append(list.wallpaper, list.generalLabel, list.darkMode, list.thumbEnabled, list.transparency, list.shadows, list.liveTransforms, list.menuIcons);
 main.append(list);

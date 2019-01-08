@@ -86,8 +86,10 @@ nav.saveDrop.menu = new Menu(win, [{
 	label: "Save",
 	click() {
 		if (currentFile)
-			fs.writeFile(currentFile, el.textarea.innerText, "utf-8");
-		else fileButton.menu.getMenuItemById("saveAs").click();
+			fs.writeFile(currentFile, el.textarea.value, "utf-8")
+				.then(() => new Snackbar({window: win, message: `File was saved`}))
+				.catch(() => new Snackbar({window: win, message: 'There was a problem saving the file'}))
+		else nav.saveDrop.menu.getMenuItemById("saveAs").click();
 	},
 	id: "save",
 	icon: "content-save-outline",
@@ -99,7 +101,8 @@ nav.saveDrop.menu = new Menu(win, [{
 			defaultPath: app.getPath("documents")
 		}).then(file => {
 			currentFile = file;
-			fileButton.menu.getMenuItemById("save").click();
+			win.setTitle(path.basename(file) + " - Typewriter");
+			nav.saveDrop.menu.getMenuItemById("save").click();
 		});
 	},
 	id: "saveAs",
@@ -132,8 +135,8 @@ async function loadFile(file, force = false) {
 	else {
 		currentFile = file;
 		win.setTitle(path.basename(file) + " - Typewriter");
-		el.textarea.innerText = await fs.readFile(file, 'utf8');
+		el.textarea.value = await fs.readFile(file, 'utf8');
 	}
 }
 
-(win.arguments.file);
+loadFile(win.arguments.file);

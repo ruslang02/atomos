@@ -126,20 +126,24 @@ window.AppWindow = class Window extends EventEmitter {
 
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
-		this.ui.root.className = "very-rounded border-0 scrollable-0 fade card position-absolute shadow-sm";
+		this.ui.root.className = "very-rounded d-flex flex-column scrollable-0 fade position-absolute shadow-sm";
 		if (!Registry.get("system.enableWindowShadows")) this.ui.root.style.boxShadow = "none !important";
 		if (Registry.get("system.enableTransparentWindows")) {
 			this.ui.root.classList.add(this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
 		} else {
-			if (this.options.darkMode) this.ui.root.style.background = "#030303";
-			else this.ui.root.style.background = "#FAfAFA";
+			if (this.options.darkMode) this.ui.root.style.background = "#0a0a0a";
+			else this.ui.root.style.background = "#dee2e6";
 		}
+		this.ui.root.appWindow = this;
 		this.ui.header = document.createElement("window-header");
 		this.ui.header.className = "d-flex align-items-center flex-shrink-0 p-2" + (this.options.darkMode ? " text-white" : "");
 		this.ui.header.addEventListener("dblclick", e => this._toggle());
 		this.ui.title = document.createElement("window-title");
 		this.ui.title.className = "flex-grow-1 text-center us-0";
 		this.ui.title.innerText = this.options.title;
+
+		this.ui.ui = document.createElement("window-ui");
+		this.ui.ui.className = "d-flex flex-column flex-grow-1 scrollable-0 position-relative";
 
 		this.ui.buttons = document.createElement("window-buttons");
 		this.ui.buttons.style.order = "-10";
@@ -173,7 +177,7 @@ window.AppWindow = class Window extends EventEmitter {
 		});
 
 		this.ui.body = document.createElement("window-body");
-		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0";
+		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0 position-relative";
 		this.ui.body.dataset.draggable = "false";
 
 		this.ui.overlay = document.createElement("overlay");
@@ -183,7 +187,8 @@ window.AppWindow = class Window extends EventEmitter {
 
 		this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
 		this.ui.header.append(this.ui.buttons, this.ui.title);
-		this.ui.root.append(this.ui.header, this.ui.body);
+		this.ui.ui.append(this.ui.header, this.ui.body);
+		this.ui.root.append(this.ui.ui);
 		this.on('ready-to-show', () => {
 			new BSN.Tooltip(this.ui.buttons.maximize);
 			new BSN.Tooltip(this.ui.buttons.minimize);
@@ -218,7 +223,14 @@ window.AppWindow = class Window extends EventEmitter {
 		this.emit('close', e);
 		if (this.fullscreen) this.setFullScreen(false);
 		Elements.Bar.classList.remove("maximized");
-		if (!cancel) this.destroy()
+		if (!cancel) this.destroy();
+		return !cancel;
+	}
+
+	relaunch() {
+		let newOptions = Object.assign({}, this.options, this.getContentBounds(), {y: this.getContentPosition()[1] - 2 * this._offsets.top})
+		if (this.close())
+			AppWindow.launch(this.app, this.options.arguments, newOptions)
 	}
 
 	focus() {
@@ -231,8 +243,8 @@ window.AppWindow = class Window extends EventEmitter {
 					win.blur()
 			});
 			this.ui.root.classList.replace("shadow-sm", "shadow");
-			this.ui.buttons.maximize.classList.remove("btn-outline-success");
-			this.ui.buttons.minimize.classList.remove("btn-outline-warning");
+			this.ui.buttons.maximize.classList.replace("btn-outline-success", "btn-success");
+			this.ui.buttons.minimize.classList.replace("btn-outline-warning", "btn-warning");
 			this.emit("focus");
 		}
 	}
@@ -240,8 +252,8 @@ window.AppWindow = class Window extends EventEmitter {
 	blur() {
 		if (this.isFocused()) {
 			this.ui.root.classList.replace("shadow", "shadow-sm");
-			this.ui.buttons.maximize.classList.add("btn-outline-success");
-			this.ui.buttons.minimize.classList.add("btn-outline-warning");
+			this.ui.buttons.maximize.classList.replace("btn-success", "btn-outline-success");
+			this.ui.buttons.minimize.classList.replace("btn-warning", "btn-outline-warning");
 			this.emit("blur");
 		}
 	}
@@ -265,7 +277,7 @@ window.AppWindow = class Window extends EventEmitter {
 	}
 
 	showInactive() {
-		this.ui.root.classList.remove("d-none");
+		this.ui.root.classList.replace("d-none", "d-flex");
 		setImmediate(e => this.ui.root.classList.add("show"));
 		this.moveTop();
 		if (this.isMaximized())
@@ -275,7 +287,7 @@ window.AppWindow = class Window extends EventEmitter {
 	hide() {
 		this.ui.root.classList.remove("show");
 		Elements.Bar.classList.remove("maximized");
-		setTimeout(e => this.ui.root.classList.add("d-none"), shell.ui.fadeAnimation);
+		setTimeout(e => this.ui.root.classList.replace("d-flex", "d-none"), shell.ui.fadeAnimation);
 	}
 
 	isVisible() {
@@ -413,9 +425,10 @@ window.AppWindow = class Window extends EventEmitter {
 
 	setResizable(bool) {
 		let self = this;
+		let ghost;
 		if(this.isResizable() === bool) return;
 		if(bool) {
-			let prevX = 0, prevY = 0, size = 10, corners = {
+			let prevX = 0, prevY = 0, size = 8, corners = {
 				topLeft: document.createElement("div"),
 				top: document.createElement("div"),
 				topRight: document.createElement("div"),
@@ -429,39 +442,50 @@ window.AppWindow = class Window extends EventEmitter {
 				self.isResizing = e.currentTarget.resizer;
 				prevX = e.clientX;
 				prevY = e.clientY;
+				self.moveTop();
+				if (Registry.get("system.disableLiveTransformations")) {
+					ghost = document.createElement("ghost");
+					ghost.className = "very-rounded position-absolute d-flex align-items-center justify-content-center";
+					ghost.style.cssText = `${self.ui.root.style.cssText}; box-shadow: inset 0 0 0 5px ${window.getComputedStyle(self.ui.root).backgroundColor}; background: ${self.options.darkMode ? "rgba(30,30,30,0.7)" : "rgba(222,226,230, 0.6)"}; z-index:1020`;
+					self.ui.root.style.visibility = "hidden";
+					document.body.append(ghost);
+				}
 				self.ui.overlay.classList.remove("d-none");
 			};
 			corners.topLeft.style.cssText = `position:absolute;top: -${size}px; left:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize; z-index:101`;
 			corners.topLeft.resizer = 1;
-			corners.topLeft.addEventListener("mousedown", triggerResizer);
 			corners.top.style.cssText = `position:absolute;top: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize; z-index:101`;
-			corners.top.addEventListener("mousedown", triggerResizer);
 			corners.top.resizer = 2;
 			corners.topRight.style.cssText = `position:absolute;top: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize; z-index:101`;
-			corners.topRight.addEventListener("mousedown", triggerResizer);
 			corners.topRight.resizer = 3;
 			corners.right.style.cssText = `position:absolute;top: ${size}px; right:-${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize; z-index:101`;
-			corners.right.addEventListener("mousedown", triggerResizer);
 			corners.right.resizer = 4;
 			corners.bottomRight.style.cssText = `position:absolute;bottom: -${size}px; right:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize; z-index:101`;
-			corners.bottomRight.addEventListener("mousedown", triggerResizer);
 			corners.bottomRight.resizer = 5;
 			corners.bottom.style.cssText = `position:absolute;bottom: -${size}px; left:${size}px; width:calc(100% - ${2 * size}px); height:${2 * size}px; cursor: ns-resize; z-index:101`;
-			corners.bottom.addEventListener("mousedown", triggerResizer);
 			corners.bottom.resizer = 6;
 			corners.bottomLeft.style.cssText = `position:absolute;bottom: -${size}px; left: -${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nesw-resize; z-index:101`;
-			corners.bottomLeft.addEventListener("mousedown", triggerResizer);
 			corners.bottomLeft.resizer = 7;
 			corners.left.style.cssText = `position:absolute;top: ${size}px; left: -${size}px; width:${2 * size}px; height:calc(100% - ${2 * size}px); cursor: ew-resize; z-index:101`;
-			corners.left.addEventListener("mousedown", triggerResizer);
 			corners.left.resizer = 8;
-			this.ui.root.append.apply(this.ui.root, Object.values(corners));
+			for (const corner of Object.values(corners))
+				corner.addEventListener("mousedown", triggerResizer);
+			this.ui.ui.append.apply(this.ui.ui, Object.values(corners));
 			document.body.addEventListener("mouseup", () => {
 				self.isResizing = false;
+				if (ghost) {
+					self.ui.root.style.left = ghost.style.left;
+					self.ui.root.style.top = ghost.style.top;
+					self.ui.root.style.width = ghost.style.width;
+					self.ui.root.style.height = ghost.style.height;
+					ghost.remove();
+					ghost = null;
+				}
+				self.ui.root.style.visibility = "visible";
 				self.ui.overlay.classList.add("d-none");
 			});
 			this.resizerTrigger = e => {
-				let elem = self.ui.root;
+				let elem = ghost || self.ui.root;
 				if (!self.isResizing) return;
 				e.stopImmediatePropagation();
 				switch (self.isResizing) {
@@ -503,6 +527,8 @@ window.AppWindow = class Window extends EventEmitter {
 				}
 				prevX = e.clientX;
 				prevY = e.clientY;
+				if (Registry.get("system.showWindowProps") && Registry.get("system.disableLiveTransformations"))
+					ghost.innerHTML = `<div class="bg-light text-dark py-1 px-2 text-center very-rounded">(${elem.offsetLeft}; ${elem.offsetTop})<br />${elem.clientWidth}x${elem.clientHeight}</div>`;
 			};
 			document.body.addEventListener("mousemove", this.resizerTrigger);
 		} else {
@@ -518,13 +544,28 @@ window.AppWindow = class Window extends EventEmitter {
 
 	setMovable(bool) {
 		let self = this;
+		let ghost;
 		if(this.isMovable() === bool) return;
 		if(bool) {
 			let prevX = 0, prevY = 0, isDragging = false, cancel = false, force = false;
 			self.drag = e => {
 				if (isDragging && !self.isResizing && (!cancel || force)) {
-					self.ui.root.style.left = CSS.px(e.clientX - prevX);
-					self.ui.root.style.top = CSS.px(e.clientY - prevY);
+					if (Registry.get("system.disableLiveTransformations")) {
+						if (!ghost) {
+							ghost = document.createElement("ghost");
+							ghost.className = "very-rounded position-absolute d-flex align-items-center justify-content-center";
+							ghost.style.cssText = `border:5px solid ${window.getComputedStyle(self.ui.root).backgroundColor}; ${self.ui.root.style.cssText}; background: ${self.options.darkMode ? "rgba(30,30,30,0.7)" : "rgba(222,226,230, 0.6)"};z-index:1020`;
+							self.ui.root.style.visibility = "hidden";
+							document.body.append(ghost);
+						}
+						ghost.style.left = CSS.px(e.clientX - prevX);
+						ghost.style.top = CSS.px(e.clientY - prevY);
+						if (Registry.get("system.showWindowProps"))
+							ghost.innerHTML = `<div class="bg-light text-dark py-1 px-2 text-center very-rounded">(${ghost.offsetLeft}; ${ghost.offsetTop})<br />${ghost.clientWidth}x${ghost.clientHeight}</div>`;
+					} else {
+						self.ui.root.style.left = CSS.px(e.clientX - prevX);
+						self.ui.root.style.top = CSS.px(e.clientY - prevY);
+					}
 					self.ui.overlay.classList.remove("d-none");
 				} else {
 					prevX = e.clientX - self.ui.root.offsetLeft;
@@ -536,13 +577,24 @@ window.AppWindow = class Window extends EventEmitter {
 				cancel = false;
 				force = false;
 				self.ui.overlay.classList.add("d-none");
+				if (ghost) {
+					self.ui.root.style.left = ghost.style.left;
+					self.ui.root.style.top = ghost.style.top;
+					ghost.remove();
+					ghost = null;
+				}
+				self.ui.root.style.visibility = "visible";
 				document.body.style.cursor = "default";
 			};
 			document.body.addEventListener("mouseup", self.mouseUpDrag);
 			document.body.addEventListener("mousemove", self.drag);
 			self.ui.root.addEventListener("mousedown", () => {
+				if (self.isResizing) return;
 				isDragging = true;
-				if (!self.isResizing && (!cancel || force)) document.body.style.cursor = "move";
+				self.moveTop();
+				if (!self.isResizing && (!cancel || force)) {
+					document.body.style.cursor = "move";
+				}
 			});
 			self.ui.root.querySelectorAll("[data-draggable='true']").forEach(elem => {
 				elem.addEventListener("mousedown", () => force = true)

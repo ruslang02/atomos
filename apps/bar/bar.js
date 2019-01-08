@@ -10,7 +10,7 @@ function render() {
 	Elements.Bar = document.createElement("taskbar");
 	Elements.BarItems = {};
 	loadPlugins();
-	Elements.Bar.className = "px-2 py-1 d-flex flex-nowrap mt-auto w-100";
+	Elements.Bar.className = "px-2 py-1 d-flex flex-nowrap mt-auto w-100 flex-shrink-0";
 	Elements.Bar.transition = "bottom 1s ease";
 	updatePosition();
 	new ResizeObserver(updatePosition).observe(Elements.Bar);
@@ -37,15 +37,18 @@ function hideBar() {
 }
 
 function updatePosition() {
+	console.log("upd")
 	autoHide = Registry.get("taskbar.autoHide") || false;
 	Elements.Bar.classList.toggle("position-absolute", autoHide);
 	if (autoHide) {
 		hideBar();
+		document.body.style.setProperty("--taskbar-height", 0);
 		Elements.Bar.addEventListener("mouseenter", showBar);
 		Elements.Bar.addEventListener("mouseleave", hideBar);
 	}
 	else {
 		showBar();
+		document.body.style.setProperty("--taskbar-height", CSS.px(Elements.Bar.offsetHeight));
 		Elements.Bar.removeEventListener("mouseenter", showBar);
 		Elements.Bar.removeEventListener("mouseleave", hideBar);
 	}

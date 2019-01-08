@@ -17,6 +17,7 @@ win.on('second-instance', (e, args) => {
 win.on('close', e => {
 	if(prevNotification) prevNotification.dismiss();
 });
+win.ui.header.style.background = win.options.darkMode ? "rgba(52,58,64, 0.88)" : "rgba(222, 226, 230, 0.88)";
 let nav = document.createElement("nav");
 nav.className = "d-flex";
 nav.openFile = document.createElement("button");
@@ -98,7 +99,7 @@ playlist.className = "col-4 px-0 pt-5";
 playlist.style.minWidth = "12rem";
 playlist.style.maxWidth = "20rem";
 let cover = document.createElement("section");
-cover.className = "flex-grow-1 d-flex align-items-center border-left border-top justify-content-center" + (win.options.darkMode ? " bg-dark border-secondary" : " bg-light");
+cover.className = "flex-grow-1 d-flex align-items-center border-left position-relative border-top justify-content-center" + (win.options.darkMode ? " bg-dark border-secondary" : " bg-light");
 cover.image = new Image();
 cover.image.className = "position-absolute m-auto mw-100 mh-100";
 cover.appendChild(cover.image);
@@ -111,7 +112,7 @@ footer.progress.value = 100;
 footer.body = document.createElement("div");
 footer.body.className = "flex-grow-1 d-flex";
 let current = document.createElement("div");
-current.className = "d-flex align-items-start w-25 flex-column px-2 py-1 d-flex flex-grow-1";
+current.className = "d-flex align-items-start w-25 flex-column px-2 py-1 d-flex flex-grow-1" + (win.options.darkMode ? " text-white" : " text-dark");
 current.audio = document.createElement("h5");
 current.audio.className = "mb-0 text-truncate w-100 font-weight-bolder";
 current.artist = document.createElement("div");

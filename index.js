@@ -5,7 +5,8 @@ const {
 const fs = require("fs");
 const path = require("path");
 let isDebug = global.isDebug = process.argv[2] && process.argv[2].trim().toLowerCase() === "-d";
-let isMobile = global.isMobile = process.argv[2] && process.argv[2].trim().toLowerCase() === "--mobile";
+//let isMobile = global.isMobile = process.argv[2] && process.argv[2].trim().toLowerCase() === "--mobile";
+let isMobile = true;
 global.shutdown = {
 	confirmed: false
 };
@@ -46,6 +47,10 @@ app.on('ready', function() {
 	});
 	win.webContents.on('devtools-opened', () => {
 		win.webContents.addWorkSpace(__dirname)
+	})
+	win.webContents.on('new-window', (e, u) => {
+		e.preventDefault();
+		win.webContents.send("new-window", u);
 	})
 	win.webContents.on('will-navigate', ev => {
 		ev.preventDefault()

@@ -28,4 +28,5 @@ items.sound = newItem("Sound", "Volume, ringtone, external speakers", "volume-hi
 //items.storage = newItem("Storage", "36% used - 3.85 GB free", "dns", "var(--purple)", () => {});
 //items.security = newItem("Security & protection", "Screen lock, encryption", "lock", "var(--success)", () => {});
 items.system = newItem("System", "About device, OS version, debug info", "information-outline", "var(--secondary)", () => openSection("system"));
+items.developer = newItem("Developer options", "Enhancements for better development", "code-braces", "var(--secondary)", () => openSection("developer"));
 root.append(...Object.values(items));

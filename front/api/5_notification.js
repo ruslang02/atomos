@@ -7,10 +7,11 @@ const globalOptions = {
 	dismissable: true
 };
 const NOTIFICATION_DELAY = 6000; //ms
-window.Snackbar = class Snackbar {
+window.Snackbar = window.SnackBar = class Snackbar {
 	constructor(options) {
 		if (typeof options === "string") options = {message: options};
 		let self = this;
+		let isDM = (options.window ? options.window.options.darkMode : shell.ui.darkMode)
 		let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
 		this.ui = document.createElement("snackbar");
 		this.ui.style.bottom = options.window ? 0 : window.getComputedStyle(Elements.Bar).height;
@@ -20,7 +21,7 @@ window.Snackbar = class Snackbar {
 		this.ui.style.zIndex = "1010";
 		this.ui.message = document.createElement("div");
 		this.ui.button = document.createElement("button");
-		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "bg-light") + " very-rounded shadow d-flex position-absolute align-items-stretch mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
+		this.ui.className = (isDM ? "bg-dark text-white" : "bg-light") + " very-rounded shadow d-flex position-absolute align-items-stretch mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
 		this.ui.message.className = "flex-grow-1 text-truncate lh-36";
 		this.ui.message.innerText = options.message;
 		this.ui.append(this.ui.message);
@@ -53,9 +54,9 @@ window.Notification = class Notification {
 		this.options = options;
 		if (options.title === null && options.message === null) return;
 		this.ui = document.createElement("notification");
-		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "") + " toast shadow position-relative fly left hide";
+		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast shadow position-relative fly left hide";
 		this.ui.header = document.createElement("header");
-		this.ui.header.className = "toast-header pt-2" + (shell.ui.darkMode ? " bg-dark border-0 text-white" : " pb-2");
+		this.ui.header.className = "toast-header pt-2 " + (shell.ui.darkMode ? " bg-dark border-0 text-white" : " pb-2");
 		this.ui.app = document.createElement("strong");
 		this.ui.appIcon = document.createElement("icon");
 		this.ui.time = document.createElement("small");

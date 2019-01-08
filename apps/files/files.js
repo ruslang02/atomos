@@ -188,7 +188,16 @@ async function navigate(url) {
 			return true;
 		});
 		item.delete = function () {
-			delete_r(item.path);
+			shell.showMessageBox({
+				window: win,
+				title: "Are you sure?",
+				type: "warning",
+				message: `File ${path.basename(item.path)} will be deleted.`,
+				buttons: ["No", "Yes"],
+				defaultId: 1
+			}).then(button => {
+				if (button === "Yes") delete_r(item.path);
+			})
 		};
 		item.openProperties = function () {
 			let container = document.createElement("main");
@@ -196,8 +205,9 @@ async function navigate(url) {
 			let header = document.createElement("div");
 			header.className = "d-flex align-items-center mb-2";
 			let icon = document.createElement("icon");
-			icon.className = "mdi mdi-36px lh-36 mr-2 d-flex bg-warning p-1 very-rounded";
+			icon.className = "mdi mdi-36px lh-36 mr-2 d-flex p-1 very-rounded";
 			icon.classList.add(item.isDirectory ? "mdi-folder-outline" : "mdi-file-outline");
+			icon.classList.add(item.isDirectory ? "bg-warning" : "bg-info");
 			let fileName = document.createElement("input");
 			fileName.className = "form-control flex-grow-1";
 			fileName.value = path.basename(file);
@@ -359,7 +369,7 @@ async function navigate(url) {
 
 function renderFCBar() {
 	FCBar = document.createElement("form");
-	FCBar.className = "p-2 m-0 d-flex flex-shrink-0";
+	FCBar.className = "px-2 pb-2 m-0 d-flex flex-shrink-0";
 	FCBar.onsubmit = function (e) {
 		e.preventDefault();
 		sendBack();
@@ -372,7 +382,7 @@ function renderFCBar() {
 	FCBar.cancelButton.innerText = "Cancel" || win.arguments.cancelText;
 	FCBar.textField = document.createElement("input");
 	FCBar.textField.type = "text";
-	FCBar.textField.className = "form-control mx-2 shadow-sm" + (win.options.darkMode ? " bg-dark border-secondary" : "");
+	FCBar.textField.className = "form-control mx-2 shadow-sm" + (win.options.darkMode ? " bg-dark border-secondary text-white" : "");
 
 	function validate() {
 		FCBar.submitButton.disabled = !(!!FCBar.textField.value.trim());
@@ -380,21 +390,15 @@ function renderFCBar() {
 
 	FCBar.textField.oninput = validate;
 	FCBar.textField.onchange = validate;
-	FCBar.tooltip = document.createElement("label");
-	FCBar.tooltip.className = "invalid-tooltip m-2 p-1";
-	FCBar.tooltip.style.top = 0;
-	FCBar.tooltip.style.right = "50px";
-	FCBar.tooltip.innerText = "File or folder does not exist";
 	FCBar.submitButton = document.createElement("button");
 	FCBar.submitButton.className = "btn btn-primary shadow-sm";
 	FCBar.submitButton.type = "submit";
 	FCBar.submitButton.innerText = win.arguments.buttonLabel;
-	FCBar.submitButton.addEventListener("click", sendBack);
-	FCBar.append(FCBar.cancelButton, FCBar.textField, FCBar.tooltip, FCBar.submitButton);
+	FCBar.append(FCBar.cancelButton, FCBar.textField, FCBar.submitButton);
 	win.ui.body.append(FCBar);
 }
 
-async function sendBack(force = false) {
+async function sendBack() {
 	let file = path.join(nav.pathField.value, FCBar.textField.value);
 	let exists = fs.existsSync(file);
 
@@ -406,8 +410,7 @@ async function sendBack(force = false) {
 	if (!exists) {
 		if (win.arguments.open === shell.FILE) {
 			if (win.arguments.checkFileExists) {
-                statusBar.loader.classList.add("d-none");
-                statusBar.text.innerText = "File does not exist.";
+				new Snackbar({window: win, message: "File does not exist"})
 			} else send();
 		} else if (win.arguments.open === shell.DIRECTORY) {
 			if (win.arguments.createDirectory)
@@ -417,17 +420,14 @@ async function sendBack(force = false) {
 	} else {
 		if (win.arguments.open === shell.FILE) {
 			if (win.arguments.overwritePrompt) {
-				window.__filespopover = new BSN.Popover(FCBar.submitButton, {
-					content: `<overlay></overlay>
-						<small>File "${FCBar.textField.value}" already exists.<br>Do you want to replace it?</small>
-						<div class='text-right mt-2'>
-						<button class="btn btn-secondary btn-sm" onclick="__filespopover.hide()">No</button>
-						<button class="btn btn-outline-danger btn-sm" onclick="sendBack(true)">Yes, replace it</button>
-						</div>`,
-					placement: "top",
-					trigger: 'manual'
-				})
-				__filespopover.show();
+				shell.showMessageBox({
+					type: "warning",
+					buttons: ["Cancel", "Overwrite"],
+					defaultId: 1,
+					message: `File "${FCBar.textField.value}" already exists and <b>will be overwriten</b>.<br /> Continue?`
+				}).then(result => {
+					if (result === "Overwrite") send();
+				});
 			} else send();
 		} else if (win.arguments.open === shell.DIRECTORY) send();
 	}
@@ -475,6 +475,7 @@ async function renderAccessSection() {
 }
 
 async function renderDeviceSection() {
+	sidebar.devicesSection.innerHTML = "<div class='dropdown-header'>Devices</div>";
 	try {
 		const byLabel = fs.existsSync("/dev/disk/by-label");
 		let files;
@@ -501,7 +502,8 @@ async function renderDeviceSection() {
 			let isMounted = false;
 			let that = this;
 			try {
-				isMounted = require("child_process").execSync(`grep -s '/mnt/${process.env.USER}/${label}' /proc/mounts`);
+				let cmd = `grep -s '/mnt/${process.env.USER}/${link}' /proc/mounts`;
+				isMounted = require("child_process").execSync(cmd);
 			} catch (e) {
 			}
 			item.className = "dropdown-item d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
@@ -568,7 +570,7 @@ function renderContainer() {
 function renderStatusbar() {
 	statusBar = document.createElement("footer");
     statusBar.className = "m-2 p-2 lh-r1 d-flex align-items-center position-absolute border" + (win.options.darkMode ? " text-white border-secondary bg-dark" : " bg-light text-dark");
-	statusBar.style.bottom = win.arguments.callback ? CSS.rem(3.5) : CSS.px(0);
+	statusBar.style.bottom = win.arguments.callback ? CSS.rem(3) : CSS.px(0);
 	statusBar.style.right = 0;
 	statusBar.style.borderRadius = ".5rem 0 .5rem 0";
     statusBar.text = document.createElement("div");
@@ -581,17 +583,12 @@ function renderStatusbar() {
 
 function renderSidebar() {
 	sidebar = document.createElement("aside");
-	sidebar.className = "scrollable-y scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + (win.options.darkMode ? " shadow bg-dark very-rounded-right mb-2" : "") + " py-1";
-	sidebar.style.width = "25%";
+	sidebar.className = "scrollable-y w-25 scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + (win.options.darkMode ? " shadow bg-dark very-rounded-right mb-2" : "") + " py-1";
 	sidebar.dataset.draggable = "true";
 	sidebar.style.maxWidth = "270px";
 	sidebar.style.minWidth = "170px";
 	container.append(sidebar);
 	sidebar.devicesSection = document.createElement("section");
-	let header = document.createElement("div");
-	header.className = "dropdown-header";
-	header.innerText = "Devices";
-	sidebar.devicesSection.append(header);
 	sidebar.append();
 	sidebar.accessSection = document.createElement("section");
 	sidebar.append(sidebar.accessSection, sidebar.devicesSection);
@@ -716,6 +713,14 @@ function renderMainMenu() {
 		click() {
 			AppWindow.launch("files", {
 				file: nav.pathField.value
+			})
+		}
+	}, {
+		label: "Open in Terminal",
+		icon: "console-line",
+		click() {
+			AppWindow.launch("terminal", {
+				cwd: nav.pathField.value
 			})
 		}
 	}, {

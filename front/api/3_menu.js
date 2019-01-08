@@ -112,10 +112,10 @@ window.Menu = class Menu extends EventEmitter {
 					menuItem.onclick = () => {
 						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, _this.activeElement);
 					};
-					if (item.icon && Registry.get('system.showMenuIcons') !== false) {
+					if (Registry.get('system.showMenuIcons') !== false) {
 						menuItem.classList.add("px-3");
 						let menuIcon = document.createElement("icon");
-						menuIcon.className = "mdi mdi-18px flex-shrink-0 d-flex lh-18 mr-1 mdi-" + item.icon;
+						menuIcon.className = "mdi mdi-18px flex-shrink-0 d-flex lh-18 mr-1 mdi-" + (item.icon || "blank");
 						menuItem.append(menuIcon);
 					}
 					let menuTitle = document.createElement("div");

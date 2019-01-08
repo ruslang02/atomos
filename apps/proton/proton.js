@@ -2,8 +2,8 @@ const registry = new Registry("proton");
 const win = AppWindow.fromId(WINDOW_ID);
 win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
-			 else if (args.file) newTab(args.file);
-			 win.show();
+	else if (args.file) newTab(args.file);
+	win.show();
 });
 const isDarkMode = win.options.darkMode;
 
@@ -47,13 +47,16 @@ win.ui.header.style.boxShadow = "inset 0px 0px 0px 50px #6c757d2b";
 win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.title.classList.add("d-none");
 let ntbtn = document.createElement("button");
-ntbtn.className = "btn btn-white p-0 mdi mdi-plus rounded-circle ml-1 mdi-24px d-flex " + (isDarkMode ? "text-white" : "text-dark");
+ntbtn.className =
+	"btn btn-white p-0 mdi mdi-plus rounded-circle ml-1 mdi-24px d-flex " + (
+		isDarkMode ? "text-white" : "text-dark");
 ntbtn.style.lineHeight = "24px";
 ntbtn.onclick = () => newTab();
 win.ui.header.prepend(tabs, ntbtn);
 
 let nav = document.createElement("form");
-nav.className = "d-flex p-1 scrollable-y-0 align-items-center shadow-sm " + (isDarkMode ? "bg-dark" : "bg-white");
+nav.className = "d-flex p-1 scrollable-y-0 align-items-center shadow-sm " + (
+	isDarkMode ? "bg-dark" : "bg-white");
 nav.style.zIndex = 1;
 nav.back = document.createElement("button");
 nav.forward = document.createElement("button");
@@ -61,19 +64,29 @@ nav.back.type = "button";
 nav.forward.type = "button";
 nav.back.onclick = e => tabs.active.webview.goBack();
 nav.forward.onclick = e => tabs.active.webview.goForward();
-nav.back.className = "btn mr-1 mdi mdi-arrow-left rounded-circle mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
-nav.forward.className = "btn mr-1 mdi mdi-arrow-right rounded-circle mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
+nav.back.className =
+	"btn mr-1 mdi mdi-arrow-left rounded-circle mdi-21px lh-21 d-flex p-1 " + (
+		isDarkMode ? "btn-dark" : "btn-white");
+nav.forward.className =
+	"btn mr-1 mdi mdi-arrow-right rounded-circle mdi-21px lh-21 d-flex p-1 " + (
+		isDarkMode ? "btn-dark" : "btn-white");
 nav.back.disabled = true;
 nav.forward.disabled = true;
 nav.refresh = document.createElement("button");
 nav.refresh.type = "submit";
-nav.refresh.className = "btn mr-2 mdi rounded-circle mdi-refresh mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
+nav.refresh.className =
+	"btn mr-2 mdi rounded-circle mdi-refresh mdi-21px lh-21 d-flex p-1 " + (
+		isDarkMode ? "btn-dark" : "btn-white");
 let address = document.createElement("input");
-address.className = "form-control mr-2 form-control-sm border-0 h-auto py-1 px-3 " + (isDarkMode ? "bg-secondary text-white" : "bg-light");
+address.className =
+	"form-control mr-2 form-control-sm border-0 h-auto py-1 px-3 " + (isDarkMode ?
+	"bg-secondary text-white" : "bg-light");
 address.style.borderRadius = "100px";
 
 nav.menu = document.createElement("button");
-nav.menu.className = "btn mdi mdi-dots-vertical rounded-circle mdi-21px lh-21 d-flex p-1 " + (isDarkMode ? "btn-dark" : "btn-white");
+nav.menu.className =
+	"btn mdi mdi-dots-vertical rounded-circle mdi-21px lh-21 d-flex p-1 " + (
+		isDarkMode ? "btn-dark" : "btn-white");
 nav.menu.type = "button";
 nav.menu.addEventListener("click", e => {
 	e.stopPropagation();
@@ -104,44 +117,53 @@ nav.menu.menu = new Menu(win, [{
 	click() {
 		newTab('proton://settings')
 	}
-},/* {
-	type: "separator"
-},*/ {
-	label: "Toggle full screen mode",
-	icon: "fullscreen",
-	click() {
-		win.setFullScreen(!win.isFullScreen());
+},
+	/* {
+		type: "separator"
+	},*/
+	{
+		label: "Toggle full screen mode",
+		icon: "fullscreen",
+		click() {
+			win.setFullScreen(!win.isFullScreen());
+		}
+	}, {
+		label: "Toggle Night mode",
+		icon: "eye",
+		visible: false,
+		click() {
+		}
+	},
+	/* {
+		type: "separator"
+	}, */
+	{
+		label: "Open Developer Tools",
+		icon: "developer-board",
+		visible: false,
+		click() {
+		}
+	}, {
+		label: "About Proton",
+		icon: "information-outline",
+		visible: false,
+		click() {
+			newTab("proton://version")
+		}
 	}
-}, {
-	label: "Toggle Night mode",
-	icon: "eye",
-	visible: false,
-	click() {}
-},/* {
-	type: "separator"
-}, */{
-	label: "Open Developer Tools",
-	icon: "developer-board",
-	visible: false,
-	click() {}
-}, {
-	label: "About Proton",
-	icon: "information-outline",
-	visible: false,
-	click() {
-		newTab("proton://version")
-	}
-}]);
+]);
 nav.addEventListener("submit", e => {
 	e.preventDefault();
-	if(tabs.active) tabs.active.navigate(address.value);
+	if (tabs.active) tabs.active.navigate(address.value);
 });
 nav.append(nav.back, nav.forward, nav.refresh, address, nav.menu);
 let tabCollection = document.createElement("main");
 tabCollection.className = "flex-grow-1 h-100 position-relative";
 let urlTooltip = document.createElement("label");
-urlTooltip.className = "p-1 m-0 text-truncate fade show " + (isDarkMode ? "bg-dark text-white" : "bg-light");
-urlTooltip.style.cssText = "bottom:0;left:0;position:absolute;max-width: 400px;border: 1px solid lightgray; border-bottom-left-radius: .25rem";
+urlTooltip.className = "p-1 m-0 text-truncate fade show " + (isDarkMode ?
+	"bg-dark text-white" : "bg-light");
+urlTooltip.style.cssText =
+	"bottom:0;left:0;position:absolute;max-width: 400px;border: 1px solid lightgray; border-bottom-left-radius: .25rem";
 root.append(nav, tabCollection, urlTooltip);
 setImmediate(() => newTab(win.arguments.file || win.arguments.url));
 win.show();
@@ -159,7 +181,8 @@ let tabMenu = new Menu(win, [{
 	label: "Close other tabs",
 	icon: "notification-clear-all",
 	click() {
-		for (const tab of tabs.children) if (tab !== tabs.active) tab.close();
+		for (const tab of tabs.children)
+			if (tab !== tabs.active) tab.close();
 	}
 }, {
 	label: "Close tab",
@@ -171,21 +194,23 @@ let tabMenu = new Menu(win, [{
 }]);
 
 function newTab(url = "https://www.startpage.com") {
-	if(tabs.active) tabs.active.deactivate();
+	if (tabs.active) tabs.active.deactivate();
 	let tab = document.createElement("tab");
 	tab.dataset.draggable = false;
 	tab.loaded = false;
 	tab.webview = document.createElement("webview");
-	tab.webview.className = "position-absolute w-100 h-100 d-inline-flex rounded-bottom bg-white scrollable-0";
+	tab.webview.className =
+		"position-absolute w-100 h-100 d-inline-flex rounded-bottom scrollable-0 " + (win.options.darkMode ? "bg-dark" : "bg-white");
 	tab.webview.src = "about:blank";
 	tab.webview.autosize = true;
 	tabCollection.appendChild(tab.webview);
-	console.log(tabCollection, tab.webview);
-	tab.className = "nav-item shadow-sm nav-link align-items-center position-relative d-flex fade " + (isDarkMode ? "bg-dark text-white" : "bg-white");
+	tab.className =
+		"nav-item shadow-sm nav-link align-items-center position-relative d-flex fade " +
+		(isDarkMode ? "bg-dark text-white" : "bg-white");
 	tab.style.transition = "all .2s linear";
 	setTimeout(() => tab.classList.add("show"), shell.ui.fadeAnimation);
 	tab.style.borderRadius = "0.5rem 0.5rem 0 0";
-	tab.icon = new Image(14,14);
+	tab.icon = new Image(14, 14);
 	tab.icon.className = "rounded-circle mr-2";
 	tab.header = document.createElement("div");
 	tab.header.className = "flex-grow-1 text-truncate lh-r1 smaller";
@@ -198,7 +223,8 @@ function newTab(url = "https://www.startpage.com") {
 	tab.addEventListener("mousedown", () => tab.activate());
 	tab.addEventListener("click", e => e.stopPropagation());
 	tab.closeButton = document.createElement("button");
-	tab.closeButton.className = "btn btn-outline-danger border-0 text-decoration-none rounded mdi-close mdi mdi-18px lh-18 p-0 ml-2 d-flex";
+	tab.closeButton.className =
+		"btn btn-outline-danger border-0 text-decoration-none rounded mdi-close mdi mdi-18px lh-18 p-0 ml-2 d-flex";
 	tab.closeButton.onclick = () => tab.close();
 	tab.append(tab.icon, tab.header, tab.closeButton);
 	tabs.append(tab);
@@ -209,25 +235,39 @@ function newTab(url = "https://www.startpage.com") {
 		tab.webview.addEventListener("page-favicon-updated", e => {
 			tab.icon.src = e.favicons[0];
 		});
+		tab.webview.addEventListener("new-window", e => {
+			e.preventDefault();
+			console.log(e);
+			if (["default", "foreground-tab", "background-tab", "new-window"].includes(
+				e.disposition))
+				newTab(e.url);
+		});
+		tab.webview.addEventListener("did-get-response-details", e => {
+			e.preventDefault();
+			console.log(e);
+		})
 		tab.webview.addEventListener("close", e => tab.close());
 		tab.webview.addEventListener("update-target-url", e => {
-			if(tabs.active === tab) urlTooltip.innerText = e.url;
+			if (tabs.active === tab) urlTooltip.innerText = e.url;
 		});
 		tab.webview.addEventListener("dom-ready", e => {
-			if(!tab.loaded) {
+			if (!tab.loaded) {
 				tab.navigate(url);
-				tab.loaded = true
+				tab.loaded = true;
+				tab.webview.getWebContents().on("new-window", console.log);
+				tab.webview.getWebContents().on("did-get-response-details", console.log);
 			} else tab.update();
 		});
 		tab.webview.addEventListener("load-commit", e => {
-			if(!preferences.saveHistory)
+			if (!preferences.saveHistory)
 				return;
 			let _this = tab.webview;
-			if (!_this.getURL().startsWith("about:") && !_this.getURL().startsWith("proton:") && e.isMainFrame) {
+			if (!_this.getURL().startsWith("about:") && !_this.getURL().startsWith(
+				"proton:") && e.isMainFrame) {
 				preferences.history.push({
 					title: _this.getTitle(),
-																 time: new Date().getTime(),
-																 url: _this.getURL()
+					time: new Date().getTime(),
+					url: _this.getURL()
 				});
 			}
 		});
@@ -236,17 +276,17 @@ function newTab(url = "https://www.startpage.com") {
 	address.focus();
 	tabs.active = tab;
 	tab.close = function() {
-		if(tabs.childElementCount === 1) win.close();
+		if (tabs.childElementCount === 1) win.close();
 		else {
-		tabs.active = (tabs.active.nextSibling || tabs.active.previousSibling);
-		tab.classList.remove("show");
+			tabs.active = (tabs.active.nextSibling || tabs.active.previousSibling);
+			tab.classList.remove("show");
 			setTimeout(() => tab.remove(), shell.ui.fadeAnimation);
-		tab.webview.remove();
-		tabs.active.activate();
+			tab.webview.remove();
+			tabs.active.activate();
 		}
 	};
 	tab.activate = function() {
-		if(tabs.active) tabs.active.deactivate();
+		if (tabs.active) tabs.active.deactivate();
 		tab.classList.add(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-none", "d-flex");
 		tab.webview.classList.replace("d-none", "d-inline-flex");
@@ -254,14 +294,15 @@ function newTab(url = "https://www.startpage.com") {
 		tab.update();
 	};
 	tab.update = function() {
+		console.log("Updating tab...");
 		let w = tab.webview;
 		tab.header.innerText = w.getTitle();
-		if(tab === tabs.active) {
-			if(!w.getURL().includes("/proton/webpages"))
+		if (tab === tabs.active) {
+			if (!w.getURL().includes("/proton/webpages"))
 				address.value = w.getURL();
 			else
 				address.value = "proton://" + path.parse(w.getURL()).name;
-				win.setTitle(w.getTitle() + " - Proton Web Browser");
+			win.setTitle(w.getTitle() + " - Proton Web Browser");
 			nav.back.disabled = !w.canGoBack();
 			nav.forward.disabled = !w.canGoForward();
 		}
@@ -288,7 +329,8 @@ function newTab(url = "https://www.startpage.com") {
 }
 let css = document.createElement("style");
 let id = win.id;
-css.innerHTML = `
+css.innerHTML =
+	`
 window[id='${id}'] tab:before {
   z-index: 1;
 }

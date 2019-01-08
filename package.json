@@ -24,6 +24,7 @@
     "cropperjs": "^1.4.3",
     "extract-zip": "^1.6.6",
     "google-auth-library": "^2.0.2",
+    "googleapis": "^36.0.0",
     "js-beautify": "^1.8.9",
     "jstoxml": "^1.4.4",
     "mime-types": "^2.1.21",
@@ -32,7 +33,8 @@
     "playmusic": "git+https://github.com/jamon/playmusic.git",
     "source-sans-pro": "^2.40.0",
     "tar": "^4.4.8",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "youtube-dl": "^1.12.2"
   },
   "devDependencies": {
     "electron": "^3.0.13"

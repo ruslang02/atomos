@@ -40,4 +40,9 @@ list.author = newSmallListItem({
 	label: "Developer's contacts"
 });
 list.append(list.dat);
-root.append(list);
+let debugInfo = document.createElement("div");
+debugInfo.className = "smaller text-muted lh-24 px-3";
+debugInfo.innerText = `Electron ${process.versions.electron}
+Chromium ${process.versions.chrome}
+node ${process.versions.node}`;
+root.append(list, debugInfo);

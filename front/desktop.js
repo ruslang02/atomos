@@ -13,12 +13,23 @@ const AsyncFunction = Object.getPrototypeOf(async function () {
 }).constructor;
 (async function () {
 	const {
-		remote
+		remote,
+		ipcRenderer
 	} = require("electron");
 	const fso = require("fs");
 	const fs = fso.promises;
 	const taskbarPath = path.join(osRoot, "apps/bar");
 	LoadCSS();
+	let blockNW;
+	ipcRenderer.on('new-window', (e, u) => {
+		e.defaultPrevented = true;
+		if (blockNW || u === "about:blank") return;
+		AppWindow.launch("proton", {
+			url: u
+		});
+		blockNW = true;
+		setTimeout(e => blockNW = false, 50);
+	})
 	for (const api of await fs.readdir(__dirname + "/api"))
 		await new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
 

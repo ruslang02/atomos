@@ -1,8 +1,14 @@
 const win = AppWindow.fromId(WINDOW_ID);
+let fs, html_beautify, js_beautify, css_beautify, path;
 try {
-	require.resolve("js-beautify");
-	require.resolve("ace-builds");
+	fs = require('fs').promises;
+	html_beautify = require('js-beautify').html;
+	js_beautify = require('js-beautify').js;
+	css_beautify = require('js-beautify').css;
+	path = require("path");
+	require("ace-builds/src-min/ace");
 } catch (e) {
+	win.close();
 	shell.showMessageBox({
 		type: "error",
 		title: "Libraries required",
@@ -14,18 +20,13 @@ You can do it by executing following commands:
 atomos/$ npm i js-beautify ace-builds</code></pre>
 `
 	});
-	win.close();
+	return 0;
 }
 
-const fs = require('fs').promises,
-html_beautify = require('js-beautify').html,
-js_beautify = require('js-beautify').js,
-css_beautify = require('js-beautify').css,
-path = require("path");
 win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
-			 else if (args.file) newTab(args.file);
-			 win.show();
+	else if (args.file) newTab(args.file);
+	win.show();
 });
 win.once('closed', function() {
 	window.removeEventListener("keydown", altEvent);
@@ -54,19 +55,22 @@ let ofdPath = process.env.HOME;
 let tabs = [];
 let fileMenu, editMenu, viewMenu;
 let tabCollection = document.createElement("section");
-tabCollection.className = "d-flex scrollable-x-0 flex-grow-1 pl-1 flex-shrink-0 scrollable-0";
+tabCollection.className =
+	"d-flex scrollable-x-0 flex-grow-1 pl-1 flex-shrink-0 scrollable-0";
 tabCollection.style.marginBottom = "-1px";
 tabCollection.style.width = 0;
 tabCollection.style.zIndex = "100";
 tabCollection.onmousewheel = e => tabCollection.scrollLeft += e.deltaY;
 tabCollection.toolbarToggle = document.createElement("button");
-tabCollection.toolbarToggle.className = "btn btn-outline-light p-0 mb-2 rounded-circle border-0 mdi mdi-chevron-double-up mdi-chevron-double-down d-flex mdi-18px lh-18 ml-2";
+tabCollection.toolbarToggle.className =
+	"btn btn-outline-light p-0 mb-2 rounded-circle border-0 mdi mdi-chevron-double-up mdi-chevron-double-down d-flex mdi-18px lh-18 ml-2";
 tabCollection.toolbarToggle.addEventListener("click", e => {
-	tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up", viewMenu.menu.getMenuItemById("angles-showtoolbar").checked = !nav.classList.toggle("d-none"));
+	tabCollection.toolbarToggle.classList.toggle("mdi-chevron-double-up",
+		viewMenu.menu.getMenuItemById("angles-showtoolbar").checked = !nav.classList
+			.toggle("d-none"));
 });
-win.ui.root.style.overflow = "unset";
 win.ui.header.classList.remove("p-2");
-win.ui.header.classList.add("px-2","pt-2");
+win.ui.header.classList.add("px-2", "pt-2");
 win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.buttons.classList.replace("mr-3", "mr-2");
 win.ui.title.classList.add("d-none");
@@ -80,16 +84,16 @@ root.append(tabsContainer);
 generateMenus();
 win.show();
 let altEvent = function(e) {
-	if(win.isFocused() && e.key === "Alt") tabCollection.toolbarToggle.click();
+	if (win.isFocused() && e.key === "Alt") tabCollection.toolbarToggle.click();
 };
 window.addEventListener("keydown", altEvent);
 
 function init() {
-	require("ace-builds/src-min/ace");
 	ace.config.set('basePath', osRoot + "/node_modules/ace-builds/src-min");
 	if (win.arguments.file) newTab(win.arguments.file);
 	else newTab();
-	renderPreferencesDialog().then(() => console.log("Preferences window generated"));
+	renderPreferencesDialog().then(() => console.log(
+		"Preferences window generated"));
 }
 setImmediate(init);
 
@@ -99,7 +103,8 @@ function newTab(url) {
 		e.stopPropagation();
 		tab.activate();
 	});
-	tab.className = "d-flex px-2 pb-1 us-0 mt-1 mr-1 align-items-center position-relative bg-dark text-white very-rounded-top";
+	tab.className =
+		"d-flex px-2 pb-1 us-0 mt-1 mr-1 align-items-center position-relative bg-dark text-white very-rounded-top";
 	tab.name = document.createElement("div");
 	tab.name.innerText = "untitled";
 	tab.deactivate = function() {
@@ -116,7 +121,8 @@ function newTab(url) {
 		tab.editor.setValue(data);
 		tab.url = file;
 		tab.isRemote = true;
-		tab.editor.session.setMode("ace/mode/" + (f.ext === ".js" ? "javascript" : f.ext.substring(1)));
+		tab.editor.session.setMode("ace/mode/" + (f.ext === ".js" ? "javascript" :
+			f.ext.substring(1)));
 		tab.reload();
 		tab.classList.remove("active", "font-italic");
 		win.setTitle(f.base + " - Angles");
@@ -132,10 +138,23 @@ function newTab(url) {
 			window: win,
 			buttonText: "View",
 			click() {
-				shell.openItemInFolder(url)
+				shell.showItemInFolder(url)
 			}
 		})
 	};
+	tab.save = async function () {
+		if (tab.url) tab.write(tab.url);
+		else tab.saveAs();
+	}
+	tab.saveAs = async function () {
+		shell.selectFile(shell.ACTION_SAVE, {
+			defaultPath: tab.url || ofdPath
+		}).then(result => {
+			tab.name.innerText = path.basename(result);
+			tab.write(result);
+		});
+
+	}
 	tab.close = function() {
 		if (tabs.length === 1) newTab();
 		else if (tab.previousSibling) tab.previousSibling.activate();
@@ -166,7 +185,8 @@ function newTab(url) {
 	};
 	tab.dataset.draggable = "false";
 	tab.closeButton = document.createElement("button");
-	tab.closeButton.className = 'mdi mdi-close mdi-18px lh-18 d-flex btn btn-outline-danger border-0 p-0 ml-2';
+	tab.closeButton.className =
+		'mdi mdi-close mdi-18px lh-18 d-flex btn btn-outline-danger border-0 p-0 ml-2';
 	tab.closeButton.addEventListener("click", tab.close);
 	tab.tab = document.createElement("section");
 	tab.tab.className = "flex-grow-1 mr-1 d-none";
@@ -289,7 +309,8 @@ async function renderPreferencesDialog() {
 
 	prefs.body.append(e1, e2, e3);
 	let style = document.createElement("style");
-	style.innerText = `
+	style.innerText =
+		`
 	.modal#angles .custom-control-label::before,
 	.modal#angles .custom-control-label::after {left: 10.5rem}
 	`;
@@ -319,8 +340,7 @@ async function generateMenus() {
 		label: "Save",
 		accelerator: "Ctrl+S",
 		click() {
-			if (tabs.active.url) tabs.active.write(tabs.active.url); else
-				fileMenu.menu.getMenuItemById("saveAs").click();
+			tabs.active.save();
 		},
 		icon: "content-save"
 	}, {
@@ -328,14 +348,18 @@ async function generateMenus() {
 		accelerator: "Ctrl+Shift+S",
 		id: "saveAs",
 		click() {
-			shell.selectFile(shell.ACTION_SAVE, {
-				defaultPath: tabs.active.url || ofdPath
-			}).then(result => {
-				tabs.active.name.innerText = path.basename(result);
-				tabs.active.write(result);
-			});
+			tabs.active.saveAs();
 		},
 		icon: "content-save-settings"
+	}, {
+		label: "Save All",
+		accelerator: "Ctrl+L",
+		id: "saveAll",
+		click: async function () {
+			for (const tab of tabs) {
+				await tab.save();
+			}
+		}
 	}]);
 	fileMenu.addEventListener("click", e => {
 		let pos = win.getPosition();
@@ -369,20 +393,23 @@ async function generateMenus() {
 		click() {
 			let settings = {
 				indent_size: 1,
-				indent_with_tabs: tabs.active.editor.getSession().getTabString() === "\t",
-													 wrap_line_length: tabs.active.editor.getSession().getWrapLimit(),
-													 indent_char: tabs.active.editor.getSession().getTabString()
+				indent_with_tabs: tabs.active.editor.getSession().getTabString() ===
+				"\t",
+				wrap_line_length: tabs.active.editor.getSession().getWrapLimit(),
+				indent_char: tabs.active.editor.getSession().getTabString()
 			};
 			let tabText = tabs.active.name.innerText;
 			let btext;
 			if (tabText.endsWith(".js") || tabText.endsWith(".json")) btext =
 				js_beautify(tabs.active.editor.getValue(), settings);
-			else if (tabText.endsWith(".css")) btext = css_beautify(tabs.active.editor.getValue(),
+			else if (tabText.endsWith(".css")) btext = css_beautify(tabs.active.editor
+					.getValue(),
 				settings);
-			else if (tabText.endsWith(".html")) btext = html_beautify(tabs.active.editor.getValue(),
+			else if (tabText.endsWith(".html")) btext = html_beautify(tabs.active.editor
+					.getValue(),
 				settings);
 			else return;
-													 tabs.active.editor.setValue(btext);
+			tabs.active.editor.setValue(btext);
 		}
 	}, {
 		type: "separator"
@@ -429,7 +456,8 @@ async function generateMenus() {
 
 let css = document.createElement("style");
 let id = win.id;
-css.innerHTML = `
+css.innerHTML =
+	`
 window[id='${id}'] tab:before {
   z-index: 1;
 }

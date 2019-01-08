@@ -1,135 +1,205 @@
-const fs = require("fs");
-const fsp = fs.promises;
-const {google} = require('googleapis');
-const {OAuth2Client} = require('google-auth-library');
 const win = AppWindow.fromId(WINDOW_ID);
-let TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) + '/.credentials/';
-let TOKEN_PATH = TOKEN_DIR + 'youtube-nodejs-quickstart.json';
-let SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-let loggedin = fs.existsSync(TOKEN_PATH);
+const path = require("path");
+const fs = require("fs");
 
-let credentials = JSON.parse(await fsp.readFile(osRoot + '/client_secret.json'));
-let oauth2Client = new OAuth2Client(credentials.web.client_id, credentials.web.client_secret, "http://atomos.org.uk/ytcallback");
-let token = await fsp.readFile(TOKEN_PATH).catch(console.error);
-oauth2Client.credentials = JSON.parse(token);
-		let authUrl = oauth2Client.generateAuthUrl({
-			access_type: 'offline',
-			scope: SCOPES
-		});
-		let login = document.createElement("webview");
-		login.nodeintegration = true;
-		login.className = "position-relative flex-grow-1 scrollable-0 w-100 h-100";
-		login.src = authUrl;
-		login.addEventListener("ipc-message", e => {
-			if (e.channel === "log-in") {
-				oauth2Client.getToken(e.args[0], function (err, token) {
-				if (err) {
-					console.log('Error while trying to retrieve access token', err);
-					return;
+try {
+	fs.accessSync(osRoot + "/node_modules/googleapis");
+	fs.accessSync(osRoot + "/node_modules/google-auth-library");
+	fs.accessSync(osRoot + "/node_modules/youtube-dl");
+} catch (e) {
+	win.close();
+	console.error(e);
+	shell.showMessageBox({
+		type: "error",
+		title: "Libraries required",
+		message: `
+In order to launch YouTube, you should also install the following Node.JS libraries:<br>
+<ul><li>googleapis</li><li>google-auth-library</li><li>youtube-dl</li></ul>
+You can do it by executing following commands:
+<pre class="bg-dark rounded text-white p-2"><code>$ cd _atomos-dir_
+atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
+`
+	});
+	return;
+}
+
+let backend = new Worker(path.join(__dirname, "worker.js"));
+backend.onmessage = e => {
+	switch (e.data.action) {
+		case "log-in":
+			loginBtn.disabled = false;
+			loginBtn.onclick = () => openLogIn(e.data.url);
+			spinner.classList.replace("show", "hide");
+			loginBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-account-circle-outline mdi-18px lh-18 mr-2 btn-danger";
+			loginBtn.innerHTML = "<div class='ml-2'>Sign in</div>";
+			break;
+		case "logged-out":
+			win.relaunch();
+			break;
+		case "logged-in":
+			loginBtn.disabled = false;
+			searchBtn.disabled = false;
+			sidebar.trending.disabled = false;
+			sidebar.subs.disabled = false;
+			sidebar.search.disabled = false;
+			loginBtn.innerHTML = "";
+			loginBtn.onclick = e => {
+				e.stopPropagation();
+				new Menu(win, [{
+					label: "Sign out",
+					icon: "exit-to-app",
+					click() {
+						backend.postMessage({
+							action: "log-out"
+						});
+					}
+				}]).popup({
+					x: loginBtn.offsetLeft + win.getPosition()[0],
+					y: loginBtn.offsetTop + win.getPosition()[1] + loginBtn.offsetHeight
+				});
+			};
+			loginBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mr-2 btn-danger dropdown-toggle";
+			let avatar = new Image(18, 18);
+			avatar.src = e.data.user.avatarURL;
+			avatar.className = "rounded-circle mr-2"
+			let displayName = document.createElement("div");
+			displayName.innerText = e.data.user.displayName;
+			loginBtn.append(avatar, displayName);
+			spinner.classList.replace("show", "hide");
+			break;
+		case "list-popular":
+			body.innerHTML = "<h3 class='mt-3 mb-2'>Most popular</h3>";
+			for (const item of e.data.items) {
+				let elem = document.createElement("div");
+				elem.className = "card mt-2 p-2 btn flex-shrink-0 text-left";
+				elem.onclick = () => {
+					playVideo(item.id);
 				}
-				oauth2Client.credentials = token;
-				storeToken(token);
-				AppWindow.launch("")
-				app.window.reload();
-				modal.controller.hide();
-			});
+				elem.media = document.createElement("div");
+				elem.media.className = "media";
+				elem.thumb = document.createElement("img");
+				elem.thumb.className = "mr-3";
+				elem.thumb.style.height = CSS.rem(3);
+				elem.thumb.src = item.snippet.thumbnails.medium.url;
+				elem.body = document.createElement("div");
+				elem.body.className = "media-body position-relative text-truncate";
+				elem.body.innerHTML = `<h5 class="my-0 text-truncate text-nowrap">${item.snippet.title}</h5><small>${item.snippet.channelTitle}</small>`;
+				elem.media.append(elem.thumb, elem.body);
+				elem.append(elem.media);
+				body.append(elem);
 			}
-		})
-		modal.content.append(login);
-		modal.controller.show();
-		ipcRenderer.sendToHost("log-in", authUrl);
-		$("body").addClass("p-3").css({
-			display: "flex",
-			flexDirection: "column",n
-			alignItems: "center",
-			justifyContent: "center"
-		}).append("<h1>Welcome to YouTube!</h1><p>To proceed watching videos, please log in to Google and permit \"AtomOS Youtube\" to use yourself as YouTube.</p><br /><button class='btn btn-danger' onclick='location.reload()'>Sign In</button>")
-		ipcRenderer.on("log-in", function (e, code) {
-			oauth2Client.getToken(code, function (err, token) {
-				if (err) {
-					console.log('Error while trying to retrieve access token', err);
-					return;
-				}
-				oauth2Client.credentials = token;
-				storeToken(token);
-				app.window.reload();
-			});
-		})
-authorize(, getChannel);
-let modal;
+			spinner.classList.replace("show", "hide");
+			break;
+	}
+}
 win.on('close', e => {
-	modal.remove();
+	backend.terminate();
 })
-let fileButton = document.createElement("button");
-fileButton.addEventListener('click', e => {
-	shell.selectFile(shell.ACTION_OPEN, {
-		defaultPath: app.getPath("documents")
-	}).then(renderDocument);
-});
-fileButton.className = "btn btn-outline-danger border-0 p-1 mdi mdi-youtube mdi-18px lh-18 mr-2";
-win.ui.header.prepend(fileButton);
-win.ui.header.classList.remove("border-bottom")
+root.classList.remove("flex-column");
 
-let container = document.createElement("section");
-container.className = "d-flex flex-grow-1";
+let searchBtn = document.createElement("button");
+searchBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-magnify mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+searchBtn.title = "Search videos";
+searchBtn.disabled = true;
+let loginBtn = document.createElement("button");
+loginBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-account-circle-outline mdi-18px lh-18 mr-2 btn-danger";
+loginBtn.title = "Sign in with Google";
+loginBtn.disabled = true;
+win.ui.header.append(loginBtn, searchBtn);
+
+new BSN.Tooltip(searchBtn, {
+	placement: "bottom"
+});
+
+new BSN.Tooltip(loginBtn, {
+	placement: "bottom"
+});
 
 let sidebar = document.createElement("aside");
-sidebar.className = "nav nav-pills flex-column px-2";
-function newBtn(title, icon, page) {
-	let elem = document.createElement("button");
-	elem.className = "nav-link border-0 text-left d-flex btn-outline-danger btn-white mt-2";
-	elem.icon = document.createElement("icon");
-	elem.icon.className = `mdi mdi-24px mr-2 mdi-${icon} lh-24 d-flex`;
-	elem.header = document.createElement("div");
-	elem.header.innerText = title;
-	elem.append(elem.icon, elem.header);
-	elem.onclick = e => {
-		active.classList.replace("active", "btn-white");
-		elem.classList.replace("btn-white", "active");
-		active = elem;
-		webview.src = `file:///${__dirname}/pages/${page}.html`;
-	};
-	sidebar.append(elem);
-	return elem;
-}
-active = newBtn("Trending", "home-outline", "home");
-newBtn("Subscriptions", "animation-play-outline", "subs");
-newBtn("Search", "magnify", "search");
+sidebar.className = "scrollable-y w-25 scrollable-x-0 d-block";
+sidebar.style.maxWidth = "270px";
+sidebar.style.minWidth = "170px";
+sidebar.trending = document.createElement("button");
+sidebar.trending.className = "dropdown-item d-flex align-items-center";
+sidebar.trending.innerHTML = "<icon class='mdi mdi-fire mdi-18px mr-1'></icon><div>Trending</div>";
+sidebar.trending.disabled = true;
+sidebar.trending.onclick = () => {
+	backend.postMessage({
+		action: "list-popular"
+	});
+	for (const child of sidebar.children) child.classList.remove("active");
+	sidebar.trending.classList.add("active");
+	spinner.classList.replace("hide", "show");
 
-let webview = document.createElement("webview");
-webview.nodeintegration = true;
-webview.className = "position-relative flex-grow-1 scrollable-0 border-top border-left bg-white";
-webview.addEventListener("ipc-message", function(e) {
-	if (e.channel === "log-in") {
-		let login = document.createElement("webview");
-		login.nodeintegration = true;
-		login.className = "position-relative flex-grow-1 scrollable-0 w-100 h-100";
-		login.src = e.args[0];
-		login.addEventListener("ipc-message", e => {
-			if (e.channel === "log-in") {
-				webview.getWebContents().send("log-in", e.args[0]);
-				modal.controller.hide();
-			}
-		})
-		modal.content.append(login);
-		modal.controller.show();
-	}
-});
-sidebar.firstChild.click();
-container.append(sidebar, webview);
-root.append(container);
+}
+sidebar.subs = document.createElement("button");
+sidebar.subs.className = "dropdown-item d-flex align-items-center";
+sidebar.subs.innerHTML = "<icon class='mdi mdi-checkbox-multiple-blank-outline mdi-18px mr-1'></icon><div>Subscriptions</div>";
+sidebar.subs.disabled = true;
+sidebar.search = document.createElement("button");
+sidebar.search.className = "dropdown-item d-flex align-items-center";
+sidebar.search.innerHTML = "<icon class='mdi mdi-magnify mdi-18px mr-1'></icon><div>Search</div>";
+sidebar.search.disabled = true;
+sidebar.channels = document.createElement("div");
+sidebar.channels.className = "dropdown-header";
+sidebar.channels.innerText = "Channels";
+sidebar.noChannels = document.createElement("button");
+sidebar.noChannels.disabled = true
+sidebar.noChannels.className = "dropdown-item d-flex align-items-center";
+sidebar.noChannels.innerHTML = "<div>No items to show.</div>";
+sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channels, sidebar.noChannels);
+
+let main = document.createElement("main");
+main.className = "bg-white shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y";
+let spinner = document.createElement("icon");
+spinner.style.cssText = "position:absolute;top:2rem;left:0;right:0;width:36px;height:36px";
+spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px fly down hide lh-24 d-flex align-items-center bg-light border mx-auto p-1 rounded-circle shadow";
+let body = document.createElement("section");
+body.className = "d-flex flex-column w-100 h-100 px-4";
+main.append(spinner, body);
+root.append(sidebar, main);
+spinner.classList.replace("hide", "show");
 win.show();
-setImmediate(e => {
-	modal = document.createElement("div");
-	modal.className = "modal fade";
-	modal.tabindex = -1;
-	modal.dialog = document.createElement("div");
+
+function openLogIn(url) {
+	let modal = document.createElement("div");
+	modal.dialog = document.createElement("form");
+	modal.content = document.createElement("main");
 	modal.dialog.className = "modal-dialog modal-dialog-centered";
-	modal.content = document.createElement("div");
-	modal.content.className = "modal-content scrollable-0";
-	modal.content.style.height = "500px";
+	modal.content.className = "modal-content very-rounded scrollable-0";
+	modal.content.style.height = CSS.px(550);
+	modal.className = "modal fade";
+	modal.tabIndex = -1;
+	modal.setAttribute("aria-hidden", "true");
+	let webview = document.createElement("webview");
+	webview.src = url;
+	webview.nodeintegration = true;
+	webview.setAttribute("autosize", 'on');
+	webview.className = "h-100";
+	modal.content.append(webview);
+	webview.addEventListener("ipc-message", e => {
+		console.log(e);
+		if (e.channel === "log-in") {
+			backend.postMessage({
+				action: "return-token",
+				token: e.args[0]
+			});
+			modal.controller.hide();
+		}
+
+	})
 	modal.dialog.append(modal.content);
 	modal.append(modal.dialog);
 	document.body.append(modal);
 	modal.controller = new BSN.Modal(modal);
-})
+	modal.controller.show();
+}
+
+let css = document.createElement("style");
+css.innerHTML =
+	`
+window[id='${win.id}'] .dropdown-item:active {
+  background-color: var(--danger);
+}
+`;
+root.append(css);
