@@ -8,9 +8,9 @@ list.windowProps = newSmallListItem({
 	label: "Show window properties",
 	sublabel: "Works only when Live Transformations are turned <b>off</b>",
 	type: "checkbox",
-	checked: Registry.get("system.disableLiveTransformations"),
+	checked: Registry.get("system.showWindowProps"),
 	click(checked) {
-		Registry.set("system.disableLiveTransformations", checked);
+		Registry.set("system.showWindowProps", checked);
 	}
 });
 list.append(list.windowProps);

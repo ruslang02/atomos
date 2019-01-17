@@ -54,7 +54,7 @@ window.Notification = class Notification {
 		this.options = options;
 		if (options.title === null && options.message === null) return;
 		this.ui = document.createElement("notification");
-		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast shadow position-relative fly left hide";
+		this.ui.className = (shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast very-rounded shadow position-relative fly left hide";
 		this.ui.header = document.createElement("header");
 		this.ui.header.className = "toast-header pt-2 " + (shell.ui.darkMode ? " bg-dark border-0 text-white" : " pb-2");
 		this.ui.app = document.createElement("strong");
@@ -149,6 +149,7 @@ window.Notification = class Notification {
 		}
 		this.ui.classList.replace("hide", "show");
 		if (Elements.MenuBar.classList.contains("show")) return;
+		Elements.MenuBar.style.bottom = 0;
 		Elements.MenuBar.childNodes.forEach(node => {
 			if (!node.classList.contains("d-none") && node.tagName.toLowerCase() !== "notifications")
 				node.classList.add("d-none", "notification-showing");
@@ -163,6 +164,7 @@ window.Notification = class Notification {
 			Elements.MenuBar.classList.remove("show");
 			Elements.BarItems["tray"].Container.classList.remove("active");
 			setTimeout(e => {
+				Elements.MenuBar.style.bottom = "var(--taskbar-height)";
 				Elements.MenuBar.notifications.classList.remove("mt-2");
 				Elements.MenuBar.querySelectorAll("section").forEach(elem => {
 					if (elem.classList.contains("d-none") && elem.classList.contains("notification-showing"))

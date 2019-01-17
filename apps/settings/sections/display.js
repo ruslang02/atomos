@@ -75,7 +75,7 @@ list.shadows = newSmallListItem({
 });
 list.liveTransforms = newSmallListItem({
 	label: "Live Transformations",
-	sublabel: "Transform window's content immediately.<br />Disabling this significantly improves UI performance.<br/><i>Restart will be needed</i>",
+	sublabel: "Transform window's content immediately<br />Disabling this significantly improves UI performance",
 	type: "checkbox",
 	checked: !Registry.get("system.disableLiveTransformations"),
 	click(checked) {

@@ -33,20 +33,21 @@ function render() {
 			Elements.StartMenu.close();
 		else Elements.StartMenu.open();
 		return !condition;
-	}
+	};
 	Elements.StartMenu.open = function () {
-		//document.body.click()
+		Elements.Bar.keepOpen(true);
 		Elements.StartMenu.classList.replace("hide", "show");
 		Elements.StartMenu.Search.Input.value = "";
 		if (root.Search.Input.tooltip) root.Search.Input.tooltip.show();
 		home();
 		Elements.BarItems["start"].style.transform = "rotate(180deg)";
-		setTimeout(e => Elements.StartMenu.Search.Input.focus(), 50);
-	}
+		setTimeout(() => Elements.StartMenu.Search.Input.focus(), 50);
+	};
 	Elements.StartMenu.close = function () {
+		Elements.Bar.keepOpen(false);
 		Elements.StartMenu.classList.replace("show", "hide");
 		Elements.BarItems["start"].style.transform = "rotate(0deg)";
-	}
+	};
 
 	Elements.StartMenu.addEventListener("click", function (e) {
 		e.stopPropagation();
@@ -107,7 +108,7 @@ async function renderApps() {
 	} else {
 		root.Apps = document.createElement("apps");
 		active = root.Apps;
-		root.Apps.className = "justify-content-around align-items-center flex-grow-1 flex-wrap py-2 px-1 flex-grow-1 card shadow flex-row scrollable" + (shell.ui.darkMode ? " bg-dark" : "");
+		root.Apps.className = "justify-content-around very-rounded align-items-center flex-grow-1 flex-wrap py-2 px-1 flex-grow-1 card shadow flex-row scrollable" + (shell.ui.darkMode ? " bg-dark" : "");
 		root.appendChild(root.Apps);
 	}
 	let dirs = await fs.readdir(appPath);
@@ -185,14 +186,14 @@ async function renderActions() {
 
 function renderSearchSection() {
 	root.SearchSection = document.createElement("section");
-	root.SearchSection.className = "flex-nowrap p-2 flex-grow-1 card shadow scrollable" + (shell.ui.darkMode ? " bg-dark" : "");
+	root.SearchSection.className = "flex-nowrap very-rounded p-2 flex-grow-1 card shadow scrollable" + (shell.ui.darkMode ? " bg-dark" : "");
 	root.SearchSection.style.display = "none";
 	root.appendChild(root.SearchSection);
 }
 
 function renderSearch() {
 	root.Search = document.createElement("search");
-	root.Search.className = "input-group card flex-row shadow mb-2 flex-shrink-0" + (shell.ui.darkMode ? " bg-dark" : "");
+	root.Search.className = "input-group very-rounded card flex-row shadow mb-2 flex-shrink-0" + (shell.ui.darkMode ? " bg-dark" : "");
 	let igp = document.createElement("label");
 	igp.className = "input-group-prepend m-0 d-flex align-items-center";
 	igp.htmlFor = "__searchInput";
@@ -256,7 +257,7 @@ function renderSearch() {
 
 function renderNewApp() {
 	root.NewApp = document.createElement("section");
-	root.NewApp.className = "card shadow justify-content-center align-items-center flex-grow-1" + (shell.ui.darkMode ? " bg-dark" : "");
+	root.NewApp.className = "card very-rounded shadow justify-content-center align-items-center flex-grow-1" + (shell.ui.darkMode ? " bg-dark" : "");
 	root.NewApp.style.display = "none";
 	let icon = document.createElement("icon");
 	icon.className = "mdi mdi-shape-plus display-1 " + (shell.ui.darkMode ? " text-white" : " text-secondary");
@@ -270,7 +271,7 @@ function renderNewApp() {
 function renderNotFound() {
 
 	root.NotFound = document.createElement("section");
-	root.NotFound.className = "card shadow justify-content-center align-items-center flex-grow-1" + (shell.ui.darkMode ? " bg-dark text-white" : "");
+	root.NotFound.className = "card very-rounded shadow justify-content-center align-items-center flex-grow-1" + (shell.ui.darkMode ? " bg-dark text-white" : "");
 	root.NotFound.style.display = "none";
 	let icon = document.createElement("icon");
 	icon.className = "mdi mdi-folder-remove-outline";

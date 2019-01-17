@@ -28,7 +28,7 @@ const defaultOptions = {
 let wCount = 1;
 let windowCollection = []; // Contains all AppWindow instances
 
-window.AppWindow = class Window extends EventEmitter {
+class Window extends EventEmitter {
 	constructor(wID, prog) {
 		if (typeof wID !== "number") throw new Error("Can not be called directly: use Window.fromId or Window.launch");
 		super();
@@ -63,7 +63,7 @@ window.AppWindow = class Window extends EventEmitter {
 		console.time("full render");
 		const winID = wCount++;
 		const appRoot = path.join(osRoot, 'apps', prog);
-		let appOptions = JSON.parse(await fs.readFile(appRoot + "/package.json"));
+		let appOptions = JSON.parse((await fs.readFile(appRoot + "/package.json")).toString());
 		let options = Object.assign({}, defaultOptions, {darkMode: shell.ui.darkMode}, appOptions, launchOptions, {arguments: args});
 
 		await fs.access(appRoot + "/" + (options.main || options.main.ui));
@@ -442,7 +442,7 @@ window.AppWindow = class Window extends EventEmitter {
 				self.isResizing = e.currentTarget.resizer;
 				prevX = e.clientX;
 				prevY = e.clientY;
-				self.moveTop();
+				self.show();
 				if (Registry.get("system.disableLiveTransformations")) {
 					ghost = document.createElement("ghost");
 					ghost.className = "very-rounded position-absolute d-flex align-items-center justify-content-center";
@@ -547,9 +547,10 @@ window.AppWindow = class Window extends EventEmitter {
 		let ghost;
 		if(this.isMovable() === bool) return;
 		if(bool) {
-			let prevX = 0, prevY = 0, isDragging = false, cancel = false, force = false;
+			let prev = {x: 0, y: 0}, begin, isDragging = false, cancel = false, force = false;
 			self.drag = e => {
 				if (isDragging && !self.isResizing && (!cancel || force)) {
+					if (Math.abs(e.clientX - begin.x) < 3 || Math.abs(e.clientY - begin.y) < 3) return;
 					if (Registry.get("system.disableLiveTransformations")) {
 						if (!ghost) {
 							ghost = document.createElement("ghost");
@@ -558,18 +559,18 @@ window.AppWindow = class Window extends EventEmitter {
 							self.ui.root.style.visibility = "hidden";
 							document.body.append(ghost);
 						}
-						ghost.style.left = CSS.px(e.clientX - prevX);
-						ghost.style.top = CSS.px(e.clientY - prevY);
+						ghost.style.left = CSS.px(e.clientX - prev.x);
+						ghost.style.top = CSS.px(e.clientY - prev.y);
 						if (Registry.get("system.showWindowProps"))
 							ghost.innerHTML = `<div class="bg-light text-dark py-1 px-2 text-center very-rounded">(${ghost.offsetLeft}; ${ghost.offsetTop})<br />${ghost.clientWidth}x${ghost.clientHeight}</div>`;
 					} else {
-						self.ui.root.style.left = CSS.px(e.clientX - prevX);
-						self.ui.root.style.top = CSS.px(e.clientY - prevY);
+						self.ui.root.style.left = CSS.px(e.clientX - prev.x);
+						self.ui.root.style.top = CSS.px(e.clientY - prev.y);
 					}
 					self.ui.overlay.classList.remove("d-none");
 				} else {
-					prevX = e.clientX - self.ui.root.offsetLeft;
-					prevY = e.clientY - self.ui.root.offsetTop;
+					prev.x = e.clientX - self.ui.root.offsetLeft;
+					prev.y = e.clientY - self.ui.root.offsetTop;
 				}
 			};
 			self.mouseUpDrag = e => {
@@ -588,8 +589,9 @@ window.AppWindow = class Window extends EventEmitter {
 			};
 			document.body.addEventListener("mouseup", self.mouseUpDrag);
 			document.body.addEventListener("mousemove", self.drag);
-			self.ui.root.addEventListener("mousedown", () => {
-				if (self.isResizing) return;
+			self.ui.root.addEventListener("mousedown", e => {
+				if (self.isResizing || self.isMaximized() || self.isFullScreen()) return;
+				begin = {x: e.clientX, y: e.clientY};
 				isDragging = true;
 				self.moveTop();
 				if (!self.isResizing && (!cancel || force)) {
@@ -712,4 +714,6 @@ window.AppWindow = class Window extends EventEmitter {
 	_toggle() {
 		if (this.isMaximized()) this.restore(); else this.maximize();
 	}
-};
+}
+
+window.AppWindow = Window;

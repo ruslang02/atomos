@@ -49,11 +49,8 @@ function changeVolume(volume) {
 					Elements.MenuBar.quickItems.classList.remove("d-none");
 					Elements.MenuBar.soundSettings.classList.replace("d-flex", "d-none");
 					Elements.BarItems["tray"].disabled = false;
-
-				}
-				, shell.ui.flyAnimation);
-		}
-		, 3000)
+			}, shell.ui.flyAnimation);
+	}, 3000);
 	cp.execSync("amixer -q -D pulse sset Master " + volume);
 	Elements.MenuBar.soundSettings.updateControls();
 }

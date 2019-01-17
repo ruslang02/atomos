@@ -72,6 +72,8 @@ window.TaskManager = class TaskManager {
 				x: (_this.task.offsetLeft + _this.task.offsetWidth) / 2,
 				y: window.innerHeight - _this.task.offsetHeight - 16
 			});
+			Elements.Bar.keepOpen(true);
+			_this.menu.once("menu-will-close", () => Elements.Bar.keepOpen(false));
 		});
 		this.window.ui.header.addEventListener("contextmenu", function(e) {
 			e.stopPropagation();
@@ -92,6 +94,7 @@ window.TaskManager = class TaskManager {
 		this.window.on('blur', e => this.task.classList.remove("active"));
 		this.window.on('focus', e => this.task.classList.add("active"));
 		this.window.on('thumbnail-changed', e => this.setTitle());
+		this.task.classList.add("active")
 	}
 
 	static toggle() {

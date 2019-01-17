@@ -57,7 +57,7 @@ win.ui.header.prepend(tabs, ntbtn);
 let nav = document.createElement("form");
 nav.className = "d-flex p-1 scrollable-y-0 align-items-center shadow-sm " + (
 	isDarkMode ? "bg-dark" : "bg-white");
-nav.style.zIndex = 1;
+nav.style.zIndex = 2;
 nav.back = document.createElement("button");
 nav.forward = document.createElement("button");
 nav.back.type = "button";
@@ -82,6 +82,12 @@ address.className =
 	"form-control mr-2 form-control-sm border-0 h-auto py-1 px-3 " + (isDarkMode ?
 	"bg-secondary text-white" : "bg-light");
 address.style.borderRadius = "100px";
+address.change = function (url) {
+	if (document.activeElement !== address) address.value = url;
+};
+address.blur = function () {
+	tabs.active.update()
+}
 
 nav.menu = document.createElement("button");
 nav.menu.className =
@@ -228,7 +234,7 @@ function newTab(url = "https://www.startpage.com") {
 	tab.closeButton.onclick = () => tab.close();
 	tab.append(tab.icon, tab.header, tab.closeButton);
 	tabs.append(tab);
-	tab.initEvents = function() {
+	tab.initEvents = function () {
 		tab.webview.addEventListener("will-navigate", tab.update);
 		tab.webview.addEventListener("did-navigate", tab.update);
 		tab.webview.addEventListener("page-title-updated", tab.update);
@@ -245,7 +251,7 @@ function newTab(url = "https://www.startpage.com") {
 		tab.webview.addEventListener("did-get-response-details", e => {
 			e.preventDefault();
 			console.log(e);
-		})
+		});
 		tab.webview.addEventListener("close", e => tab.close());
 		tab.webview.addEventListener("update-target-url", e => {
 			if (tabs.active === tab) urlTooltip.innerText = e.url;
@@ -262,20 +268,20 @@ function newTab(url = "https://www.startpage.com") {
 			if (!preferences.saveHistory)
 				return;
 			let _this = tab.webview;
-			if (!_this.getURL().startsWith("about:") && !_this.getURL().startsWith(
-				"proton:") && e.isMainFrame) {
+			if (e.isMainFrame) {
 				preferences.history.push({
 					title: _this.getTitle(),
 					time: new Date().getTime(),
 					url: _this.getURL()
 				});
 			}
+			tab.update();
 		});
 	};
 	tab.initEvents();
 	address.focus();
 	tabs.active = tab;
-	tab.close = function() {
+	tab.close = function () {
 		if (tabs.childElementCount === 1) win.close();
 		else {
 			tabs.active = (tabs.active.nextSibling || tabs.active.previousSibling);
@@ -285,7 +291,7 @@ function newTab(url = "https://www.startpage.com") {
 			tabs.active.activate();
 		}
 	};
-	tab.activate = function() {
+	tab.activate = function () {
 		if (tabs.active) tabs.active.deactivate();
 		tab.classList.add(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-none", "d-flex");
@@ -293,40 +299,52 @@ function newTab(url = "https://www.startpage.com") {
 		tabs.active = tab;
 		tab.update();
 	};
-	tab.update = function() {
-		console.log("Updating tab...");
+	tab.update = function () {
 		let w = tab.webview;
 		tab.header.innerText = w.getTitle();
 		if (tab === tabs.active) {
-			if (!w.getURL().includes("/proton/webpages"))
-				address.value = w.getURL();
-			else
-				address.value = "proton://" + path.parse(w.getURL()).name;
+			address.change(w.getURL());
 			win.setTitle(w.getTitle() + " - Proton Web Browser");
 			nav.back.disabled = !w.canGoBack();
 			nav.forward.disabled = !w.canGoForward();
 		}
+		tab.checkForAppURLs();
 	};
-	tab.deactivate = function() {
+	tab.deactivate = function () {
 		tab.classList.remove(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-flex", "d-none");
 		tab.webview.classList.replace("d-inline-flex", "d-none");
 
 	};
-	tab.navigate = function(url) {
-		if (url.startsWith("http:") || url.startsWith("ftp:") || url.startsWith(
-			"https:") || url.startsWith("//") || url.startsWith("file:")) ;
-		else if (url.startsWith("/"))
-			url = "file://" + url;
-		else if (url.indexOf(".") === -1)
+	tab.navigate = function (url) {
+		try {
+			url = new URL((!url.includes("://") && url.includes(".") ? "http://" : "") + url);
+		} catch (e) {
 			url = "http://google.com/search?q=" + url;
-		else
-			url = "http://" + url;
-		tab.webview.src = url;
+		}
+		tab.checkForAppURLs();
+		tab.webview.src = url.href || url;
 	};
+	tab.checkForAppURLs = () => {
+		let url = tab.webview.getURL();
+		if (url.includes("youtube.com") && url.includes("watch") && tabs.active === tab) {
+			let offerOk = document.createElement("button");
+			offerOk.className = "btn btn-danger rounded-max btn-sm mdi mdi-18px lh-18 d-flex mr-2 mdi-youtube font-weight-bolder";
+			offerOk.innerHTML = "&nbsp;&nbsp;YouTube";
+			offerOk.onclick = () => {
+				AppWindow.launch("youtube", {
+					url
+				});
+				tab.close();
+			};
+			nav.insertBefore(offerOk, nav.menu);
+			tab.webview.addEventListener("load-commit", () => offerOk.remove());
+		}
+	}
 
 	return tab.webview;
 }
+
 let css = document.createElement("style");
 let id = win.id;
 css.innerHTML =

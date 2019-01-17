@@ -24,34 +24,20 @@ function render() {
 	}]);
 	Elements.Bar.addEventListener("contextmenu", () => {
 		Elements.Bar.menu.popup();
+		Elements.Bar.keepOpen(true);
+		Elements.Bar.menu.once("menu-will-close", () => Elements.Bar.keepOpen(false))
 	});
+	Elements.Bar.keepOpen = function (bool) { // Not to close in auto-hide mode when sth is happening
+		Elements.Bar.classList.toggle("show", bool);
+	};
 	root.appendChild(Elements.Bar);
 }
-
-function showBar() {
-	Elements.Bar.style.bottom = CSS.px(0);
-}
-
-function hideBar() {
-	Elements.Bar.style.bottom = "-" + CSS.px(Elements.Bar.offsetHeight - 4);
-}
-
 function updatePosition() {
-	console.log("upd")
+	console.log("upd");
 	autoHide = Registry.get("taskbar.autoHide") || false;
-	Elements.Bar.classList.toggle("position-absolute", autoHide);
-	if (autoHide) {
-		hideBar();
-		document.body.style.setProperty("--taskbar-height", 0);
-		Elements.Bar.addEventListener("mouseenter", showBar);
-		Elements.Bar.addEventListener("mouseleave", hideBar);
-	}
-	else {
-		showBar();
-		document.body.style.setProperty("--taskbar-height", CSS.px(Elements.Bar.offsetHeight));
-		Elements.Bar.removeEventListener("mouseenter", showBar);
-		Elements.Bar.removeEventListener("mouseleave", hideBar);
-	}
+	Elements.Bar.classList.toggle("autoHide", autoHide);
+	document.body.style.setProperty("--taskbar-height", CSS.px(Elements.Bar.offsetHeight));
+	document.body.style.setProperty("--taskbar-hided", autoHide ? "0px" : CSS.px(Elements.Bar.offsetHeight));
 }
 
 async function loadPlugins() {

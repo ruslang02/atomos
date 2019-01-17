@@ -5,7 +5,7 @@
   "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
   "license": "GPL-3.0",
   "version": "1.0.0",
-  "homepage": "https://apps.atomos.org.uk/package/angles",
+  "homepage": "https://apps.atomos.org.uk/ruslang02/angles",
   "icon": "code-tags",
   "color": "linear-gradient(135deg, #263238, #616161)",
   "main": "angles.js",

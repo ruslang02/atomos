@@ -1,35 +1,26 @@
 const win = AppWindow.fromId(WINDOW_ID);
 const path = require("path");
-const fs = require("fs");
 
-try {
-	fs.accessSync(osRoot + "/node_modules/googleapis");
-	fs.accessSync(osRoot + "/node_modules/google-auth-library");
-	fs.accessSync(osRoot + "/node_modules/youtube-dl");
-} catch (e) {
-	win.close();
-	console.error(e);
-	shell.showMessageBox({
-		type: "error",
-		title: "Libraries required",
-		message: `
+let backend = new Worker(path.join(__dirname, "worker.js"));
+backend.onmessage = e => {
+	switch (e.data.action) {
+		case "library-error":
+			win.close();
+			shell.showMessageBox({
+				type: "error",
+				title: "Libraries required",
+				message: `
 In order to launch YouTube, you should also install the following Node.JS libraries:<br>
 <ul><li>googleapis</li><li>google-auth-library</li><li>youtube-dl</li></ul>
 You can do it by executing following commands:
 <pre class="bg-dark rounded text-white p-2"><code>$ cd _atomos-dir_
 atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 `
-	});
-	return;
-}
-
-let backend = new Worker(path.join(__dirname, "worker.js"));
-backend.onmessage = e => {
-	switch (e.data.action) {
+			});
+			return;
 		case "log-in":
 			loginBtn.disabled = false;
 			loginBtn.onclick = () => openLogIn(e.data.url);
-			spinner.classList.replace("show", "hide");
 			loginBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-account-circle-outline mdi-18px lh-18 mr-2 btn-danger";
 			loginBtn.innerHTML = "<div class='ml-2'>Sign in</div>";
 			break;
@@ -61,42 +52,120 @@ backend.onmessage = e => {
 			loginBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mr-2 btn-danger dropdown-toggle";
 			let avatar = new Image(18, 18);
 			avatar.src = e.data.user.avatarURL;
-			avatar.className = "rounded-circle mr-2"
+			avatar.className = "rounded-circle mr-2";
 			let displayName = document.createElement("div");
 			displayName.innerText = e.data.user.displayName;
 			loginBtn.append(avatar, displayName);
+			backend.postMessage({
+				action: "get-channels"
+			});
+			if (win.arguments.url || win.arguments.file) {
+				let url = new URL(win.arguments.url || win.arguments.file);
+				spinner.classList.replace("hide", "show");
+				backend.postMessage({action: "play-video", id: url.searchParams.get("v")});
+			}
+			break;
+		case "get-channel-info":
+			let channel = e.data.info;
+			body.innerHTML = "";
+			body.channelHeader = document.createElement("header");
+			body.channelHeader.className = "mt-2 mx-3 card very-rounded shadow bg-light";
+			let banner = new Image();
+			banner.src = channel.brandingSettings.image.bannerImageUrl;
+			banner.className = "mw-100";
+			let channelHeader = document.createElement("div");
+			channelHeader.className = "py-2 px-3 d-flex align-items-center";
+			let channelIcon = new Image(120, 120);
+			channelIcon.src = channel.snippet.thumbnails.medium;
+			channelIcon.className = "img-thumbnail rounded-circle mr-2";
+			let channelInfo = document.createElement("div");
+			channelInfo.className = "mr-auto d-flex flex-column justify-content-center";
+			let channelTitle = document.createElement("p");
+			channelTitle.className = "h5 mb-0";
+			channelTitle.innerText = channel.snippet.title;
+			let channelSubs = document.createElement("div");
+			channelSubs.className = "text-muted smaller";
+			channelSubs.innerText = channel.statistics.subscriberCount;
+			channelInfo.append(channelTitle, channelSubs);
+			let channelSubscribe = document.createElement("div");
+			channelSubscribe.className = "font-weight-bold btn btn-outline-danger border-0";
+			channelSubscribe.innerText = "Subscribed";
+			channelHeader.append(channelIcon, channelInfo, channelSubscribe);
+			body.channelHeader.append(banner, channelHeader);
+			body.append(body.channelHeader);
+			break;
+		case "get-channel-videos":
+			body.channelResults = document.createElement("section");
+			for (const video of e.data.items)
+				body.channelResults.append(genVid(video));
+			body.append(body.channelResults);
 			spinner.classList.replace("show", "hide");
+			break;
+		case "get-channels":
+			sidebar.noChannels.innerText = "No items to show";
+			if (e.data.items.length) sidebar.noChannels.remove();
+			for (const channel of e.data.items) {
+				let elem = document.createElement("button");
+				elem.className = "dropdown-item d-flex align-items-center";
+				elem.id = channel.id;
+				elem.innerHTML = `<img width=18 height=18 class='rounded-circle mr-2' src='${channel.snippet.thumbnails.default.url}'><div class="w-25 text-truncate flex-grow-1">${channel.snippet.title}</div>`;
+				elem.onclick = () => {
+					backend.postMessage({action: "get-channel-info", id: channel.snippet.channelId});
+					backend.postMessage({action: "get-channel-videos", id: channel.snippet.channelId});
+					spinner.classList.replace("hide", "show");
+
+				};
+				sidebar.channels.append(elem);
+			}
 			break;
 		case "list-popular":
-			body.innerHTML = "<h3 class='mt-3 mb-2'>Most popular</h3>";
-			for (const item of e.data.items) {
-				let elem = document.createElement("div");
-				elem.className = "card mt-2 p-2 btn flex-shrink-0 text-left";
-				elem.onclick = () => {
-					playVideo(item.id);
-				}
-				elem.media = document.createElement("div");
-				elem.media.className = "media";
-				elem.thumb = document.createElement("img");
-				elem.thumb.className = "mr-3";
-				elem.thumb.style.height = CSS.rem(3);
-				elem.thumb.src = item.snippet.thumbnails.medium.url;
-				elem.body = document.createElement("div");
-				elem.body.className = "media-body position-relative text-truncate";
-				elem.body.innerHTML = `<h5 class="my-0 text-truncate text-nowrap">${item.snippet.title}</h5><small>${item.snippet.channelTitle}</small>`;
-				elem.media.append(elem.thumb, elem.body);
-				elem.append(elem.media);
-				body.append(elem);
-			}
-			spinner.classList.replace("show", "hide");
+			body.innerHTML = "<h3 class='mt-3 mb-2 mx-4'>Most popular</h3>";
+			for (const item of e.data.items)
+				body.append(genVid(item));
 			break;
+		case "search":
+			body.resultsSection.innerHTML = "";
+			for (const item of e.data.items)
+				body.resultsSection.append(genVid(item));
+			break;
+		case "list-subscriptions":
+			body.innerHTML = "<h3 class='mt-3 mb-2 mx-4'>Popular on YouTube</h3><div class='alert alert-danger mb-0 mx-4'>Due to Google's illogical APIs to list your subscriptions a large amount of quota points are used and the operation is very slow and irrational. Sorry.</div>";
+			for (const item of e.data.result.items)
+				body.append(genVid(item));
+			break;
+		case "play-video":
+			body.innerHTML = `<video class="w-100 h-100 bg-dark" controls autoplay poster="${e.data.result.thumbnail}" src="${e.data.result.url}"></video>`;
+			break;
+		default:
+			console.log("Unknown response from backend", e.data);
 	}
-}
+	spinner.classList.replace("show", "hide");
+};
 win.on('close', e => {
 	backend.terminate();
-})
+});
 root.classList.remove("flex-column");
 
+function genVid(item) {
+	let elem = document.createElement("div");
+	elem.className = "card mt-2 p-2 mx-4 btn flex-shrink-0 text-left";
+	elem.onclick = () => {
+		spinner.classList.replace("hide", "show");
+		backend.postMessage({action: "play-video", id: item.contentDetails.upload.videoId || item.id});
+	};
+	elem.media = document.createElement("div");
+	elem.media.className = "media";
+	elem.thumb = document.createElement("img");
+	elem.thumb.className = "mr-3";
+	elem.thumb.style.height = CSS.rem(3);
+	elem.thumb.src = item.snippet.thumbnails.medium.url;
+	elem.body = document.createElement("div");
+	elem.body.className = "media-body position-relative text-truncate";
+	elem.body.innerHTML = `<h5 class="my-0 text-truncate text-nowrap">${item.snippet.title}</h5><small>${item.snippet.channelTitle}</small>`;
+	elem.media.append(elem.thumb, elem.body);
+	elem.append(elem.media);
+	return elem;
+}
 let searchBtn = document.createElement("button");
 searchBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-magnify mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 searchBtn.title = "Search videos";
@@ -130,37 +199,73 @@ sidebar.trending.onclick = () => {
 	for (const child of sidebar.children) child.classList.remove("active");
 	sidebar.trending.classList.add("active");
 	spinner.classList.replace("hide", "show");
-
-}
+};
 sidebar.subs = document.createElement("button");
 sidebar.subs.className = "dropdown-item d-flex align-items-center";
 sidebar.subs.innerHTML = "<icon class='mdi mdi-checkbox-multiple-blank-outline mdi-18px mr-1'></icon><div>Subscriptions</div>";
 sidebar.subs.disabled = true;
+sidebar.subs.onclick = () => {
+	backend.postMessage({
+		action: "list-subscriptions"
+	});
+	for (const child of sidebar.children) child.classList.remove("active");
+	sidebar.subs.classList.add("active");
+	spinner.classList.replace("hide", "show");
+};
 sidebar.search = document.createElement("button");
 sidebar.search.className = "dropdown-item d-flex align-items-center";
 sidebar.search.innerHTML = "<icon class='mdi mdi-magnify mdi-18px mr-1'></icon><div>Search</div>";
 sidebar.search.disabled = true;
+sidebar.search.onclick = () => {
+	body.innerHTML = "";
+	for (const child of sidebar.children) child.classList.remove("active");
+	sidebar.search.classList.add("active");
+	let searchSection = document.createElement("section");
+	searchSection.className = "d-flex flex-column align-items-center text-center flex-shrink-0 p-4";
+	let searchBar = document.createElement("form");
+	searchBar.className = "input-group";
+	searchBar.placeholder = "Search";
+	let search = document.createElement("input");
+	search.className = "form-control text-left";
+	let iappend = document.createElement("div");
+	iappend.className = "input-group-append";
+	let searchBtn = document.createElement("button");
+	searchBtn.className = "btn btn-danger mdi mdi-18px mdi-magnify lh-18 d-flex";
+	searchBar.onsubmit = e => {
+		e.preventDefault();
+		backend.postMessage({
+			action: "search",
+			q: search.value
+		});
+		spinner.classList.replace("hide", "show");
+	};
+	iappend.append(searchBtn);
+	searchBar.append(search, iappend);
+	searchSection.append(searchBar);
+	body.resultsSection = document.createElement("div");
+	body.append(searchSection, body.resultsSection);
+};
+sidebar.channelsTitle = document.createElement("div");
+sidebar.channelsTitle.className = "dropdown-header";
+sidebar.channelsTitle.innerText = "Channels";
 sidebar.channels = document.createElement("div");
-sidebar.channels.className = "dropdown-header";
-sidebar.channels.innerText = "Channels";
 sidebar.noChannels = document.createElement("button");
-sidebar.noChannels.disabled = true
+sidebar.noChannels.disabled = true;
 sidebar.noChannels.className = "dropdown-item d-flex align-items-center";
-sidebar.noChannels.innerHTML = "<div>No items to show.</div>";
-sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channels, sidebar.noChannels);
+sidebar.noChannels.innerHTML = "<div>Loading...</div>";
+sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels);
 
 let main = document.createElement("main");
 main.className = "bg-white shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y";
 let spinner = document.createElement("icon");
-spinner.style.cssText = "position:absolute;top:2rem;left:0;right:0;width:36px;height:36px";
-spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px fly down hide lh-24 d-flex align-items-center bg-light border mx-auto p-1 rounded-circle shadow";
+spinner.style.cssText = "left:0;right:0;width:36px;height:36px;z-index:1000;";
+spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 position-absolute fly down show d-flex mx-auto p-1 rounded-circle lh-24 align-items-center justify-content-center " + (win.options.darkMode ? "bg-dark text-white border border-secondary" : "bg-light text-dark shadow");
 let body = document.createElement("section");
-body.className = "d-flex flex-column w-100 h-100 px-4";
+body.className = "d-flex flex-column w-100 h-100";
 main.append(spinner, body);
 root.append(sidebar, main);
 spinner.classList.replace("hide", "show");
 win.show();
-
 function openLogIn(url) {
 	let modal = document.createElement("div");
 	modal.dialog = document.createElement("form");
@@ -178,7 +283,6 @@ function openLogIn(url) {
 	webview.className = "h-100";
 	modal.content.append(webview);
 	webview.addEventListener("ipc-message", e => {
-		console.log(e);
 		if (e.channel === "log-in") {
 			backend.postMessage({
 				action: "return-token",
@@ -186,8 +290,7 @@ function openLogIn(url) {
 			});
 			modal.controller.hide();
 		}
-
-	})
+	});
 	modal.dialog.append(modal.content);
 	modal.append(modal.dialog);
 	document.body.append(modal);
@@ -198,7 +301,7 @@ function openLogIn(url) {
 let css = document.createElement("style");
 css.innerHTML =
 	`
-window[id='${win.id}'] .dropdown-item:active {
+window[id='${win.id}'] .dropdown-item:active, window[id='${win.id}'] .dropdown-item.active {
   background-color: var(--danger);
 }
 `;

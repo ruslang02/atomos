@@ -76,19 +76,72 @@ async function loadApp(app) {
 	appInfo.className = "d-flex flex-column justify-content-center flex-grow-1";
 	let appBtns = document.createElement("div");
 	appBtns.className = "d-flex flex-column justify-content-center align-content-center";
+	let installInfo = document.createElement("section");
+	installInfo.className = "px-4 py-3 mt-4 bg-light very-rounded shadow-sm d-flex";
+	let isInstalled = document.createElement("div");
+	isInstalled.className = "d-flex align-items-center mdi mdi-18px font-weight-bolder mr-auto " + (installedVersion ? "mdi-check" : "mdi-close");
+	isInstalled.innerHTML = "&nbsp;&nbsp;" + (installedVersion ? "This app is installed" : "This app is not installed");
+	let versionSection = document.createElement("label");
+	versionSection.innerText = "Version:";
+	versionSection.className = "d-flex align-items-center mb-0";
+	let versionSelect = document.createElement("select");
+	versionSelect.className = "custom-select custom-select-sm ml-3";
+	if (installedVersion) {
+		versionSelect.disabled = true;
+		versionSelect.value = installedVersion;
+	}
+	/* Version types:
+	 * stable
+	 * testing
+	 * unstable
+	 */
+	let versions = pkg.versions.sort((a, b) => {
+		if (a.Type < b.Type) return -1;
+		else if (a.Type > b.Type) return 1;
+		return 0;
+	});
+	let currentBranch = "";
+	let currentOptGroup;
+	for (const version of pkg.versions) {
+		if (version.Type !== currentBranch) {
+			if (currentOptGroup) versionSelect.add(currentOptGroup);
+			currentOptGroup = document.createElement("optgroup");
+			currentOptGroup.label = version.Type;
+			currentBranch = version.Type;
+		}
+		currentOptGroup.append(new Option(version.Version));
+	}
+	versionSelect.add(currentOptGroup);
+	versionSection.append(versionSelect);
+	installInfo.append(isInstalled, versionSection);
+	currentBranch = (versions.find(a => {
+		return a.Version === installedVersion;
+	}) || {Type: "stable"}).Type;
+	let latestVersion = "0.0.0";
+	versions.forEach((a, i) => {
+		if (a.Type === currentBranch && latestVersion < versions[i].Version) latestVersion = versions[i].Version;
+	});
+	console.log(latestVersion, currentBranch);
 	if (installedVersion) {
 		let grp = document.createElement("div");
 		grp.className = "btn-group m-0";
-		let launchBtn = document.createElement("button");
-		launchBtn.className = "btn btn-success btn-block btn-lg mdi mdi-open-in-new";
-		launchBtn.innerText = " Launch";
-		launchBtn.onclick = () => AppWindow.launch(app);
-		let removeBtn = document.createElement("button");
-		removeBtn.className = "btn btn-danger btn-lg mdi mdi-delete-outline";
-		removeBtn.onclick = () => {
-
-		};
-		grp.append(launchBtn, removeBtn);
+		if (installedVersion < latestVersion) {
+			let updateBtn = document.createElement("button");
+			updateBtn.className = "btn btn-primary btn-block btn-lg mdi mdi-update";
+			updateBtn.innerText = " Update";
+			let launchBtn = document.createElement("button");
+			launchBtn.className = "btn btn-success btn-lg mdi mdi-open-in-new";
+			launchBtn.onclick = () => AppWindow.launch(app);
+			grp.append(updateBtn, launchBtn);
+		} else {
+			let launchBtn = document.createElement("button");
+			launchBtn.className = "btn btn-success btn-block btn-lg mdi mdi-open-in-new";
+			launchBtn.innerText = " Launch";
+			launchBtn.onclick = () => AppWindow.launch(app);
+			let removeBtn = document.createElement("button");
+			removeBtn.className = "btn btn-danger btn-lg mdi mdi-delete-outline";
+			grp.append(launchBtn, removeBtn);
+		}
 		appBtns.append(grp)
 	} else {
 		let installBtn = document.createElement("button");
@@ -98,11 +151,12 @@ async function loadApp(app) {
 	}
 	appInfo.append(appName, descr);
 	main.append(appIcon, appInfo, appBtns);
+
 	let description = document.createElement("section");
 	description.innerHTML = pkg.LongDescription || pkg.ShortDescription;
 	description.className = "px-4 py-3 mt-4 bg-light very-rounded shadow-sm scrollable-y";
 	description.style.maxHeight = "300px";
-	body.append(main, description);
+	body.append(main, installInfo, description);
 	spinner.classList.replace("show", "hide");
 }
 

@@ -25,6 +25,7 @@ win.task.menu.insert(-2, {
 	label: "Edit location",
 	icon: "pencil",
 	click() {
+		win.show();
 		nav.pathField.dispatchEvent(new MouseEvent('dblclick', {
 			'view': window,
 			'bubbles': true,
@@ -150,7 +151,24 @@ async function navigate(url) {
 
 	async function generateItem(file) {
 		let item = document.createElement("button");
-		item.stat = await fsp.lstat(file);
+		try {
+			item.stat = await fsp.lstat(file);
+		} catch (e) {
+			item.stat = {
+				isDirectory: function () {
+					return false
+				},
+				isFile: function () {
+					return false
+				},
+				isUnknown: function () {
+					return true
+				},
+				size: 0,
+				atime: 0,
+				mtime: 0
+			};
+		}
 		item.draggable = true;
 		item.className = 'dropdown-item px-2 py-1 rounded mb-1 d-flex align-items-center' + (win.options.darkMode ? " text-white" : "");
 		item.isDirectory = item.stat.isDirectory();
@@ -310,7 +328,7 @@ async function navigate(url) {
 		};
 		item.addEventListener("dblclick", item.open);
 		item.icon = document.createElement("icon");
-		item.icon.className = "mdi mdi-18px mdi-" + (item.isDirectory ? 'folder-outline' : 'file-outline') + " lh-18 mr-2";
+		item.icon.className = "mdi mdi-18px mdi-" + (item.isDirectory ? 'folder-outline' : (item.stat.isUnknown ? 'help-rhombus-outline' : 'file-outline')) + " lh-18 mr-2";
 		item.fileName = document.createElement("div");
 		item.fileName.className = "scrollable-0 flex-grow-1 text-truncate";
 		item.fileName.innerText = path.basename(file);
@@ -338,8 +356,18 @@ async function navigate(url) {
 	for (const i of files.keys()) {
 		let file = files[i];
 		if (file.startsWith(".") && !settings.showHidden) {
-			hCount++
+			hCount++;
 			continue;
+		}
+		if (files.length - hCount === 0) {
+			main.innerHTML = `
+			<div class="h-100 d-flex justify-content-center align-items-center flex-column ${win.options.darkMode ? "text-white" : "text-dark"}">
+			<icon class="mdi mdi-folder-remove-outline" style="font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px ${win.options.darkMode ? "var(--dark)" : "white"};"></icon>
+			This folder is empty.
+			</div>`;
+			statusBar.loader.classList.add("d-none");
+			statusBar.text.innerText = `0 elements (${hcount} hidden)`;
+			return;
 		}
 		items.push(await generateItem(path.join(url, file)));
 	}
@@ -435,7 +463,7 @@ async function sendBack() {
 
 function renderMain() {
 	main = document.createElement("section");
-	main.className = "p-2 flex-grow-1 scrollable mx-2 mb-2 very-rounded shadow" + (win.options.darkMode ? " bg-dark" : " bg-white");
+	main.className = "p-2 flex-grow-1 scrollable mx-2 mb-2 very-rounded shadow-sm " + (win.options.darkMode ? "bg-dark" : "bg-white");
 	main.oncontextmenu = e => {
 		e.stopPropagation();
 		renderMainMenu();
@@ -456,7 +484,7 @@ async function renderAccessSection() {
 		if (item.type === "item") {
 			let location = item.location.replace("$HOME_DIR", homeDir).replace("$SYSTEM_ROOT", osRoot);
 			dItem = document.createElement("button");
-			dItem.className = 'dropdown-item d-flex py-2 align-items-center' + (win.options.darkMode ? " text-white" : "");
+			dItem.className = 'dropdown-item d-flex py-2 very-rounded-right align-items-center' + (win.options.darkMode ? " text-white" : "");
 			dItem.onclick = e => navigate(location);
 			dItem.location = location;
 			dItem.icon = document.createElement("icon");
@@ -506,7 +534,7 @@ async function renderDeviceSection() {
 				isMounted = require("child_process").execSync(cmd);
 			} catch (e) {
 			}
-			item.className = "dropdown-item d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
+			item.className = "dropdown-item very-rounded-right d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
 			item.title = 'Click to mount/open drive';
 			item.icon = document.createElement("icon");
 			item.icon.className = "mdi mdi-18px mr-1 lh-18 mdi-usb";
@@ -583,7 +611,7 @@ function renderStatusbar() {
 
 function renderSidebar() {
 	sidebar = document.createElement("aside");
-	sidebar.className = "scrollable-y w-25 scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + (win.options.darkMode ? " shadow bg-dark very-rounded-right mb-2" : "") + " py-1";
+	sidebar.className = "scrollable-y w-25 scrollable-x-0 " + (win.arguments.open ? "d-none" : "d-block") + " py-1";
 	sidebar.dataset.draggable = "true";
 	sidebar.style.maxWidth = "270px";
 	sidebar.style.minWidth = "170px";

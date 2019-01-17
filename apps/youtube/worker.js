@@ -1,7 +1,17 @@
 let fs = require('fs');
-let {google} = require('googleapis');
-let {OAuth2Client} = require('google-auth-library');
-
+let google;
+let OAuth2Client;
+let youtubedl;
+try {
+	google = require('googleapis').google;
+	OAuth2Client = require('google-auth-library').OAuth2Client;
+	youtubedl = require('youtube-dl');
+} catch (e) {
+	postMessage({
+		action: "library-error"
+	});
+	close();
+}
 let SCOPES = ['https://www.googleapis.com/auth/youtube.readonly', "https://www.googleapis.com/auth/userinfo.profile"];
 let TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
 	process.env.USERPROFILE) + '/.credentials/';
@@ -35,7 +45,6 @@ function authorize(credentials) {
 			postMessage({action: "log-in", url: authUrl});
 		} else {
 			oauth2Client.credentials = JSON.parse(token);
-			console.log(oauth2Client);
 			google.people('v1').people.get({
 				auth: oauth2Client,
 				resourceName: "people/me",
@@ -43,9 +52,15 @@ function authorize(credentials) {
 			}, (e, result) => {
 				if (e) {
 					console.error(e);
+					postMessage({
+						action: "logged-in",
+						user: {
+							displayName: "Error loading user profile",
+							avatarURL: "about:blank"
+						}
+					});
 					return;
 				}
-				console.log(result);
 				postMessage({
 					action: "logged-in",
 					user: {
@@ -68,7 +83,6 @@ async function storeToken(token) {
 		}
 	}
 	await fs.promises.writeFile(TOKEN_PATH, JSON.stringify(token));
-	console.log('Token stored to ' + TOKEN_PATH);
 }
 
 onmessage = function (e) {
@@ -92,6 +106,52 @@ onmessage = function (e) {
 				})
 			});
 			break;
+		case "get-channels":
+			let subChannels = [];
+			let iChannels = 0;
+			let totalChannels = 0;
+
+		async function retrieveChannels() {
+			let res = await new Promise(resolve => google.youtube('v3').subscriptions.list({
+				auth: oauth2Client,
+				part: 'snippet',
+				mine: true,
+				maxResults: 50
+			}, (e, res) => resolve(res)));
+			try {
+				totalChannels = res.data.pageInfo.totalResults;
+			} catch (e) {
+			}
+			if (totalChannels < iChannels * 50) return subChannels;
+			subChannels.push.apply(subChannels, res.data.items);
+			iChannels++;
+			return await retrieveChannels();
+		}
+
+			retrieveChannels().then(channels => postMessage({action: "get-channels", items: channels}));
+			break;
+		case "get-channel-info":
+			google.youtube('v3').channels.list({
+				auth: oauth2Client,
+				part: 'snippet,brandingSettings,statistics',
+				id: e.data.id,
+				maxResults: 1
+			}, (e, res) => {
+				if (e) console.error(e);
+				postMessage({action: "get-channel-info", info: res.data.items[0]})
+			});
+			break;
+		case "get-channel-videos":
+			google.youtube('v3').search.list({
+				auth: oauth2Client,
+				part: 'snippet',
+				channelId: e.data.id,
+				maxResults: 50
+			}, (e, res) => {
+				if (e) console.error(e);
+				postMessage({action: "get-channel-videos", items: res.data.items})
+			});
+			break;
 		case "list-popular":
 			google.youtube('v3').videos.list({
 				auth: oauth2Client,
@@ -102,5 +162,62 @@ onmessage = function (e) {
 				if (e) throw e;
 				postMessage({action: "list-popular", items: res.data.items});
 			});
+			break;
+		case "search":
+			google.youtube('v3').search.list({
+				auth: oauth2Client,
+				part: "snippet",
+				q: e.data.q,
+				type: "video",
+				order: "relevance",
+				videoEmbeddable: true,
+				maxResults: 20
+			}, function (e, res) {
+				if (e) throw e;
+				postMessage({action: "search", items: res.data.items});
+			});
+			break;
+		case "list-subscriptions":
+			let subVideos = [];
+
+		function retrieveVideo(channelId) {
+			return new Promise(resolve => google.youtube('v3').search.list({
+				auth: oauth2Client,
+				part: "snippet",
+				channelId: channelId,
+				type: "video",
+				order: "date",
+				videoEmbeddable: true,
+				maxResults: 5
+			}, (e, res) => resolve(subVideos.push.apply(subVideos, res.data.items))));
+		}
+
+		async function retrieveVideos() {
+			/*for (const channel of await retrieveChannels()) {
+				console.log(channel);
+				await retrieveVideo(channel.snippet.resourceId.channelId);
+			}
+			console.log(subVideos)
+			subVideos = subVideos.sort(function (a, b) {
+				return new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt);
+			});
+			subVideos.length = 20;*/
+			return await new Promise(resolve => google.youtube('v3').activities.list({
+				auth: oauth2Client,
+				part: "snippet, contentDetails",
+				home: true,
+				maxResults: 25
+			}, (e, res) => resolve(res.data)));
+		}
+
+			retrieveVideos().then(videos => postMessage({action: "list-subscriptions", result: videos}));
+
+			break;
+		case "play-video":
+			let url = 'https://www.youtube.com/watch?v=' + e.data.id;
+			youtubedl.getInfo(url, [], function (err, info) {
+				if (err) throw err;
+				postMessage({action: "play-video", result: info});
+			});
 	}
-}
+};

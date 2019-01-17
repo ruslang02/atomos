@@ -47,7 +47,7 @@ app.on('ready', function() {
 	});
 	win.webContents.on('devtools-opened', () => {
 		win.webContents.addWorkSpace(__dirname)
-	})
+	});
 	win.webContents.on('new-window', (e, u) => {
 		e.preventDefault();
 		win.webContents.send("new-window", u);
