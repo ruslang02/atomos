@@ -51,7 +51,11 @@ window.Menu = class Menu extends EventEmitter {
 		this.menu = document.createElement("menu");
 		this.menu.className = "dropdown-menu fade d-flex flex-column shadow" + (shell.ui.darkMode ? " bg-dark" : "");
 		this.menu.close = () => this.closePopup();
-		window.addEventListener("click", () => {
+		this.menu.overlay = document.createElement("overlay");
+		this.menu.overlay.className = "position-fixed w-100 h-100";
+		this.menu.overlay.style.cssText = "top:0;left:0;z-index:-1";
+		this.menu.overlay.onclick = e => {
+			e.stopPropagation();
 			let event = {
 				preventDefault: function () {
 					event.returnValue = false;
@@ -60,7 +64,7 @@ window.Menu = class Menu extends EventEmitter {
 			};
 			_this.emit('menu-will-close', event);
 			if (event.returnValue) _this.closePopup();
-		});
+		};
 		this.window = win;
 		this.id = shell.uniqueId();
 		this.menu.id = this.id;
@@ -78,6 +82,7 @@ window.Menu = class Menu extends EventEmitter {
 	renderMenu() {
 		let _this = this;
 		this.menu.innerHTML = "";
+		this.menu.prepend(this.menu.overlay);
 		let shortcuts = [];
 
 		function acceleratorEvent(e) {
@@ -109,7 +114,7 @@ window.Menu = class Menu extends EventEmitter {
 					}
 					menuItem = document.createElement("button");
 					menuItem.className = "dropdown-item d-flex align-items-center";
-					menuItem.onclick = () => {
+					menuItem.onmouseup = () => {
 						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, _this.activeElement);
 					};
 					if (Registry.get('system.showMenuIcons') !== false) {
@@ -142,7 +147,7 @@ window.Menu = class Menu extends EventEmitter {
 					let menuInput = document.createElement("input");
 					menuInput.className = "custom-control-input";
 					menuInput.type = "checkbox";
-					menuItem.onclick = () => {
+					menuItem.onmouseup = () => {
 						menuInput.checked = item.checked = !menuInput.checked;
 						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item.checked, _this.window, _this.activeElement);
 					};
