@@ -1,0 +1,38 @@
+{
+  "name": "@atomos/start",
+  "productName": "Start Bar Widget",
+  "version": "1.0.0",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "homepage": "https://apps.atomos.org.uk/package/start",
+  "icon": "apps",
+  "color": "#37474f",
+  "main": "start.js",
+  "type": "bar-plugin",
+  "removable": "false",
+  "dependencies": {
+    "atomos": "~0.7.0"
+  },
+  "actions": [
+    {
+      "name": "Shut down",
+      "icon": "power",
+      "main": "actions/shutdown.js"
+    },
+    {
+      "name": "Restart",
+      "icon": "restart",
+      "main": "actions/reboot.js"
+    },
+    {
+      "name": "Suspend",
+      "icon": "power-cycle",
+      "main": "actions/suspend.js"
+    },
+    {
+      "name": "Open Developer Tools",
+      "icon": "developer-board",
+      "main": "actions/devtools.js"
+    }
+  ]
+}

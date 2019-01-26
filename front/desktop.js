@@ -1,37 +1,37 @@
-const BSN = require('bootstrap.native/dist/bootstrap-native-v4');
+Object.assign(window, require('bootstrap.native/dist/bootstrap-native-v4'));
 /*
 window.$ = window.jQuery = require("jquery");
 let jui = document.createElement("script");
 jui.src = "../node_modules/jquery-ui-dist/jquery-ui.min.js";
 document.body.append(jui);*/
 const path = require("path");
-let Elements = {};
+window.Elements = {};
 let autoStartWorkers = [];
 const osRoot = path.join(__dirname, "..");
-
+const AppWindow = require(`${__dirname}/api/WindowManager`);
+const Registry = require(`${__dirname}/api/Registry`);
+const Shell = require(`${__dirname}/api/Shell`);
+const Menu = require(`${__dirname}/api/Menu`);
+const {Notification, Snackbar} = require(`${__dirname}/api/Notification`);
+require(`${__dirname}/api/EditMenu`);
+require(`${__dirname}/api/Shortcuts`);
 const AsyncFunction = Object.getPrototypeOf(async function () {
 }).constructor;
 (async function () {
 	const {
-		remote,
 		ipcRenderer
 	} = require("electron");
 	const fso = require("fs");
-	const fs = fso.promises;
-	const taskbarPath = path.join(osRoot, "apps/bar");
 	LoadCSS();
 	let blockNW;
 	ipcRenderer.on('new-window', (e, u) => {
-		e.defaultPrevented = true;
 		if (blockNW || u === "about:blank") return;
 		AppWindow.launch("proton", {
 			url: u
 		});
 		blockNW = true;
-		setTimeout(e => blockNW = false, 50);
-	})
-	for (const api of await fs.readdir(__dirname + "/api"))
-		await new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
+		setTimeout(() => blockNW = false, 50);
+	});
 
 	for (const worker of (Registry.get("system.autostart") || [])) {
 		let work = new Worker(worker.src);
@@ -41,13 +41,11 @@ const AsyncFunction = Object.getPrototypeOf(async function () {
 			worker: work
 		})
 	}
-
-	new AsyncFunction('root', '__dirname', await fs.readFile(taskbarPath + "/bar.js", "utf-8"))
-	(document.body, taskbarPath);
+	require(path.join(osRoot, "apps/official/bar"));
 	let wFile = path.join(process.env.HOME, ".config", "wallpaper.jpg");
 	let time;
 	renderWall();
-	fso.watch(wFile, e => {
+	fso.watch(wFile, () => {
 		if (!time) time = setTimeout(renderWall, 1000);
 	});
 
@@ -67,7 +65,7 @@ const AsyncFunction = Object.getPrototypeOf(async function () {
 				}
 			}));
 		let wpSettings = settings.wallpaper;
-		let wpURL = "url('" + new URL("file://" + wFile).href + "?" + shell.uniqueId() + "')";
+		let wpURL = "url('" + new URL("file://" + wFile).href + "?" + Shell.uniqueId() + "')";
 		switch (wpSettings.positioning) {
 			case "scale":
 				document.body.style.background = `${wpSettings.color} ${wpURL} 100% 100% no-repeat`;
@@ -108,4 +106,4 @@ const AsyncFunction = Object.getPrototypeOf(async function () {
 		});
 		return Promise.all(promises);
 	}
-})().then(e => document.title = "AtomOS (Render complete)");
+})().then(() => document.title = "AtomOS (Render complete)");

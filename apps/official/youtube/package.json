@@ -1,0 +1,19 @@
+{
+  "title": "YouTube",
+  "productName": "YouTube",
+  "name": "@atomos/youtube",
+  "type": "app",
+  "version": "1.0.0",
+  "description": "Enjoy the videos you love, upload original content, and share it all with the world",
+  "icon": "youtube",
+  "color": "#b71c1c",
+  "width": 700,
+  "height": 650,
+  "minHeight": 500,
+  "minWidth": 500,
+  "main": "youtube.js",
+  "dependencies": {
+    "atomos": "~0.7.0",
+    "google-auth-library": "^2.0.0"
+  }
+}

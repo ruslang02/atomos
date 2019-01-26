@@ -1,7 +1,7 @@
 {
   "name": "atomos",
   "productName": "AtomOS",
-  "version": "0.7.2",
+  "version": "0.8.0-nightly.1",
   "description": "Open-source operating system based on Electron.",
   "main": "index.js",
   "repository": {
@@ -23,6 +23,7 @@
     "bootstrap.native": "^2.0.24",
     "cropperjs": "^1.4.3",
     "extract-zip": "^1.6.6",
+    "gitlab": "latest",
     "google-auth-library": "^2.0.2",
     "googleapis": "^36.0.0",
     "js-beautify": "^1.8.9",
@@ -31,6 +32,7 @@
     "musicmetadata": "^2.0.5",
     "node-viewerjs": "^0.6.6",
     "playmusic": "git+https://github.com/jamon/playmusic.git",
+    "semver": "^5.6.0",
     "source-sans-pro": "^2.40.0",
     "tar": "^4.4.8",
     "xml2js": "^0.4.19",

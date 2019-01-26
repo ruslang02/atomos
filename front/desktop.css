@@ -153,18 +153,31 @@ taskbar {
 	box-shadow: inset 0 -90px 60px -80px rgba(191, 191, 191, 0.75), inset 0 -40px 30px -30px rgba(0, 0, 0, 0.7);
 	z-index: 990;
 	transition: all .25s ease;
+	bottom: 0;
 }
 body.dark taskbar {
 	/* background: rgba(91, 91, 91, 0.85); */
 }
 
 taskbar.autoHide {
-	position: absolute;
-	bottom: calc(2px - var(--taskbar-height));
+	clip-path: inset(calc(var(--taskbar-height) - 4px) 0 0 0);
+	bottom: 0;
+	/* bottom: calc(2px - var(--taskbar-height)); */
 }
 
-taskbar.autoHide:hover, taskbar.autoHide.show {
+taskbar::before {
+	content: "";
+	position: fixed;
 	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 5px;
+	background: black;
+	z-index: -1;
+}
+
+taskbar.autoHide:hover, taskbar.autoHide.show, taskbar:not(.autoHide) {
+	clip-path: inset(0 0 0 0);
 }
 
 taskbar.maximized:not(.autoHide) {
@@ -174,8 +187,9 @@ taskbar.maximized:not(.autoHide) {
 body.dark taskbar.maximized:not(.autoHide) {
 	background: var(--dark);
 }
-plugin#tasker > button.active::after {
-	background: white;
+
+plugin[id="official/tasker"] > button.active::after {
+	background-color: white;
 }
 
 .dropdown-item .custom-control-label::before, .dropdown-item .custom-control-label::after {
@@ -191,20 +205,23 @@ plugin#tasker > button.active::after {
 	background-color: rgba(177, 177, 177, 0.3)
 }
 
-plugin#tasker > button::after {
+plugin[id="official/tasker"] > button::after {
 	content: "";
 	border-radius: 10px;
 	padding: 1px;
 	width: 100%;
 	height: 0;
 	position: absolute;
-	bottom: -0.5rem;
+	bottom: -.75rem;
+	margin-bottom: -1px;
+	border: 1px solid black;
 	left: 0;
-	background: rgba(255, 255, 255, 0.3);
+	background-color: rgba(255, 255, 255, 0.3);
+	background-image: linear-gradient(to right, var(--progress-color) 0%, var(--progress-color) var(--progress-value), transparent var(--progress-color), transparent 100%);
 	transition: background .25s ease;
 }
 
-plugin#tasker > button:not(.active) {
+plugin[id="official/tasker"] > button:not(.active) {
 	opacity: 0.85;
 }
 .flash {
@@ -212,15 +229,17 @@ plugin#tasker > button:not(.active) {
 	animation: pulsate 1s ease-out infinite alternate !important;
 }
 
-plugin#tasker > button, plugin#start > button {
+plugin[id="official/tasker"] > button, plugin#start > button {
 	transition: filter .25s ease, opacity .25s ease;
+	--progress-color: var(--primary);
+	--progress-value: 0%;
 }
 
-plugin#tasker > button:not(.active):hover, plugin#start > button:hover {
+plugin[id="official/tasker"] > button:not(.active):hover, plugin#start > button:hover {
 	filter: brightness(120%);
 }
 
-plugin#tasker > button:not(.active):active, plugin#start > button:active {
+plugin[id="official/tasker"] > button:not(.active):active, plugin#start > button:active {
 	filter: brightness(90%);
 }
 
@@ -236,9 +255,39 @@ window.maximized.bg-semiwhite {
 	background: rgb(230, 230, 230) !important
 }
 
-window.maximized div[style*=cursor] {
+window.maximized window-ui > div[style*=cursor] {
 	pointer-events: none;
 }
+
+/*
+ * macOS-like window buttons glyphs
+window window-buttons .btn-danger:hover::before {
+	content: "\F156";
+	font-family: 'Material Design Icons', serif;
+	position: absolute;
+	top: 0;
+	left: 0;
+	line-height: 14px;
+	font-size: 14px;
+}
+window window-buttons .btn-success:hover::before {
+	content: "\F143";
+	font-family: 'Material Design Icons', serif;
+	position: absolute;
+	top: 0;
+	left: 0;
+	line-height: 14px;
+	font-size: 14px;
+}
+window window-buttons .btn-warning:hover::before {
+	content: "\F140";
+	font-family: 'Material Design Icons', serif;
+	position: absolute;
+	top: 0;
+	left: 0;
+	line-height: 14px;
+	font-size: 14px;
+}*/
 
 notification.type-image .toast-body div.smaller::after {
 	content: "";
@@ -432,11 +481,15 @@ notification.type-image.dark .toast-body div.smaller::after {
 	box-shadow: 0 0 0 0.2rem rgba(74, 144, 216, 0.18);
 }
 
-plugin#tray label.btn.custom-checkbox .custom-control-label::before,
-plugin#tray label.btn.custom-checkbox .custom-control-label::after {
+aside#tray label.btn.custom-checkbox .custom-control-label::before,
+aside#tray label.btn.custom-checkbox .custom-control-label::after {
 	top: 0;
 	right: 0;
 	bottom: 0;
 	margin: auto;
 	left: auto;
+}
+
+menu.dropdown-menu {
+	z-index: 1090;
 }
