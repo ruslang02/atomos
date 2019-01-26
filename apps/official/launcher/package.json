@@ -11,6 +11,6 @@
   "main": "launcher.js",
   "type": "bar-plugin",
   "dependencies": {
-    "atomos": "~0.7.0"
+    "atomos": "~0.8.0"
   }
 }

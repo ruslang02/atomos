@@ -13,6 +13,6 @@
   "minWidth": 600,
   "main": "proton.js",
   "dependencies": {
-    "atomos": "~0.7.0"
+    "atomos": "~0.8.0"
   }
 }

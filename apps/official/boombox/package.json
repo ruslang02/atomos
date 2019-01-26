@@ -11,7 +11,7 @@
   "main": "boombox.js",
   "description": "A music player for all your tracks",
   "dependencies": {
-    "atomos": "~0.7.0"
+    "atomos": "~0.8.0"
   },
   "width": 600,
   "height": 500,

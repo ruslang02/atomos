@@ -14,7 +14,7 @@
   "removable": "false",
   "main": "market.js",
   "dependencies": {
-    "atomos": "~0.7.0",
+    "atomos": "~0.8.0",
     "gitlab": "~4.3.0"
   }
 }

@@ -13,7 +13,7 @@
   "minWidth": 500,
   "main": "typewriter.js",
   "dependencies": {
-    "atomos": "~0.7.0"
+    "atomos": "~0.8.0"
   },
   "actions": [
     {

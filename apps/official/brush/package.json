@@ -10,7 +10,7 @@
   "icon": "brush",
   "color": "#ef6c00",
   "dependencies": {
-    "atomos": "~0.7.0"
+    "atomos": "~0.8.0"
   },
   "width": 600,
   "height": 500,
