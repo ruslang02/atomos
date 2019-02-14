@@ -1,56 +1,54 @@
-const EventEmitter = require("events");
-let instances = [];
+let instances = {};
 
-class Registry extends EventEmitter {
-	constructor(storageName) {
-		super();
-		if (!window.localStorage.getItem("registry")) window.localStorage.setItem("registry", "{}");
-		let storage = JSON.parse(window.localStorage.getItem("registry"))[storageName];
-		this.storageName = storageName;
-		this.storage = storage || {};
-		if (!storage) this.set({}); else if (!Object.getOwnPropertyNames(storage).length) this.set({});
-		instances.push({name: storageName, instance: this});
+class Registry {
+	static set(key, value) {
+		if (!window.localStorage.getItem("registry")) Registry.eraseAll();
+		let storage = JSON.parse(window.localStorage.getItem("registry"));
+
+		function recursiveSet(obj, key, val) {
+			if (typeof key == 'string')
+				key = key.split(".");
+			obj[key[0]] = obj[key[0]] || {};
+			let tmpObj = obj[key[0]];
+			if (key.length > 1) {
+				key.shift();
+				recursiveSet(tmpObj, key, val);
+			} else
+				obj[key[0]] = val;
+			return obj;
+		}
+
+		let newStorage = recursiveSet(storage, key, value);
+		window.localStorage.setItem("registry", JSON.stringify(newStorage));
+		let sName = key.split(".")[0];
+		if (instances[sName])
+			for (const fnc of instances[sName])
+				fnc(key, value);
+		return newStorage[sName];
 	}
 
-	static set(key, value) {
-		let keys = key.split(".");
-		let sName = keys.shift();
-		let registry = new Registry(sName);
-		let prefs = registry.get();
-		let prop = keys.pop();
-		keys.reduce(function (cur, key) {
-			return cur[key];
-		}, prefs)[prop] = value;
-		registry.set(prefs);
-		return prefs;
+	static watch(key, cb) {
+		if (!instances[key]) instances[key] = [];
+		instances[key].push(cb);
 	}
 
 	static get(key) {
+		if (!window.localStorage.getItem("registry")) Registry.eraseAll();
 		let keys = key.split(".");
-		let registry = new Registry(keys.shift());
-		return keys.reduce(function (cur, key) {
-			return cur[key];
-		}, registry.get());
+		let sName = keys[0];
+		let regs = JSON.parse(window.localStorage.getItem("registry"));
+		if (keys.length === 1) {
+			return regs[sName] || {};
+		} else {
+			return keys.reduce(function (cur, key) {
+				if (!cur) return undefined; else
+					return cur[key];
+			}, regs);
+		}
 	}
 
 	static eraseAll() {
-		if (Shell.isDebug) window.localStorage.setItem("registry", "{}");
-		else console.info("What the hell are you doing?");
-	}
-
-	get() {
-		return this.storage;
-	}
-
-	set(newStorage) {
-		let that = this;
-		let oldStorage = JSON.parse(window.localStorage.getItem("registry"));
-		oldStorage[this.storageName] = newStorage;
-		window.localStorage.setItem("registry", JSON.stringify(oldStorage));
-		this.storage = newStorage;
-		instances.forEach(item => {
-			if (item.name === that.storageName) item.instance.emit('changed', newStorage);
-		});
+		window.localStorage.setItem("registry", "{}");
 	}
 }
 

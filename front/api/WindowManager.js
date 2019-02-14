@@ -26,11 +26,47 @@ const
 		darkMode: false,
 		arguments: {}
 	};
+const Shell = require("@api/Shell");
+const Registry = require(`@api/Registry`);
+//console.log(module);
 let
-	wCount = 1,
-	windowCollection = []; // Contains all AppWindow instances
+	wCount = window._wzindex = window._wzindex || 0,
+	windowCollection = window.instances = window.instances || [],
+	appCache = window.appCache = window.appCache || {}; // Contains all AppWindow instances
+if (Registry.get("system.enableSuperFetch") === true && Object.keys(appCache).length === 0) {
+	scanApps(path.join(osRoot, "apps")).then(() => {
+		console.clear();
+		console.log("SuperFetch complete. You may disable it in Settings");
+	});
 
-class Window extends EventEmitter {
+	async function scanApps(dir) {
+		let dirs = await fs.readdir(dir);
+		for (const item of dirs) {
+			let itemPath = path.join(dir, item);
+			let stat = await fs.lstat(itemPath);
+			if (stat.isDirectory()) {
+				await scanApps(itemPath);
+				continue;
+			} else if (item.trim().toLowerCase() !== "package.json") continue;
+
+			let json = await fs.readFile(itemPath);
+			let config = JSON.parse(json.toString());
+			if (config.hidden || config.type !== "app")
+				continue;
+			require("@apps/" + config.name.replace("@atomos", "official"));
+			/*let appPath = path.join(itemPath, "..", config.main);
+			let appCode = (await fs.readFile(appPath)).toString();
+			appCode = "module.exports = function(root, WINDOW_ID) {" + appCode + "}";
+			let appModule = new Module();
+			appModule.paths = [path.join(osRoot, "node_modules"), path.join(osRoot, "apps", config.name.replace("@atomos", "official"), "node_modules")];
+			appModule._compile(appCode, appPath);
+			appCache[appPath] = appModule;*/
+		}
+	}
+
+}
+
+class AppWindow extends EventEmitter {
 	constructor(wID, prog) {
 		if (typeof wID !== "number") throw new Error("Can not be called directly: use Window.fromId or Window.launch");
 		super();
@@ -44,11 +80,19 @@ class Window extends EventEmitter {
 		return windowCollection.slice().reverse().find(win => (win ? win.isFocused() : false)) || null;
 	}
 
+	static getCurrentWindow() {
+		//console.log(module);
+		if (module.parent && module.parent.id !== undefined)
+			return windowCollection[module.parent.id];
+	}
+
 	static getAllWindows() {
 		return windowCollection;
 	}
 
 	static async launch(prog, args = {}, launchOptions = {}) {
+		// Okay... This is a veryyy dirty hack to create new AppWindow instances...
+		delete require.cache[__filename];
 		let similar = windowCollection.find(e => {
 			return e ? e.app === prog : false;
 		});
@@ -64,12 +108,13 @@ class Window extends EventEmitter {
 		}
 		console.time("full render");
 		const winID = wCount++;
+		prog = prog.replace("@atomos", "official");
 		const appRoot = path.join(osRoot, 'apps', prog);
 		let appOptions = JSON.parse((await fs.readFile(appRoot + "/package.json")).toString());
-		let options = Object.assign({}, defaultOptions, {darkMode: Shell.ui.darkMode}, appOptions, launchOptions, {arguments: args});
+		let options = Object.assign({}, defaultOptions, {darkMode: Registry.get("system.isDarkMode")}, appOptions, launchOptions, {arguments: args});
 
 		await fs.access(appRoot + "/" + options.main);
-		let win = new Window(winID, prog);
+		let win = new AppWindow(winID, prog);
 		win.options = options;
 		win.arguments = win.options.arguments;
 		win._render();
@@ -77,17 +122,25 @@ class Window extends EventEmitter {
 		win._paint();
 		win.file = path.join(osRoot, "apps", prog, options.main);
 		if (!win.options.skipTaskbar) win.task = new TaskManager(winID);
-		console.time("app load");
-		let appCode = (await fs.readFile(win.file)).toString();
-		appCode = "module.exports = function(root, WINDOW_ID) {" + appCode + "}";
-		let appModule = new Module();
-		appModule.paths = [path.join(osRoot, "node_modules"), path.join(osRoot, "apps", prog, "node_modules")];
-		console.time("app execution");
-		appModule._compile(appCode, win.file);
-		console.log(appModule);
-		appModule.exports(win.ui.body, win.id);
-		console.timeEnd("app execution");
-		console.timeEnd("app load");
+		if (appCache[win.file]) {
+			console.time("app load (precached)");
+			appCache[win.file].id = winID;
+			appCache[win.file].exports();
+			console.timeEnd("app load (precached)");
+		} else {
+			console.time("app load");
+			let appCode = "module.exports = () => {" + (await fs.readFile(win.file)).toString() + "}";
+			let appModule = new Module();
+			appModule.paths = [path.join(osRoot, "node_modules"), path.join(osRoot, "apps", prog, "node_modules")];
+			appModule.id = winID;
+			appModule.filename = win.file;
+			console.time("app execution");
+			appModule._compile(appCode, win.file);
+			appCache[win.file] = appModule;
+			appModule.exports();
+			console.timeEnd("app execution");
+			console.timeEnd("app load");
+		}
 		win._initEvents();
 		if (Shell.isMobile) win.maximize();
 		win.setMovable(win.options.draggable);
@@ -123,7 +176,7 @@ class Window extends EventEmitter {
 		if (!this.options.autoSize) {
 			this.setContentSize(this.options.width, this.options.height);
 		}
-		console.log("painted")
+		//console.log("painted")
 	}
 
 	_render() {
@@ -162,20 +215,20 @@ class Window extends EventEmitter {
 		this.ui.buttons.close = document.createElement("button");
 
 		this.ui.buttons.minimize.className = "btn btn-warning rounded-max position-relative ml-2" + (this.options.minimizable ? "" : " d-none");
-		this.ui.buttons.minimize.style.padding = "7px";
+		this.ui.buttons.minimize.style.padding = CSS.px(6);
 		this.ui.buttons.minimize.addEventListener("click", e => {
 			e.stopPropagation();
 			_this.minimize();
 		});
 		this.ui.buttons.minimize.title = "Minimize (<i class='mdi mdi-atom'></i>+Down)";
 		this.ui.buttons.maximize.className = "btn btn-success rounded-max position-relative ml-2" + (this.options.maximizable ? "" : " d-none");
-		this.ui.buttons.maximize.style.padding = "7px";
+		this.ui.buttons.maximize.style.padding = CSS.px(6);
 		this.ui.buttons.maximize.title = "Maximize (<i class='mdi mdi-atom'></i>+Up)";
 		this.ui.buttons.maximize.addEventListener("click", e => {
 			_this._toggle();
 		});
 		this.ui.buttons.close.className = "btn btn-danger rounded-max position-relative" + (this.options.closable ? "" : " d-none");
-		this.ui.buttons.close.style.padding = "7px";
+		this.ui.buttons.close.style.padding = CSS.px(6);
 		this.ui.buttons.close.title = "Close (Alt+F4)";
 		this.ui.buttons.close.addEventListener("click", e => {
 			e.stopPropagation();
@@ -187,7 +240,7 @@ class Window extends EventEmitter {
 		this.ui.body.dataset.draggable = "false";
 
 		this.ui.overlay = document.createElement("overlay");
-		this.ui.overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;"
+		this.ui.overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;";
 		this.ui.overlay.className = "d-none";
 		this.ui.root.append(this.ui.overlay);
 
@@ -200,7 +253,7 @@ class Window extends EventEmitter {
 			new Tooltip(this.ui.buttons.minimize);
 			// new Tooltip(this.ui.buttons.close); Tooltip are being left unclosed when window closes.
 		});
-		console.log("rendered")
+		//console.log("rendered")
 	}
 
 	_initEvents() {
@@ -234,7 +287,7 @@ class Window extends EventEmitter {
 	}
 
 	relaunch() {
-		let newOptions = Object.assign({}, this.options, this.getContentBounds(), {y: this.getContentPosition()[1] - 2 * this._offsets.top})
+		let newOptions = Object.assign({}, this.options, this.getContentBounds(), {y: this.getContentPosition()[1] - 2 * this._offsets.top});
 		if (this.close())
 			AppWindow.launch(this.app, this.options.arguments, newOptions)
 	}
@@ -722,4 +775,4 @@ class Window extends EventEmitter {
 	}
 }
 
-module.exports = Window;
+module.exports = AppWindow;

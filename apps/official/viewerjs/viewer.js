@@ -34,7 +34,7 @@ function renderDocument(url) {
 	let doc = document.createElement("webview");
 	doc.src = `file://${osRoot}/node_modules/node-viewerjs/release/index.html#http://localhost:${port}/pdf.pdf`;
 	doc.className = "flex-grow-1 position-absolute w-100 h-100 d-inline-flex";
-	root.append(doc);
+	win.ui.body.append(doc);
 }
 
 root.className = "h-100 position-relative" + (win.options.darkMode ? " bg-dark" : " bg-light");

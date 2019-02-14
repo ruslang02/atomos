@@ -1,6 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const aclock = path.join(osRoot, "apps", "official/alphaclock", "aclock.js");
+const Shell = require("@api/Shell");
+const Registry = require(`@api/Registry`);
+const Snackbar = require("@api/Notification");
 const aclockIndex = (Registry.get("system.autostart") || []).findIndex(e => {
 	return path.normalize(e.src) === aclock && fs.existsSync(aclock);
 });
@@ -37,4 +40,4 @@ root.append(newSmallListItem({
 		}
 		openSection("display-wallpaper", false)
 	}
-}))
+}));

@@ -177,7 +177,7 @@ urlTooltip.className = "p-1 m-0 text-truncate fade show " + (isDarkMode ?
 	"bg-dark text-white" : "bg-light");
 urlTooltip.style.cssText =
 	"bottom:0;left:0;position:absolute;max-width: 400px;border: 1px solid lightgray; border-bottom-left-radius: .25rem";
-root.append(nav, tabCollection, urlTooltip);
+win.ui.body.append(nav, tabCollection, urlTooltip);
 setImmediate(() => newTab(win.arguments.file || win.arguments.url));
 win.show();
 
@@ -356,7 +356,7 @@ function newTab(url = "https://www.startpage.com") {
 			nav.insertBefore(offerOk, nav.menu);
 			tab.webview.addEventListener("load-commit", () => offerOk.remove());
 		}
-	}
+	};
 
 	return tab.webview;
 }
@@ -404,4 +404,4 @@ window[id='${id}'] tab.bg-dark:after {
   box-shadow: -2px 2px 0 var(--dark);
 }
 `;
-root.append(css);
+win.ui.body.append(css);

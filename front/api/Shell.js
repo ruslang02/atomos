@@ -4,20 +4,20 @@ const path = require("path"),
 		screen,
 		remote
 	} = require("electron"),
-	wc = remote.getCurrentWebContents(),
 	win = remote.getCurrentWindow(),
 	os = require("os"),
 	proc = require("child_process");
-let registry = new Registry("system");
-window.zoomFactor = 1;
-setInterval(() => {
-	wc.getZoomFactor(zoom => {
-		if (zoomFactor !== zoom) {
-			new Snackbar("Zoom Factor was changed to " + zoom);
-			window.zoomFactor = zoom
+const Registry = require(`@api/Registry`);
+module.exports = class Shell2 {
+	static get ui() {
+		return {
+			fadeAnimation: Registry.get("system.fadeAnimationDuration") || 150,
+			flyAnimation: Registry.get("system.flyAnimationDuration") || 200,
+			darkMode: Registry.get("system.isDarkMode") || false
 		}
-	})
-}, 5000);
+	}
+};
+const AppWindow = require("@api/WindowManager");
 
 let copy_r = async function (src, dest) {
 	let exists = fs.existsSync(src);
@@ -71,7 +71,7 @@ class Shell {
 	}
 
 	static async openItem(file) {
-		let settings = registry.get();
+		let settings = Registry.get("system");
 		settings.associations = settings.associations || {};
 		let extension = path.extname(file).toLowerCase().trim();
 		if (settings.associations[extension]) {
@@ -109,6 +109,27 @@ class Shell {
 		});
 	}
 
+	static openSettings(section) {
+		Elements.MenuBar.open();
+		setTimeout(() => {
+			Elements.MenuBar.settings = document.createElement("section");
+			Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute very-rounded w-100 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
+			Elements.MenuBar.settings.style.zIndex = 100;
+			if (Shell.isMobile) {
+				Elements.MenuBar.settings.style.top = 0;
+				Elements.MenuBar.settings.style.left = 0;
+				Elements.MenuBar.settings.classList.add("flex-column-reverse")
+			}
+			setTimeout(() => Elements.MenuBar.settings.classList.add("show"), Shell.ui.fadeAnimation);
+			Elements.MenuBar.settings.style.height = "450px";
+			fs.promises.readFile(path.join(osRoot, "apps", "official/settings", "settings.js")).then(code => {
+					new Function('root', 'sectionToOpen', code.toString())(Elements.MenuBar.settings, section);
+				}
+			);
+			Elements.MenuBar.prepend(Elements.MenuBar.settings);
+		}, Shell.ui.fadeAnimation);
+	}
+
 	static selectFile(action, options) { // TODO: Custom Places as in .NET, multiselect
 		return new Promise(resolve => {
 			let args = Object.assign({
@@ -132,7 +153,7 @@ class Shell {
 			Object.assign(args, {
 				file: path.normalize(args.defaultPath)
 			});
-			AppWindow.launch("files", args, {
+			AppWindow.launch("official/files", args, {
 				parent: AppWindow.getFocusedWindow(),
 				modal: true
 			})
@@ -141,32 +162,23 @@ class Shell {
 	}
 
 	static showItemInFolder(file) {
-		AppWindow.launch("files", {
+		AppWindow.launch("official/files", {
 			file: file
 		});
 	}
 
 	static openExternal(url) {
-		AppWindow.launch("proton", {
+		AppWindow.launch("official/proton", {
 			file: url
 		});
 	}
 
 	static isDefaultApp(eg, prog) { // extension or generic
 		if (!prog) prog = AppWindow.getFocusedWindow().app;
-		if (eg.startsWith(".")) {
-			if (!registry.get().associations) registry.set(Object.assign({}, registry.get(), {
-				associations: {}
-			}));
-			let settings = registry.get();
-			return settings.associations[eg] === prog;
-		} else {
-			if (!registry.get().defaultApps) registry.set(Object.assign({}, registry.get(), {
-				defaultApps: {}
-			}));
-			let settings = registry.get();
-			return settings.defaultApps[eg] === prog;
-		}
+		if (eg.startsWith("."))
+			return (Registry.get("system.associations") || {})[eg] === prog;
+		else
+			return (Registry.get("system.defaultApps") || {})[eg] === prog;
 	}
 
 	static setAsDefaultApp(eg, prog) {
@@ -183,21 +195,10 @@ class Shell {
 				message: "You can always change this in the Settings panel."
 			}).then(button => {
 				if (button === "Yes") {
-					let settings;
-					if (eg.startsWith(".")) {
-						if (!registry.get().associations) registry.set(Object.assign({}, registry.get(), {
-							associations: {}
-						}));
-						settings = registry.get();
-						settings.associations[eg] = prog;
-					} else {
-						if (!registry.get().defaultApps) registry.set(Object.assign({}, registry.get(), {
-							defaultApps: {}
-						}));
-						settings = registry.get();
-						settings.defaultApps[eg] = prog;
-					}
-					registry.set(settings);
+					if (eg.startsWith("."))
+						Registry.set("system.associations." + eg, prog);
+					else
+						Registry.set("system.defaultApps." + eg, prog);
 					resolve(true);
 				} else resolve(false);
 			})
@@ -206,21 +207,15 @@ class Shell {
 
 	static removeAsDefaultApp(eg, prog) {
 		if (!prog) prog = AppWindow.getFocusedWindow().app;
-		let settings;
+		let settings = Registry.get("system");
 		if (eg.startsWith(".")) {
-			if (!registry.get().associations) registry.set(Object.assign({}, registry.get(), {
-				associations: {}
-			}));
-			settings = registry.get();
+			if (!settings.associations) settings.associations = [];
 			settings.associations.splice(eg, 1);
 		} else {
-			if (!registry.get().defaultApps) registry.set(Object.assign({}, registry.get(), {
-				defaultApps: {}
-			}));
-			settings = registry.get();
+			if (!settings.associations) settings.defaultApps = [];
 			settings.defaultApps.splice(eg, 1);
 		}
-		registry.set(settings);
+		Registry.set("system", settings);
 	}
 
 	static isAppInstalled(app) {
@@ -265,7 +260,7 @@ class Shell {
 				e.preventDefault();
 				command = command.replace('\'', '\\\'');
 				let cmd = 'echo \'' + password.value + '\' | sudo -k -S -- sh -c \'' + command + '\'';
-				console.log(cmd)
+				console.log(cmd);
 				modal.content.disabled = true;
 				proc.exec(cmd, {
 					cwd: options.cwd || "/"
@@ -288,7 +283,7 @@ class Shell {
 						modal.controller.hide();
 					}
 				})
-			})
+			});
 
 
 			let container = document.createElement("div");
@@ -354,7 +349,7 @@ class Shell {
 					elem.tab.classList.replace("d-none", "d-flex");
 				});
 				elem.tab.icon = document.createElement("icon");
-				elem.tab.icon.className = "mdi mdi-24px lh-24 p-2 d-flex rounded-circle bg-info text-white mdi-file-outline mr-3"
+				elem.tab.icon.className = "mdi mdi-24px lh-24 p-2 d-flex rounded-circle bg-info text-white mdi-file-outline mr-3";
 				elem.tab.input = document.createElement("input");
 				elem.tab.input.className = "form-control w-25 flex-grow-1" + (Shell.ui.darkMode ? " bg-secondary text-white" : "");
 				elem.tab.invalidLabel = document.createElement("div");
@@ -402,7 +397,7 @@ class Shell {
 			cancelButton.innerText = "Cancel";
 			confirmButton.type = "submit";
 			cancelButton.type = "button";
-			modal.footer.append(cancelButton, confirmButton)
+			modal.footer.append(cancelButton, confirmButton);
 			modal.content.append(container, modal.footer);
 			modal.dialog.append(modal.content);
 			modal.append(modal.dialog);
@@ -431,8 +426,6 @@ class Shell {
 	static async openItemIn(file, options = {
 		checked: false
 	}) {
-		let settings = registry.get();
-		settings.associations = settings.associations || {};
 
 		let modal = document.createElement("div");
 		modal.dialog = document.createElement("div");
@@ -498,7 +491,7 @@ class Shell {
 					modal.apps.childNodes.forEach(item => item.classList.remove("active"));
 					elem.classList.add("active");
 					modal.selectButton.disabled = false;
-				})
+				});
 				modal.apps.appendChild(elem);
 			} catch (e) {
 			}
@@ -513,12 +506,13 @@ class Shell {
 		modal.cancelButton.addEventListener("click", control.hide);
 		modal.selectButton.addEventListener("click", e => {
 			control.hide();
+			let reg = Registry.get("system.associations");
 			if (modal.defaultCheckbox.check.checked)
-				settings.associations[path.extname(file)] = modal.apps.querySelector(".active").appID;
+				reg[path.extname(file)] = modal.apps.querySelector(".active").appID;
 			AppWindow.launch(modal.apps.querySelector(".active").appID, {
 				file: file
 			});
-			registry.set(settings);
+			Registry.set("system.associations", reg);
 		});
 		control.show();
 	}
@@ -590,7 +584,7 @@ class Shell {
 					modal.dialog.addEventListener("submit", e => {
 						e.preventDefault();
 						send();
-						modal.addEventListener("hidden.bs.modal", modal.remove)
+						modal.addEventListener("hidden.bs.modal", modal.remove);
 						modal.controller.hide();
 					});
 				}

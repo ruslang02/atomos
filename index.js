@@ -43,17 +43,14 @@ app.on('ready', function() {
 	win.maximize();
 	win.loadFile(path.join(__dirname, "front/desktop.html"));
 	win.setMenu(null);
-	/*if(isDebug) win.toggleDevTools(); else
-	win.on("close", e => {
-		if (!global.shutdown) e.preventDefault();
-	});*/
+	win.toggleDevTools();
 	win.webContents.on('devtools-opened', () => {
 		win.webContents.addWorkSpace(__dirname)
 	});
 	win.webContents.on('new-window', (e, u) => {
 		e.preventDefault();
 		win.webContents.send("new-window", u);
-	})
+	});
 	win.webContents.on('will-navigate', ev => {
 		ev.preventDefault()
 	});

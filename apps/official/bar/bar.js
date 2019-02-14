@@ -1,15 +1,23 @@
-const fs = require('fs').promises, path = require("path");
-let registry = new Registry("taskbar");
+const Registry = require(`@api/Registry`);
+const Menu = require(`@api/Menu`);
+const path = require("path");
+const fs = require("fs").promises;
 if (!Registry.get("taskbar.items"))
 	Registry.set('taskbar.items', ["official/start", "official/tasker", "official/tray"]);
 let autoHide = Registry.get("taskbar.autoHide") || false;
-registry.on("changed", updatePosition);
+Registry.watch("taskbar", updatePosition);
 render();
 
 function render() {
 	Elements.Bar = document.createElement("taskbar");
 	Elements.BarItems = {};
-	loadPlugins();
+	loadPlugins().then(() => {
+		setTimeout(() => {
+			document.querySelector("splash").classList.add("fade");
+			setTimeout(() => document.querySelector("splash").remove(), 1000);
+		}, 1000);
+		console.timeEnd("launch");
+	});
 	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto w-100 flex-shrink-0 position-absolute";
 	Elements.Bar.transition = "bottom 1s ease";
 	updatePosition();
@@ -50,7 +58,7 @@ async function loadPlugins() {
 		try {
 			let script = await fs.readFile(path.join(osRoot, "apps", id, pkg.main), "utf-8");
 			let plugin = document.createElement("plugin");
-			Elements.BarItems[id] = await new AsyncFunction("root", "__dirname", script)
+			Elements.BarItems[id] = await new AsyncFunction("body", "__dirname", script)
 			(plugin, path.join(osRoot, "apps", id));
 			plugin.id = id;
 			Elements.Bar.appendChild(plugin);

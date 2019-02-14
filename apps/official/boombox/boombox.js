@@ -155,11 +155,11 @@ current.append(current.audio, current.artist);
 footer.body.append(current, controls, addControls);
 footer.append(footer.progress, footer.body);
 main.append(playlist, cover);
-root.append(main, footer);
+win.ui.body.append(main, footer);
 win.show();
 
 let player = document.createElement("audio");
-root.append(player);
+win.ui.body.append(player);
 player.ontimeupdate = function () {
 	footer.progress.value = player.currentTime || 0;
 	footer.progress.max = player.duration || 0;
@@ -316,4 +316,4 @@ window[id='${win.id}'] .custom-range::-webkit-slider-runnable-track {
 	border-radius: 0;
 }
 `;
-root.append(styling);
+win.ui.body.append(styling);

@@ -1,10 +1,18 @@
 const path = require("path");
-if (!Shell.isMobile) root.className = "flex-grow-1 py-1"; else root.className = "d-none";
+const Shell = require(`@api/Shell`);
+const Registry = require(`@api/Registry`);
+const Menu = require("@api/Menu");
+const AppWindow = require("@api/WindowManager");
 let tasks = document.createElement("div");
 tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
 tasks.className = "w-100 position-fixed fade px-3 d-none";
 document.body.append(tasks);
-window.TaskManager = class TaskManager {
+try {
+	body.className = "flex-grow-1 py-1";
+} catch (e) {
+}
+
+class TaskManager {
 	constructor(wID) {
 		let _this = this;
 		this.window = AppWindow.fromId(wID);
@@ -26,19 +34,19 @@ window.TaskManager = class TaskManager {
 			this.mtask.onclick = e => {
 				this.window.show();
 				TaskManager.hide();
-			}
-			this.mtask.header.append(this.mtask.icon, this.mtask.appName)
+			};
+			this.mtask.header.append(this.mtask.icon, this.mtask.appName);
 			this.mtask.append(this.mtask.header, this.mtask.thumb);
 			tasks.append(this.mtask)
 		}
 		this.setTitle(this.window.options.title);
-		this.task.className = "btn mr-3 position-relative shadow fade show rounded-max mdi mdi-24px lh-24 d-inline-flex text-white p-2 active";
+		this.task.className = "btn mr-3 position-relative shadow border-0 fade show rounded-max mdi mdi-24px lh-24 d-inline-flex text-white p-2 active";
 		this.task.dataset.id = this.window.id;
 		this.task.style.background = this.window.options.color;
-		this.setIcon(this.window.options.icon || noAppIcon);
+		this.setIcon(this.window.options.icon);
 		this.window.on("title-updated", title => this.setTitle(title));
-		this.window.on("icon-updated", icon => this.setIcon(icon || noAppIcon));
-		root.appendChild(this.task);
+		this.window.on("icon-updated", icon => this.setIcon(icon));
+		(Elements.BarItems["official/tasker"] || body).appendChild(this.task);
 		new Tooltip(this.task, {
 			delay: 250
 		});
@@ -134,7 +142,7 @@ window.TaskManager = class TaskManager {
 
 	setIcon(iconURL) {
 		if (iconURL) {
-			this.task.className = "btn mr-3 position-relative shadow fade show rounded-max mdi mdi-24px lh-24 d-inline-flex text-white p-2 mdi-" + this.window.options.icon;
+			this.task.className = "btn mr-3 position-relative shadow border-0 fade show rounded-max mdi mdi-24px lh-24 d-inline-flex text-white p-2 mdi-" + this.window.options.icon;
 			if (Shell.isMobile)
 				this.mtask.icon.className = "mdi mdi-24px lh-24 d-flex text-white mdi-" + this.window.options.icon;
 		}
@@ -147,4 +155,9 @@ window.TaskManager = class TaskManager {
 	blur() {
 		this.task.classList.remove("active");
 	}
-};
+}
+
+module.exports = window.TaskManager = TaskManager;
+if (typeof body !== 'undefined') {
+	return body;
+}

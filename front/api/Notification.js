@@ -6,32 +6,33 @@ const globalOptions = {
 	color: "var(--primary)",
 	dismissable: true
 };
+const Registry = require(`@api/Registry`);
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
 const NOTIFICATION_DELAY = 6000; //ms
 class Snackbar {
 	constructor(options) {
 		if (typeof options === "string") options = {message: options};
 		let self = this;
-		let isDM = (options.window ? options.window.options.darkMode : Shell.ui.darkMode)
 		let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
 		this.ui = document.createElement("snackbar");
 		this.ui.style.bottom = options.window ? 0 : window.getComputedStyle(Elements.Bar).height;
-		this.ui.style.left = CSS.px(0);
 		this.ui.style.right = CSS.px(0);
+		this.ui.style.minWidth = CSS.px(300);
 		this.ui.style.maxWidth = CSS.px(450);
 		this.ui.style.zIndex = "1010";
 		this.ui.message = document.createElement("div");
 		this.ui.button = document.createElement("button");
-		this.ui.className = (isDM ? "bg-dark text-white" : "bg-light") + " very-rounded shadow d-flex position-absolute align-items-stretch mx-auto mb-3 pl-3 py-1 pr-1 fly up show";
-		this.ui.message.className = "flex-grow-1 text-truncate lh-36";
+		this.ui.className = "bg-dark text-white very-rounded shadow d-flex position-absolute align-items-center mr-2 mb-2 p-2 fly up show";
+		this.ui.message.className = "px-2 lh-18 my-1";
 		this.ui.message.innerText = options.message;
 		this.ui.append(this.ui.message);
 		if (options.buttonText) {
-			this.ui.button.className = "btn btn-white very-rounded px-3 font-weight-bolder ml-1 py-1";
-			this.ui.button.style.color = options.buttonColor || "var(--primary)";
+			this.ui.button.className = "btn px-3 border-0 lh-18 font-weight-bolder btn-" + (options.type ? "outline-" + options.type : "white");
 			this.ui.button.innerText = options.buttonText;
 			this.ui.button.onclick = options.click || console.log;
 			this.ui.append(this.ui.button);
-		} else this.ui.message.classList.add("text-center");
+		} else this.ui.message.classList.replace("my-1", "py-2");
 		if (options.window) options.window.ui.body.append(this.ui); else
 			document.body.appendChild(this.ui);
 		setTimeout(() => {
@@ -49,7 +50,7 @@ class Notification {
 		 * -- Group Options (not in use)
 		 * - Global (Default) Options
 		 */
-		if (!(win instanceof AppWindow)) throw new Error("Two arguments needed to call Notification(): window instance and options object");
+		if (!(win instanceof AppWindow) && win !== null) throw new Error("Two arguments needed to call Notification(): window instance and options object");
 		let options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, specificOptions);
 		this.window = win;
 		this.options = options;
@@ -57,14 +58,15 @@ class Notification {
 		this.ui = document.createElement("notification");
 		this.ui.className = (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast very-rounded shadow position-relative fly left hide";
 		this.ui.header = document.createElement("header");
-		this.ui.header.className = "toast-header pt-2 " + (Shell.ui.darkMode ? " bg-dark border-0 text-white" : " pb-2");
+		this.ui.header.className = "toast-header py-2 " + (Shell.ui.darkMode ? " border-0 text-white" : " pb-2");
+		this.ui.header.style.background = "rgba(255,255,255,0.2)";
 		this.ui.app = document.createElement("strong");
 		this.ui.appIcon = document.createElement("icon");
 		this.ui.time = document.createElement("small");
 		this.ui.body = document.createElement("div");
 		this.ui.messageTitle = document.createElement("div");
 		this.ui.message = document.createElement("div");
-		this.ui.body.className = "toast-body px-0 pt-2 pb-2";
+		this.ui.body.className = "toast-body px-0 py-2 pb-2";
 		this.ui.app.className = "mr-auto";
 		this.ui.appIcon.className = "mdi mdi-18px lh-18 mr-1 d-flex align-items-center mdi-" + options.icon;
 		this.ui.app.innerText = options.app;

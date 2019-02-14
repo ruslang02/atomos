@@ -6,7 +6,7 @@ let guides = true;
 let background = true;
 let css = document.createElement("link");
 css.href = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.css");
-css.rel = "stylesheet"
+css.rel = "stylesheet";
 let script = document.createElement("script");
 script.src = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.js");
 script.onload = e => {
@@ -19,8 +19,8 @@ window[id='${win.id}'] .cropper-container {
   height: auto !important;
   width: 100% !important;
 }
-`
-root.append(script, css, styles);
+`;
+win.ui.body.append(script, css, styles);
 
 let appButton = document.createElement("button");
 appButton.className = "btn btn-outline-primary d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-brush border-0 rounded";
@@ -75,7 +75,7 @@ appButton.menu = new Menu(win,
 		id: "saveAs",
 		click() {
 			Shell.selectFile(Shell.ACTION_SAVE).then(newFile => {
-				file = newFile
+				file = newFile;
 				appButton.menu.getMenuItemById("save").click();
 			})
 		}
@@ -96,7 +96,7 @@ function gen(icon) {
 let nav = document.createElement("nav");
 nav.className = "p-2 border-bottom d-flex";
 nav.dataset.draggable = "true";
-root.append(nav);
+win.ui.body.append(nav);
 let group1 = document.createElement("div");
 group1.className = "btn-group btn-group-sm mr-2";
 nav.crop = gen("crop");
@@ -119,7 +119,7 @@ nav.rotateLeft = gen("rotate-left");
 nav.rotateLeft.onclick = e => {
 	cropper.rotate(-90);
 	applyButtons.classList.remove("d-none");
-}
+};
 nav.rotateRight = gen("rotate-right");
 nav.rotateRight.onclick = e => {
 	cropper.rotate(90);
@@ -131,19 +131,19 @@ group3.className = "btn-group btn-group-sm mr-2";
 nav.cropLandscape = gen("crop-landscape");
 nav.cropLandscape.onclick = e => {
 	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
-	nav.cropLandscape.classList.replace("btn-secondary", "btn-primary")
+	nav.cropLandscape.classList.replace("btn-secondary", "btn-primary");
 	cropper.setAspectRatio(16 / 9);
-}
+};
 nav.cropSquare = gen("crop-square");
 nav.cropSquare.onclick = e => {
 	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
-	nav.cropSquare.classList.replace("btn-secondary", "btn-primary")
+	nav.cropSquare.classList.replace("btn-secondary", "btn-primary");
 	cropper.setAspectRatio(1);
 };
 nav.cropFree = gen("crop-free");
 nav.cropFree.onclick = e => {
 	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
-	nav.cropFree.classList.replace("btn-secondary", "btn-primary")
+	nav.cropFree.classList.replace("btn-secondary", "btn-primary");
 	cropper.setAspectRatio(0);
 };
 group3.append(nav.cropLandscape, nav.cropSquare, nav.cropFree);
@@ -156,7 +156,7 @@ nav.grid.onclick = e => {
 	this.classList.toggle("btn-secondary");
 	cropper.destroy();
 	initCropper();
-}
+};
 nav.texture = gen("texture");
 nav.texture.onclick = e => {
 	this.classList.toggle("btn-primary");
@@ -173,7 +173,7 @@ applyButtons.cancel.onclick = e => {
 	cropper.destroy();
 	image.src = saveState;
 	initCropper();
-}
+};
 applyButtons.cancel.className = "btn btn-danger mdi mdi-close mdi-18px lh-18 d-flex";
 applyButtons.apply = document.createElement("button");
 applyButtons.apply.className = "btn btn-success align-items-center mdi mdi-check mdi-18px lh-18 d-flex";
@@ -184,7 +184,7 @@ applyButtons.apply.onclick = e => {
 	cropper.destroy();
 	initCropper();
 	applyButtons.classList.add("d-none");
-}
+};
 applyButtons.append(applyButtons.cancel, applyButtons.apply);
 nav.append(group1, group2, group3, group4, applyButtons);
 let cropperElem = document.createElement("main");
@@ -192,7 +192,7 @@ let image = new Image();
 cropperElem.className = "flex-grow-1 d-flex text-truncate rounded-bottom bg-white";
 image.className = "mw-100";
 cropperElem.append(image);
-root.append(cropperElem)
+win.ui.body.append(cropperElem);
 
 function loadFile(path) {
 	saveState = "";

@@ -27,4 +27,3 @@ async function renderLauncher() {
 }
 
 renderLauncher();
-new Registry("launcher").on("changed", renderLauncher);

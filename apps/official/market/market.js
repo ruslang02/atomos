@@ -1,3 +1,6 @@
+const AppWindow = require("@api/WindowManager");
+const Registry = require(`@api/Registry`);
+const Menu = require(`@api/Menu`);
 const
 	fs = require("fs"),
 	fsp = fs.promises,
@@ -131,7 +134,7 @@ win.ui.body.classList.add(win.options.darkMode ? "bg-dark" : "bg-white");
 body.className = "flex-grow-1 py-3 container scrollable-y";
 spinner.style.cssText = "position:absolute;left:0;right:0;width:36px;height:36px";
 spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 fly down hide lh-24 d-flex align-items-center bg-light border mx-auto p-1 rounded-circle shadow";
-root.append(spinner, body);
+win.ui.body.append(spinner, body);
 
 win.show();
 login();

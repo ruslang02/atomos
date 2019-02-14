@@ -1,4 +1,5 @@
 setTitle("Settings");
+const Shell = require("@api/Shell");
 
 function newItem(title, descr, icon, color, onclick) {
 	let elem = document.createElement("button");

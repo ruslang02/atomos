@@ -1,5 +1,8 @@
 const path = require("path"),
 	fs = require("fs").promises;
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
+const Menu = require(`@api/Menu`);
 
 let elems = {
 	Container: document.createElement("button"),
@@ -8,16 +11,16 @@ let elems = {
 	Date: document.createElement("date")
 };
 if (Shell.isMobile) {
-	root.className = "position-fixed w-100";
-	root.style.top = 0;
-	root.style.left = 0;
+	body.className = "position-fixed w-100";
+	body.style.top = 0;
+	body.style.left = 0;
 	elems.Container.className = "btn btn-dark shadow-sm px-2 py-1 w-100 rounded-0 d-flex align-items-stretch";
 	elems.Clock.className = "lh-r1 font-weight-bold ml-auto";
 	elems.NIcons.style.maxWidth = "calc(18px * 6 + .25rem * 5)";
 	elems.NIcons.style.order = -1;
 } else {
-	root.className = "d-flex align-items-center";
-	elems.Container.className = "btn shadow p-2 d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
+	body.className = "d-flex align-items-center";
+	elems.Container.className = "btn shadow d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
 	elems.Clock.className = "font-weight-bold mr-1";
 	elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
@@ -42,7 +45,7 @@ elems.Container.menu = new Menu(null, [{
 	id: "DND",
 	checked: window.NOTIFICATIONS_MUTED,
 	click(checked, elem) {
-		Elements.MenuBar.quickItems.items[1].onclick(null);
+		Elements.MenuBar.quickItems.items.DND.onclick(null);
 		elem.checked = window.NOTIFICATIONS_MUTED;
 	}
 }]);
@@ -51,7 +54,7 @@ elems.Container.addEventListener("contextmenu", e => {
 	elems.Container.menu.popup();
 });
 elems.Container.append(elems.Date, elems.NIcons, elems.Clock);
-root.appendChild(elems.Container);
+body.appendChild(elems.Container);
 if (!Shell.isMobile) new Tooltip(elems.Container);
 
 setInterval(function () {
@@ -79,7 +82,7 @@ window.TrayItem = class TrayItem {
 	remove() {
 		this.elem.remove();
 	}
-}
+};
 
 window.addEventListener("keypress", e => {
 	if (e.metaKey && e.code === "KeyN") {
@@ -87,8 +90,5 @@ window.addEventListener("keypress", e => {
 		Elements.MenuBar.toggle();
 	}
 });
-
-fs.readFile(__dirname + "/menu.js", "utf-8").then(code => {
-	new Function('root', '__dirname', code)(document.body, __dirname);
-});
+require(__dirname + "/menu");
 return elems;

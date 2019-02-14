@@ -103,5 +103,5 @@ captureButton.addEventListener("click", e => {
 	}, 1000);
 });
 captureButton.append(captureButton.icon, captureButton.header);
-root.append(image, captureButton);
+win.ui.body.append(image, captureButton);
 win.show();

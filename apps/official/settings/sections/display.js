@@ -1,8 +1,8 @@
-//const fs = require("fs");
-const path = require("path");
-setTitle("Display")
+const Registry = require(`@api/Registry`);
+const {Snackbar} = require("@api/Notification");
+setTitle("Display");
 let main = document.createElement("main");
-root.append(main)
+root.append(main);
 
 let list = document.createElement("section");
 list.className = "list-group flex-shrink-0 rounded-0";
@@ -36,7 +36,7 @@ list.darkMode = newSmallListItem({
 		new Snackbar({
 			message: "UI restart is needed to apply changes",
 			buttonText: "Restart",
-			buttonColor: "var(--danger)",
+			type: "danger",
 			timeout: 1000 * 60 * 60 * 24,
 			click() {
 				require("electron").remote.getCurrentWindow().reload();

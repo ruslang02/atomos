@@ -156,13 +156,12 @@ taskbar {
 	bottom: 0;
 }
 body.dark taskbar {
-	/* background: rgba(91, 91, 91, 0.85); */
+	/* background: rgba(37, 37, 37, 0.57); */
 }
 
 taskbar.autoHide {
 	clip-path: inset(calc(var(--taskbar-height) - 4px) 0 0 0);
 	bottom: 0;
-	/* bottom: calc(2px - var(--taskbar-height)); */
 }
 
 taskbar::before {
@@ -229,17 +228,17 @@ plugin[id="official/tasker"] > button:not(.active) {
 	animation: pulsate 1s ease-out infinite alternate !important;
 }
 
-plugin[id="official/tasker"] > button, plugin#start > button {
+plugin[id="official/tasker"] > button, plugin[id="official/start"] > button {
 	transition: filter .25s ease, opacity .25s ease;
 	--progress-color: var(--primary);
 	--progress-value: 0%;
 }
 
-plugin[id="official/tasker"] > button:not(.active):hover, plugin#start > button:hover {
+plugin[id="official/tasker"] > button:not(.active):hover, plugin[id="official/start"] > button:hover {
 	filter: brightness(120%);
 }
 
-plugin[id="official/tasker"] > button:not(.active):active, plugin#start > button:active {
+plugin[id="official/tasker"] > button:not(.active):active, plugin[id="official/start"] > button:active {
 	filter: brightness(90%);
 }
 
@@ -481,8 +480,8 @@ notification.type-image.dark .toast-body div.smaller::after {
 	box-shadow: 0 0 0 0.2rem rgba(74, 144, 216, 0.18);
 }
 
-aside#tray label.btn.custom-checkbox .custom-control-label::before,
-aside#tray label.btn.custom-checkbox .custom-control-label::after {
+aside[id="official/tray"] label.btn.custom-checkbox .custom-control-label::before,
+aside[id="official/tray"] label.btn.custom-checkbox .custom-control-label::after {
 	top: 0;
 	right: 0;
 	bottom: 0;
@@ -493,3 +492,36 @@ aside#tray label.btn.custom-checkbox .custom-control-label::after {
 menu.dropdown-menu {
 	z-index: 1090;
 }
+
+.btn {
+	border-width: 2px !important;
+}
+
+.btn.btn-outline-primary:hover {
+	background: rgba(0, 123, 255, 0.65);
+}
+
+.btn.btn-outline-info:hover {
+	background: rgba(23, 162, 184, 0.65);
+}
+
+.btn.btn-outline-warning:hover {
+	background: rgba(255, 193, 7, 0.65);
+}
+
+.btn.btn-outline-danger:hover {
+	background: rgba(220, 53, 69, 0.65);
+}
+
+.btn.btn-outline-secondary:hover {
+	background: rgba(108, 117, 125, 0.65);
+}
+
+.btn.btn-outline-light:hover {
+	background: rgba(248, 249, 250, 0.8);
+}
+
+.btn.btn-outline-dark:hover {
+	background: rgba(52, 58, 64, 0.8);
+}
+

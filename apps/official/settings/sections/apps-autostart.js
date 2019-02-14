@@ -1,10 +1,8 @@
 const fs = require("fs");
 const path = require("path");
-const registry = new Registry("system");
-if (!registry.get().autostart)
-	registry.set(Object.assign({
-		autostart: []
-	}, registry.get()));
+const Registry = require(`@api/Registry`);
+if (!Registry.get("system.autostart"))
+	Registry.set("system.autostart", []);
 setTitle("Auto-start management");
 let description = document.createElement("p");
 description.innerText = `Apps and scripts in this menu will start every time you boot AtomOS. Be careful when allowing scripts to run after startup, as they can reduce your performance greatly.`;
@@ -31,17 +29,17 @@ newButton.onclick = e => {
 		iconBG: "var(--success)"
 	}).then(button => {
 		if (button === "Create") {
-			let oldReg = registry.get();
+			let oldReg = Registry.get("system.autostart");
 			const fields = document.querySelectorAll("message-box input");
 			if (!fs.existsSync(fields[1].value)) Shell.showMessageBox({
 				type: "error",
 				message: "Script does not exist."
 			}).then(e => newButton.click()); else {
-				oldReg.autostart.push({
+				oldReg.push({
 					name: fields[0].value,
 					src: fields[1].value
 				});
-				registry.set(oldReg);
+				Registry.set("system.autostart", oldReg);
 				update();
 			}
 		}
@@ -53,7 +51,7 @@ asList.className = "list-group scrollable-x-0";
 
 function update() {
 	asList.innerHTML = "";
-	let astart = registry.get().autostart;
+	let astart = Registry.get("system.autostart");
 	if (!astart.length) asList.innerHTML = "<div class='text-center text-muted py-2 border-top border-secondary'>No items to show.</div>";
 	for (const i of astart.keys()) {
 		let item = astart[i];
@@ -65,9 +63,9 @@ function update() {
 		deleteButton.style.position = "absolute";
 		deleteButton.style.right = 0;
 		deleteButton.onclick = e => {
-			let oldReg = registry.get();
-			oldReg.autostart.splice(i, 1);
-			registry.set(oldReg);
+			let oldReg = Registry.get("system.autostart");
+			oldReg.splice(i, 1);
+			Registry.set("system.autostart", oldReg);
 			update();
 		};
 		elem.append(deleteButton);
@@ -77,5 +75,5 @@ function update() {
 	}
 }
 
-root.append(asList)
+root.append(asList);
 update();

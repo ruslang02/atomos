@@ -1,8 +1,9 @@
 const fs = require("fs").promises;
 const path = require("path");
-setTitle("Apps and notifications")
+const Shell = require("@api/Shell");
+setTitle("Apps and notifications");
 let main = document.createElement("main");
-root.append(main)
+root.append(main);
 let osinfo = document.createElement("section");
 osinfo.className = "d-flex flex-column flex-shrink-0 align-items-center p-3";
 osinfo.icon = document.createElement("icon");

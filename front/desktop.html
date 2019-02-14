@@ -6,12 +6,23 @@
 	<title>AtomOS (Rendering...)</title>
 </head>
 <body class="h-100 us-0 d-flex flex-column scrollable-0">
-	<script src="desktop.js"></script>
-		<script>
-		console.info("These three warnings below cannot be suppressed. AtomOS is very dependant on what is experimental for now.")
-		console.info("Promisified native FS library is used instead of an external library, so we could save up on dependencies and use modern techs.")
-		console.info("AtomOS architecture exposes using Functions from strings (unsafe-eval), so app startup is almost immediate.")
-		console.info("Experimental platform features are used to enable JS-fied animations, ResizeObserver and lots of other cool features.")
-		</script>
+<splash
+	style="display:flex;align-items:center;justify-content: center; transition-duration: 1s; background:black;color:white;position:fixed;z-index:2000;top:0;left:0;width:100%;height:100%">
+	<div class="spinner-grow text-light" role="status" style="width:3rem; height: 3rem;"></div>
+</splash>
+<script>
+	console.time("launch");
+	Object.assign(window, require('bootstrap.native/dist/bootstrap-native-v4'));
+	const moduleAlias = require('module-alias');
+	const path = require("path");
+	const osRoot = path.join(__dirname, "..");
+	moduleAlias.addAlias('@api', osRoot + '/front/api');
+	moduleAlias.addAlias('@apps', osRoot + '/apps');
+	moduleAlias();
+	window.Elements = {};
+	const AsyncFunction = Object.getPrototypeOf(async function () {
+	}).constructor;
+	require("./desktop")
+</script>
 </body>
 </html>

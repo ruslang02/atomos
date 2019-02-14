@@ -1,4 +1,7 @@
 const fs = require("fs").promises;
+const AppWindow = require("@api/WindowManager");
+const Menu = require(`@api/Menu`);
+const Shell = require("@api/Shell");
 const path = require("path");
 const MAX_SIZE = 51240;
 let win = AppWindow.fromId(WINDOW_ID);
@@ -58,7 +61,7 @@ el.textarea.style.resize = "none";
 el.textarea.autofocus = true;
 el.textarea.style.outline = 0;
 el.textarea.addEventListener('contextmenu', e => menu.popup());
-root.appendChild(el.textarea);
+win.ui.body.appendChild(el.textarea);
 let nav = document.createElement("nav");
 nav.className = "d-flex";
 nav.openFile = document.createElement("button");
@@ -88,7 +91,7 @@ nav.saveDrop.menu = new Menu(win, [{
 		if (currentFile)
 			fs.writeFile(currentFile, el.textarea.value, "utf-8")
 				.then(() => new Snackbar({window: win, message: `File was saved`}))
-				.catch(() => new Snackbar({window: win, message: 'There was a problem saving the file'}))
+				.catch(() => new Snackbar({window: win, message: 'There was a problem saving the file'}));
 		else nav.saveDrop.menu.getMenuItemById("saveAs").click();
 	},
 	id: "save",

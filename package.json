@@ -1,7 +1,7 @@
 {
   "name": "atomos",
   "productName": "AtomOS",
-  "version": "0.8.0-nightly.1",
+	"version": "0.8.0-nightly.2",
   "description": "Open-source operating system based on Electron.",
   "main": "index.js",
   "repository": {
@@ -11,7 +11,7 @@
   "readme": "./README.md",
   "scripts": {
     "start": "electron .",
-    "test": "electron . -d"
+		"test": "electron . -d --remote-debugging-port=9229"
   },
   "author": "Ruslan",
   "license": "MPL-2.0",
@@ -29,6 +29,7 @@
     "js-beautify": "^1.8.9",
     "jstoxml": "^1.4.4",
     "mime-types": "^2.1.21",
+		"module-alias": "^2.1.0",
     "musicmetadata": "^2.0.5",
     "node-viewerjs": "^0.6.6",
     "playmusic": "git+https://github.com/jamon/playmusic.git",

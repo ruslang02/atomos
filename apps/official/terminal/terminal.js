@@ -27,7 +27,7 @@ commandContainer.append(cwd, commandArrow, command);
 let dataset = document.createElement("datalist");
 dataset.id = Shell.uniqueId();
 command.setAttribute("list", dataset.id);
-root.append(commands, commandContainer, dataset);
+win.ui.body.append(commands, commandContainer, dataset);
 win.show();
 if (win.arguments.file) {
 	fs.lstat(win.arguments.file).then(stat => {
@@ -63,7 +63,7 @@ function addMessage(text) {
 
 async function execute() {
 	let divider = document.createElement("hr");
-	divider.className = "border-secondary my-2 mx-0"
+	divider.className = "border-secondary my-2 mx-0";
 	commands.append(divider);
 	addMessage(cwd.innerText + commandArrow.innerText + " " + command.value);
 	let spaceCheck = command.value.includes(" ") ? command.value.indexOf(" ") : Infinity;
@@ -123,7 +123,7 @@ async function execute() {
 		proc.stdout.on('data', chunk => {
 			stdout += chunk;
 		}).on('end', function () {
-			addMessage(stdout)
+			addMessage(stdout);
 			stdout = "";
 		});
 	}
@@ -135,4 +135,4 @@ css.innerHTML = `
 window[id='${win.id}'] input::-webkit-calendar-picker-indicator {
 	display: none;
 }`;
-root.append(css);
+win.ui.body.append(css);

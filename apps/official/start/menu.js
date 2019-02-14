@@ -1,18 +1,14 @@
 const fso = require("fs");
 const fs = fso.promises;
 const path = require("path");
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
+const Menu = require(`@api/Menu`);
 const appPath = path.join(osRoot, "apps");
-const registry = new Registry('start');
 let root;
 let active;
 let allApps = [];
 let allActions = [];
-
-if (!Object.getOwnPropertyNames(registry.get()).length) registry.set({
-	firstRun: true
-});
-const firstRun = Registry.get("start.firstRun");
-if (firstRun) Registry.set("start.firstRun", false);
 
 function render() {
 	Elements.StartMenu = document.createElement("startmenu");
@@ -239,10 +235,10 @@ function renderSearch() {
 	root.Search.Input.className = "form-control bg-transparent py-2 px-1 border-0 shadow-none" + (Shell.ui.darkMode ? " text-white" : "");
 	root.Search.Input.id = "__searchInput";
 	root.Search.Input.dataset.editMenu = "false";
-	if (firstRun) {
+	/*if (firstRun) {
 		root.Search.Input.title = "Use Quick Search to browse through apps and actions";
 		root.Search.Input.tooltip = new Tooltip(root.Search.Input);
-	}
+	}*/
 	igp.appendChild(igt);
 	root.Search.append(igp, root.Search.Input, root.AddButton);
 	root.Search.Input.addEventListener("input", search);

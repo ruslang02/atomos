@@ -1,5 +1,7 @@
 const EventEmitter = require("events");
-const registry = new Registry('system');
+const Registry = require(`@api/Registry`);
+const Shell = require(`@api/Shell`);
+const AppWindow = require(`@api/WindowManager`);
 const defaultOptions = {
 	click: undefined,
 	role: undefined,
@@ -18,12 +20,10 @@ const defaultOptions = {
 };
 
 
-if (!registry.get().menu) registry.set(Object.assign({}, registry.get(), {
-	menu: {
+if (!Registry.get("system.menu")) Registry.get("system.menu", {
 		showIcons: true,
 		showAccelerators: false
-	}
-}));
+});
 
 class Menu extends EventEmitter {
 	constructor(win, template = []) {
@@ -120,16 +120,16 @@ class Menu extends EventEmitter {
 
 					};
 					if (Registry.get('system.showMenuIcons') !== false) {
-						menuItem.classList.add("px-3");
-						let menuIcon = document.createElement("icon");
-						menuIcon.className = "mdi mdi-18px flex-shrink-0 d-flex lh-21 mr-1 mdi-" + (item.icon || "blank");
-						menuItem.append(menuIcon);
+						menuItem.classList.add("pl-3");
+						menuItem.icon = document.createElement("icon");
+						menuItem.icon.className = "mdi mdi-18px flex-shrink-0 d-flex lh-21 mr-1 mdi-" + (item.icon || "blank");
+						menuItem.append(menuItem.icon);
 					}
 					let menuTitle = document.createElement("div");
 					menuTitle.className = "flex-grow-1 text-truncate lh-21";
 					menuTitle.innerText = item.label;
 					menuItem.append(menuTitle);
-					if (item.accelerator && registry.get().menu.showAccelerators) {
+					if (item.accelerator && Registry.get('system.showAccelerators') !== false) {
 						let menuAccelerator = document.createElement("div");
 						menuAccelerator.className = "ml-auto pl-4 flex-shrink-0";
 						menuAccelerator.style.opacity = "0.7";
@@ -166,7 +166,12 @@ class Menu extends EventEmitter {
 				_this.menu.append(menuItem);
 			}
 		}
-
+		if (!this.menu.querySelector("button > icon:not(.mdi-blank)") && !this.menu.querySelector("label")) {
+			for (const item of this.menu.children) {
+				item.classList.remove("pl-3");
+				if (item.icon) item.icon.remove();
+			}
+		}
 		if (hasAccelerators) window.addEventListener('keydown', acceleratorEvent);
 	}
 

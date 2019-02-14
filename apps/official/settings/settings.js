@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const Shell = require("@api/Shell");
 let sectionHistory = [];
 root.footer = document.createElement("footer");
 if (!Shell.isMobile)
@@ -9,7 +10,7 @@ else
 root.footer.backButton = document.createElement("button");
 root.footer.backButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-arrow-left btn rounded-circle d-flex " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 root.footer.backButton.onclick = e => {
-	sectionHistory.pop()
+	sectionHistory.pop();
 	openSection(sectionHistory[sectionHistory.length - 1], false);
 };
 root.footer.header = document.createElement("div");
@@ -34,7 +35,7 @@ function newSmallListItem(options) {
 		elem.label.innerHTML = `<div>${options.label}</div>`;
 		if (options.sublabel) elem.label.innerHTML += `<div class='text-muted small'>${options.sublabel}</div>`;
 		elem.htmlFor = elem.input.id;
-		elem.label.className = "custom-control-label d-flex flex-column w-100";
+		elem.label.className = "custom-control-label d-flex flex-column w-100 pr-4";
 		elem.append(elem.input, elem.label);
 		elem.input.onchange = () => options.click(elem.input.checked);
 	} else if (options.type === "header") {

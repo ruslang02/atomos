@@ -110,7 +110,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 				elem.id = channel.id;
 				elem.innerHTML = `<img width=18 height=18 class='rounded-circle mr-2' src='${channel.snippet.thumbnails.default.url}'><div class="w-25 text-truncate flex-grow-1">${channel.snippet.title}</div>`;
 				elem.onclick = () => {
-					console.log(channel.snippet)
+					console.log(channel.snippet);
 					backend.postMessage({action: "get-channel-info", id: channel.snippet.resourceId.channelId});
 					backend.postMessage({action: "get-channel-videos", id: channel.snippet.resourceId.channelId});
 					spinner.classList.replace("hide", "show");
@@ -266,7 +266,7 @@ spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 position-abso
 let body = document.createElement("section");
 body.className = "d-flex flex-column w-100 h-100";
 main.append(spinner, body);
-root.append(sidebar, main);
+win.ui.body.append(sidebar, main);
 spinner.classList.replace("hide", "show");
 win.show();
 
@@ -309,4 +309,4 @@ window[id='${win.id}'] .dropdown-item:active, window[id='${win.id}'] .dropdown-i
   background-color: var(--danger);
 }
 `;
-root.append(css);
+win.ui.body.append(css);

@@ -1,5 +1,11 @@
-const win = AppWindow.fromId(WINDOW_ID);
-let registry = new Registry("files");
+const AppWindow = require("@api/WindowManager");
+//console.log(module)
+const Shell = require("@api/Shell");
+const Menu = require(`@api/Menu`);
+const Registry = require(`@api/Registry`);
+const {Notification, Snackbar} = require("@api/Notification");
+const win = AppWindow.getCurrentWindow();
+//console.log(win);
 const {
 	remote
 } = require("electron");
@@ -16,9 +22,9 @@ let history = {
 	current: -1,
 	items: []
 };
-if (!Object.keys(registry.get()).length) {
+if (!Registry.get("files.accessList")) {
 	let defaultFile = fs.readFileSync(__dirname + "/default.json");
-	registry.set(JSON.parse(defaultFile));
+	Registry.set("files", JSON.parse(defaultFile));
 }
 win.ui.body.classList.add("position-relative");
 win.task.menu.insert(-2, {
@@ -36,10 +42,10 @@ win.task.menu.insert(-2, {
 win.task.menu.insert(-1, {
 	type: "separator"
 });
-let settings = new Proxy(registry.get(), {
+let settings = new Proxy(Registry.get("files"), {
 	set(t, p, v) {
 		t[p] = v;
-		registry.set(settings);
+		Registry.set("files", settings);
 		navigate(":refresh");
 		return true;
 	}
@@ -272,9 +278,7 @@ async function navigate(url) {
 		};
 		item.install = function () {
 			if (!item.isDirectory && path.extname(item.path) === ".wapp")
-				AppWindow.launch("install", {
-					file: item.path
-				});
+				Shell.installApp(item.path);
 		};
 		item.compress = function () {
 			if (!item.isDirectory) return;
@@ -630,7 +634,7 @@ function renderNav() {
 	nav.style.height = "28px";
 	if (win.arguments.open) {
 		nav.sbToggleButton = document.createElement("button");
-		nav.sbToggleButton.className = "btn btn-outline-primary btn-sm mr-1 mdi mdi-menu mdi-18px lh-18";
+		nav.sbToggleButton.className = "btn btn-outline-primary btn-sm mr-1 mdi mdi-menu mdi-18px lh-r1";
 		nav.sbToggleButton.onclick = function () {
 			sidebar.classList.toggle("d-none");
 			sidebar.classList.toggle("d-block");
@@ -639,7 +643,7 @@ function renderNav() {
 	}
 
 	nav.backButton = document.createElement("button");
-	nav.backButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-arrow-left mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.backButton.className = "btn btn-sm mdi d-flex align-items-center mdi-arrow-left mdi-18px lh-r1" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.backButton.disabled = true;
 	nav.backButton.type = "button";
 	nav.backButton.onclick = e => {
@@ -649,7 +653,7 @@ function renderNav() {
 	nav.backButton.title = "Previous (Ctrl+<i class='mdi mdi-chevron-left'></i>)";
 
 	nav.forwardButton = document.createElement("button");
-	nav.forwardButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-arrow-right mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.forwardButton.className = "btn btn-sm mdi d-flex align-items-center mdi-arrow-right mdi-18px lh-r1" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.forwardButton.disabled = true;
 	nav.forwardButton.type = "button";
 	nav.forwardButton.onclick = e => {
@@ -659,11 +663,11 @@ function renderNav() {
 	nav.forwardButton.title = "Next (Ctrl+<i class='mdi mdi-chevron-right'></i>)";
 
 	nav.mainBar = document.createElement("div");
-	nav.mainBar.className = "btn-group align-items-stretch flex-shrink-0 mr-2";
+	nav.mainBar.className = "btn-group align-items-stretch flex-shrink-0 mr-2 shadow-sm";
 	nav.mainBar.append(nav.backButton, nav.forwardButton);
 
 	nav.folderButton = document.createElement("button");
-	nav.folderButton.className = "btn btn-sm mdi d-flex mr-2 shadow-sm align-items-center mdi-folder-plus-outline mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.folderButton.className = "btn btn-sm mdi d-flex mr-2 shadow-sm align-items-center mdi-folder-plus-outline mdi-18px lh-r1" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.folderButton.onclick = function () {
 		Shell.createFile(nav.pathField.value, {
 			defaultTab: "folder"
@@ -674,10 +678,10 @@ function renderNav() {
 
 	nav.refreshButton = document.createElement("button");
 	nav.refreshButton.type = "submit";
-	nav.refreshButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-refresh mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
+	nav.refreshButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-refresh mdi-18px lh-r1" + (win.options.darkMode ? " btn-dark" : " btn-light");
 	nav.refreshButton.onclick = e => {
 		navigate(nav.pathField.dataset.edited === "true" ? nav.pathField.value : ":REFRESH");
-	}
+	};
 	nav.refreshButton.ondblclick = e => e.stopPropagation();
 	nav.refreshButton.title = "Refresh page (F5)";
 	nav.refreshButton.style.borderRadius = "0 .25rem .25rem 0";
@@ -749,7 +753,7 @@ function renderMainMenu() {
 		label: "Duplicate",
 		icon: "open-in-new",
 		click() {
-			AppWindow.launch("files", {
+			AppWindow.launch("@atomos/files", {
 				file: nav.pathField.value
 			})
 		}
@@ -757,7 +761,7 @@ function renderMainMenu() {
 		label: "Open in Terminal",
 		icon: "console-line",
 		click() {
-			AppWindow.launch("terminal", {
+			AppWindow.launch("@atomos/terminal", {
 				cwd: nav.pathField.value
 			})
 		}
