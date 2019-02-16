@@ -2,20 +2,43 @@ const fs = require("fs").promises;
 let button = document.createElement("button");
 const Menu = require(`@api/Menu`);
 const Shell = require("@api/Shell");
-let menu = Menu.buildFromTemplate(null, [{
+const AppWindow = require("@api/WindowManager");
+let menu = new Menu([{
+	label: "File Manager",
+	icon: "folder-outline",
+	click() {
+		AppWindow.launch("official/files");
+	}
+}, {
+	label: "Terminal",
+	icon: "console-line",
+	click() {
+		AppWindow.launch("official/terminal");
+	}
+}, {
+	label: "Settings",
+	icon: "settings-outline",
+	click() {
+		Shell.openSettings();
+	}
+},
+	{type: "separator"}, {
 	label: "Toggle Developer Tools",
+		icon: "developer-board",
 	shortLabel: "Dev Tools",
 	click: e => {
 		require("electron").remote.getCurrentWindow().toggleDevTools();
 	}
 }, {
 	label: "Restart System UI",
+		icon: "restart",
 	shortLabel: "Reboot",
 	click: () => {
 		require("electron").remote.getCurrentWindow().reload();
 	}
 }, {
 	label: "Quit AtomOS",
+		icon: "exit-to-app",
 	shortLabel: "Quit",
 	click: () => {
 		window.close();

@@ -32,8 +32,7 @@ appButton.addEventListener("click", e => {
 		y: appButton.offsetTop + appButton.offsetHeight + pos[1]
 	});
 });
-appButton.menu = new Menu(win,
-	[{
+appButton.menu = new Menu([{
 		label: "New Window",
 		icon: "new-box",
 		accelerator: "Ctrl+N",

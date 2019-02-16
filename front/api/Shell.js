@@ -1,10 +1,12 @@
 const path = require("path"),
 	fs = require("fs"),
 	fsp = fs.promises, {
-		screen,
 		remote
-	} = require("electron"),
-	win = remote.getCurrentWindow(),
+	} = require("electron"), {
+		screen,
+		getCurrentWindow
+	} = remote,
+	win = getCurrentWindow(),
 	os = require("os"),
 	proc = require("child_process");
 const Registry = require(`@api/Registry`);
@@ -97,7 +99,7 @@ class Shell {
 			let pkg = await fsp.readFile(path.join(tempPath, "package.json"));
 			let info = JSON.parse(pkg.toString());
 			copy_r(tempPath, path.join(osRoot, "apps", info.name.replace("@atomos", "official"))).then(() => {
-				new Notification(null, {
+				new Notification({
 					icon: "done",
 					message: "It is ready to be launched.",
 					app: "App Installer",

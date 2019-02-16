@@ -5,7 +5,6 @@ const Menu = require(`@api/Menu`);
 const Registry = require(`@api/Registry`);
 const {Notification, Snackbar} = require("@api/Notification");
 const win = AppWindow.getCurrentWindow();
-//console.log(win);
 const {
 	remote
 } = require("electron");
@@ -290,7 +289,7 @@ async function navigate(url) {
 					gzip: true,
 					file: file,
 					C: item.path
-				}, await fsp.readdir(item.path)).then(() => new Notification(win, {
+				}, await fsp.readdir(item.path)).then(() => new Notification({
 					app: "Archive Manager",
 					icon: "archive",
 					title: "Archive was successfully created",
@@ -444,7 +443,7 @@ async function sendBack() {
 	if (!exists) {
 		if (win.arguments.open === Shell.FILE) {
 			if (win.arguments.checkFileExists) {
-				new Snackbar({window: win, message: "File does not exist"})
+				new Snackbar({message: "File does not exist"})
 			} else send();
 		} else if (win.arguments.open === Shell.DIRECTORY) {
 			if (win.arguments.createDirectory)
@@ -489,7 +488,7 @@ async function renderAccessSection() {
 		if (item.type === "item") {
 			let location = item.location.replace("$HOME_DIR", process.env.HOME).replace("$SYSTEM_ROOT", osRoot);
 			dItem = document.createElement("button");
-			dItem.className = 'dropdown-item d-flex py-2 very-rounded-right align-items-center' + (win.options.darkMode ? " text-white" : "");
+			dItem.className = 'dropdown-item d-flex py-2 rounded-right-pill align-items-center' + (win.options.darkMode ? " text-white" : "");
 			dItem.onclick = e => navigate(location);
 			dItem.location = location;
 			dItem.icon = document.createElement("icon");
@@ -539,14 +538,14 @@ async function renderDeviceSection() {
 				isMounted = require("child_process").execSync(cmd);
 			} catch (e) {
 			}
-			item.className = "dropdown-item very-rounded-right d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
+			item.className = "dropdown-item rounded-right-pill d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
 			item.title = 'Click to mount/open drive';
 			item.icon = document.createElement("icon");
 			item.icon.className = "mdi mdi-18px mr-1 lh-18 mdi-usb";
 			item.header = document.createElement("div");
 			item.header.innerText = label || link;
 			item.header.className = "text-truncate flex-grow-1";
-			item.menu = new Menu(win, [{
+			item.menu = new Menu([{
 				label: "Open/Mount",
 				click() {
 					that.click();
@@ -593,6 +592,7 @@ async function renderDeviceSection() {
 function renderContainer() {
 	container = document.createElement("main");
 	container.className = "d-flex flex-grow-1";
+	container.style.height = 0;
 	renderSidebar();
 	renderMain();
 	win.ui.body.append(container);
@@ -749,7 +749,7 @@ function renderNav() {
 }
 
 function renderMainMenu() {
-	mainMenu = new Menu(win, [{
+	mainMenu = new Menu([{
 		label: "Duplicate",
 		icon: "open-in-new",
 		click() {
@@ -780,7 +780,7 @@ function renderMainMenu() {
 		click: async function () {
 			let url = clipboard.readText();
 			let copied = 0;
-			let notif = new Notification(win, {
+			let notif = new Notification({
 				icon: "sync",
 				app: "Files",
 				dismissable: false,
@@ -844,7 +844,7 @@ function renderMainMenu() {
 }
 
 function renderFileMenu() {
-	fileMenu = new Menu(win, [{
+	fileMenu = new Menu([{
 		label: "Open",
 		click: activeItem.open,
 		icon: "launch"

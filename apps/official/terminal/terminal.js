@@ -1,4 +1,6 @@
-const win = AppWindow.fromId(WINDOW_ID);
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
+const win = AppWindow.getCurrentWindow();
 const path = require("path");
 const fs = require("fs").promises;
 const {exec} = require("child_process");
@@ -22,11 +24,11 @@ let commandArrow = document.createElement("div");
 commandArrow.innerText = "$";
 commandArrow.className = "mr-1";
 let commandContainer = document.createElement("div");
-commandContainer.className = "bg-dark text-white border-top border-secondary flex-shrink-0 d-flex pl-2 py-1 align-items-center";
+commandContainer.className = "bg-dark text-white m-2 very-rounded flex-shrink-0 d-flex pl-2 py-1 align-items-center";
 commandContainer.append(cwd, commandArrow, command);
 let dataset = document.createElement("datalist");
 dataset.id = Shell.uniqueId();
-command.setAttribute("list", dataset.id);
+//command.setAttribute("list", dataset.id);
 win.ui.body.append(commands, commandContainer, dataset);
 win.show();
 if (win.arguments.file) {

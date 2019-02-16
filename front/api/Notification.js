@@ -1,10 +1,7 @@
 const globalOptions = {
-	icon: "application",
-	app: "Application",
-	title: null,
-	message: null,
-	color: "var(--primary)",
-	dismissable: true
+	body: "",
+	sticky: false,
+	requireInteraction: false
 };
 const Registry = require(`@api/Registry`);
 const Shell = require("@api/Shell");
@@ -16,14 +13,14 @@ class Snackbar {
 		let self = this;
 		let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
 		this.ui = document.createElement("snackbar");
-		this.ui.style.bottom = options.window ? 0 : window.getComputedStyle(Elements.Bar).height;
+		this.ui.style.bottom = module.parent.windowID ? 0 : window.getComputedStyle(Elements.Bar).height;
 		this.ui.style.right = CSS.px(0);
 		this.ui.style.minWidth = CSS.px(300);
 		this.ui.style.maxWidth = CSS.px(450);
 		this.ui.style.zIndex = "1010";
 		this.ui.message = document.createElement("div");
 		this.ui.button = document.createElement("button");
-		this.ui.className = "bg-dark text-white very-rounded shadow d-flex position-absolute align-items-center mr-2 mb-2 p-2 fly up show";
+		this.ui.className = "bg-dark text-white very-rounded shadow-lg d-flex position-absolute align-items-center mr-2 mb-2 p-2 fly up show";
 		this.ui.message.className = "px-2 lh-18 my-1";
 		this.ui.message.innerText = options.message;
 		this.ui.append(this.ui.message);
@@ -33,7 +30,8 @@ class Snackbar {
 			this.ui.button.onclick = options.click || console.log;
 			this.ui.append(this.ui.button);
 		} else this.ui.message.classList.replace("my-1", "py-2");
-		if (options.window) options.window.ui.body.append(this.ui); else
+		if (AppWindow.fromId(module.parent.id))
+			AppWindow.fromId(module.parent.id).ui.body.append(this.ui); else
 			document.body.appendChild(this.ui);
 		setTimeout(() => {
 			self.ui.classList.add("hide");
@@ -43,22 +41,24 @@ class Snackbar {
 }
 
 class Notification {
-	constructor(win, specificOptions = {}) {
-		/* Order of notification options:
-		 * ---- Specific Options (override all)
-		 * --- App Options
-		 * -- Group Options (not in use)
-		 * - Global (Default) Options
+	constructor(title, options = {}) {
+		/* How-to:
+		 * title -- title of the notification
+		 * options:
+		 * * body -- notification body, may be none
+		 * * requireInteraction -- indicates if notification will be active until user does something to it, defaults to false
+		 * * sticky -- if it is true, notification can't be cleared by user itself, closed automatically when app closes
 		 */
-		if (!(win instanceof AppWindow) && win !== null) throw new Error("Two arguments needed to call Notification(): window instance and options object");
-		let options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, specificOptions);
+		console.log(module);
+		let win = AppWindow.fromId(module.parent.id) || null;
+		options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, options);
 		this.window = win;
 		this.options = options;
-		if (options.title === null && options.message === null) return;
+		if (title === null) return;
 		this.ui = document.createElement("notification");
-		this.ui.className = (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast very-rounded shadow position-relative fly left hide";
+		this.ui.className = (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast very-rounded d-block shadow position-relative fly left hide";
 		this.ui.header = document.createElement("header");
-		this.ui.header.className = "toast-header py-2 " + (Shell.ui.darkMode ? " border-0 text-white" : " pb-2");
+		this.ui.header.className = "toast-header py-2 border-0 " + (Shell.ui.darkMode ? "text-white" : "");
 		this.ui.header.style.background = "rgba(255,255,255,0.2)";
 		this.ui.app = document.createElement("strong");
 		this.ui.appIcon = document.createElement("icon");
@@ -66,18 +66,21 @@ class Notification {
 		this.ui.body = document.createElement("div");
 		this.ui.messageTitle = document.createElement("div");
 		this.ui.message = document.createElement("div");
-		this.ui.body.className = "toast-body px-0 py-2 pb-2";
-		this.ui.app.className = "mr-auto";
-		this.ui.appIcon.className = "mdi mdi-18px lh-18 mr-1 d-flex align-items-center mdi-" + options.icon;
-		this.ui.app.innerText = options.app;
+		this.ui.body.className = "toast-body px-0 pt-0 pb-2";
+		this.ui.app.className = "mr-auto lh-18 ml-1";
+		this.ui.appIcon.className = "mdi mdi-18px lh-18 mr-1 d-flex align-items-center mdi-" + win.options.icon;
+		//this.ui.app.style.WebkitBackgroundClip = this.ui.appIcon.style.WebkitBackgroundClip = "text";
+		this.ui.app.style.WebkitTextFillColor = this.ui.appIcon.style.WebkitTextFillColor = "transparent";
+		this.ui.app.style.background = this.ui.appIcon.style.background = win.options.color + " 50% 50% / 1000px";
+		this.ui.app.innerText = win.options.productName;
 		this.ui.time.innerText = "just now";
-		this.ui.time.className = "text-muted";
-		this.ui.message.className = "text-secondary smaller position-relative text-truncate px-3";
-		this.ui.messageTitle.innerText = options.title;
+		this.ui.time.className = "text-muted smaller font-weight-bolder";
+		this.ui.message.className = "smaller position-relative text-truncate px-3 " + (Shell.ui.darkMode ? "text-light" : "text-muted");
+		this.ui.messageTitle.innerText = title;
 		this.ui.messageTitle.className = "font-weight-bold px-3";
-		if (typeof options.message === "object")
-			this.ui.message.append(options.message);
-		else this.ui.message.innerHTML = options.message;
+		if (typeof options.body === "object")
+			this.ui.message.append(options.body);
+		else this.ui.message.innerHTML = options.body || "";
 		if (options.image) {
 			this.ui.classList.add("type-image");
 			if (Shell.ui.darkMode) this.ui.classList.add("dark");
@@ -86,9 +89,9 @@ class Notification {
 		}
 		this.ui.close = document.createElement("button");
 		this.ui.close.className = "close mdi mdi-close ml-2" + (Shell.ui.darkMode ? " text-white" : "");
-		this.ui.close.classList.toggle("d-none", !options.dismissable);
+		this.ui.close.classList.toggle("d-none", options.sticky);
 		this.ui.close.onclick = () => this.dismiss();
-		this.ui.header.append(this.ui.appIcon, this.ui.app, this.ui.time, this.ui.close);
+		this.ui.header.append(this.ui.appIcon, this.ui.app, /*this.ui.time, */this.ui.close);
 		this.ui.body.append(this.ui.messageTitle, this.ui.message);
 		this.ui.append(this.ui.header, this.ui.body);
 		if (options.actions) {
@@ -97,9 +100,10 @@ class Notification {
 			options.actions.forEach(action => {
 				let btn = document.createElement("button");
 				btn.className = "btn btn-link px-0 mr-2 flex-grow-1";
-				btn.style.color = options.color;
+				btn.style.WebkitTextFillColor = "transparent";
+				btn.style.background = win.options.color + " 50% 50% / 1000px";
 				btn.style.fontWeight = 600;
-				btn.innerText = action.label;
+				btn.innerText = action.title;
 				btn.onclick = action.click;
 				this.ui.actions.append(btn);
 			});
@@ -107,7 +111,7 @@ class Notification {
 		}
 
 		Elements.MenuBar.notifications.append(this.ui);
-		this.trayItem = new TrayItem(options.icon);
+		this.trayItem = new TrayItem(win.options.icon);
 		this.notify();
 	}
 
@@ -119,20 +123,20 @@ class Notification {
 		this.ui.messageTitle.innerText = title;
 	}
 
-	get message() {
+	get body() {
 		return this.ui.message.innerHTML;
 	}
 
-	set message(title) {
+	set body(title) {
 		this.ui.message.innerHTML = title;
 	}
 
-	get dismissable() {
-		return this.ui.close.classList.contains("d-none");
+	get sticky() {
+		return !this.ui.close.classList.contains("d-none");
 	}
 
-	set dismissable(bool) {
-		return this.ui.close.classList.toggle("d-none", bool);
+	set sticky(bool) {
+		return this.ui.close.classList.toggle("d-none", !bool);
 	}
 
 	dismiss() {
@@ -150,6 +154,7 @@ class Notification {
 			notificationAlert.volume = Registry.get("system.notificationsVolume") || 1;
 			notificationAlert.play();
 		}
+		let that = this;
 		this.ui.classList.replace("hide", "show");
 		if (Elements.MenuBar.classList.contains("show")) return;
 		Elements.MenuBar.style.bottom = "var(--taskbar-hided)";
@@ -162,7 +167,8 @@ class Notification {
 		});
 		Elements.MenuBar.classList.replace("fly", "show");
 		Elements.BarItems["official/tray"].Container.classList.add("active");
-		setTimeout(e => {
+
+		function stopShowing() {
 			Elements.MenuBar.classList.add("fly", "hide");
 			Elements.MenuBar.classList.remove("show");
 			Elements.BarItems["official/tray"].Container.classList.remove("active");
@@ -178,7 +184,12 @@ class Notification {
 						node.classList.remove("d-none", "notification-showing");
 				});
 			}, Shell.ui.flyAnimation);
-		}, NOTIFICATION_DELAY);
+			that.ui.removeEventListener("click", stopShowing)
+		}
+
+		if (!this.options.requireInteraction)
+			setTimeout(stopShowing, NOTIFICATION_DELAY);
+		else this.ui.addEventListener("click", stopShowing)
 	}
 }
 

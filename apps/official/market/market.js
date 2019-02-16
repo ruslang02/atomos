@@ -1,3 +1,4 @@
+const Shell = require("@api/Shell");
 const AppWindow = require("@api/WindowManager");
 const Registry = require(`@api/Registry`);
 const Menu = require(`@api/Menu`);
@@ -5,7 +6,7 @@ const
 	fs = require("fs"),
 	fsp = fs.promises,
 	path = require("path"),
-	win = AppWindow.fromId(WINDOW_ID),
+	win = AppWindow.getCurrentWindow(),
 	GitLab = require('gitlab/dist/es5').default,
 	semver = require('semver'),
 	OAUTH_ID = "6f212c4f252faec9050f17668bea8945278ca317975500e847e67a2f8f087eeb",
@@ -87,7 +88,7 @@ async function renderUser() {
 	nav.account.innerHTML = "";
 	nav.account.append(nav.account.icon, nav.account.userName);
 
-	nav.account.menu = new Menu(win, [{
+	nav.account.menu = new Menu([{
 		label: "Open in GitLab",
 		icon: "gitlab",
 		click() {

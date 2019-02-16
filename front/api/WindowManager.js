@@ -92,7 +92,9 @@ class AppWindow extends EventEmitter {
 
 	static async launch(prog, args = {}, launchOptions = {}) {
 		// Okay... This is a veryyy dirty hack to create new AppWindow instances...
-		delete require.cache[__filename];
+		delete require.cache[require.resolve("@api/WindowManager")];
+		delete require.cache[require.resolve("@api/Notification")];
+		delete require.cache[require.resolve("@api/Menu")];
 		let similar = windowCollection.find(e => {
 			return e ? e.app === prog : false;
 		});
@@ -122,7 +124,7 @@ class AppWindow extends EventEmitter {
 		win._paint();
 		win.file = path.join(osRoot, "apps", prog, options.main);
 		if (!win.options.skipTaskbar) win.task = new TaskManager(winID);
-		if (appCache[win.file]) {
+		if (appCache[win.file] && Registry.get("system.enableCaching")) {
 			console.time("app load (precached)");
 			appCache[win.file].id = winID;
 			appCache[win.file].exports();
@@ -186,6 +188,7 @@ class AppWindow extends EventEmitter {
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
 		this.ui.root.className = "very-rounded d-flex flex-column scrollable-0 fade position-absolute shadow-sm";
+		if (Registry.get("system.enableWindowBlur")) this.ui.root.style["backdrop-filter"] = "blur(5px)";
 		if (!Registry.get("system.enableWindowShadows")) this.ui.root.style.boxShadow = "none !important";
 		if (Registry.get("system.enableTransparentWindows")) {
 			this.ui.root.classList.add(this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
@@ -251,7 +254,7 @@ class AppWindow extends EventEmitter {
 		this.on('ready-to-show', () => {
 			new Tooltip(this.ui.buttons.maximize);
 			new Tooltip(this.ui.buttons.minimize);
-			// new Tooltip(this.ui.buttons.close); Tooltip are being left unclosed when window closes.
+			new Tooltip(this.ui.buttons.close);
 		});
 		//console.log("rendered")
 	}
@@ -264,6 +267,12 @@ class AppWindow extends EventEmitter {
 
 	destroy() {
 		this.hide();
+		if (this.ui.buttons.minimize.Tooltip)
+			this.ui.buttons.minimize.Tooltip.hide();
+		if (this.ui.buttons.maximize.Tooltip)
+			this.ui.buttons.maximize.Tooltip.hide();
+		if (this.ui.buttons.close.Tooltip)
+			this.ui.buttons.close.Tooltip.hide();
 		setTimeout(() => {
 			this.ui.root.remove();
 			this.emit('closed');

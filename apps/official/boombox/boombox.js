@@ -1,23 +1,25 @@
 const path = require("path");
+const AppWindow = require("@api/WindowManager");
+const Shell = require("@api/Shell");
+const Registry = require(`@api/Registry`);
+const {Notification, Snackbar} = require("@api/Notification");
+const xml2js = require('xml2js');
+const js2xml = require('jstoxml');
+const renderID3 = require('musicmetadata');
 let ofdDefaultPath = path.join(process.env.HOME, "Music");
 const fs = require("fs");
 const fsp = fs.promises;
-let _this = this;
 let prevNotification;
 setImmediate(() => {
-	_this.xml2js = require('xml2js');
-	_this.js2xml = require('jstoxml');
-	_this.renderID3 = require('musicmetadata');
 	if (win.arguments.file) load(win.arguments.file);
 });
-const win = AppWindow.fromId(WINDOW_ID);
+const win = AppWindow.getCurrentWindow();
 win.on('second-instance', (e, args) => {
 	load(args.file);
 });
-win.on('close', e => {
+win.on('close', () => {
 	if (prevNotification) prevNotification.dismiss();
 });
-win.ui.header.style.background = win.options.darkMode ? "rgba(52,58,64, 0.88)" : "rgba(222, 226, 230, 0.88)";
 let nav = document.createElement("nav");
 nav.className = "d-flex";
 nav.openFile = document.createElement("button");
@@ -65,13 +67,9 @@ nav.saveFile.onclick = async function () {
 		indent: "	"
 	});
 	await fsp.writeFile(url, playlist, 'utf-8');
-	new Notification(win, {
-		title: "Playlist successfully saved",
-		app: "Boombox",
-		color: "var(--danger)",
-		icon: "boombox",
+	new Notification("Playlist successfully saved", {
 		actions: [{
-			label: "Show in folder",
+			title: "Show in folder",
 			click() {
 				Shell.showItemInFolder(url);
 			}
@@ -95,16 +93,16 @@ new Tooltip(nav.saveFile, {
 let main = document.createElement("main");
 main.className = "row m-0 flex-grow-1 p-0";
 let playlist = document.createElement("section");
-playlist.className = "col-4 px-0 pt-5";
+playlist.className = "col-4 pl-0 pr-2 mt-2 pt-5 scrollable-y";
 playlist.style.minWidth = "12rem";
 playlist.style.maxWidth = "20rem";
 let cover = document.createElement("section");
-cover.className = "flex-grow-1 d-flex align-items-center border-left position-relative border-top justify-content-center" + (win.options.darkMode ? " bg-dark border-secondary" : " bg-light");
+cover.className = "flex-grow-1 d-flex align-items-center position-relative justify-content-center mx-2 very-rounded shadow mt-5 " + (win.options.darkMode ? "bg-dark border-secondary" : "bg-light");
 cover.image = new Image();
 cover.image.className = "position-absolute m-auto mw-100 mh-100";
 cover.appendChild(cover.image);
 let footer = document.createElement("footer");
-footer.className = "d-flex flex-column" + (win.options.darkMode ? " bg-dark" : " bg-light");
+footer.className = "d-flex flex-column very-rounded shadow m-2 " + (win.options.darkMode ? "bg-dark" : "bg-light");
 footer.progress = document.createElement("input");
 footer.progress.type = "range";
 footer.progress.className = "w-100 custom-range";
@@ -177,7 +175,7 @@ player.onpause = function () {
 
 function generate(file) {
 	let track = document.createElement("button");
-	track.className = 'dropdown-item text-truncate d-inline-block' + (win.options.darkMode ? " text-white" : "");
+	track.className = 'dropdown-item text-truncate rounded-right-pill d-inline-block' + (win.options.darkMode ? " text-white" : "");
 	track.id = file.id;
 	track.location = file.url;
 	track.artist = file.artist || "No artist";
@@ -217,26 +215,22 @@ async function loadFromPlaylist() {
 
 	if (prevNotification !== undefined)
 		prevNotification.dismiss();
-	prevNotification = new Notification(win, {
-		title: current.audio.innerText,
-		message: current.artist.innerText + " playing",
-		app: "Boombox",
-		icon: "boombox",
-		dismissable: false,
-		color: "var(--danger)",
+	prevNotification = new Notification(current.audio.innerText, {
+		body: current.artist.innerText + " playing",
+		sticky: true,
 		actions: [{
-			label: "Play/Pause",
+			title: "Play/Pause",
 			click() {
 				if (player.paused) player.play();
 				else player.pause();
 			}
 		}, {
-			label: "Previous track",
+			title: "Previous track",
 			click() {
 				controls.previous.click();
 			}
 		}, {
-			label: "Next track",
+			title: "Next track",
 			click() {
 				controls.next.click();
 			}
@@ -312,7 +306,7 @@ window[id='${win.id}'] .custom-range::-webkit-slider-thumb {
 }
 window[id='${win.id}'] .custom-range::-webkit-slider-runnable-track {
 	height: 5px;
-	background: linear-gradient(to right, var(--orange) 0%, var(--orange) var(--value), #ddd var(--value), #ddd 100%);
+	background: linear-gradient(to right, var(--orange) 0%, var(--orange) var(--value), ${win.options.darkMode ? "#252525" : "#ddd"} var(--value), ${win.options.darkMode ? "#252525" : "#ddd"} 100%);
 	border-radius: 0;
 }
 `;

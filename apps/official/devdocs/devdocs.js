@@ -1,4 +1,5 @@
-const win = AppWindow.fromId(WINDOW_ID);
+const AppWindow = require("@api/WindowManager");
+const win = AppWindow.getCurrentWindow();
 let iframe = document.createElement("iframe");
 iframe.className = "flex-grow-1 border-0";
 iframe.src = "https://devdocs.io/";

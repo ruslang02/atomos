@@ -7,7 +7,7 @@ wc.on("context-menu", (e, params) => {
 	if (e.sender.dataset && e.sender.dataset.editMenu === "false") generate = false;
 	if (generate) {
 		console.log(params);
-		previousMenu = new Menu(null, [{
+		previousMenu = new Menu([{
 			label: "Undo",
 			icon: "undo",
 			enabled: params.editFlags.canUndo,

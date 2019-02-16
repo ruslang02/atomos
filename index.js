@@ -37,12 +37,14 @@ app.on('ready', function() {
 		webPreferences: {
 			defaultFontSize: 14,
 			nodeIntegrationInWorker: true,
-			experimentalFeatures: true
+			experimentalFeatures: true,
+			nodeIntegration: true,
+			webviewTag: true
 		}
 	});
 	win.maximize();
 	win.loadFile(path.join(__dirname, "front/desktop.html"));
-	win.setMenu(null);
+	win.removeMenu();
 	win.toggleDevTools();
 	win.webContents.on('devtools-opened', () => {
 		win.webContents.addWorkSpace(__dirname)

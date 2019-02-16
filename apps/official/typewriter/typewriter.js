@@ -4,11 +4,11 @@ const Menu = require(`@api/Menu`);
 const Shell = require("@api/Shell");
 const path = require("path");
 const MAX_SIZE = 51240;
-let win = AppWindow.fromId(WINDOW_ID);
+let win = AppWindow.getCurrentWindow();
 let el = {};
 let currentFile;
 
-let menu = new Menu(win, [{
+let menu = new Menu([{
 	label: "Undo",
 	icon: "undo",
 	click() {
@@ -85,13 +85,13 @@ nav.saveDrop.onclick = e => {
 		y: nav.save.offsetTop + win.getPosition()[1] + nav.save.offsetHeight
 	});
 };
-nav.saveDrop.menu = new Menu(win, [{
+nav.saveDrop.menu = new Menu([{
 	label: "Save",
 	click() {
 		if (currentFile)
 			fs.writeFile(currentFile, el.textarea.value, "utf-8")
-				.then(() => new Snackbar({window: win, message: `File was saved`}))
-				.catch(() => new Snackbar({window: win, message: 'There was a problem saving the file'}));
+				.then(() => new Snackbar("File was saved"))
+				.catch(() => new Snackbar('There was a problem saving the file'));
 		else nav.saveDrop.menu.getMenuItemById("saveAs").click();
 	},
 	id: "save",

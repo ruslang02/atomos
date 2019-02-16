@@ -1,9 +1,11 @@
-const win = AppWindow.fromId(WINDOW_ID);
+const AppWindow = require("@api/WindowManager");
+const Shell = require("@api/Shell");
+const {Notification} = require("@api/Notification");
+const win = AppWindow.getCurrentWindow();
 const path = require("path");
 const fs = require("fs").promises;
 const {clipboard, remote} = require("electron");
 const wc = remote.getCurrentWebContents();
-const registry = new Registry("camcorder");
 let nav = document.createElement("nav");
 nav.className = "d-flex";
 nav.copyClipboard = document.createElement("button");
@@ -46,9 +48,10 @@ captureButton.icon = document.createElement("icon");
 captureButton.icon.className = "mdi mdi-24px mdi-camera-iris mr-2 lh-24 d-flex";
 captureButton.header = document.createElement("div");
 captureButton.header.innerText = "Capture Screen";
-captureButton.addEventListener("click", e => {
+captureButton.addEventListener("click", async () => {
 	win.hide();
-	let output = path.join(process.env.HOME, "Pictures", "screenshot_" + new Date().getTime() + ".png");
+	await fs.mkdir(path.join(process.env.HOME, "Pictures", "Screenshots"), {recursive: true});
+	let output = path.join(process.env.HOME, "Pictures", "Screenshots", "screenshot_" + new Date().getTime() + ".png");
 	url = output;
 	setTimeout(() => {
 		wc.capturePage(async function (result) {
@@ -65,19 +68,16 @@ captureButton.addEventListener("click", e => {
 				nav.showInFiles.disabled = false;
 				nav.copyClipboard.disabled = false;
 
-				new Notification(win, {
-					title: "Screenshot has been successfully taken",
-					app: "Camcorder",
-					icon: "camera-iris",
-					message: thumbnail,
+				new Notification("Screenshot has been successfully taken", {
+					body: thumbnail,
 					image: true,
 					actions: [{
-						label: "Show in folder",
+						title: "Show in folder",
 						click() {
 							Shell.showItemInFolder(output);
 						}
 					}, {
-						label: "Copy to Clipboard",
+						title: "Copy to Clipboard",
 						click() {
 							clipboard.writeImage(result);
 						}
@@ -85,18 +85,14 @@ captureButton.addEventListener("click", e => {
 				});
 			} catch (e) {
 				console.error(e);
-				new Notification(win, {
-					title: "Screenshot not taken",
-					app: "Camcorder",
-					icon: "camera-iris",
-					message: "See logs to find the issue.",
+				new Notification("Screenshot not taken", {
+					body: "See logs to find the issue",
 					actions: [{
-						label: "Open Developer Tools",
+						title: "Open Developer Tools",
 						click() {
 							wc.openDevTools();
 						}
-					}],
-					color: "var(--danger)"
+					}]
 				});
 			}
 		});

@@ -33,7 +33,7 @@ elems.Container.addEventListener("click", e => {
 	if (win) win.blur();
 	Elements.MenuBar.toggle()
 });
-elems.Container.menu = new Menu(null, [{
+elems.Container.menu = new Menu([{
 	label: "Adjust Date and Time...",
 	icon: "clock-outline",
 	click() {
@@ -75,7 +75,7 @@ window.TrayItem = class TrayItem {
 	constructor(icon) {
 		let iconSize = 18;
 		this.elem = document.createElement("icon");
-		this.elem.className = `mdi mdi-${icon} mdi-${iconSize}px mr-1 lh-${iconSize} d-flex`;
+		this.elem.className = `mdi mdi-${icon} mdi-${iconSize}px mr-1 lh-21 d-flex`;
 		elems.NIcons.append(this.elem);
 	}
 

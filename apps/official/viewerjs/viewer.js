@@ -1,8 +1,9 @@
-console.log(__filename);
 const fs = require("fs");
 const http = require("http");
 const mime = require('mime-types');
-const win = AppWindow.fromId(WINDOW_ID);
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
+const win = AppWindow.getCurrentWindow();
 let fileButton = document.createElement("button");
 fileButton.addEventListener('click', e => {
 	Shell.selectFile(Shell.ACTION_OPEN, {
@@ -22,7 +23,7 @@ new Tooltip(fileButton, {placement: "bottom"});
 
 function renderDocument(url) {
 	if (!url) return;
-	root.innerHTML = "";
+	win.ui.body.innerHTML = "";
 	let port = Math.floor(Math.random() * 16383) + 49152;
 	let server = http.createServer((request, response) => {
 		response.writeHead(200, {
@@ -37,7 +38,7 @@ function renderDocument(url) {
 	win.ui.body.append(doc);
 }
 
-root.className = "h-100 position-relative" + (win.options.darkMode ? " bg-dark" : " bg-light");
+win.ui.body.className = "h-100 position-relative" + (win.options.darkMode ? " bg-dark" : " bg-light");
 renderDocument(win.arguments.file);
 win.show();
 win.on('close', e => {

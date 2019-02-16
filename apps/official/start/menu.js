@@ -127,7 +127,7 @@ async function renderApps() {
 			appName.className = "text-truncate text-center";
 			appEntry.className = "btn py-1 px-2 flex-shrink-0 d-flex flex-column align-items-center justify-content-center " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 
-			appEntry.menu = new Menu(null, [{
+			appEntry.menu = new Menu([{
 				label: "Launch",
 				icon: "open-in-app"
 			}, {

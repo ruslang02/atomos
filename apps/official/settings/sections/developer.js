@@ -14,6 +14,15 @@ list.windowProps = newSmallListItem({
 		Registry.set("system.showWindowProps", checked);
 	}
 });
+list.enableCaching = newSmallListItem({
+	label: "Enable Caching",
+	sublabel: "Caches application code after its first run",
+	type: "checkbox",
+	checked: Registry.get("system.enableCaching"),
+	click(checked) {
+		Registry.set("system.enableCaching", checked);
+	}
+});
 list.enableSuperFetch = newSmallListItem({
 	label: "Enable SuperFetch <span class='badge badge-warning'>beta</span>",
 	sublabel: "Preloads all apps on boot, lowers app startup times, but may increase boot times",
@@ -32,5 +41,5 @@ list.enableUltraFetch = newSmallListItem({
 		Registry.set("system.enableUltraFetch", checked);
 	}
 });
-list.append(list.windowProps, list.enableSuperFetch, list.enableUltraFetch);
+list.append(list.windowProps, list.enableCaching, list.enableSuperFetch, list.enableUltraFetch);
 main.append(list);

@@ -26,7 +26,7 @@ if (!Registry.get("system.menu")) Registry.get("system.menu", {
 });
 
 class Menu extends EventEmitter {
-	constructor(win, template = []) {
+	constructor(template = []) {
 		super();
 		let _this = this;
 		this.activeElement = document.activeElement;
@@ -65,7 +65,7 @@ class Menu extends EventEmitter {
 			_this.emit('menu-will-close', event);
 			if (event.returnValue) _this.closePopup();
 		};
-		this.window = win;
+		this.window = AppWindow.fromId(module.parent.id);
 		this.id = Shell.uniqueId();
 		this.menu.id = this.id;
 		this.renderMenu();
@@ -75,8 +75,8 @@ class Menu extends EventEmitter {
 		return document.querySelector("menu");
 	}
 
-	static buildFromTemplate(win, template) {
-		return new Menu(win, template);
+	static buildFromTemplate(template) {
+		return new Menu(template);
 	}
 
 	renderMenu() {
@@ -195,14 +195,12 @@ class Menu extends EventEmitter {
 	popup(options = {}) {
 		document.querySelectorAll("menu").forEach(menu => menu.close());
 		const defaultPopUpOptions = {
-			window: AppWindow.getFocusedWindow(),
 			x: Shell.getCursorScreenPoint().x,
 			y: Shell.getCursorScreenPoint().y,
 			callback: null
 		};
 		//this.activeElement.classList.add("active");
 		options = Object.assign({}, defaultPopUpOptions, options);
-		this.window = options.window;
 		let event = {
 			preventDefault: function () {
 				event.returnValue = false;

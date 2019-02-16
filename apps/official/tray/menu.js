@@ -220,7 +220,7 @@ function renderSoundSettings() {
 	notifVolume.range.onchange = function () {
 		notifVolume.icon.classList.remove("mdi-bell-outline", "mdi-bell-off-outline");
 		notifVolume.icon.classList.add(notifVolume.range.value === 0 ? "mdi-bell-off-outline" : "mdi-bell-outline");
-		Registry.set("system.notificationsVolume", notifVolume.range.value);
+		Registry.set("system.notificationsVolume", parseFloat(notifVolume.range.value));
 	};
 	notifVolume.range.onchange(null);
 	notifVolume.append(notifVolume.icon, notifVolume.range);
@@ -249,7 +249,7 @@ function getCurrentVolume() {
 
 function renderNotifications() {
 	Elements.MenuBar.notifications = document.createElement("notifications");
-	Elements.MenuBar.notifications.className = "flex-grow-1 scrollable-y scrollable-x-0";
+	Elements.MenuBar.notifications.className = "flex-grow-1";
 	Elements.MenuBar.notifications.none = document.createElement("section");
 	Elements.MenuBar.notifications.none.className = "card shadow very-rounded flex-column p-3 text-center text-muted font-italic " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
 	Elements.MenuBar.notifications.none.innerText = "No new notifications";

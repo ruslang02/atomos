@@ -1,8 +1,12 @@
-const win = AppWindow.fromId(WINDOW_ID);
+const AppWindow = require("@api/WindowManager");
+const Menu = require(`@api/Menu`);
+const Shell = require("@api/Shell");
+const win = AppWindow.getCurrentWindow();
 const path = require("path");
 
 let backend = new Worker(path.join(__dirname, "worker.js"));
 backend.onmessage = e => {
+	console.log(e.data);
 	switch (e.data.action) {
 		case "library-error":
 			win.close();
@@ -36,7 +40,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			loginBtn.innerHTML = "";
 			loginBtn.onclick = e => {
 				e.stopPropagation();
-				new Menu(win, [{
+				new Menu([{
 					label: "Sign out",
 					icon: "exit-to-app",
 					click() {
@@ -56,14 +60,14 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			let displayName = document.createElement("div");
 			displayName.innerText = e.data.user.displayName;
 			loginBtn.append(avatar, displayName);
-			backend.postMessage({
+			/*backend.postMessage({
 				action: "get-channels"
-			});
-			if (win.arguments.url || win.arguments.file) {
+			});*/
+			/*if (win.arguments.url || win.arguments.file) {
 				let url = new URL(win.arguments.url || win.arguments.file);
 				spinner.classList.replace("hide", "show");
 				backend.postMessage({action: "play-video", id: url.searchParams.get("v")});
-			}
+			}*/
 			break;
 		case "get-channel-info":
 			let channel = e.data.info;
@@ -145,7 +149,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 win.on('close', e => {
 	backend.terminate();
 });
-root.classList.remove("flex-column");
+win.ui.body.classList.remove("flex-column");
 
 function genVid(item) {
 	let elem = document.createElement("div");
@@ -256,7 +260,7 @@ sidebar.noChannels = document.createElement("button");
 sidebar.noChannels.disabled = true;
 sidebar.noChannels.className = "dropdown-item d-flex align-items-center";
 sidebar.noChannels.innerHTML = "<div>Loading...</div>";
-sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels);
+sidebar.append(sidebar.trending, sidebar.subs, sidebar.search/*, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels*/);
 
 let main = document.createElement("main");
 main.className = "bg-white shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y";
@@ -271,6 +275,7 @@ spinner.classList.replace("hide", "show");
 win.show();
 
 function openLogIn(url) {
+	console.log(url);
 	let modal = document.createElement("div");
 	modal.dialog = document.createElement("form");
 	modal.content = document.createElement("main");

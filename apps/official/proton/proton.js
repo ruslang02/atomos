@@ -1,5 +1,8 @@
-const registry = new Registry("proton");
-const win = AppWindow.fromId(WINDOW_ID);
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
+const Registry = require(`@api/Registry`);
+const Menu = require(`@api/Menu`);
+const win = AppWindow.getCurrentWindow();
 const fs = require("fs");
 win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
@@ -8,30 +11,19 @@ win.on('second-instance', (e, args) => {
 });
 const isDarkMode = win.options.darkMode;
 
-if (!Object.keys(registry.get()).length) registry.set({
+if (!Registry.get("proton.history")) Registry.set("proton", {
 	history: [],
-	nightMode: 1,
 	saveHistory: true
 });
-let preferences = new Proxy(registry.get(), {
+let preferences = new Proxy(Registry.get("proton"), {
 	set(t, p, v) {
-		if (p === "nightMode" && false) {
-			if (v) {
-				$("body").addClass("night-mode");
-				$("input").addClass("btn-outline-light");
-			} else {
-				$("body").removeClass("night-mode");
-				$("input").removeClass("btn-outline-light");
-			}
-		}
 		if (p === "history" && false) {
 			v.forEach((item) => {
 				$("datalist").append("<option>" + item + "</option>");
 			});
 		}
-
 		t[p] = v;
-		registry.set(preferences);
+		Registry.set("proton", preferences);
 		return true;
 	}
 });
@@ -44,7 +36,6 @@ tabs.onmousewheel = e => tabs.scrollLeft += e.deltaY;
 win.ui.root.style.overflow = "unset";
 win.ui.header.classList.remove("border-bottom", "p-2");
 win.ui.header.classList.add("pt-2", "px-2");
-win.ui.header.style.boxShadow = "inset 0px 0px 0px 50px #6c757d2b";
 win.ui.buttons.style.marginTop = "-0.5rem";
 win.ui.title.classList.add("d-none");
 let ntbtn = document.createElement("button");
@@ -104,7 +95,7 @@ nav.menu.addEventListener("click", e => {
 		y: nav.menu.offsetTop + nav.menu.offsetHeight + pos[1]
 	});
 });
-nav.menu.menu = new Menu(win, [{
+nav.menu.menu = new Menu([{
 	label: "Home",
 	icon: "home-outline",
 	visible: false,
@@ -147,6 +138,7 @@ nav.menu.menu = new Menu(win, [{
 	{
 		label: "Open Developer Tools",
 		icon: "developer-board",
+		visible: false,
 		click() {
 			tabs.active.webview.getWebContents().openDevTools();
 		}
@@ -181,7 +173,7 @@ win.ui.body.append(nav, tabCollection, urlTooltip);
 setImmediate(() => newTab(win.arguments.file || win.arguments.url));
 win.show();
 
-let tabMenu = new Menu(win, [{
+let tabMenu = new Menu([{
 	label: "Refresh",
 	icon: "refresh",
 	accelerator: "F5",
@@ -215,14 +207,14 @@ function newTab(url = "https://www.startpage.com") {
 	tab.loaded = false;
 	tab.webview = document.createElement("webview");
 	tab.webview.className =
-		"flex-grow-1 w-100 h-100 d-inline-flex rounded-bottom scrollable-0 " + (win.options.darkMode ? "bg-dark" : "bg-white");
+		"flex-grow-1 w-100 h-100 d-inline-flex very-rounded-bottom scrollable-0 " + (win.options.darkMode ? "bg-dark" : "bg-white");
 	tab.webview.src = "about:blank";
 	tab.webview.autosize = true;
-	tab.devToolsWebview = document.createElement("webview");
+	/*tab.devToolsWebview = document.createElement("webview");
 	tab.devToolsWebview.style.resize = "horizontal";
 	tab.devToolsWebview.className =
-		"w-100 h-100 d-inline-flex rounded-bottom scrollable-0 " + (win.options.darkMode ? "bg-dark" : "bg-white");
-	tab.section.append(tab.webview, tab.devToolsWebview);
+		"w-100 h-100 d-inline-flex rounded-bottom scrollable-0 " + (win.options.darkMode ? "bg-dark" : "bg-white");*/
+	tab.section.append(tab.webview/*,tab.devToolsWebview*/);
 	tabCollection.appendChild(tab.section);
 	tab.className =
 		"nav-item shadow-sm nav-link align-items-center position-relative d-flex fade " +
@@ -402,6 +394,9 @@ window[id='${id}'] tab.bg-dark:before {
 }
 window[id='${id}'] tab.bg-dark:after {
   box-shadow: -2px 2px 0 var(--dark);
+}
+window[id='${id}'] window-body > label:empty{
+  display:none;
 }
 `;
 win.ui.body.append(css);

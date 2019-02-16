@@ -1,5 +1,6 @@
 //const fs = require("fs");
-const path = require("path");
+//const path = require("path");
+const Registry = require(`@api/Registry`);
 setTitle("Sound");
 let main = document.createElement("main");
 const wc = require("electron").remote.getCurrentWebContents();

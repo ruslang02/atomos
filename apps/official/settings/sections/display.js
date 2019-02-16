@@ -20,7 +20,8 @@ list.themes = newSmallListItem({
 list.wm = newSmallListItem({
 	color: "var(--primary)",
 	icon: "transition",
-	label: "Effects"
+	label: "Effects",
+	click: () => openSection("display-effects")
 });
 list.generalLabel = newSmallListItem({
 	label: "General settings",
@@ -44,51 +45,5 @@ list.darkMode = newSmallListItem({
 		})
 	}
 });
-list.thumbEnabled = newSmallListItem({
-	label: "Thumbnails",
-	sublabel: "View small shots of running apps",
-	type: "checkbox",
-	checked: Registry.get("system.enableThumbnails"),
-	click(checked) {
-		Registry.set("system.enableThumbnails", checked);
-	}
-});
-list.thumbEnabled.input.disabled = true;
-list.thumbEnabled.classList.add("disabled");
-list.transparency = newSmallListItem({
-	label: "Transparency",
-	sublabel: "Semi-transparent windows, may affect performance",
-	type: "checkbox",
-	checked: Registry.get("system.enableTransparentWindows"),
-	click(checked) {
-		Registry.set("system.enableTransparentWindows", checked);
-	}
-});
-list.shadows = newSmallListItem({
-	label: "Shadows",
-	sublabel: "Cast shadows behind windows",
-	type: "checkbox",
-	checked: Registry.get("system.enableWindowShadows"),
-	click(checked) {
-		Registry.set("system.enableWindowShadows", checked);
-	}
-});
-list.liveTransforms = newSmallListItem({
-	label: "Live Transformations",
-	sublabel: "Transform window's content immediately<br />Disabling this significantly improves UI performance",
-	type: "checkbox",
-	checked: !Registry.get("system.disableLiveTransformations"),
-	click(checked) {
-		Registry.set("system.disableLiveTransformations", !checked);
-	}
-});
-list.menuIcons = newSmallListItem({
-	label: "Show icons in menus",
-	type: "checkbox",
-	checked: Registry.get('system.showMenuIcons') !== false,
-	click(checked) {
-		Registry.set("system.showMenuIcons", checked);
-	}
-});
-list.append(list.wallpaper, list.generalLabel, list.darkMode, list.thumbEnabled, list.transparency, list.shadows, list.liveTransforms, list.menuIcons);
+list.append(list.wallpaper, list.wm, /* list.generalLabel , */list.darkMode);
 main.append(list);

@@ -22,7 +22,7 @@ function render() {
 	Elements.Bar.transition = "bottom 1s ease";
 	updatePosition();
 	new ResizeObserver(updatePosition).observe(Elements.Bar);
-	Elements.Bar.menu = new Menu(null, [{
+	Elements.Bar.menu = new Menu([{
 		type: "checkbox",
 		label: "Automatically hide taskbar",
 		checked: autoHide || false,

@@ -87,6 +87,7 @@ async function storeToken(token) {
 
 onmessage = function (e) {
 	let action = e.data.action;
+	console.log(e.data);
 	switch (action) {
 		case "return-token":
 			oauth2Client.getToken(e.data.token, function (err, token) {
@@ -108,31 +109,34 @@ onmessage = function (e) {
 			break;
 		case "get-channels":
 			let subChannels = [];
-			let iChannels = 0;
-			let totalChannels = 0;
-			let pageToken = "";
+			//let iChannels = 0;
+			//let totalChannels = 0;
+			//let pageToken = "";
+			console.log("getting channels");
 
-		async function retrieveChannels() {
-			let res = await new Promise(resolve => google.youtube('v3').subscriptions.list({
+		function retrieveChannels() {
+			console.log("let's go channels");
+			return new Promise(resolve => google.youtube('v3').subscriptions.list({
 				auth: oauth2Client,
 				part: 'snippet',
 				mine: true,
-				maxResults: 50,
-				order: "unread",
-				pageToken: pageToken
-			}, (e, res) => resolve(res)));
-			try {
+				maxResults: 10,
+				order: "unread"
+				//pageToken: pageToken
+			}, (e, res) => resolve(res.data.items)));
+			//console.log("go channels");
+			/*try {
+				console.log(res);
 				totalChannels = res.data.pageInfo.totalResults;
-			} catch (e) {
-			}
-			if (totalChannels < iChannels * 50) return subChannels;
-			subChannels.push.apply(subChannels, res.data.items);
-			pageToken = res.data.nextPageToken;
-			iChannels++;
-			return await retrieveChannels();
+			} catch {
+			}*/
+			/*pageToken = res.data.nextPageToken;
+			iChannels++;*/
+			//return await retrieveChannels();
 		}
 
 			retrieveChannels().then(channels => postMessage({action: "get-channels", items: channels}));
+			console.log("still getting channels");
 			break;
 		case "get-channel-info":
 			console.log(e.data.id);
@@ -220,6 +224,7 @@ onmessage = function (e) {
 
 			break;
 		case "play-video":
+			console.log("yeaks");
 			let url = 'https://www.youtube.com/watch?v=' + e.data.id;
 			youtubedl.getInfo(url, [], function (err, info) {
 				if (err) throw err;

@@ -50,7 +50,7 @@ class TaskManager {
 		new Tooltip(this.task, {
 			delay: 250
 		});
-		this.menu = new Menu(null, [{
+		this.menu = new Menu([{
 			label: "Maximize",
 			icon: "window-maximize",
 			click: e => this.window.maximize()
