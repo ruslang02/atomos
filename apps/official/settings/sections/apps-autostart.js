@@ -1,21 +1,22 @@
 const fs = require("fs");
+const Shell = require("@api/Shell");
 const path = require("path");
 const Registry = require(`@api/Registry`);
 if (!Registry.get("system.autostart"))
 	Registry.set("system.autostart", []);
 setTitle("Auto-start management");
 let description = document.createElement("p");
-description.innerText = `Apps and scripts in this menu will start every time you boot AtomOS. Be careful when allowing scripts to run after startup, as they can reduce your performance greatly.`;
+description.innerText = "Apps and scripts in this menu will start every time you boot AtomOS. Be careful when allowing scripts to run after startup, as they can reduce your performance greatly.".toLocaleString();
 description.className = "smaller px-3 pt-2 text-muted";
 root.append(description);
 let newButton = document.createElement("button");
-newButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-plus btn btn-white rounded-circle d-flex";
+newButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-plus btn rounded-circle d-flex " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 newButton.onclick = e => {
 	let message = document.createElement("div");
 	message.header = document.createElement("input");
 	message.script = document.createElement("input");
-	message.header.placeholder = "Name";
-	message.script.placeholder = "Script source"; // input file
+	message.header.placeholder = "Name".toLocaleString();
+	message.script.placeholder = "Script source".toLocaleString(); // input file
 	message.header.className = "form-control my-2";
 	message.script.className = "form-control";
 	message.append(message.header, message.script);

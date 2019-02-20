@@ -32,15 +32,15 @@ function newSmallListItem(options) {
 		elem.input.className = "custom-control-input";
 		elem.label = document.createElement("div");
 		elem.label.className = Shell.ui.darkMode ? "text-light" : "";
-		elem.label.innerHTML = `<div>${options.label}</div>`;
-		if (options.sublabel) elem.label.innerHTML += `<div class='text-muted small'>${options.sublabel}</div>`;
+		elem.label.innerHTML = `<div>${options.label.toLocaleString()}</div>`;
+		if (options.sublabel) elem.label.innerHTML += `<div class='text-muted small font-weight-bolder'>${options.sublabel.toLocaleString()}</div>`;
 		elem.htmlFor = elem.input.id;
 		elem.label.className = "custom-control-label d-flex flex-column w-100 pr-4";
 		elem.append(elem.input, elem.label);
 		elem.input.onchange = () => options.click(elem.input.checked);
 	} else if (options.type === "header") {
 		elem.className = "lh-r1 font-weight-bolder dropdown-header " + (Shell.ui.darkMode ? "bg-secondary text-white" : "bg-light");
-		elem.innerText = options.label;
+		elem.innerText = options.label.toLocaleString();
 	} else {
 		elem.className = "rounded-0 border-top border-bottom-0 border-left-0 border-right-0 d-flex align-items-center text-left py-2 mb-0 btn px-3 " + (Shell.ui.darkMode ? "btn-dark border-secondary" : "btn-white");
 		elem.header = document.createElement('div');
@@ -53,7 +53,7 @@ function newSmallListItem(options) {
 		}
 		elem.onclick = options.click;
 		elem.header.className = Shell.ui.darkMode ? "text-white" : "";
-		elem.header.innerHTML = `<div>${options.label}</div>` + (options.sublabel ? `<div class='small text-muted'>${options.sublabel}</div>` : "");
+		elem.header.innerHTML = `<div>${options.label.toLocaleString()}</div>` + (options.sublabel ? `<div class='small text-muted'>${options.sublabel.toLocaleString()}</div>` : "");
 		elem.append(elem.header);
 
 	}
@@ -69,7 +69,7 @@ async function openSection(id, log = true) {
 	}
 
 	function setTitle(title) {
-		root.footer.header.innerText = title;
+		root.footer.header.innerText = title.toLocaleString();
 	}
 
 	let sectionPath = path.join(osRoot, "apps", "official/settings", "sections", id + ".js");

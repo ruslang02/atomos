@@ -8,7 +8,7 @@
   "homepage": "https://apps.atomos.org.uk/package/devdocs",
   "main": "devdocs.js",
   "icon": "code-tags",
-  "color": "var(--dark)",
+	"color": "darkslategrey",
   "dependencies": {
     "atomos": "~0.8.0"
   },

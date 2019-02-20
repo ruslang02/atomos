@@ -6,17 +6,15 @@ const {
 let wc = remote.getCurrentWebContents();
 const Registry = require(`@api/Registry`);
 const {Snackbar, Notification} = require(`@api/Notification`);
-//require(`@api/EditMenu`);
-//require(`@api/Shortcuts`);
-//require("@api/Menu");
 require('gitlab/dist/es5');
 const fso = require("fs");
+const fs = fso.promises;
 let autoStartWorkers = [];
 let blockNW;
 ipcRenderer.on('new-window', (e, u) => {
 	const AppWindow = require(`@api/WindowManager`);
 	if (blockNW || u === "about:blank") return;
-	AppWindow.launch("proton", {
+	AppWindow.launch("official/proton", {
 		url: u
 	});
 	blockNW = true;
@@ -41,13 +39,38 @@ for (const worker of (Registry.get("system.autostart") || [])) {
 		worker: work
 	})
 }
-require("@apps/official/bar");
+renderLocale().then(() => require("@apps/official/bar"));
+String.toLocaleString = function (name) {
+	for (const data of window.localeData) {
+		if (data[name])
+			return data[name];
+	}
+};
+String.prototype.toLocaleString = function () {
+	for (const data of window.localeData) {
+		if (data[this])
+			return data[this];
+	}
+	return `${this}`;
+};
 let wFile = path.join(process.env.HOME, ".config", "wallpaper.jpg");
 let time;
 renderWall();
 fso.watch(wFile, () => {
 	if (!time) time = setTimeout(renderWall, 1000);
 });
+
+async function renderLocale() {
+	let locale = "ru-RU";
+	let files = await fs.readdir(path.join(osRoot, "locales", locale));
+	for (let file of files) {
+		if (file === "default.json") continue;
+		file = path.join(osRoot, "locales", locale, file);
+		let localeFile = (await fs.readFile(file)).toString();
+		let localeData = JSON.parse(localeFile);
+		(window.localeData = window.localeData || []).push(localeData);
+	}
+}
 
 function renderWall() {
 	clearTimeout(time);
@@ -104,3 +127,6 @@ function LoadCSS() {
 }
 
 document.title = "AtomOS (Render complete)";
+
+require(`@api/EditMenu`);
+require(`@api/Shortcuts`);

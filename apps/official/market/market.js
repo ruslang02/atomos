@@ -37,15 +37,15 @@ nav.backButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center m
 nav.backButton.disabled = true;
 nav.backButton.type = "button";
 nav.backButton.onclick = e => nav.secSwitch.querySelector("button:not(.btn-dark):not(.btn-light)").click();
-nav.backButton.title = "Previous (Ctrl+<i class='mdi mdi-chevron-left'></i>)";
+nav.backButton.title = "Previous".toLocaleString() + " (Ctrl+<i class='mdi mdi-chevron-left'></i>)";
 
 nav.search.className = "btn btn-sm mdi d-none shadow-sm align-items-center mdi-magnify ml-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.search.type = "button";
 nav.search.onclick = e => nav.secSwitch.querySelector("button:not(.btn-dark):not(.btn-light)").click();
-nav.search.title = "Search (Ctrl+F)";
+nav.search.title = "Search".toLocaleString() + " (Ctrl+F)";
 
 nav.install.className = "btn btn-sm btn-primary px-3" + (win.options.darkMode ? " btn-dark" : " btn-light");
-nav.install.innerText = "Applications";
+nav.install.innerText = "Applications".toLocaleString();
 nav.install.onclick = e => {
 	nav.manage.classList.add(win.options.darkMode ? "btn-dark" : "btn-light");
 	nav.install.classList.remove(win.options.darkMode ? "btn-dark" : "btn-light");
@@ -53,7 +53,7 @@ nav.install.onclick = e => {
 };
 
 nav.manage.className = "btn btn-sm btn-primary px-4" + (win.options.darkMode ? " btn-dark" : " btn-light");
-nav.manage.innerText = "Manage";
+nav.manage.innerText = "Manage".toLocaleString();
 nav.manage.onclick = () => {
 	nav.install.classList.add(win.options.darkMode ? "btn-dark" : "btn-light");
 	nav.manage.classList.remove(win.options.darkMode ? "btn-dark" : "btn-light");
@@ -63,7 +63,7 @@ nav.secSwitch.className = "btn-group shadow-sm align-items-stretch flex-shrink-0
 nav.secSwitch.append(nav.install, nav.manage);
 
 nav.downloadsButton.className = "btn btn-primary btn-sm mdi mdi-18px lh-18 mdi-cancel btn-block";
-nav.downloadsButton.innerHTML = "&nbsp;&nbsp;Cancel All";
+nav.downloadsButton.innerHTML = "&nbsp;&nbsp;" + "Cancel All".toLocaleString();
 let downloadApp = document.createElement("button");
 downloadApp.className = "btn btn-white p-1 d-flex align-items-center";
 downloadApp.icon = new Image(36, 36);
@@ -92,7 +92,7 @@ async function renderUser() {
 		label: "Open in GitLab",
 		icon: "gitlab",
 		click() {
-			AppWindow.launch("proton", {
+			AppWindow.launch("official/proton", {
 				file: "http://apps.atomos.org.uk/" + currentUser.username
 			})
 		}
@@ -132,7 +132,7 @@ new Popover(nav.downloads, {
 });
 win.ui.body.classList.add(win.options.darkMode ? "bg-dark" : "bg-white");
 
-body.className = "flex-grow-1 py-3 container scrollable-y";
+body.className = "flex-grow-1 py-3 container scrollable-y" + (win.options.darkMode ? " text-white" : "");
 spinner.style.cssText = "position:absolute;left:0;right:0;width:36px;height:36px";
 spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 fly down hide lh-24 d-flex align-items-center bg-light border mx-auto p-1 rounded-circle shadow";
 win.ui.body.append(spinner, body);
@@ -140,13 +140,16 @@ win.ui.body.append(spinner, body);
 win.show();
 login();
 
+async function installApp(app, version) {
+
+}
 async function loadApp(app) {
 	body.innerHTML = "";
 	spinner.classList.replace("hide", "show");
 	nav.backButton.disabled = false;
+	let installedVersion = "";
 
 	let main = document.createElement("header");
-	main.className = "bg-light very-rounded px-4 py-3 d-flex shadow-sm";
 	let appIcon = new Image(48, 48);
 	appIcon.className = "mr-3 shadow rounded-circle";
 	let appName = document.createElement("b");
@@ -157,26 +160,27 @@ async function loadApp(app) {
 	let appBtns = document.createElement("div");
 	appBtns.className = "d-flex flex-column justify-content-center align-content-center";
 	let installInfo = document.createElement("section");
-	installInfo.className = "px-4 py-3 mt-4 bg-light very-rounded shadow-sm d-flex";
+	main.className = installInfo.className = "px-4 py-3 mb-4 very-rounded shadow-sm d-flex " + (win.options.darkMode ? "bg-secondary" : "bg-light");
 	let isInstalled = document.createElement("div");
 	let versionSection = document.createElement("label");
-	versionSection.innerText = "Version:";
+	versionSection.innerText = "Version".toLocaleString() + ":";
 	versionSection.className = "d-flex align-items-center mb-0";
 	let versionSelect = document.createElement("select");
 	versionSelect.className = "custom-select custom-select-sm ml-3";
 	versionSelect.onchange = () => {
+		console.log(installedVersion);
 		versionInstall.classList.toggle("d-none", installedVersion === versionSelect.value);
 	};
 	let versionInstall = document.createElement("button");
 	versionInstall.className = "btn btn-sm btn-success d-none text-nowrap ml-2";
-	versionInstall.innerText = "Install this version";
+	versionInstall.innerText = "Install".toLocaleString();
 	versionSection.append(versionSelect, versionInstall);
 	installInfo.append(isInstalled, versionSection);
 	appInfo.append(appName, descr);
 	main.append(appIcon, appInfo, appBtns);
-	let installedVersion = "";
 
 	api.Projects.show(app).then(async function (pkg) {
+		console.log(pkg);
 		let appPath = path.join(osRoot, "apps", pkg.path_with_namespace, "package.json");
 		if (fs.existsSync(appPath)) {
 			let file = await fsp.readFile(appPath);
@@ -184,13 +188,14 @@ async function loadApp(app) {
 		}
 		descr.innerText = pkg.description;
 		isInstalled.className = "d-flex align-items-center mdi mdi-18px font-weight-bolder mr-auto " + (installedVersion ? "mdi-check" : "mdi-close");
-		isInstalled.innerHTML = "&nbsp;&nbsp;" + (installedVersion ? "This app is installed" : "This app is not installed");
+		isInstalled.innerHTML = "&nbsp;&nbsp;" + (installedVersion ? "This app is installed".toLocaleString() : "This app is not installed".toLocaleString());
 		if (installedVersion)
 			versionSelect.value = installedVersion;
 		appIcon.src = pkg.avatar_url;
 		appName.innerText = pkg.name;
 		let releases = await api.Tags.all(app);
 		for (const tag of releases) {
+			console.log(tag);
 			versionSelect.add(new Option(tag.name));
 		}
 		let latestVersion = releases[0].name;
@@ -202,7 +207,7 @@ async function loadApp(app) {
 			if (semver.lt(installedVersion, latestVersion)) {
 				let updateBtn = document.createElement("button");
 				updateBtn.className = "btn btn-primary btn-block btn-lg mdi mdi-update";
-				updateBtn.innerText = " Update";
+				updateBtn.innerText = " " + "Update".toLocaleString();
 				let launchBtn = document.createElement("button");
 				launchBtn.className = "btn btn-success btn-lg mdi mdi-open-in-new";
 				launchBtn.onclick = () => AppWindow.launch(app);
@@ -210,7 +215,7 @@ async function loadApp(app) {
 			} else {
 				let launchBtn = document.createElement("button");
 				launchBtn.className = "btn btn-success btn-block btn-lg mdi mdi-open-in-new";
-				launchBtn.innerText = " Launch";
+				launchBtn.innerText = " " + "Launch".toLocaleString();
 				launchBtn.onclick = () => AppWindow.launch(app);
 				let removeBtn = document.createElement("button");
 				removeBtn.className = "btn btn-danger btn-lg mdi mdi-delete-outline";
@@ -220,7 +225,10 @@ async function loadApp(app) {
 		} else {
 			let installBtn = document.createElement("button");
 			installBtn.className = "btn btn-primary btn-lg";
-			installBtn.innerText = "Install";
+			installBtn.innerText = "Install".toLocaleString();
+			installBtn.onclick = () => {
+
+			};
 			appBtns.append(installBtn);
 		}
 	});
@@ -238,9 +246,9 @@ async function loadApp(app) {
 		issuesSection.innerHTML = `<h4 class="px-3 mb-3">Issues(${issues.length})</h4>`;
 		for (const issue of issues) {
 			let elem = document.createElement("button");
-			elem.className = "btn btn-white m-0 border-top px-3 d-flex rounded-0 btn-block align-items-center text-left";
+			elem.className = "btn m-0 border-top px-3 d-flex rounded-0 btn-block align-items-center text-left " + (win.options.darkMode ? "btn-secondary" : "btn-white");
 			elem.onclick = () => {
-				AppWindow.launch("proton", {
+				AppWindow.launch("official/proton", {
 					file: issue.web_url
 				})
 			};
@@ -260,11 +268,11 @@ async function loadApp(app) {
 	});
 
 	let description = document.createElement("section");
-	description.className = "px-4 py-3 mt-4 bg-light very-rounded shadow-sm scrollable-y";
 	description.style.maxHeight = "300px";
 
 	let issuesSection = document.createElement("section");
-	issuesSection.className = "pt-3 mt-4 bg-light very-rounded shadow-sm scrollable-y";
+	description.className = "p-3 mb-4 very-rounded shadow-sm d-flex flex-column px-0 scrollable-y " + (win.options.darkMode ? "bg-secondary" : "bg-light");
+	issuesSection.className = "py-3 mb-4 very-rounded shadow-sm d-flex flex-column px-0 scrollable-y " + (win.options.darkMode ? "bg-secondary" : "bg-light");
 	body.append(main, installInfo, description, issuesSection);
 	spinner.classList.replace("show", "hide");
 }
@@ -280,11 +288,11 @@ async function refreshApps() {
 	console.log(apps);
 	let h2 = document.createElement("h2");
 	h2.className = "mb-3";
-	h2.innerText = "Latest activity";
+	h2.innerText = "Latest activity".toLocaleString();
 	body.append(h2);
 	for (const app of apps) {
 		let elem = document.createElement("div");
-		elem.className = "btn btn-white very-rounded d-flex text-left border mt-2 align-items-center";
+		elem.className = "btn very-rounded d-flex text-left mt-2 align-items-center " + (win.options.darkMode ? "btn-outline-light" : "btn-white");
 		elem.icon = new Image(36, 36);
 		elem.icon.className = "mr-3 my-1";
 		elem.icon.src = app.avatar_url;
@@ -311,7 +319,7 @@ async function refreshInstalledApps() {
 	nav.backButton.disabled = true;
 	let h2 = document.createElement("h2");
 	h2.className = "mb-3";
-	h2.innerText = "Installed apps";
+	h2.innerText = "Installed apps".toLocaleString();
 	body.append(h2);
 
 	async function addApps(appPath) {
@@ -326,7 +334,7 @@ async function refreshInstalledApps() {
 			try {
 				let app = JSON.parse(await fsp.readFile(name));
 				let elem = document.createElement("div");
-				elem.className = "btn btn-white very-rounded d-flex text-left border mt-2 align-items-center";
+				elem.className = "btn very-rounded d-flex text-left mt-2 align-items-center " + (win.options.darkMode ? "btn-outline-light" : "btn-white");
 				elem.icon = document.createElement("icon");
 				elem.icon.className = "mdi mdi-24px rounded-max shadow text-white d-flex p-2 lh-24 my-1 mr-3 mdi-" + app.icon;
 				elem.icon.style.background = app.color;
@@ -364,6 +372,7 @@ async function login() {
 				url: "http://apps.atomos.org.uk",
 				oauthToken: access.access_token
 			});
+			console.log(api);
 			currentUser = await api.Users.current();
 			await renderUser();
 			return;

@@ -340,7 +340,7 @@ function newTab(url = "https://www.startpage.com") {
 			offerOk.className = "btn btn-danger rounded-max btn-sm mdi mdi-18px lh-18 d-flex mr-2 mdi-youtube font-weight-bolder";
 			offerOk.innerHTML = "&nbsp;&nbsp;YouTube";
 			offerOk.onclick = () => {
-				AppWindow.launch("youtube", {
+				AppWindow.launch("official/youtube", {
 					url
 				});
 				tab.close();

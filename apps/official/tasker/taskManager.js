@@ -52,11 +52,15 @@ class TaskManager {
 		});
 		this.menu = new Menu([{
 			label: "Maximize",
+			id: "max",
 			icon: "window-maximize",
+			enabled: !this.window.isMaximized(),
 			click: e => this.window.maximize()
 		}, {
 			label: "Restore",
+			id: "res",
 			icon: "window-restore",
+			enabled: this.window.isMaximized(),
 			click: e => this.window.restore()
 		}, {
 			label: "Minimize",

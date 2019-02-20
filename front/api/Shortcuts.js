@@ -7,7 +7,7 @@ window.addEventListener("keydown", e => {
 		if (e.code === "Tab" && e.altKey) {
 			if (altTabTimer)
 				clearTimeout(altTabTimer);
-			altTabWins = []
+			altTabWins = [];
 			for (const win of document.querySelectorAll("window")) {
 				altTabWins.push(win);
 			}

@@ -8,6 +8,7 @@
   "version": "1.0.0",
   "homepage": "https://apps.atomos.org.uk/package/brush",
   "icon": "brush",
+  "main": "brush.js",
   "color": "#ef6c00",
   "dependencies": {
     "atomos": "~0.8.0"
@@ -16,6 +17,5 @@
   "height": 500,
   "minWidth": 550,
   "minHeight": 300,
-  "hidden": true,
   "type": "app"
 }

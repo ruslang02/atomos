@@ -1,4 +1,8 @@
-const win = AppWindow.fromId(WINDOW_ID);
+const Shell = require("@api/Shell");
+const AppWindow = require("@api/WindowManager");
+const Menu = require(`@api/Menu`);
+const {Notification, Snackbar} = require("@api/Notification");
+const win = AppWindow.getCurrentWindow();
 const path = require("path");
 let saveState, cropper, file;
 let toBuffer = require('blob-to-buffer');
@@ -37,12 +41,12 @@ appButton.menu = new Menu([{
 		icon: "new-box",
 		accelerator: "Ctrl+N",
 		click() {
-			AppWindow.launch("brush");
+			AppWindow.launch("official/brush");
 		}
 	}, {
 		type: "separator"
 	}, {
-		label: "Open...",
+	label: "Open".toLocaleString() + "...",
 		icon: "folder-outline",
 		accelerator: "Ctrl+O",
 		click() {
@@ -68,7 +72,7 @@ appButton.menu = new Menu([{
 			})
 		}
 	}, {
-		label: "Save as...",
+	label: "Save As".toLocaleString() + "...",
 		icon: "content-save-settings",
 		accelerator: "Ctrl+Shift+S",
 		id: "saveAs",
@@ -176,7 +180,7 @@ applyButtons.cancel.onclick = e => {
 applyButtons.cancel.className = "btn btn-danger mdi mdi-close mdi-18px lh-18 d-flex";
 applyButtons.apply = document.createElement("button");
 applyButtons.apply.className = "btn btn-success align-items-center mdi mdi-check mdi-18px lh-18 d-flex";
-applyButtons.apply.innerText = " Apply";
+applyButtons.apply.innerText = " " + "Apply".toLocaleString();
 applyButtons.apply.onclick = e => {
 	saveState = cropper.getCroppedCanvas().toDataURL();
 	image.src = saveState;

@@ -127,7 +127,7 @@ class Menu extends EventEmitter {
 					}
 					let menuTitle = document.createElement("div");
 					menuTitle.className = "flex-grow-1 text-truncate lh-21";
-					menuTitle.innerText = item.label;
+					menuTitle.innerText = item.label.toLocaleString();
 					menuItem.append(menuTitle);
 					if (item.accelerator && Registry.get('system.showAccelerators') !== false) {
 						let menuAccelerator = document.createElement("div");
@@ -142,7 +142,7 @@ class Menu extends EventEmitter {
 				} else if (item.type === "header") {
 					menuItem = document.createElement("div");
 					menuItem.className = "dropdown-header font-weight-bolder";
-					menuItem.innerText = item.label;
+					menuItem.innerText = item.label.toLocaleString();
 				} else if (item.type === "checkbox") {
 					menuItem = document.createElement("button");
 					menuItem.className = "dropdown-item d-flex align-items-center custom-control custom-checkbox pl-4";
@@ -157,7 +157,7 @@ class Menu extends EventEmitter {
 					menuInput.checked = item.checked;
 					let menuTitle = document.createElement("label");
 					menuTitle.className = "flex-grow-1 custom-control-label" + (Shell.ui.darkMode ? " text-white" : "");
-					menuTitle.innerText = item.label;
+					menuTitle.innerText = item.label.toLocaleString();
 					menuItem.append(menuInput, menuTitle);
 				}
 				menuItem.disabled = !item.enabled;

@@ -12,17 +12,17 @@ nav.copyClipboard = document.createElement("button");
 nav.copyClipboard.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-content-copy mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.copyClipboard.onclick = () => clipboard.writeImage(imageRes);
 nav.copyClipboard.disabled = true;
-nav.copyClipboard.title = "Copy to Clipboard (Ctrl+C)";
+nav.copyClipboard.title = "Copy to Clipboard".toLocaleString() + " (Ctrl+C)";
 nav.showInFiles = document.createElement("button");
 nav.showInFiles.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-folder-outline mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.showInFiles.onclick = () => Shell.showItemInFolder(url);
 nav.showInFiles.disabled = true;
-nav.showInFiles.title = "Show in File Manager (Ctrl+N)";
+nav.showInFiles.title = "Show in File Manager".toLocaleString() + " (Ctrl+N)";
 nav.share = document.createElement("button");
 nav.share.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-share mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.share.onclick; // Shell.shareContent() TODO: API for sharing content
 nav.share.disabled = true;
-nav.share.title = "Share (Ctrl+S)";
+nav.share.title = "Share".toLocaleString() + " (Ctrl+S)";
 nav.append(nav.copyClipboard, nav.showInFiles, nav.share);
 new Tooltip(nav.copyClipboard, {
 	placement: "bottom"
@@ -47,10 +47,13 @@ captureButton.className = "btn btn-success btn-lg m-2 d-flex align-items-center 
 captureButton.icon = document.createElement("icon");
 captureButton.icon.className = "mdi mdi-24px mdi-camera-iris mr-2 lh-24 d-flex";
 captureButton.header = document.createElement("div");
-captureButton.header.innerText = "Capture Screen";
+captureButton.header.innerText = "Capture Screen".toLocaleString();
 captureButton.addEventListener("click", async () => {
 	win.hide();
-	await fs.mkdir(path.join(process.env.HOME, "Pictures", "Screenshots"), {recursive: true});
+	try {
+		await fs.mkdir(path.join(process.env.HOME, "Pictures", "Screenshots"), {recursive: true});
+	} catch {
+	}
 	let output = path.join(process.env.HOME, "Pictures", "Screenshots", "screenshot_" + new Date().getTime() + ".png");
 	url = output;
 	setTimeout(() => {
@@ -100,4 +103,6 @@ captureButton.addEventListener("click", async () => {
 });
 captureButton.append(captureButton.icon, captureButton.header);
 win.ui.body.append(image, captureButton);
-win.show();
+if (win.arguments.capture)
+	captureButton.click();
+else win.show();

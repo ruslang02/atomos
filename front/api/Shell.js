@@ -247,8 +247,8 @@ class Shell {
 
 			confirmButton.className = "btn btn-primary ml-2 flex-shrink-0";
 			cancelButton.className = "btn btn-secondary ml-2 flex-shrink-0";
-			confirmButton.innerText = "Confirm";
-			cancelButton.innerText = "Cancel";
+			confirmButton.innerText = "Confirm".toLocaleString();
+			cancelButton.innerText = "Cancel".toLocaleString();
 			confirmButton.type = "submit";
 			cancelButton.type = "button";
 
@@ -271,7 +271,7 @@ class Shell {
 					modal.content.disabled = false;
 					stderr = stderr.replace("[sudo] password for " + process.env.USER + ": ", "");
 					if (stderr.includes("incorrect password")) {
-						errorText.innerText = "The password you entered is incorrect.";
+						errorText.innerText = "The password you entered is incorrect.".toLocaleString();
 						return;
 					}
 					if (stderr.trim().startsWith("sudo:"))
@@ -299,8 +299,8 @@ class Shell {
 			container.className = "modal-body d-flex";
 			glyphContainer.className = "flex-shrink-0 mr-3";
 			main.className = "flex-grow-1 d-flex flex-column";
-			header.innerText = options.title || "App wants to run command as an administrator";
-			message.innerText = options.message || "Type administrator password to proceed";
+			header.innerText = (options.title || "App wants to run command as an administrator").toLocaleString();
+			message.innerText = (options.message || "Type administrator password to proceed").toLocaleString();
 			password.className = "form-control mt-3";
 			password.autofocus = true;
 			password.type = "password";
@@ -361,7 +361,7 @@ class Shell {
 					confirmButton.disabled = false;
 
 					if (!elem.tab.input.value.trim()) {
-						elem.tab.invalidLabel.innerText = "Required field.";
+						elem.tab.invalidLabel.innerText = "Required field.".toLocaleString();
 					} else if (fs.existsSync(path.join(baseDir, elem.tab.input.value)))
 						elem.tab.invalidLabel.innerText = "This name already exists in this folder.";
 					else return;
@@ -373,10 +373,10 @@ class Shell {
 			}
 
 			let file = generate();
-			file.innerText = "File";
+			file.innerText = "File".toLocaleString();
 
 			let folder = generate();
-			folder.innerText = "Folder";
+			folder.innerText = "Folder".toLocaleString();
 			folder.tab.icon.classList.add("text-black", "bg-warning", "mdi-folder-outline");
 			folder.tab.icon.classList.remove("bg-info", "mdi-file-outline", "text-white");
 
@@ -395,8 +395,8 @@ class Shell {
 
 			confirmButton.className = "btn btn-primary ml-2 flex-shrink-0";
 			cancelButton.className = "btn btn-secondary ml-2 flex-shrink-0";
-			confirmButton.innerText = "Create";
-			cancelButton.innerText = "Cancel";
+			confirmButton.innerText = "Create".toLocaleString();
+			cancelButton.innerText = "Cancel".toLocaleString();
 			confirmButton.type = "submit";
 			cancelButton.type = "button";
 			modal.footer.append(cancelButton, confirmButton);
@@ -452,7 +452,7 @@ class Shell {
 		}
 
 		modal.defaultCheckbox.label = document.createElement("label");
-		modal.defaultCheckbox.label.innerText = "Make default";
+		modal.defaultCheckbox.label.innerText = "Make default".toLocaleString();
 		modal.defaultCheckbox.label.className = "custom-control-label flex-grow-1";
 		modal.defaultCheckbox.label.htmlFor = modal.defaultCheckbox.check.id;
 
@@ -466,38 +466,51 @@ class Shell {
 		modal.apps.style.maxHeight = "400px";
 		modal.apps.style.minHeight = "200px";
 		modal.header.className = "text-muted px-3 pt-3 ml-1";
-		modal.header.innerText = "Open file in...";
+		modal.header.innerText = "Open file in".toLocaleString() + "...";
 		modal.footer.className = "modal-footer" + (Shell.ui.darkMode ? " border-secondary" : "");
 		modal.selectButton.className = "btn btn-primary ml-2";
 		modal.cancelButton.className = "btn btn-secondary ml-2";
-		modal.selectButton.innerText = "Launch";
+		modal.selectButton.innerText = "Launch".toLocaleString();
 		modal.selectButton.disabled = true;
-		modal.cancelButton.innerText = "Cancel";
-		let apps = await fsp.readdir(path.join(osRoot, "apps"));
-		for (const item of apps.values()) {
-			try {
-				let pkg = JSON.parse(await fsp.readFile(path.join(osRoot, "apps", item, "package.json")));
-				if (pkg.type !== "app" || pkg.hidden)
+		modal.cancelButton.innerText = "Cancel".toLocaleString();
+
+		async function scanApps(dir) {
+			let dirs = await fsp.readdir(dir);
+			for (const item of dirs) {
+				let itemPath = path.join(dir, item);
+				let stat = await fsp.lstat(itemPath);
+				if (stat.isDirectory()) {
+					await scanApps(itemPath);
 					continue;
-				let elem = document.createElement("button");
-				elem.appID = item;
-				elem.className = "dropdown-item d-flex align-items-center px-2";
-				elem.icon = document.createElement("icon");
-				elem.icon.className = "mr-2 very-rounded p-1 lh-18 mdi-18px d-flex mdi shadow text-white mdi-" + pkg.icon;
-				elem.icon.style.background = pkg.color;
-				elem.app = document.createElement("div");
-				elem.app.innerText = pkg.productName || pkg.name;
-				elem.app.className = "flex-grow-1 text-truncate";
-				elem.append(elem.icon, elem.app);
-				elem.addEventListener("click", e => {
-					modal.apps.childNodes.forEach(item => item.classList.remove("active"));
-					elem.classList.add("active");
-					modal.selectButton.disabled = false;
-				});
-				modal.apps.appendChild(elem);
-			} catch (e) {
+				} else if (item.trim().toLowerCase() !== "package.json") continue;
+				try {
+					let json = await fsp.readFile(itemPath);
+					let pkg = JSON.parse(json.toString());
+					if (pkg.hidden || pkg.type !== "app")
+						continue;
+					let elem = document.createElement("button");
+					elem.appID = pkg.name;
+					elem.className = "dropdown-item d-flex align-items-center px-2";
+					elem.icon = document.createElement("icon");
+					elem.icon.className = "mr-2 very-rounded p-1 lh-18 mdi-18px d-flex mdi shadow text-white mdi-" + pkg.icon;
+					elem.icon.style.background = pkg.color;
+					elem.app = document.createElement("div");
+					elem.app.innerText = pkg.productName || pkg.name;
+					elem.app.className = "flex-grow-1 text-truncate";
+					elem.append(elem.icon, elem.app);
+					elem.addEventListener("click", e => {
+						modal.apps.childNodes.forEach(item => item.classList.remove("active"));
+						elem.classList.add("active");
+						modal.selectButton.disabled = false;
+					});
+					modal.apps.appendChild(elem);
+				} catch (e) {
+					console.error(item, "not loaded, because configuration file is missing.");
+				}
 			}
 		}
+
+		await scanApps(path.join(osRoot, "apps"));
 		modal.defaultCheckbox.append(modal.defaultCheckbox.check, modal.defaultCheckbox.label);
 		modal.footer.append(modal.defaultCheckbox, modal.cancelButton, modal.selectButton);
 		modal.content.append(modal.header, modal.apps, modal.footer);
@@ -539,14 +552,14 @@ class Shell {
 			modal.dialog.className = "modal-dialog modal-dialog-centered";
 			modal.content.className = "modal-content shadow-lg" + (Shell.ui.darkMode ? " bg-dark text-white" : "");
 			modal.body.className = "modal-body d-flex";
-			modal.header.innerText = options.title;
+			modal.header.innerText = options.title.toLocaleString();
 			modal.header.className = "mb-1";
 			modal.footer.className = "modal-footer" + (Shell.ui.darkMode ? " border-secondary" : "");
 			modal.className = "modal fade";
 			modal.tabIndex = -1;
 			modal.setAttribute("aria-hidden", "true");
 			let container = document.createElement("div");
-			if (typeof options.message === "string") container.innerHTML = options.message;
+			if (typeof options.message === "string") container.innerHTML = options.message.toLocaleString();
 			else
 				container.append(options.message);
 			container.className = "flex-grow-1";
@@ -572,7 +585,8 @@ class Shell {
 				let button = document.createElement("button");
 				button.className = "btn " + (options.defaultId === i ? "btn-primary" : "btn-secondary");
 				button.style.minWidth = CSS.px(60);
-				button.innerText = options.buttons[i];
+				button.innerText = options.buttons[i].toLocaleString();
+				button.realText = options.buttons[i];
 				button.type = options.defaultId === i ? "submit" : "button";
 				modal.footer.append(button);
 				button.addEventListener("click", function () {

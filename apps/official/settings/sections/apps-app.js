@@ -1,3 +1,4 @@
+const AppWindow = require("@api/WindowManager");
 const fs = require("fs").promises;
 const path = require("path");
 const delete_r = async function (input) {
@@ -27,7 +28,7 @@ async function renderApp() {
 	header.right.className = "d-flex flex-column";
 	header.appName = document.createElement("div");
 	header.version = document.createElement("div");
-	header.version.className = "smaller text-muted";
+	header.version.className = "smaller text-muted font-weight-bolder";
 	header.appName.innerText = pkg.productName || pkg.name;
 	header.version.innerText = pkg.version;
 	header.right.append(header.appName, header.version);
@@ -36,7 +37,7 @@ async function renderApp() {
 	actions.className = "d-flex justify-content-around mb-3";
 	actions.uninstall = document.createElement("button");
 	actions.uninstall.className = "btn w-100 mx-3 btn-secondary";
-	actions.uninstall.innerText = "Uninstall";
+	actions.uninstall.innerText = "Uninstall".toLocaleString();
 	actions.uninstall.onclick = e => {
 		Shell.showMessageBox({
 			type: "question",
@@ -46,18 +47,18 @@ async function renderApp() {
 			defaultId: 1,
 			checkboxLabel: "Yes, uninstall this app"
 		}).then(([button, checkbox]) => {
-			console.log(button, checkbox)
+			console.log(button, checkbox);
 			if (button === "Proceed" && checkbox) {
 				delete_r(path.join(osRoot, "apps", window.__currentApp));
 				new Snackbar(`App "${header.appName.innerText}" was deleted`);
 				goBack();
 			} else new Snackbar('Action canceled.');
 		});
-	}
+	};
 	actions.uninstall.disabled = pkg.removable;
 	actions.launch = document.createElement("button");
 	actions.launch.className = "btn w-100 mx-3 btn-primary";
-	actions.launch.innerText = "Launch";
+	actions.launch.innerText = "Launch".toLocaleString();
 	if (pkg.type === "app") actions.launch.addEventListener("click", e => {
 		AppWindow.launch(window.__currentApp);
 	}); else actions.launch.disabled = true;
@@ -75,7 +76,7 @@ async function renderApp() {
 	});
 
 	let size = document.createElement("div");
-	size.innerHTML = "<span class='mr-2 font-weight-bolder'>App size</span>" + require("child_process").execSync("du -sh " + path.join(osRoot, "apps", window.__currentApp)).toString().split("	")[0];
+	size.innerHTML = `<span class='mr-2 font-weight-bolder'>${"App size".toLocaleString()}</span>${require("child_process").execSync("du -sh " + path.join(osRoot, "apps", window.__currentApp)).toString().split("	")[0]}`;
 	size.className = "px-4 mt-3";
 	root.append(header, actions, notifCheck, size);
 }

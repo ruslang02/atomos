@@ -10,10 +10,10 @@ function newItem(title, descr, icon, color, onclick) {
 	elem.textContainer = document.createElement("div");
 	elem.textContainer.className = "d-flex flex-column flex-grow-1 text-left justify-content-around ml-1 lh-r1";
 	elem.header = document.createElement("header");
-	elem.header.innerText = title;
+	elem.header.innerText = title.toLocaleString();
 	elem.footer = document.createElement("footer");
-	elem.footer.className = "small text-muted";
-	elem.footer.innerText = descr;
+	elem.footer.className = "small text-muted font-weight-bolder";
+	elem.footer.innerText = descr.toLocaleString();
 	elem.onclick = onclick;
 	elem.textContainer.append(elem.header, elem.footer);
 	elem.append(elem.icon, elem.textContainer);

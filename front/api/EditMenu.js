@@ -1,3 +1,4 @@
+const Menu = require(`@api/Menu`);
 const wc = require("electron").remote.getCurrentWebContents();
 let previousMenu;
 wc.on("context-menu", (e, params) => {

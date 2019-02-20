@@ -10,10 +10,10 @@ let ofdDefaultPath = path.join(process.env.HOME, "Music");
 const fs = require("fs");
 const fsp = fs.promises;
 let prevNotification;
+const win = AppWindow.getCurrentWindow();
 setImmediate(() => {
 	if (win.arguments.file) load(win.arguments.file);
 });
-const win = AppWindow.getCurrentWindow();
 win.on('second-instance', (e, args) => {
 	load(args.file);
 });
@@ -34,7 +34,7 @@ nav.openFile.onclick = () => {
 		load(file);
 	})
 };
-nav.openFile.title = "Open (Ctrl+O)";
+nav.openFile.title = "Open".toLocaleString() + " (Ctrl+O)";
 nav.saveFile = document.createElement("button");
 nav.saveFile.className = "btn mdi d-flex btn-sm shadow-sm align-items-center mdi-playlist-play mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.saveFile.onclick = async function () {
@@ -76,7 +76,7 @@ nav.saveFile.onclick = async function () {
 		}]
 	});
 };
-nav.saveFile.title = "Export playlist (Ctrl+S)";
+nav.saveFile.title = "Export playlist".toLocaleString() + " (Ctrl+S)";
 nav.append(nav.openFile, nav.saveFile);
 win.ui.header.prepend(nav);
 win.ui.header.classList.remove("border-bottom");
@@ -216,7 +216,7 @@ async function loadFromPlaylist() {
 	if (prevNotification !== undefined)
 		prevNotification.dismiss();
 	prevNotification = new Notification(current.audio.innerText, {
-		body: current.artist.innerText + " playing",
+		body: current.artist.innerText + " " + "playing".toLocaleString(),
 		sticky: true,
 		actions: [{
 			title: "Play/Pause",

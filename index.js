@@ -44,7 +44,7 @@ app.on('ready', function() {
 	});
 	win.maximize();
 	win.loadFile(path.join(__dirname, "front/desktop.html"));
-	win.removeMenu();
+	if (win.removeMenu) win.removeMenu(); else win.setMenu(null);
 	win.toggleDevTools();
 	win.webContents.on('devtools-opened', () => {
 		win.webContents.addWorkSpace(__dirname)

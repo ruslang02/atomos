@@ -1,7 +1,7 @@
 const fs = require("fs").promises;
 const path = require("path");
 const Shell = require("@api/Shell");
-setTitle("Apps and notifications");
+setTitle("Apps & notifications");
 let main = document.createElement("main");
 root.append(main);
 let osinfo = document.createElement("section");
@@ -49,7 +49,7 @@ appList.className = "list-group scrollable-x-0";
 
 async function listApps(dir) {
 	let apps = await fs.readdir(dir);
-	osinfo.osname.innerText = apps.length + " apps installed";
+	osinfo.osname.innerText = apps.length + " " + "apps installed".toLocaleString();
 	for (const item of apps) {
 		let itemPath = path.join(dir, item);
 		let stat = await fs.stat(itemPath);

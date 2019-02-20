@@ -24,7 +24,7 @@
     "bootstrap": "^4.2.1",
     "bootstrap.native": "^2.0.24",
     "cropperjs": "^1.4.3",
-		"electron": "^5.0.0-beta.3",
+		"electron": "^4.0.5",
     "extract-zip": "^1.6.6",
     "gitlab": "latest",
     "google-auth-library": "^2.0.2",

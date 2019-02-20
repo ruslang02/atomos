@@ -22,11 +22,11 @@ class Snackbar {
 		this.ui.button = document.createElement("button");
 		this.ui.className = "bg-dark text-white very-rounded shadow-lg d-flex position-absolute align-items-center mr-2 mb-2 p-2 fly up show";
 		this.ui.message.className = "px-2 lh-18 my-1";
-		this.ui.message.innerText = options.message;
+		this.ui.message.innerText = options.message.toLocaleString();
 		this.ui.append(this.ui.message);
 		if (options.buttonText) {
 			this.ui.button.className = "btn px-3 border-0 lh-18 font-weight-bolder btn-" + (options.type ? "outline-" + options.type : "white");
-			this.ui.button.innerText = options.buttonText;
+			this.ui.button.innerText = options.buttonText.toLocaleString();
 			this.ui.button.onclick = options.click || console.log;
 			this.ui.append(this.ui.button);
 		} else this.ui.message.classList.replace("my-1", "py-2");
@@ -66,21 +66,20 @@ class Notification {
 		this.ui.body = document.createElement("div");
 		this.ui.messageTitle = document.createElement("div");
 		this.ui.message = document.createElement("div");
-		this.ui.body.className = "toast-body px-0 pt-0 pb-2";
+		this.ui.body.className = "toast-body px-0";
 		this.ui.app.className = "mr-auto lh-18 ml-1";
 		this.ui.appIcon.className = "mdi mdi-18px lh-18 mr-1 d-flex align-items-center mdi-" + win.options.icon;
-		//this.ui.app.style.WebkitBackgroundClip = this.ui.appIcon.style.WebkitBackgroundClip = "text";
-		this.ui.app.style.WebkitTextFillColor = this.ui.appIcon.style.WebkitTextFillColor = "transparent";
-		this.ui.app.style.background = this.ui.appIcon.style.background = win.options.color + " 50% 50% / 1000px";
+		//this.ui.app.style.WebkitTextFillColor = this.ui.appIcon.style.WebkitTextFillColor = "transparent";
+		//this.ui.app.style.background = this.ui.appIcon.style.background = win.options.color + " 50% 50% / 1000px";
+		this.ui.app.style.color = this.ui.appIcon.style.color = "var(--primary)";
 		this.ui.app.innerText = win.options.productName;
 		this.ui.time.innerText = "just now";
 		this.ui.time.className = "text-muted smaller font-weight-bolder";
 		this.ui.message.className = "smaller position-relative text-truncate px-3 " + (Shell.ui.darkMode ? "text-light" : "text-muted");
-		this.ui.messageTitle.innerText = title;
+
+		this.title = title;
 		this.ui.messageTitle.className = "font-weight-bold px-3";
-		if (typeof options.body === "object")
-			this.ui.message.append(options.body);
-		else this.ui.message.innerHTML = options.body || "";
+		this.body = options.body;
 		if (options.image) {
 			this.ui.classList.add("type-image");
 			if (Shell.ui.darkMode) this.ui.classList.add("dark");
@@ -97,13 +96,15 @@ class Notification {
 		if (options.actions) {
 			this.ui.actions = document.createElement('notification-actions');
 			this.ui.actions.className = "py-2 px-3 d-flex justify-content-between" + (Shell.ui.darkMode ? " bg-dark" : " bg-light");
+			this.ui.actions.style.background = this.ui.header.style.background;
 			options.actions.forEach(action => {
 				let btn = document.createElement("button");
 				btn.className = "btn btn-link px-0 mr-2 flex-grow-1";
-				btn.style.WebkitTextFillColor = "transparent";
-				btn.style.background = win.options.color + " 50% 50% / 1000px";
+				btn.style.color = "var(--primary)";
+				//btn.style.WebkitTextFillColor = "transparent";
+				//btn.style.background = win.options.color + " 50% 50% / 1000px";
 				btn.style.fontWeight = 600;
-				btn.innerText = action.title;
+				btn.innerText = action.title.toLocaleString();
 				btn.onclick = action.click;
 				this.ui.actions.append(btn);
 			});
@@ -120,7 +121,7 @@ class Notification {
 	}
 
 	set title(title) {
-		this.ui.messageTitle.innerText = title;
+		this.ui.messageTitle.innerText = title.toLocaleString();
 	}
 
 	get body() {
@@ -128,7 +129,9 @@ class Notification {
 	}
 
 	set body(title) {
-		this.ui.message.innerHTML = title;
+		if (typeof title === "object")
+			this.ui.message.append(title);
+		else this.ui.message.innerHTML = title.toLocaleString() || "";
 	}
 
 	get sticky() {

@@ -53,14 +53,13 @@ if (Registry.get("system.enableSuperFetch") === true && Object.keys(appCache).le
 			let config = JSON.parse(json.toString());
 			if (config.hidden || config.type !== "app")
 				continue;
-			require("@apps/" + config.name.replace("@atomos", "official"));
-			/*let appPath = path.join(itemPath, "..", config.main);
+			let appPath = path.join(itemPath, "..", config.main);
 			let appCode = (await fs.readFile(appPath)).toString();
 			appCode = "module.exports = function(root, WINDOW_ID) {" + appCode + "}";
 			let appModule = new Module();
 			appModule.paths = [path.join(osRoot, "node_modules"), path.join(osRoot, "apps", config.name.replace("@atomos", "official"), "node_modules")];
 			appModule._compile(appCode, appPath);
-			appCache[appPath] = appModule;*/
+			appCache[appPath] = appModule;
 		}
 	}
 
@@ -84,6 +83,7 @@ class AppWindow extends EventEmitter {
 		//console.log(module);
 		if (module.parent && module.parent.id !== undefined)
 			return windowCollection[module.parent.id];
+		else return null;
 	}
 
 	static getAllWindows() {
@@ -91,7 +91,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	static async launch(prog, args = {}, launchOptions = {}) {
-		// Okay... This is a veryyy dirty hack to create new AppWindow instances...
+		// Okay... This is a veryyy dirty hack to create new instances of APIs...
 		delete require.cache[require.resolve("@api/WindowManager")];
 		delete require.cache[require.resolve("@api/Notification")];
 		delete require.cache[require.resolve("@api/Menu")];
@@ -187,9 +187,8 @@ class AppWindow extends EventEmitter {
 
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
-		this.ui.root.className = "very-rounded d-flex flex-column scrollable-0 fade position-absolute shadow-sm";
+		this.ui.root.className = "very-rounded d-flex flex-column scrollable-0 fade position-absolute" + (Registry.get("system.enableWindowShadows") ? " shadow-sm" : "");
 		if (Registry.get("system.enableWindowBlur")) this.ui.root.style["backdrop-filter"] = "blur(5px)";
-		if (!Registry.get("system.enableWindowShadows")) this.ui.root.style.boxShadow = "none !important";
 		if (Registry.get("system.enableTransparentWindows")) {
 			this.ui.root.classList.add(this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
 		} else {
@@ -223,16 +222,16 @@ class AppWindow extends EventEmitter {
 			e.stopPropagation();
 			_this.minimize();
 		});
-		this.ui.buttons.minimize.title = "Minimize (<i class='mdi mdi-atom'></i>+Down)";
+		this.ui.buttons.minimize.title = "Minimize".toLocaleString() + " (<i class='mdi mdi-atom'></i>+Down)";
 		this.ui.buttons.maximize.className = "btn btn-success rounded-max position-relative ml-2" + (this.options.maximizable ? "" : " d-none");
 		this.ui.buttons.maximize.style.padding = CSS.px(6);
-		this.ui.buttons.maximize.title = "Maximize (<i class='mdi mdi-atom'></i>+Up)";
+		this.ui.buttons.maximize.title = "Maximize".toLocaleString() + " (<i class='mdi mdi-atom'></i>+Up)";
 		this.ui.buttons.maximize.addEventListener("click", e => {
 			_this._toggle();
 		});
 		this.ui.buttons.close.className = "btn btn-danger rounded-max position-relative" + (this.options.closable ? "" : " d-none");
 		this.ui.buttons.close.style.padding = CSS.px(6);
-		this.ui.buttons.close.title = "Close (Alt+F4)";
+		this.ui.buttons.close.title = "Close".toLocaleString() + " (Alt+F4)";
 		this.ui.buttons.close.addEventListener("click", e => {
 			e.stopPropagation();
 			_this.close();
@@ -310,6 +309,7 @@ class AppWindow extends EventEmitter {
 				if (_this !== win && win)
 					win.blur()
 			});
+			this.ui.root.classList.add("active");
 			this.ui.root.classList.replace("shadow-sm", "shadow");
 			this.ui.buttons.maximize.classList.replace("btn-outline-success", "btn-success");
 			this.ui.buttons.minimize.classList.replace("btn-outline-warning", "btn-warning");
@@ -319,6 +319,7 @@ class AppWindow extends EventEmitter {
 
 	blur() {
 		if (this.isFocused()) {
+			this.ui.root.classList.remove("active");
 			this.ui.root.classList.replace("shadow", "shadow-sm");
 			this.ui.buttons.maximize.classList.replace("btn-success", "btn-outline-success");
 			this.ui.buttons.minimize.classList.replace("btn-warning", "btn-outline-warning");
@@ -330,7 +331,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	isFocused() {
-		return this.ui.root.classList.contains("shadow");
+		return this.ui.root.classList.contains("active");
 	}
 
 	isDestroyed() {
@@ -379,6 +380,8 @@ class AppWindow extends EventEmitter {
 		this.show();
 		this.ui.root.classList.add("maximized");
 		Elements.Bar.classList.add("maximized");
+		this.task.menu.getMenuItemById("max").enabled = false;
+		this.task.menu.getMenuItemById("res").enabled = true;
 		this.emit('maximize');
 	}
 
@@ -393,6 +396,8 @@ class AppWindow extends EventEmitter {
 		if (Shell.isMobile) return;
 		this.ui.root.classList.remove("maximized");
 		Elements.Bar.classList.remove("maximized");
+		this.task.menu.getMenuItemById("max").enabled = true;
+		this.task.menu.getMenuItemById("res").enabled = false;
 		this.emit('restore');
 		this.emit('unmaximize');
 	}

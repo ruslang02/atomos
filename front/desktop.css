@@ -121,7 +121,7 @@ button, button:focus, button:hover:focus, button:active:focus {
 	/* box-shadow: none !important; */
 }
 
-.bg-semiwhite.shadow {
+.bg-semiwhite.shadow, .bg-semiwhite.active {
 	background: rgba(224, 224, 224, 0.85) !important;
 }
 
@@ -129,7 +129,7 @@ button, button:focus, button:hover:focus, button:active:focus {
 	background: rgba(0, 0, 0, 0.75) !important;
 }
 
-.bg-semidark.shadow {
+.bg-semidark.shadow, .bg-semidark.active {
 	background: rgba(0, 0, 0, 0.85) !important;
 }
 
@@ -309,6 +309,7 @@ notification.type-image.dark .toast-body div.smaller::after {
 
 notification header *, notification notification-actions button {
 	-webkit-background-clip: text !important;
+	background-clip: text !important;
 }
 
 notification.toast {

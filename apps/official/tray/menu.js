@@ -252,7 +252,7 @@ function renderNotifications() {
 	Elements.MenuBar.notifications.className = "flex-grow-1";
 	Elements.MenuBar.notifications.none = document.createElement("section");
 	Elements.MenuBar.notifications.none.className = "card shadow very-rounded flex-column p-3 text-center text-muted font-italic " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
-	Elements.MenuBar.notifications.none.innerText = "No new notifications";
+	Elements.MenuBar.notifications.none.innerText = "No new notifications".toLocaleString();
 	Elements.MenuBar.notifications.appendChild(Elements.MenuBar.notifications.none);
 	Elements.MenuBar.appendChild(Elements.MenuBar.notifications)
 }

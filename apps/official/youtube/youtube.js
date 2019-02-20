@@ -6,7 +6,6 @@ const path = require("path");
 
 let backend = new Worker(path.join(__dirname, "worker.js"));
 backend.onmessage = e => {
-	console.log(e.data);
 	switch (e.data.action) {
 		case "library-error":
 			win.close();
@@ -60,25 +59,25 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			let displayName = document.createElement("div");
 			displayName.innerText = e.data.user.displayName;
 			loginBtn.append(avatar, displayName);
-			/*backend.postMessage({
+			backend.postMessage({
 				action: "get-channels"
-			});*/
-			/*if (win.arguments.url || win.arguments.file) {
+			});
+			if (win.arguments.url || win.arguments.file) {
 				let url = new URL(win.arguments.url || win.arguments.file);
 				spinner.classList.replace("hide", "show");
 				backend.postMessage({action: "play-video", id: url.searchParams.get("v")});
-			}*/
+			}
 			break;
 		case "get-channel-info":
 			let channel = e.data.info;
 			body.innerHTML = "";
 			body.channelHeader = document.createElement("header");
-			body.channelHeader.className = "mt-2 mx-3 card very-rounded shadow bg-light flex-shrink-0";
-			let banner = new Image();
-			banner.src = channel.brandingSettings.image.bannerImageUrl;
-			banner.className = "mw-100 very-rounded-top";
+			body.channelHeader.className = "my-2 mx-3 card very-rounded shadow border-0 flex-column-reverse flex-shrink-0";
+			body.channelHeader.style.backgroundImage = `url('${channel.brandingSettings.image.bannerImageUrl}')`;
+			body.channelHeader.style.backgroundSize = `cover`;
+			body.channelHeader.style.height = CSS.px(150);
 			let channelHeader = document.createElement("div");
-			channelHeader.className = "py-2 px-3 d-flex align-items-center";
+			channelHeader.className = "py-2 px-3 d-flex align-items-center bg-semiwhite";
 			let channelIcon = new Image(48, 48);
 			channelIcon.src = channel.snippet.thumbnails.default.url;
 			channelIcon.className = "img-thumbnail rounded-circle mr-2";
@@ -95,7 +94,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			channelSubscribe.className = "font-weight-bold btn btn-outline-danger border-0";
 			channelSubscribe.innerText = "Subscribed";
 			channelHeader.append(channelIcon, channelInfo, channelSubscribe);
-			body.channelHeader.append(banner, channelHeader);
+			body.channelHeader.append(channelHeader);
 			body.append(body.channelHeader);
 			break;
 		case "get-channel-videos":
@@ -110,7 +109,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			if (e.data.items.length) sidebar.noChannels.remove();
 			for (const channel of e.data.items) {
 				let elem = document.createElement("button");
-				elem.className = "dropdown-item d-flex align-items-center";
+				elem.className = "dropdown-item d-flex align-items-center rounded-right-pill";
 				elem.id = channel.id;
 				elem.innerHTML = `<img width=18 height=18 class='rounded-circle mr-2' src='${channel.snippet.thumbnails.default.url}'><div class="w-25 text-truncate flex-grow-1">${channel.snippet.title}</div>`;
 				elem.onclick = () => {
@@ -196,7 +195,7 @@ sidebar.className = "scrollable-y w-25 scrollable-x-0 d-block";
 sidebar.style.maxWidth = "270px";
 sidebar.style.minWidth = "170px";
 sidebar.trending = document.createElement("button");
-sidebar.trending.className = "dropdown-item d-flex align-items-center";
+sidebar.trending.className = "dropdown-item d-flex align-items-center rounded-right-pill";
 sidebar.trending.innerHTML = "<icon class='mdi mdi-fire mdi-18px mr-1'></icon><div>Trending</div>";
 sidebar.trending.disabled = true;
 sidebar.trending.onclick = () => {
@@ -208,7 +207,7 @@ sidebar.trending.onclick = () => {
 	spinner.classList.replace("hide", "show");
 };
 sidebar.subs = document.createElement("button");
-sidebar.subs.className = "dropdown-item d-flex align-items-center";
+sidebar.subs.className = "dropdown-item d-flex align-items-center rounded-right-pill";
 sidebar.subs.innerHTML = "<icon class='mdi mdi-checkbox-multiple-blank-outline mdi-18px mr-1'></icon><div>Subscriptions</div>";
 sidebar.subs.disabled = true;
 sidebar.subs.onclick = () => {
@@ -220,7 +219,7 @@ sidebar.subs.onclick = () => {
 	spinner.classList.replace("hide", "show");
 };
 sidebar.search = document.createElement("button");
-sidebar.search.className = "dropdown-item d-flex align-items-center";
+sidebar.search.className = "dropdown-item d-flex align-items-center rounded-right-pill";
 sidebar.search.innerHTML = "<icon class='mdi mdi-magnify mdi-18px mr-1'></icon><div>Search</div>";
 sidebar.search.disabled = true;
 sidebar.search.onclick = () => {
@@ -260,7 +259,7 @@ sidebar.noChannels = document.createElement("button");
 sidebar.noChannels.disabled = true;
 sidebar.noChannels.className = "dropdown-item d-flex align-items-center";
 sidebar.noChannels.innerHTML = "<div>Loading...</div>";
-sidebar.append(sidebar.trending, sidebar.subs, sidebar.search/*, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels*/);
+sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels);
 
 let main = document.createElement("main");
 main.className = "bg-white shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y";
@@ -275,7 +274,6 @@ spinner.classList.replace("hide", "show");
 win.show();
 
 function openLogIn(url) {
-	console.log(url);
 	let modal = document.createElement("div");
 	modal.dialog = document.createElement("form");
 	modal.content = document.createElement("main");

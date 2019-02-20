@@ -70,7 +70,7 @@ function render() {
 	renderApps();
 	renderSearchSection();
 	renderNotFound();
-	renderNewApp();
+	//renderNewApp();
 	renderActions();
 
 	return Elements.StartMenu;
@@ -139,7 +139,7 @@ async function renderApps() {
 					delete_r(itemPath)
 				}
 			}, {
-				label: "Info",
+				label: "App info",
 				icon: "information-variant",
 				click() {
 					window.__currentApp = item;
@@ -195,7 +195,8 @@ async function renderActions() {
 				let pkg = JSON.parse(json.toString());
 				for (const action of pkg.actions)
 					allActions.push(Object.assign(action, {
-						app: item,
+						name: action.name.toLocaleString(),
+						app: path.join(dir, action.main),
 						appName: pkg.productName || pkg.name
 					}));
 			} catch (error) {
@@ -220,18 +221,34 @@ function renderSearch() {
 	let igp = document.createElement("label");
 	igp.className = "input-group-prepend m-0 d-flex align-items-center";
 	igp.htmlFor = "__searchInput";
-	root.AddButton = document.createElement("button");
-	root.AddButton.className = "input-group-append mdi mdi-24px lh-24 px-2 bg-transparent border-0 shadow-none mdi-plus btn" + (Shell.ui.darkMode ? " text-white" : "");
-	root.AddButton.onclick = () => {
-		root.AddButton.classList.toggle("mdi-apps");
-		if (!root.AddButton.classList.toggle("mdi-plus"))
-			showSection(root.NewApp); else home();
+	root.OffButton = document.createElement("button");
+	root.OffButton.className = "mdi mdi-18px lh-18 px-2 border-0 shadow-none mdi-power-standby btn d-flex align-items-center" + (Shell.ui.darkMode ? " text-white" : "");
+	root.OffButton.onclick = () => {
+		new Menu([{
+			label: "Suspend",
+			icon: "power-cycle",
+			click() {
+				require("child-process").exec("systemctl suspend");
+			}
+		}, {
+			"label": "Restart",
+			"icon": "restart",
+			click() {
+				require("child-process").exec("systemctl reboot");
+			}
+		}, {
+			"label": "Shut down",
+			"icon": "power",
+			click() {
+				if (!Shell.isDebug) require("child-process").exec("systemctl poweroff");
+			}
+		}]).popup();
 	};
 	let igt = document.createElement("div");
-	igt.className = "mdi mdi-magnify mdi-18px input-group-text text-muted border-0 bg-transparent pr-1 py-0";
+	igt.className = "mdi mdi-magnify mdi-18px lh-18 input-group-text text-muted border-0 bg-transparent pr-1 py-0";
 
 	root.Search.Input = document.createElement("input");
-	root.Search.Input.placeholder = "Search apps or execute any action...";
+	root.Search.Input.placeholder = "Search apps or execute any action...".toLocaleString();
 	root.Search.Input.className = "form-control bg-transparent py-2 px-1 border-0 shadow-none" + (Shell.ui.darkMode ? " text-white" : "");
 	root.Search.Input.id = "__searchInput";
 	root.Search.Input.dataset.editMenu = "false";
@@ -240,7 +257,7 @@ function renderSearch() {
 		root.Search.Input.tooltip = new Tooltip(root.Search.Input);
 	}*/
 	igp.appendChild(igt);
-	root.Search.append(igp, root.Search.Input, root.AddButton);
+	root.Search.append(igp, root.Search.Input, root.OffButton);
 	root.Search.Input.addEventListener("input", search);
 	root.Search.Input.addEventListener("keydown", e => {
 		if (e.key === "ArrowUp") {
@@ -278,6 +295,7 @@ function renderSearch() {
 	root.appendChild(root.Search);
 }
 
+/*
 function renderNewApp() {
 	root.NewApp = document.createElement("section");
 	root.NewApp.className = "card very-rounded shadow justify-content-center align-items-center flex-grow-1" + (Shell.ui.darkMode ? " bg-dark" : "");
@@ -291,7 +309,7 @@ function renderNewApp() {
 	root.NewApp.append(icon, header);
 	root.append(root.NewApp);
 }
-
+*/
 function renderNotFound() {
 
 	root.NotFound = document.createElement("section");
@@ -306,12 +324,12 @@ function renderNotFound() {
 	title.innerText = '"" was not found';
 	let uselessinfo = document.createElement("p");
 	uselessinfo.className = "font-weight-normal";
-	uselessinfo.innerText = "There is no such application installed, but there may be one online.";
+	uselessinfo.innerText = "There is no such application installed, but there may be one online.".toLocaleString();
 	uselessinfo.style.width = '80%';
 	let searchBtn = document.createElement("button");
 	searchBtn.className = "btn btn-outline-success";
-	searchBtn.innerText = "Search in Store";
-	searchBtn.onclick = e => AppWindow.launch("market", {
+	searchBtn.innerText = "Search in Market".toLocaleString();
+	searchBtn.onclick = e => AppWindow.launch("official/market", {
 		q: root.Search.Input.value
 	});
 	root.NotFound.append(icon, title);
@@ -319,15 +337,15 @@ function renderNotFound() {
 }
 
 function home() {
-	root.AddButton.classList.replace("mdi-apps", "mdi-plus");
+	root.OffButton.classList.replace("mdi-apps", "mdi-plus");
 	showSection(root.Apps);
 	root.Search.Input.value = "";
 }
 
 async function search() {
-	root.AddButton.classList.replace("mdi-apps", "mdi-plus");
+	root.OffButton.classList.replace("mdi-apps", "mdi-plus");
 	let q = root.Search.Input.value.toLowerCase().trim();
-	root.NotFound.querySelector("h5").innerText = `"${q}" was not found`;
+	root.NotFound.querySelector("h5").innerText = `"${q}" ${"was not found".toLocaleString()}`;
 	let res = [];
 	if (!q.trim()) {
 		showSection(root.Apps);
@@ -335,12 +353,18 @@ async function search() {
 	}
 	root.SearchSection.innerHTML = "";
 	allActions.forEach((item, i) => {
-		if (item.name.search(new RegExp(q, "gi")) !== -1)
-			res.push(item);
+		try {
+			if (item.name.search(new RegExp(q, "gi")) !== -1)
+				res.push(item);
+		} catch {
+		}
 	});
 	allApps.forEach((app, i) => {
-		if (app.name.search(new RegExp(q, "gi")) !== -1)
-			res.push(app);
+		try {
+			if (app.name.search(new RegExp(q, "gi")) !== -1)
+				res.push(app);
+		} catch {
+		}
 	});
 	if (!res.length)
 		showSection(root.NotFound);
@@ -353,15 +377,13 @@ async function search() {
 			elem.icon = document.createElement("icon");
 			elem.header = document.createElement("div");
 			elem.additional = document.createElement("div");
-			elem.additional.innerText = (item.main ? item.appName : "Open");
+			elem.additional.innerText = (item.main ? item.appName : "Open".toLocaleString());
 			elem.additional.className = "text-muted flex-shrink-0 ml-auto fade mr-1";
 			elem.header.className = "text-truncate text-left ml-2";
 			elem.className = "btn p-1 flex-shrink-0 w-100 d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark text-white" : " btn-white");
 			elem.addEventListener("click", e => {
 				if (item.main) {
-					fs.readFile(path.join(osRoot, "apps", item.app, item.main)).then(script => {
-						new Function('__dirname', script)(path.join(osRoot, "apps", item.app));
-					})
+					require(item.app/*path.join("@apps", item.app, item.main)*/);
 				} else AppWindow.launch(item.item);
 				Elements.StartMenu.close();
 			});
@@ -391,7 +413,7 @@ function showSection(elem) {
 	root.NotFound.style.display = "none";
 	root.SearchSection.style.display = "none";
 	root.Apps.style.display = "none";
-	root.NewApp.style.display = "none";
+	//root.NewApp.style.display = "none";
 	elem.style.display = elem.style.getPropertyValue("--display");
 }
 

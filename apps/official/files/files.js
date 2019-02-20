@@ -17,6 +17,7 @@ const path = require("path");
 let sidebar, container, statusBar, fileMenu, nav, main, FCBar, activeItem, mainMenu;
 let watcher = "";
 let backFolder;
+let notActive = false;
 let history = {
 	current: -1,
 	items: []
@@ -258,10 +259,11 @@ async function navigate(url) {
 			perms.innerHTML = `Permissions: ${item.readable ? "readable" : "<s>readable</s>"}, ${item.writable ? "writable" : "<s>writable</s>"}, ${item.executable ? "executable" : "<s>executable</s>"}`;
 			info.append(size, atime, mtime, perms);
 			container.append(header, info);
+			notActive = true;
 			Shell.showMessageBox({
 				message: container,
 				type: "none"
-			});
+			}).then(e => notActive = false);
 		};
 		item.cut = function () {
 			clipboard.write({
@@ -401,7 +403,7 @@ async function navigate(url) {
 
 function renderFCBar() {
 	FCBar = document.createElement("form");
-	FCBar.className = "px-2 pb-2 m-0 d-flex flex-shrink-0";
+	FCBar.className = "px-2 pb-2 m-0 d-flex flex-shrink-0 align-items-center";
 	FCBar.onsubmit = function (e) {
 		e.preventDefault();
 		sendBack();
@@ -779,12 +781,10 @@ function renderMainMenu() {
 		icon: "content-paste",
 		click: async function () {
 			let url = clipboard.readText();
+			if (!path.isAbsolute(url) || !fs.existsSync(url) || document.activeElement === nav.pathField || notActive) return;
 			let copied = 0;
-			let notif = new Notification({
-				icon: "sync",
-				app: "Files",
-				dismissable: false,
-				title: `Copied 0 items`,
+			let notif = new Notification("Copied 0 items", {
+				sticky: false,
 				quiet: true,
 				message: "<div class='progress progress-bar-striped progress-bar-animated w-100 my-2 bg-primary' style='height:0.5rem'></div>"
 			});
