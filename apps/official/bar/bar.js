@@ -12,10 +12,14 @@ function render() {
 	Elements.Bar = document.createElement("taskbar");
 	Elements.BarItems = {};
 	loadPlugins().then(() => {
-		setTimeout(() => {
-			document.querySelector("splash").classList.add("fade");
-			setTimeout(() => document.querySelector("splash").remove(), 1000);
-		}, 1000);
+		/*setTimeout(() => {
+			if(Registry.get("system.enableSimpleEffects") === true)
+				document.querySelector("splash").remove();
+			else {
+				document.querySelector("splash").classList.add("fade");
+				setTimeout(() => document.querySelector("splash").remove(), 1000);
+			}
+		}, 1000);*/
 		console.timeEnd("launch");
 	});
 	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto w-100 flex-shrink-0 position-absolute";

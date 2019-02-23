@@ -127,6 +127,9 @@ function LoadCSS() {
 }
 
 document.title = "AtomOS (Render complete)";
-
+if (Registry.get("system.enableSimpleEffects") === true)
+	document.body.classList.add("simple");
+if (Registry.get("system.disableAnimations") === true)
+	document.body.classList.add("noAnim");
 require(`@api/EditMenu`);
 require(`@api/Shortcuts`);

@@ -1,8 +1,11 @@
 # Changelog
 
-## 0.7.2 _preview_
+## 0.8.0 _preview_
  - macOS-styled apps and windows
  - defaultFontSize changed from 16 to 14 pixels
+ - App _brush_, _angles_, _calendar_, _notes_, _market_
+ - Low performance enhancements
+ - Russian language support
  - Optimized UI for changed font size
  - New UI design
  - Bugfixes

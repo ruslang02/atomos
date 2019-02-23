@@ -294,7 +294,7 @@ async function refreshApps() {
 		let elem = document.createElement("div");
 		elem.className = "btn very-rounded d-flex text-left mt-2 align-items-center " + (win.options.darkMode ? "btn-outline-light" : "btn-white");
 		elem.icon = new Image(36, 36);
-		elem.icon.className = "mr-3 my-1";
+		elem.icon.className = "mr-3 my-1 rounded-max";
 		elem.icon.src = app.avatar_url;
 		elem.appID = app.id;
 		elem.onclick = () => {

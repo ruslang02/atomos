@@ -37,7 +37,18 @@ function renderDocument(url) {
 	doc.src = `file://${osRoot}/node_modules/node-viewerjs/release/index.html#http://localhost:${port}/pdf.pdf`;
 	doc.nodeintegration = true;
 	doc.className = "flex-grow-1 position-absolute w-100 h-100 d-inline-flex";
-	win.ui.body.append(doc);
+	let fsButton = document.createElement("button");
+	fsButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-fullscreen mdi-18px lh-18 position-absolute " + (win.options.darkMode ? "btn-dark" : "btn-light");
+	fsButton.style.cssText = "border-radius:0;border-bottom-right-radius:0.25rem; height:32px";
+	fsButton.title = "Fullscreen".toLocaleString() + " (F11)";
+	fsButton.onclick = function () {
+		if (document.fullscreenElement)
+			document.exitFullscreen();
+		else
+			win.ui.body.requestFullscreen();
+	};
+	new Tooltip(fsButton, {placement: "right"});
+	win.ui.body.append(doc, fsButton);
 }
 
 //win.ui.body.className = "h-100 position-relative" + (win.options.darkMode ? " bg-dark" : " bg-light");

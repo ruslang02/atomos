@@ -521,7 +521,7 @@ class Shell {
 		modal.cancelButton.addEventListener("click", control.hide);
 		modal.selectButton.addEventListener("click", e => {
 			control.hide();
-			let reg = Registry.get("system.associations");
+			let reg = Registry.get("system.associations") || [];
 			if (modal.defaultCheckbox.check.checked)
 				reg[path.extname(file)] = modal.apps.querySelector(".active").appID;
 			AppWindow.launch(modal.apps.querySelector(".active").appID, {

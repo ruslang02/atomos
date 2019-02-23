@@ -20,6 +20,14 @@ button, button:focus, button:hover:focus, button:active:focus {
 	--taskbar-height: 50px;
 	--taskbar-hided: 50px;
 }
+
+body.simple {
+	background: linear-gradient(135deg, #c5deea, #8abbd7) !important;
+}
+
+body.noAnim, body.noAnim * {
+	transition: none !important;
+}
 @keyframes pulsate {
 	from {
 		box-shadow: 0 0 0 0 var(--danger);
@@ -157,6 +165,11 @@ taskbar {
 	z-index: 990;
 	transition: all .25s ease;
 	bottom: 0;
+}
+
+body.simple taskbar {
+	box-shadow: none !important;
+	transition: none !important;
 }
 body.dark taskbar {
 	/* background: rgba(37, 37, 37, 0.57); */

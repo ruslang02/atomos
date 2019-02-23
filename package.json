@@ -1,7 +1,7 @@
 {
   "name": "atomos",
   "productName": "AtomOS",
-	"version": "0.8.0-nightly.2",
+  "version": "0.8.0-nightly.3",
   "description": "Open-source operating system based on Electron.",
   "main": "index.js",
   "repository": {

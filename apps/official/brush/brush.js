@@ -27,7 +27,7 @@ window[id='${win.id}'] .cropper-container {
 win.ui.body.append(script, css, styles);
 
 let appButton = document.createElement("button");
-appButton.className = "btn btn-outline-primary d-flex p-1 mr-2 btn-sm mdi mdi-18px lh-18 mdi-brush border-0 rounded";
+appButton.className = "btn btn-sm mdi " + (win.options.darkMode ? "btn-dark" : "btn-light") + " d-flex shadow-sm align-items-center mdi-brush mr-2 mdi-18px lh-18";
 appButton.addEventListener("click", e => {
 	e.stopPropagation();
 	const pos = win.getPosition();
@@ -88,11 +88,11 @@ win.ui.header.classList.remove("border-bottom");
 let badge = document.createElement("div");
 badge.className = "badge badge-primary mr-2";
 badge.innerText = "beta";
-win.ui.buttons.prepend(badge);
+win.ui.header.append(badge);
 
 function gen(icon) {
 	let btn = document.createElement("button");
-	btn.className = "btn btn-secondary mdi mdi-" + icon + " mdi-18px lh-18 d-flex";
+	btn.className = "btn btn-sm mdi " + (win.options.darkMode ? "btn-dark" : "btn-light") + " mr-2 d-flex shadow-sm align-items-center mdi-" + icon + " mdi-18px lh-18";
 	return btn;
 }
 
@@ -100,8 +100,6 @@ let nav = document.createElement("nav");
 nav.className = "p-2 border-bottom d-flex";
 nav.dataset.draggable = "true";
 win.ui.body.append(nav);
-let group1 = document.createElement("div");
-group1.className = "btn-group btn-group-sm mr-2";
 nav.crop = gen("crop");
 nav.crop.addEventListener("click", e => {
 	nav.move.classList.replace("btn-primary", "btn-secondary");
@@ -115,9 +113,6 @@ nav.move.onclick = e => {
 	nav.move.classList.replace("btn-secondary", "btn-primary");
 	cropper.clear();
 };
-group1.append(nav.crop, nav.move);
-let group2 = document.createElement("div");
-group2.className = "btn-group btn-group-sm mr-2";
 nav.rotateLeft = gen("rotate-left");
 nav.rotateLeft.onclick = e => {
 	cropper.rotate(-90);
@@ -128,9 +123,6 @@ nav.rotateRight.onclick = e => {
 	cropper.rotate(90);
 	applyButtons.classList.remove("d-none");
 };
-group2.append(nav.rotateLeft, nav.rotateRight);
-let group3 = document.createElement("div");
-group3.className = "btn-group btn-group-sm mr-2";
 nav.cropLandscape = gen("crop-landscape");
 nav.cropLandscape.onclick = e => {
 	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
@@ -149,9 +141,6 @@ nav.cropFree.onclick = e => {
 	nav.cropFree.classList.replace("btn-secondary", "btn-primary");
 	cropper.setAspectRatio(0);
 };
-group3.append(nav.cropLandscape, nav.cropSquare, nav.cropFree);
-let group4 = document.createElement("div");
-group4.className = "btn-group btn-group-sm";
 nav.grid = gen("grid");
 nav.grid.onclick = e => {
 	guides = !guides;
@@ -168,7 +157,6 @@ nav.texture.onclick = e => {
 	cropper.destroy();
 	initCropper();
 };
-group4.append(nav.grid, nav.texture);
 applyButtons = document.createElement("div");
 applyButtons.className = "btn-group btn-group-sm ml-auto d-none";
 applyButtons.cancel = document.createElement("button");
@@ -189,10 +177,10 @@ applyButtons.apply.onclick = e => {
 	applyButtons.classList.add("d-none");
 };
 applyButtons.append(applyButtons.cancel, applyButtons.apply);
-nav.append(group1, group2, group3, group4, applyButtons);
+nav.append(nav.crop, nav.move, nav.rotateLeft, nav.rotateRight, nav.cropLandscape, nav.cropFree, nav.cropSquare, nav.grid, nav.texture, applyButtons);
 let cropperElem = document.createElement("main");
 let image = new Image();
-cropperElem.className = "flex-grow-1 d-flex text-truncate rounded-bottom bg-white";
+cropperElem.className = "flex-grow-1 d-flex text-truncate rounded-bottom bg-secondary";
 image.className = "mw-100";
 cropperElem.append(image);
 win.ui.body.append(cropperElem);

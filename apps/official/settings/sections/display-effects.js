@@ -57,6 +57,24 @@ list.liveTransforms = newSmallListItem({
 		Registry.set("system.disableLiveTransformations", !checked);
 	}
 });
+list.lowPerformance = newSmallListItem({
+	label: "Low Performance Mode",
+	sublabel: "Limits FPS to 40, puts a gradient wallpaper and disables shadows",
+	type: "checkbox",
+	checked: Registry.get("system.enableSimpleEffects"),
+	click(checked) {
+		Registry.set("system.enableSimpleEffects", checked);
+	}
+});
+list.noAnimations = newSmallListItem({
+	label: "Disable Animations",
+	sublabel: "Disable all animations in the UI",
+	type: "checkbox",
+	checked: Registry.get("system.disableAnimations"),
+	click(checked) {
+		Registry.set("system.disableAnimations", checked);
+	}
+});
 list.menuIcons = newSmallListItem({
 	label: "Show icons in menus",
 	type: "checkbox",
@@ -65,5 +83,5 @@ list.menuIcons = newSmallListItem({
 		Registry.set("system.showMenuIcons", checked);
 	}
 });
-list.append(list.thumbEnabled, list.transparency, list.blur, list.shadows, list.liveTransforms, list.menuIcons);
+list.append(list.thumbEnabled, list.transparency, list.blur, list.shadows, list.liveTransforms, list.noAnimations, list.lowPerformance, list.menuIcons);
 main.append(list);
