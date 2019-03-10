@@ -11,7 +11,7 @@
 	<div class="spinner-grow text-light" role="status" style="width:3rem; height: 3rem;"></div>
 </splash>!-->
 <script>
-	console.time("launch");
+	let enablePWDEntry = false;
 	Object.assign(window, require('bootstrap.native/dist/bootstrap-native-v4'));
 	const moduleAlias = require('module-alias');
 	const path = require("path");
@@ -22,7 +22,14 @@
 	window.Elements = {};
 	const AsyncFunction = Object.getPrototypeOf(async function () {
 	}).constructor;
-	require("./desktop")
+	if (enablePWDEntry)
+		require("./passworded-entry").validate().then(function () {
+			console.time("launch");
+			require("./desktop")
+		}); else {
+		console.time("launch");
+		require("./desktop")
+	}
 </script>
 </body>
 </html>

@@ -104,7 +104,7 @@ function renderQuickSection() {
 	let Settings = document.createElement("button");
 	WiFi.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-wifi p-2 lh-24 d-flex align-items-center";
 	Screen.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-brightness-6 p-2 lh-24 d-flex align-items-center";
-	Sound.oncontextmenu = e => {
+	Screen.oncontextmenu = e => {
 		e.stopPropagation();
 		Elements.MenuBar.brightnessSettings.classList.toggle("d-none");
 		Elements.MenuBar.brightnessSettings.classList.toggle("d-flex");
@@ -162,8 +162,8 @@ async function renderBrightnessSettings() {
 		};
 		Elements.MenuBar.brightnessSettings.updateControls();
 		master.append(master.icon, master.range);
-		Elements.MenuBar.soundSettings.append(master);
-		Elements.MenuBar.insertBefore(Elements.MenuBar.soundSettings, Elements.MenuBar.notifications);
+		Elements.MenuBar.brightnessSettings.append(master);
+		Elements.MenuBar.insertBefore(Elements.MenuBar.brightnessSettings, Elements.MenuBar.notifications);
 	} catch (e) {
 		Elements.MenuBar.quickItems.items.Screen.remove();
 	}

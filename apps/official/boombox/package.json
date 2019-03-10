@@ -5,7 +5,7 @@
   "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
   "license": "GPL-3.0",
   "version": "1.0.0",
-  "homepage": "https://apps.atomos.org.uk/package/boombox",
+	"homepage": "http://apps.atomos.org.uk/package/boombox",
   "icon": "music-note",
   "color": "linear-gradient(135deg, #b71c1c, orange)",
   "main": "boombox.js",

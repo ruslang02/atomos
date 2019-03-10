@@ -28,15 +28,11 @@ list.transparency = newSmallListItem({
 });
 list.blur = newSmallListItem({
 	label: "Blur",
-	sublabel: "Blurred backdrop of windows",
+	sublabel: "Use blur in UI",
 	type: "checkbox",
-	checked: Registry.get("system.enableWindowBlur"),
+	checked: Registry.get("system.enableBlur"),
 	click(checked) {
-		Registry.set("system.enableWindowBlur", checked);
-		if (!checked)
-			document.querySelectorAll("window").forEach(item => item.style["backdrop-filter"] = "none");
-		else
-			document.querySelectorAll("window").forEach(item => item.style["backdrop-filter"] = "blur(5px)");
+		Registry.set("system.enableBlur", checked);
 	}
 });
 list.shadows = newSmallListItem({

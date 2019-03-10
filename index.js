@@ -39,7 +39,8 @@ app.on('ready', function() {
 			nodeIntegrationInWorker: true,
 			experimentalFeatures: true,
 			nodeIntegration: true,
-			webviewTag: true
+			webviewTag: true,
+			sandbox: false
 		}
 	});
 	win.maximize();

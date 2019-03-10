@@ -266,7 +266,7 @@ function newTab(url = "https://www.startpage.com") {
 			if (!tab.loaded) {
 				tab.navigate(url);
 				tab.loaded = true;
-				tab.webview.getWebContents().setDevToolsWebContents(tab.devToolsWebview.getWebContents());
+				//tab.webview.getWebContents().setDevToolsWebContents(tab.devToolsWebview.getWebContents());
 				tab.webview.getWebContents().on("new-window", console.log);
 				tab.webview.getWebContents().on("did-get-response-details", console.log);
 			} else tab.update();
@@ -294,7 +294,7 @@ function newTab(url = "https://www.startpage.com") {
 			tabs.active = (tabs.active.nextSibling || tabs.active.previousSibling);
 			tab.classList.remove("show");
 			setTimeout(() => tab.remove(), Shell.ui.fadeAnimation);
-			tab.webview.remove();
+			tab.section.remove();
 			tabs.active.activate();
 		}
 	};
@@ -308,7 +308,11 @@ function newTab(url = "https://www.startpage.com") {
 	};
 	tab.update = function () {
 		let w = tab.webview;
-		tab.header.innerText = w.getTitle();
+		try {
+			tab.header.innerText = w.getTitle();
+		} catch {
+			setTimeout(() => tab.header.innerText = w.getTitle(), 100)
+		}
 		if (tab === tabs.active) {
 			address.change(w.getURL());
 			win.setTitle(w.getTitle() + " - Proton Web Browser");

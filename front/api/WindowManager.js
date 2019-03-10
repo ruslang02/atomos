@@ -29,10 +29,22 @@ const
 const Shell = require("@api/Shell");
 const Registry = require(`@api/Registry`);
 //console.log(module);
+window._wzindex = window._wzindex || 0;
 let
-	wCount = window._wzindex = window._wzindex || 0,
-	windowCollection = window.instances = window.instances || [],
-	appCache = window.appCache = window.appCache || {}; // Contains all AppWindow instances
+	windowCollection = new Proxy(window.instances = window.instances || [], {
+		set(t, p, v) {
+			t[p] = v;
+			window.instances = windowCollection;
+			return true;
+		}
+	}),
+	appCache = new Proxy(window.appCache = window.appCache || {}, {
+		set(t, p, v) {
+			t[p] = v;
+			window.appCache = appCache;
+			return true;
+		}
+	}); // Contains all AppWindow instances
 if (Registry.get("system.enableSuperFetch") === true && Object.keys(appCache).length === 0) {
 	scanApps(path.join(osRoot, "apps")).then(() => {
 		console.clear();
@@ -79,6 +91,12 @@ class AppWindow extends EventEmitter {
 		return windowCollection.slice().reverse().find(win => (win ? win.isFocused() : false)) || null;
 	}
 
+	static clearGarbage() {
+		for (const i of Object.keys(windowCollection)) {
+			if (!windowCollection[i]) windowCollection.splice(i, 1);
+		}
+	}
+
 	static getCurrentWindow() {
 		//console.log(module);
 		if (module.parent && module.parent.id !== undefined)
@@ -109,7 +127,7 @@ class AppWindow extends EventEmitter {
 			if (e.returnValue === undefined) return;
 		}
 		console.time("full render");
-		const winID = wCount++;
+		const winID = window._wzindex++;
 		prog = prog.replace("@atomos", "official");
 		const appRoot = path.join(osRoot, 'apps', prog);
 		let appOptions = JSON.parse((await fs.readFile(appRoot + "/package.json")).toString());
@@ -124,7 +142,7 @@ class AppWindow extends EventEmitter {
 		win._paint();
 		win.file = path.join(osRoot, "apps", prog, options.main);
 		if (!win.options.skipTaskbar) win.task = new TaskManager(winID);
-		if (appCache[win.file] && Registry.get("system.enableCaching")) {
+		if (appCache[win.file]) {
 			console.time("app load (precached)");
 			appCache[win.file].id = winID;
 			appCache[win.file].exports();
@@ -138,16 +156,25 @@ class AppWindow extends EventEmitter {
 			appModule.filename = win.file;
 			console.time("app execution");
 			appModule._compile(appCode, win.file);
-			appCache[win.file] = appModule;
-			appModule.exports();
-			console.timeEnd("app execution");
-			console.timeEnd("app load");
+			if (Registry.get("system.enableCaching")) appCache[win.file] = appModule;
+			try {
+				appModule.exports();
+			} catch (e) {
+				console.error(e);
+				delete windowCollection[winID];
+				win = undefined;
+				return;
+			} finally {
+				console.timeEnd("app execution");
+				console.timeEnd("app load");
+			}
 		}
 		win._initEvents();
 		if (Shell.isMobile) win.maximize();
 		win.setMovable(win.options.draggable);
 		win.setResizable(win.options.resizable);
 		win.setMinimumSize(win.options.minWidth || 100, win.options.minHeight || 100);
+		win.setMaximumSize(win.options.maxWidth || 100, win.options.maxHeight || 100);
 		if (win.options.center) win.center();
 		win.ready = true;
 		win.emit('ready-to-show');
@@ -188,7 +215,6 @@ class AppWindow extends EventEmitter {
 		this.ui.root = document.createElement("window");
 		this.ui.root.id = this.id;
 		this.ui.root.className = "very-rounded d-flex flex-column scrollable-0 fade position-absolute" + (Registry.get("system.enableWindowShadows") ? " shadow-sm" : "");
-		if (Registry.get("system.enableWindowBlur")) this.ui.root.style["backdrop-filter"] = "blur(5px)";
 		if (Registry.get("system.enableTransparentWindows")) {
 			this.ui.root.classList.add(this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
 		} else {
@@ -216,20 +242,20 @@ class AppWindow extends EventEmitter {
 		this.ui.buttons.maximize = document.createElement("button");
 		this.ui.buttons.close = document.createElement("button");
 
-		this.ui.buttons.minimize.className = "btn btn-warning rounded-max position-relative ml-2" + (this.options.minimizable ? "" : " d-none");
+		this.ui.buttons.minimize.className = "btn btn-warning shadow-sm rounded-max position-relative ml-2" + (this.options.minimizable ? "" : " d-none");
 		this.ui.buttons.minimize.style.padding = CSS.px(6);
 		this.ui.buttons.minimize.addEventListener("click", e => {
 			e.stopPropagation();
 			_this.minimize();
 		});
 		this.ui.buttons.minimize.title = "Minimize".toLocaleString() + " (<i class='mdi mdi-atom'></i>+Down)";
-		this.ui.buttons.maximize.className = "btn btn-success rounded-max position-relative ml-2" + (this.options.maximizable ? "" : " d-none");
+		this.ui.buttons.maximize.className = "btn btn-success shadow-sm rounded-max position-relative ml-2" + (this.options.maximizable ? "" : " d-none");
 		this.ui.buttons.maximize.style.padding = CSS.px(6);
 		this.ui.buttons.maximize.title = "Maximize".toLocaleString() + " (<i class='mdi mdi-atom'></i>+Up)";
 		this.ui.buttons.maximize.addEventListener("click", e => {
 			_this._toggle();
 		});
-		this.ui.buttons.close.className = "btn btn-danger rounded-max position-relative" + (this.options.closable ? "" : " d-none");
+		this.ui.buttons.close.className = "btn btn-danger shadow-sm rounded-max position-relative" + (this.options.closable ? "" : " d-none");
 		this.ui.buttons.close.style.padding = CSS.px(6);
 		this.ui.buttons.close.title = "Close".toLocaleString() + " (Alt+F4)";
 		this.ui.buttons.close.addEventListener("click", e => {
@@ -242,8 +268,8 @@ class AppWindow extends EventEmitter {
 		this.ui.body.dataset.draggable = "false";
 
 		this.ui.overlay = document.createElement("overlay");
-		this.ui.overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;";
-		this.ui.overlay.className = "d-none";
+		this.ui.overlay.style.cssText = "top:0;left:0;z-index:100";
+		this.ui.overlay.className = "d-none position-fixed w-100 h-100";
 		this.ui.root.append(this.ui.overlay);
 
 		this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
@@ -275,12 +301,13 @@ class AppWindow extends EventEmitter {
 		setTimeout(() => {
 			this.ui.root.remove();
 			this.emit('closed');
-			windowCollection[windowCollection.indexOf(this)] = undefined;
+			windowCollection[windowCollection.indexOf(this)] = false;
 		}, Shell.ui.fadeAnimation)
 		// TODO: Implement
 	}
 
 	close() {
+		if (!this.isClosable()) return false;
 		let cancel = false;
 		let e = {
 			preventDefault: function () {
@@ -378,15 +405,15 @@ class AppWindow extends EventEmitter {
 	maximize() {
 		if (this.fullscreen) this.setFullScreen(false);
 		this.show();
+		if (!this.isMaximizable()) return;
 		this.ui.root.classList.add("maximized");
 		Elements.Bar.classList.add("maximized");
-		this.task.menu.getMenuItemById("max").enabled = false;
-		this.task.menu.getMenuItemById("res").enabled = true;
 		this.emit('maximize');
 	}
 
 	minimize() {
 		if (this.fullscreen) this.setFullScreen(false);
+		if (!this.isMinimizable()) return;
 		this.hide();
 		this.blur();
 	}
@@ -396,14 +423,12 @@ class AppWindow extends EventEmitter {
 		if (Shell.isMobile) return;
 		this.ui.root.classList.remove("maximized");
 		Elements.Bar.classList.remove("maximized");
-		this.task.menu.getMenuItemById("max").enabled = true;
-		this.task.menu.getMenuItemById("res").enabled = false;
 		this.emit('restore');
 		this.emit('unmaximize');
 	}
 
 	isMinimized() {
-		return this.isVisible();
+		return !this.isVisible();
 	}
 
 	setFullScreen(flag) {
@@ -467,11 +492,11 @@ class AppWindow extends EventEmitter {
 		return [this.ui.root.clientWidth, this.ui.root.clientHeight];
 	}
 
-	setContentSize(width, height) {
+	setContentSize(width, height, emit = true) {
 		if (Shell.isMobile) return;
 		this.ui.root.style.width = width + this._offsets.left + this._offsets.right + "px";
 		this.ui.root.style.height = height + this._offsets.top + this._offsets.bottom + "px";
-		this.emit('resize');
+		if (emit) this.emit('resize');
 	}
 
 	getContentSize() {
@@ -695,7 +720,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	isMinimizable() {
-		return this.ui.buttons.minimize.classList.contains("d-none");
+		return !this.ui.buttons.minimize.classList.contains("d-none");
 	}
 
 	setMaximizable(bool) {
@@ -703,7 +728,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	isMaximizable() {
-		return this.ui.buttons.maximize.classList.contains("d-none");
+		return !this.ui.buttons.maximize.classList.contains("d-none");
 	}
 
 	setClosable(bool) {
@@ -711,7 +736,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	isClosable() {
-		return this.ui.buttons.close.classList.contains("d-none");
+		return !this.ui.buttons.close.classList.contains("d-none");
 	}
 
 	setAlwaysOnTop(flag) {

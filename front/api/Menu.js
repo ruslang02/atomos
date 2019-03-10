@@ -79,6 +79,12 @@ class Menu extends EventEmitter {
 		return new Menu(template);
 	}
 
+	g(property) {
+		if (typeof property === "function") {
+			return property();
+		} else return property;
+	}
+
 	renderMenu() {
 		let _this = this;
 		this.menu.innerHTML = "";
@@ -119,6 +125,8 @@ class Menu extends EventEmitter {
 						_this.menu.overlay.onclick(e);
 
 					};
+					console.log(item.label, this.g(item.enabled));
+					if (AppWindow.getFocusedWindow()) console.log(AppWindow.getFocusedWindow().isMaximizable(), AppWindow.getFocusedWindow().isMaximized());
 					if (Registry.get('system.showMenuIcons') !== false) {
 						menuItem.classList.add("pl-3");
 						menuItem.icon = document.createElement("icon");
@@ -127,7 +135,7 @@ class Menu extends EventEmitter {
 					}
 					let menuTitle = document.createElement("div");
 					menuTitle.className = "flex-grow-1 text-truncate lh-21";
-					menuTitle.innerText = item.label.toLocaleString();
+					menuTitle.innerText = this.g(item.label).toLocaleString();
 					menuItem.append(menuTitle);
 					if (item.accelerator && Registry.get('system.showAccelerators') !== false) {
 						let menuAccelerator = document.createElement("div");
@@ -142,7 +150,7 @@ class Menu extends EventEmitter {
 				} else if (item.type === "header") {
 					menuItem = document.createElement("div");
 					menuItem.className = "dropdown-header font-weight-bolder";
-					menuItem.innerText = item.label.toLocaleString();
+					menuItem.innerText = this.g(item.label).toLocaleString();
 				} else if (item.type === "checkbox") {
 					menuItem = document.createElement("button");
 					menuItem.className = "dropdown-item d-flex align-items-center custom-control custom-checkbox pl-4";
@@ -151,18 +159,19 @@ class Menu extends EventEmitter {
 					menuInput.type = "checkbox";
 					menuItem.onmouseup = e => {
 						menuInput.checked = item.checked = !menuInput.checked;
-						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item.checked, item, _this.window, _this.activeElement);
+						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, this.g(item.checked), item, _this.window, _this.activeElement);
 						_this.menu.overlay.onclick(e);
 					};
-					menuInput.checked = item.checked;
+					menuInput.checked = this.g(item.checked);
 					let menuTitle = document.createElement("label");
 					menuTitle.className = "flex-grow-1 custom-control-label" + (Shell.ui.darkMode ? " text-white" : "");
-					menuTitle.innerText = item.label.toLocaleString();
+					menuTitle.innerText = this.g(item.label).toLocaleString();
 					menuItem.append(menuInput, menuTitle);
 				}
-				menuItem.disabled = !item.enabled;
+				menuItem.disabled = !this.g(item.enabled);
+
 				menuItem.id = "dm_" + (item.id || Math.random().toString(36).substr(2, 9));
-				menuItem.style.order = item.position || 0;
+				menuItem.style.order = this.g(item.position) || 0;
 				_this.menu.append(menuItem);
 			}
 		}

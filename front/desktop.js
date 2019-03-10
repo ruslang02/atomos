@@ -1,4 +1,3 @@
-LoadCSS();
 const {
 	ipcRenderer,
 	remote
@@ -8,7 +7,10 @@ const Registry = require(`@api/Registry`);
 const {Snackbar, Notification} = require(`@api/Notification`);
 require('gitlab/dist/es5');
 const fso = require("fs");
+const path = require("path");
+const osRoot = path.join(__dirname, "..");
 const fs = fso.promises;
+LoadCSS();
 let autoStartWorkers = [];
 let blockNW;
 ipcRenderer.on('new-window', (e, u) => {
@@ -39,7 +41,11 @@ for (const worker of (Registry.get("system.autostart") || [])) {
 		worker: work
 	})
 }
-renderLocale().then(() => require("@apps/official/bar"));
+renderLocale().then(() => {
+	require("@apps/official/container");
+	require("@apps/official/bar");
+});
+fso.watch(path.join(osRoot, "locales"), renderLocale);
 String.toLocaleString = function (name) {
 	for (const data of window.localeData) {
 		if (data[name])
@@ -47,7 +53,7 @@ String.toLocaleString = function (name) {
 	}
 };
 String.prototype.toLocaleString = function () {
-	for (const data of window.localeData) {
+	if (typeof window.localeData === "object") for (const data of window.localeData) {
 		if (data[this])
 			return data[this];
 	}
@@ -61,7 +67,7 @@ fso.watch(wFile, () => {
 });
 
 async function renderLocale() {
-	let locale = "ru-RU";
+	let locale = "en-US";
 	let files = await fs.readdir(path.join(osRoot, "locales", locale));
 	for (let file of files) {
 		if (file === "default.json") continue;
@@ -131,5 +137,23 @@ if (Registry.get("system.enableSimpleEffects") === true)
 	document.body.classList.add("simple");
 if (Registry.get("system.disableAnimations") === true)
 	document.body.classList.add("noAnim");
+if (Registry.get("system.enableBlur") === true)
+	document.body.classList.add("blur");
+
+Registry.watch("system", (key, value) => {
+	switch (key) {
+		case "system.enableBlur":
+			document.body.classList.toggle("blur", value);
+			break;
+		case "system.disableAnimations":
+			document.body.classList.toggle("noAnim", value);
+			break;
+		case "system.enableSimpleEffects":
+			document.body.classList.toggle("simple", value);
+			break;
+	}
+});
+
 require(`@api/EditMenu`);
 require(`@api/Shortcuts`);
+require(`@api/Components`);

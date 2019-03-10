@@ -3,64 +3,16 @@ const AppWindow = require("@api/WindowManager");
 const Menu = require(`@api/Menu`);
 const Shell = require("@api/Shell");
 const path = require("path");
+const {Snackbar, Notification} = require("@api/Notification");
 const MAX_SIZE = 51240;
 let win = AppWindow.getCurrentWindow();
 let el = {};
 let currentFile;
-
-let menu = new Menu([{
-	label: "Undo",
-	icon: "undo",
-	click() {
-		el.textarea.focus();
-		document.execCommand('undo', false)
-	}
-}, {
-	label: "Redo",
-	icon: "redo",
-	click() {
-		el.textarea.focus();
-		document.execCommand('redo', false)
-	}
-}, {
-	type: "separator"
-}, {
-	label: "Cut",
-	icon: "content-cut",
-	click() {
-		el.textarea.focus();
-		document.execCommand('cut', false)
-	}
-}, {
-	label: "Copy",
-	icon: "content-copy",
-	click() {
-		el.textarea.focus();
-		document.execCommand('copy', false)
-	}
-}, {
-	label: "Paste",
-	icon: "content-paste",
-	click() {
-		el.textarea.focus();
-		document.execCommand('paste', false)
-	}
-}, {
-	type: "separator"
-}, {
-	label: "Select All",
-	icon: "select-all",
-	click() {
-		el.textarea.focus();
-		document.execCommand('selectAll', false)
-	}
-}]);
 el.textarea = document.createElement("textarea");
 el.textarea.className = "flex-grow-1 mx-2 mb-2 very-rounded shadow p-2 border-0" + (Shell.ui.darkMode ? " text-white bg-dark" : "");
 el.textarea.style.resize = "none";
 el.textarea.autofocus = true;
 el.textarea.style.outline = 0;
-el.textarea.addEventListener('contextmenu', e => menu.popup());
 win.ui.body.appendChild(el.textarea);
 let nav = document.createElement("nav");
 nav.className = "d-flex";
@@ -75,7 +27,7 @@ nav.save.className = "btn-group";
 nav.saveFile = document.createElement("button");
 nav.saveFile.className = "btn mdi d-flex btn-sm shadow-sm align-items-center mdi-content-save-outline mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.saveFile.onclick = () => nav.saveDrop.menu.getMenuItemById("save").click();
-nav.saveFile.title = "Save (Ctrl+N)";
+nav.saveFile.title = "Save (Ctrl+S)";
 nav.saveDrop = document.createElement("button");
 nav.saveDrop.className = "btn dropdown-toggle btn-sm dropdown-toggle-split shadow-sm mr-2" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.saveDrop.onclick = e => {
@@ -86,6 +38,15 @@ nav.saveDrop.onclick = e => {
 	});
 };
 nav.saveDrop.menu = new Menu([{
+	label: "Open",
+	visible: false,
+	click() {
+		nav.openFile.click();
+	},
+	id: "open",
+	icon: "folder-outline",
+	accelerator: "Ctrl+O"
+}, {
 	label: "Save",
 	click() {
 		if (currentFile)

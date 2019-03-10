@@ -54,23 +54,25 @@ class TaskManager {
 			label: "Maximize",
 			id: "max",
 			icon: "window-maximize",
-			enabled: !this.window.isMaximized(),
+			enabled: () => !this.window.isMaximized() && this.window.isMaximizable(),
 			click: e => this.window.maximize()
 		}, {
 			label: "Restore",
 			id: "res",
 			icon: "window-restore",
-			enabled: this.window.isMaximized(),
+			enabled: () => this.window.isMaximized() || this.window.isMinimized(),
 			click: e => this.window.restore()
 		}, {
 			label: "Minimize",
 			icon: "window-minimize",
+			enabled: () => !this.window.isMinimized() && this.window.isMinimizable(),
 			click: e => this.window.minimize()
 		}, {
 			type: "separator"
 		}, {
 			label: "Close",
 			icon: "window-close",
+			enabled: () => this.window.isClosable(),
 			click: e => this.window.close()
 		}]);
 		this.task.addEventListener("contextmenu", function (e) {

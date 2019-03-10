@@ -9,7 +9,8 @@ Registry.watch("taskbar", updatePosition);
 render();
 
 function render() {
-	Elements.Bar = document.createElement("taskbar");
+	Elements.Bar = document.createElement("footer");
+	Elements.Bar.id = "taskbar";
 	Elements.BarItems = {};
 	loadPlugins().then(() => {
 		/*setTimeout(() => {

@@ -1,8 +1,21 @@
 const AppWindow = require("@api/WindowManager");
-const Menu = require(`@api/Menu`);
 const Shell = require("@api/Shell");
 const win = AppWindow.getCurrentWindow();
+const Semver = require("semver");
+
+/*let ev = Semver(process.versions.electron);
+if(ev.major === 5 && ev.minor === 0 && ev.prerelease[0] === "beta" && ev.prerelease[1] <= 4) {
+	win.close();
+	Shell.showMessageBox({
+		type: "error",
+		title: "Compatibility error",
+		message: `Electron versions from 5 and upper crash when using YouTube API. Please consider downgrading Electron version to 4.`
+	});
+	return;
+}*/
+
 const path = require("path");
+const Menu = require(`@api/Menu`);
 
 let backend = new Worker(path.join(__dirname, "worker.js"));
 backend.onmessage = e => {

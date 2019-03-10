@@ -6,7 +6,7 @@
   "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
   "license": "GPL-3.0",
   "version": "1.0.0",
-  "homepage": "https://apps.atomos.org.uk/package/camcorder",
+	"homepage": "http://apps.atomos.org.uk/package/camcorder",
   "icon": "camera-iris",
   "color": "linear-gradient(135deg, #01579b, #0097a7)",
   "main": "camcorder.js",

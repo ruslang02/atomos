@@ -49,7 +49,7 @@
 	"File": "Файл",
 	"saved": "сохранён",
 	"View": "Вид",
-	"Edit": "Редактировать",
+	"Edit": "Правка",
 	"Libraries required": "Требуются библиотеки",
 	"Indent using <kbd>Tab</kbd>": "Использовать <kbd>Tab</kbd> вместо пробелов",
 	"Indent Size": "Размер отступа",
@@ -105,5 +105,14 @@
 	"App wants to run command as an administrator": "Приложение требует прав администратора",
 	"Type administrator password to proceed": "Введите пароль, чтобы продолжить",
 	"Create new auto-start item": "Создать новую запись автозагрузки",
-	"Script does not exist.": "Программа не существует."
+	"Script does not exist.": "Программа не существует.",
+	"Open PDF": "Открыть PDF",
+	"Fullscreen": "Полноэкранный режим",
+	"Automatically hide taskbar": "Автоматически скрывать",
+	"Adjust Date and Time...": "Настроить дату и время...",
+	"Do Not Disturb": "Не беспокоить",
+	"End session": "Завершение сеанса",
+	"Show/Hide Toolbar": "Показать/скрыть панель",
+	"Save changes": "Сохранить изменения",
+	"Discard": "Отмена"
 }

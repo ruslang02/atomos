@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
   "license": "GPL-3.0",
-  "homepage": "https://apps.atomos.org.uk/package/settings",
+	"homepage": "http://apps.atomos.org.uk/package/settings",
   "icon": "settings",
   "color": "#1565c0",
   "main": "settings.js",

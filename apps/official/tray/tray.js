@@ -10,6 +10,22 @@ let elems = {
 	Clock: document.createElement("clock"),
 	Date: document.createElement("date")
 };
+
+function updateTime() {
+	if (Shell.isMobile) document.body.style.paddingTop = elems.Container.offsetHeight + "px";
+	elems.Clock.innerText = new Date().toLocaleTimeString("en-US", {
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+	elems.Date.innerText = new Date().toLocaleDateString("en-US", {
+		weekday: 'long',
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric'
+	});
+}
+
+updateTime();
 if (Shell.isMobile) {
 	body.className = "position-fixed w-100";
 	body.style.top = 0;
@@ -20,7 +36,8 @@ if (Shell.isMobile) {
 	elems.NIcons.style.order = -1;
 } else {
 	body.className = "d-flex align-items-center";
-	elems.Container.className = "btn shadow d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
+	elems.Container.className = "btn shadow rounded-pill d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
+	elems.Container.style.height = CSS.px(38);
 	elems.Clock.className = "font-weight-bold mr-1";
 	elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
@@ -57,20 +74,7 @@ elems.Container.append(elems.Date, elems.NIcons, elems.Clock);
 body.appendChild(elems.Container);
 if (!Shell.isMobile) new Tooltip(elems.Container);
 
-setInterval(function () {
-	if (Shell.isMobile) document.body.style.paddingTop = elems.Container.offsetHeight + "px";
-	elems.Clock.innerText = new Date().toLocaleTimeString("en-US", {
-		hour: '2-digit',
-		minute: '2-digit'
-	});
-	elems.Date.innerText = new Date().toLocaleDateString("en-US", {
-		weekday: 'long',
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric'
-	});
-}, 1000);
-
+setInterval(updateTime, 1000);
 window.TrayItem = class TrayItem {
 	constructor(icon) {
 		let iconSize = 18;

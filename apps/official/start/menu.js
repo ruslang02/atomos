@@ -108,7 +108,6 @@ async function renderApps() {
 		root.Apps.style.cssText = "--display: grid";
 		root.Apps.style.display = "grid";
 		root.Apps.style.gridTemplateColumns = "25% 25% 25% 25%";
-		root.Apps.style.alignContent = "space-around";
 		root.appendChild(root.Apps);
 	}
 
@@ -124,38 +123,42 @@ async function renderApps() {
 			let appEntry = document.createElement("button");
 			let appIcon = document.createElement("icon");
 			let appName = document.createElement("div");
-			appName.className = "text-truncate text-center";
-			appEntry.className = "btn py-1 px-2 flex-shrink-0 d-flex flex-column align-items-center justify-content-center " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
+			appName.className = "text-center";
+			appEntry.className = "btn py-1 px-2 mb-1 flex-shrink-0 d-flex flex-column align-items-center justify-content-center " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 
-			appEntry.menu = new Menu([{
-				label: "Launch",
-				icon: "open-in-app"
-			}, {
-				type: "separator"
-			}, {
-				label: "Uninstall",
-				icon: "delete",
-				click() {
-					delete_r(itemPath)
-				}
-			}, {
-				label: "App info",
-				icon: "information-variant",
-				click() {
-					window.__currentApp = item;
-					Shell.openSettings("apps-app");
-				}
-			}]);
-			appEntry.addEventListener("contextmenu", e => {
-				appEntry.menu.popup();
-			});
 			try {
 				let json = await fs.readFile(itemPath);
 				let config = JSON.parse(json.toString());
 				if (config.hidden || config.type !== "app")
 					continue;
+				let appID = config.name.replace("@atomos", "official").replace("@", "");
+				appEntry.addEventListener("contextmenu", e => {
+					if (!appEntry.menu) appEntry.menu = new Menu([{
+						label: "Launch",
+						icon: "open-in-app",
+						click() {
+							appEntry.click();
+						}
+					}, {
+						type: "separator"
+					}, {
+						label: "Uninstall",
+						icon: "delete",
+						click() {
+							delete_r(itemPath)
+						}
+					}, {
+						label: "App info",
+						icon: "information-variant",
+						click() {
+							window.__currentApp = appID;
+							Shell.openSettings("apps-app");
+						}
+					}]);
+					appEntry.menu.popup();
+				});
 				appEntry.addEventListener("click", () => {
-					AppWindow.launch(config.name.replace("@atomos", "official").replace("@", ""));
+					AppWindow.launch(appID);
 					Elements.BarItems["official/start"].click();
 				});
 				appIcon.className = "mdi mdi-24px rounded-max shadow text-white d-flex p-2 lh-24 my-1 mdi-" + config.icon;
@@ -163,7 +166,7 @@ async function renderApps() {
 				allApps.push({
 					name: config.productName || config.name,
 					icon: config.icon,
-					item: item
+					item: appID
 				});
 				appName.innerText = config.productName || config.name || "App";
 				appEntry.append(appIcon, appName);
@@ -223,6 +226,7 @@ function renderSearch() {
 	igp.htmlFor = "__searchInput";
 	root.OffButton = document.createElement("button");
 	root.OffButton.className = "mdi mdi-18px lh-18 px-2 border-0 shadow-none mdi-power-standby btn d-flex align-items-center" + (Shell.ui.darkMode ? " text-white" : "");
+	root.OffButton.title = "End session".toLocaleString();
 	root.OffButton.onclick = () => {
 		new Menu([{
 			label: "Suspend",
@@ -293,6 +297,7 @@ function renderSearch() {
 			active.querySelector(".active").click();
 	});
 	root.appendChild(root.Search);
+	new Tooltip(root.OffButton, {placement: "bottom"});
 }
 
 /*

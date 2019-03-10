@@ -1,0 +1,21 @@
+{
+	"title": "Calendar",
+	"productName": "Calendar",
+	"name": "@atomos/calendar",
+	"description": "Arrange and manage your calendar",
+	"author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+	"license": "GPL-3.0",
+	"version": "1.0.0",
+	"homepage": "http://apps.atomos.org.uk/package/calendar",
+	"icon": "calendar-outline",
+	"main": "brush.js",
+	"color": "#1976d2",
+	"dependencies": {
+		"atomos": "~0.8.0"
+	},
+	"width": 600,
+	"height": 500,
+	"minWidth": 550,
+	"minHeight": 300,
+	"type": "app"
+}

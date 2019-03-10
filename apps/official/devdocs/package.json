@@ -5,7 +5,7 @@
   "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
   "license": "GPL-3.0",
   "version": "1.0.0",
-  "homepage": "https://apps.atomos.org.uk/package/devdocs",
+	"homepage": "http://apps.atomos.org.uk/package/devdocs",
   "main": "devdocs.js",
   "icon": "code-tags",
 	"color": "darkslategrey",
