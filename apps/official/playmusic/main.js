@@ -9,6 +9,7 @@ const {
 } = require("@api");
 console.log(Menu);
 const win = AppWindow.getCurrentWindow();
+    const pm = new(require('playmusic'));
 win.ui.body.classList.remove("flex-column", "scrollable-0");
 win.ui.body.classList.add("py-2", "pr-2");
 win.ui.title.classList.add("d-none");
@@ -72,7 +73,6 @@ function init() {
     services.gpm.classList.remove("btn-light");
     sidebar.innerHTML = "";
     main.innerHTML = "";
-    const pm = new(require('playmusic'));
     pm.init(cookies, err => {
       if (err) {
         new Snackbar("There was a problem loading PM library. Check the console");
@@ -91,6 +91,7 @@ function init() {
       tracksBtnGPM.activate();
       plBtnGPM.deactivate();
       favBtnGPM.deactivate();
+          main.innerHTML = '';
       let header = document.createElement("h4");
       header.innerText = "All tracks";
       header.className = "mx-2 mt-1 mb-3"
@@ -199,7 +200,46 @@ function init() {
         spinner.hide();
       })
     })
-
+		plBtnGPM.addEventListener("click", () => {
+      spinner.show();
+      plBtnGPM.activate();
+      tracksBtnGPM.deactivate();
+      favBtnGPM.deactivate();
+          main.innerHTML = '';
+      let header = document.createElement("h4");
+      header.innerText = "Playlists";
+      header.className = "mx-2 mt-1 mb-3"
+			pm.getPlayLists(function(err, data) {
+        if (err) {
+          new Snackbar("There was a problem retrieving tracks. Check the console");
+          console.error(err);
+          spinner.hide();
+          return;
+        }
+        main.append(header);
+        console.log(data.data);
+    	});
+		})
+		favBtnGPM.addEventListener("click", () => {
+      spinner.show();
+      favBtnGPM.activate();
+      plBtnGPM.deactivate();
+      tracksBtnGPM.deactivate();
+          main.innerHTML = '';
+      let header = document.createElement("h4");
+      header.innerText = "Favorites";
+      header.className = "mx-2 mt-1 mb-3"
+			pm.getFavorites(function(err, data) {
+        if (err) {
+          new Snackbar("There was a problem retrieving tracks. Check the console");
+          console.error(err);
+          spinner.hide();
+          return;
+        }
+        main.append(header);
+        console.log(data.data);
+    	});
+		})
     GPM.append(tracksBtnGPM, plBtnGPM, favBtnGPM);
     sidebar.append(GPM);
   }

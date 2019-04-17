@@ -115,6 +115,7 @@ class Shell {
 
   static openSettings(section) {
     Elements.MenuBar.open();
+    Elements.MenuBar.notifications.classList.remove("show")
     setTimeout(() => {
       Elements.MenuBar.settings = document.createElement("section");
       Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute very-rounded w-100 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");

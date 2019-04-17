@@ -58,6 +58,7 @@ Elements.MenuBar.close = function () {
 	Elements.MenuBar.classList.replace("show", "hide");
 	Elements.BarItems["official/tray"].Container.classList.remove("active");
 	Elements.BarItems["official/tray"].Date.classList.add("hide");
+	Elements.MenuBar.notifications.classList.add("show")
 	setTimeout(() => {
 			if (Elements.MenuBar.settings)
 				Elements.MenuBar.settings.remove();
@@ -103,6 +104,10 @@ function renderQuickSection() {
 	let Sound = document.createElement("button");
 	let Settings = document.createElement("button");
 	WiFi.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-wifi p-2 lh-24 d-flex align-items-center";
+	WiFi.oncontextmenu = e => {
+		e.stopPropagation();
+		Shell.openSettings("network-wlan");
+	}
 	Screen.className = "rounded-circle btn btn-primary mdi mdi-24px mdi-brightness-6 p-2 lh-24 d-flex align-items-center";
 	Screen.oncontextmenu = e => {
 		e.stopPropagation();
@@ -249,7 +254,7 @@ function getCurrentVolume() {
 
 function renderNotifications() {
 	Elements.MenuBar.notifications = document.createElement("notifications");
-	Elements.MenuBar.notifications.className = "flex-grow-1";
+	Elements.MenuBar.notifications.className = "flex-grow-1 fade show";
 	Elements.MenuBar.notifications.none = document.createElement("section");
 	Elements.MenuBar.notifications.none.className = "card shadow very-rounded flex-column p-3 text-center text-muted font-italic " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
 	Elements.MenuBar.notifications.none.innerText = "No new notifications".toLocaleString();

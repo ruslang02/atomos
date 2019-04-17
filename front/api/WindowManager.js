@@ -31,6 +31,7 @@ const Registry = require(`@api/Registry`);
 const {
   Button
 } = require("@api/Components");
+console.log(module);
 window._wzindex = window._wzindex || 0;
 let
   windowCollection = new Proxy(window.instances = window.instances || [], {
