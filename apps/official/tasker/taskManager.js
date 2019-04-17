@@ -1,4 +1,3 @@
-const path = require("path");
 const Shell = require(`@api/Shell`);
 const Registry = require(`@api/Registry`);
 const Menu = require("@api/Menu");
@@ -31,7 +30,7 @@ class TaskManager {
 			this.mtask.thumb.style.width = "200px";
 			this.mtask.thumb.className = "rounded";
 			this.mtask.header.className = "d-flex mb-2";
-			this.mtask.onclick = e => {
+			this.mtask.onclick = () => {
 				this.window.show();
 				TaskManager.hide();
 			};
@@ -55,25 +54,25 @@ class TaskManager {
 			id: "max",
 			icon: "window-maximize",
 			enabled: () => !this.window.isMaximized() && this.window.isMaximizable(),
-			click: e => this.window.maximize()
+			click: () => this.window.maximize()
 		}, {
 			label: "Restore",
 			id: "res",
 			icon: "window-restore",
 			enabled: () => this.window.isMaximized() || this.window.isMinimized(),
-			click: e => this.window.restore()
+			click: () => this.window.restore()
 		}, {
 			label: "Minimize",
 			icon: "window-minimize",
 			enabled: () => !this.window.isMinimized() && this.window.isMinimizable(),
-			click: e => this.window.minimize()
+			click: () => this.window.minimize()
 		}, {
 			type: "separator"
 		}, {
 			label: "Close",
 			icon: "window-close",
 			enabled: () => this.window.isClosable(),
-			click: e => this.window.close()
+			click: () => this.window.close()
 		}]);
 		this.task.addEventListener("contextmenu", function (e) {
 			e.stopPropagation();
@@ -99,11 +98,11 @@ class TaskManager {
 		this.window.on('closed', function () {
 			document.body.click();
 			_this.task.classList.remove("show");
-			setTimeout(e => _this.destroy(), Shell.ui.fadeAnimation)
+			setTimeout(() => _this.destroy(), Shell.ui.fadeAnimation)
 		});
-		this.window.on('blur', e => this.task.classList.remove("active"));
-		this.window.on('focus', e => this.task.classList.add("active"));
-		this.window.on('thumbnail-changed', e => this.setTitle());
+		this.window.on('blur', () => this.task.classList.remove("active"));
+		this.window.on('focus', () => this.task.classList.add("active"));
+		this.window.on('thumbnail-changed', () => this.setTitle());
 		this.task.classList.add("active")
 	}
 
@@ -118,7 +117,7 @@ class TaskManager {
 
 	static hide() {
 		tasks.classList.remove("show");
-		setTimeout(e => tasks.classList.add("d-none"), Shell.ui.fadeAnimation)
+		setTimeout(() => tasks.classList.add("d-none"), Shell.ui.fadeAnimation)
 	}
 
 	destroy() {

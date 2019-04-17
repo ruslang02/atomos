@@ -47,27 +47,27 @@ body.blur message-box {
 }
 
 .lh-18 {
-	line-height: 18px;
+	line-height: 18px !important;
 }
 
 .lh-21 {
-	line-height: 21px;
+	line-height: 21px !important;
 }
 
 .mdi-21px.mdi-set, .mdi-21px.mdi {
-	font-size: 21px;
+	font-size: 21px !important;
 }
 
 .lh-24 {
-	line-height: 24px;
+	line-height: 24px !important;
 }
 
 .lh-36 {
-	line-height: 36px;
+	line-height: 36px !important;
 }
 
 .lh-48 {
-	line-height: 48px;
+	line-height: 48px !important;
 }
 
 .text-decoration-none {
@@ -131,10 +131,7 @@ body.blur message-box {
 }
 
 .bg-semiwhite {
-	background: rgba(230, 230, 230, 0.75) !important;
-	/* backdrop-filter: blur(5px); */
-	/* overflow: hidden; */
-	/* box-shadow: none !important; */
+	    background: rgb(230, 230, 230, 0.75);
 }
 
 .bg-semiwhite.shadow, .bg-semiwhite.active {
@@ -271,8 +268,8 @@ plugin[id="official/tasker"] > button:not(.active):active, plugin[id="official/s
 	filter: brightness(90%);
 }
 
-body.blur window {
-	backdrop-filter: blur(5px);
+body.blur window.active {
+	backdrop-filter: blur(10px);
 }
 window.maximized {
 	width: 100% !important;
@@ -383,14 +380,14 @@ notification.toast {
 .tooltip {
 	pointer-events: none;
 	transition-delay: .5s;
+	font-family: inherit !important;
 }
 .tooltip .mdi {
-	font-size: 14px;
-	line-height: 14px;
+	font-size: 12px;
+	line-height: 12px;
 	vertical-align: middle;
 	display: inline-block;
-	height: 14px;
-	margin-top: -1px;
+	/* margin-top: -1px; */
 }
 
 .mdi-spin-faster:before {
@@ -511,8 +508,7 @@ notification.toast {
 }
 .tooltip .tooltip-inner {
 	background: var(--secondary) !important;
-	box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-	font-size: 90%;
+  box-shadow: 0 0.2rem 5px #0000004d;
 }
 
 .btn-white:not(:disabled):not(.disabled):active, .btn-white:not(:disabled):not(.disabled).active, .show > .btn-white.dropdown-toggle {

@@ -20,14 +20,15 @@
 	moduleAlias.addAlias('@apps', osRoot + '/apps');
 	moduleAlias();
 	window.Elements = {};
+	let btntemp = document.createElement("section");
+	document.head.append(btntemp);
+	Elements.BTNTEMP = btntemp;
 	const AsyncFunction = Object.getPrototypeOf(async function () {
 	}).constructor;
 	if (enablePWDEntry)
 		require("./passworded-entry").validate().then(function () {
-			console.time("launch");
 			require("./desktop")
 		}); else {
-		console.time("launch");
 		require("./desktop")
 	}
 </script>

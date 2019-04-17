@@ -37,7 +37,7 @@ grid.append(
 	genBtn(1), genBtn(2), genBtn(3), genBtn("−", "secondary"),
 	genBtn(0), genBtn(","), genBtn("=", "primary"), genBtn("+", "secondary"));
 win.ui.body.classList.add("p-2");
-win.show();
+//
 let css = document.createElement("style");
 css.innerHTML = `
 window[id='${win.id}'] main .btn:after {

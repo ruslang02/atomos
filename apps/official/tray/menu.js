@@ -238,7 +238,7 @@ function getCurrentVolume() {
 			muted: muted
 		};
 	} catch (e) {
-		Elements.MenuBar.quickItems.items[2].oncontextmenu = function () {
+		Elements.MenuBar.quickItems.items.Sound.oncontextmenu = function () {
 		};
 		return {
 			volume: 50,

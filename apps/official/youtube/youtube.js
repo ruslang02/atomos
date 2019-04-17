@@ -1,24 +1,25 @@
 const AppWindow = require("@api/WindowManager");
 const Shell = require("@api/Shell");
-const win = AppWindow.getCurrentWindow();
 const Semver = require("semver");
+const win = AppWindow.getCurrentWindow();
 
-/*let ev = Semver(process.versions.electron);
-if(ev.major === 5 && ev.minor === 0 && ev.prerelease[0] === "beta" && ev.prerelease[1] <= 4) {
-	win.close();
+let ev = Semver(process.versions.electron);
+if(ev.major === 5 && ev.minor === 0 && ev.prerelease[0] === "beta") {
+	//win.close();
 	Shell.showMessageBox({
 		type: "error",
 		title: "Compatibility error",
-		message: `Electron versions from 5 and upper crash when using YouTube API. Please consider downgrading Electron version to 4.`
+		message: `Electron 5 crashes when using YouTube API. Please consider downgrading Electron version to 4.`
 	});
-	return;
-}*/
+	//return;
+}
 
 const path = require("path");
 const Menu = require(`@api/Menu`);
 
 let backend = new Worker(path.join(__dirname, "worker.js"));
 backend.onmessage = e => {
+	console.log(e.data.action);
 	switch (e.data.action) {
 		case "library-error":
 			win.close();
@@ -158,9 +159,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 	}
 	spinner.classList.replace("show", "hide");
 };
-win.on('close', e => {
-	backend.terminate();
-});
+win.on('close', () => backend.terminate());
 win.ui.body.classList.remove("flex-column");
 
 function genVid(item) {
@@ -284,7 +283,7 @@ body.className = "d-flex flex-column w-100 h-100";
 main.append(spinner, body);
 win.ui.body.append(sidebar, main);
 spinner.classList.replace("hide", "show");
-win.show();
+
 
 function openLogIn(url) {
 	let modal = document.createElement("div");

@@ -9,7 +9,8 @@ const
 	win = AppWindow.getCurrentWindow(),
 	GitLab = require('gitlab/dist/es5').default,
 	semver = require('semver'),
-	OAUTH_ID = "6f212c4f252faec9050f17668bea8945278ca317975500e847e67a2f8f087eeb",
+	OAUTH_ID = "aa323e6ea377cc2626142787c548389cc0cddc308d295f05d3e886bdf240e84f", // "6f212c4f252faec9050f17668bea8945278ca317975500e847e67a2f8f087eeb"
+	BASE_SERVER = "http://192.168.1.72", // "http://apps.atomos.org.uk"
 	REDIRECT_URI = "http://atomos.org.uk/glcallback";
 let
 	api,
@@ -36,17 +37,17 @@ win.ui.title.classList.add("d-none");
 nav.backButton.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-arrow-left mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.backButton.disabled = true;
 nav.backButton.type = "button";
-nav.backButton.onclick = e => nav.secSwitch.querySelector("button:not(.btn-dark):not(.btn-light)").click();
-nav.backButton.title = "Previous".toLocaleString() + " (Ctrl+<i class='mdi mdi-chevron-left'></i>)";
+nav.backButton.onclick = () => nav.secSwitch.querySelector("button:not(.btn-dark):not(.btn-light)").click();
+nav.backButton.title = "Back".toLocaleString();
 
 nav.search.className = "btn btn-sm mdi d-none shadow-sm align-items-center mdi-magnify ml-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.search.type = "button";
-nav.search.onclick = e => nav.secSwitch.querySelector("button:not(.btn-dark):not(.btn-light)").click();
-nav.search.title = "Search".toLocaleString() + " (Ctrl+F)";
+nav.search.onclick = () => nav.secSwitch.querySelector("button:not(.btn-dark):not(.btn-light)").click();
+nav.search.title = "Search".toLocaleString();
 
 nav.install.className = "btn btn-sm btn-primary px-3" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.install.innerText = "Applications".toLocaleString();
-nav.install.onclick = e => {
+nav.install.onclick = () => {
 	nav.manage.classList.add(win.options.darkMode ? "btn-dark" : "btn-light");
 	nav.install.classList.remove(win.options.darkMode ? "btn-dark" : "btn-light");
 	refreshApps();
@@ -86,6 +87,7 @@ async function renderUser() {
 	nav.account.userName = document.createElement("div");
 	nav.account.userName.innerText = currentUser.name;
 	nav.account.innerHTML = "";
+	nav.account.title = "Account";
 	nav.account.append(nav.account.icon, nav.account.userName);
 
 	nav.account.menu = new Menu([{
@@ -93,7 +95,7 @@ async function renderUser() {
 		icon: "gitlab",
 		click() {
 			AppWindow.launch("official/proton", {
-				file: "http://apps.atomos.org.uk/" + currentUser.username
+				file: `${BASE_SERVER}/${currentUser.username}`
 			})
 		}
 	}, {
@@ -117,6 +119,7 @@ async function renderUser() {
 		});
 	};
 	setTimeout(() => nav.install.click(), 100);
+	new Tooltip(nav.account, {placement: "bottom"});
 }
 
 
@@ -134,14 +137,14 @@ win.ui.body.classList.add(win.options.darkMode ? "bg-dark" : "bg-white");
 
 body.className = "flex-grow-1 py-3 container scrollable-y" + (win.options.darkMode ? " text-white" : "");
 spinner.style.cssText = "position:absolute;left:0;right:0;width:36px;height:36px";
-spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 fly down hide lh-24 d-flex align-items-center bg-light border mx-auto p-1 rounded-circle shadow";
+spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 fly down hide lh-24 d-flex justify-content-center align-items-center bg-light border mx-auto p-1 rounded-circle shadow";
 win.ui.body.append(spinner, body);
 
-win.show();
+
 login();
 
 async function installApp(app, version) {
-
+	console.log(app, version) //TODO: This
 }
 async function loadApp(app) {
 	body.innerHTML = "";
@@ -208,6 +211,9 @@ async function loadApp(app) {
 				let updateBtn = document.createElement("button");
 				updateBtn.className = "btn btn-primary btn-block btn-lg mdi mdi-update";
 				updateBtn.innerText = " " + "Update".toLocaleString();
+				updateBtn.onclick = () => {
+					installApp(app, latestVersion);
+				}
 				let launchBtn = document.createElement("button");
 				launchBtn.className = "btn btn-success btn-lg mdi mdi-open-in-new";
 				launchBtn.onclick = () => AppWindow.launch(app);
@@ -369,7 +375,7 @@ async function login() {
 	if (access) {
 		try {
 			api = new GitLab({
-				url: "http://apps.atomos.org.uk",
+				url: BASE_SERVER,
 				oauthToken: access.access_token
 			});
 			console.log(api);
@@ -391,7 +397,7 @@ async function login() {
 	modal.tabIndex = -1;
 	modal.setAttribute("aria-hidden", "true");
 	let webview = document.createElement("webview");
-	webview.src = `http://apps.atomos.org.uk/oauth/authorize?client_id=${OAUTH_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&state=GitLab`;
+	webview.src = `${BASE_SERVER}/oauth/authorize?client_id=${OAUTH_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&state=GitLab`;
 	webview.nodeintegration = true;
 	webview.setAttribute("autosize", 'on');
 	webview.className = "h-100";

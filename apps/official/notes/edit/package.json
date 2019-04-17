@@ -1,0 +1,20 @@
+{
+	"title": "Note Editor",
+	"productName": "Note Editor",
+	"name": "@atomos/notes/edit",
+	"type": "app",
+	"version": "1.0.0",
+	"homepage": "http://apps.atomos.org.uk/package/notes",
+	"description": "Note Editor",
+	"icon": "card-text-outline",
+	"color": "#d32f2f",
+	"width": 500,
+	"height": 430,
+  "hidden": true,
+  "maximizable": false,
+	"main": "edit.js",
+	"dependencies": {
+		"atomos": "~0.8.0",
+    "@atomos/notes": "^1.0.0"
+	}
+}

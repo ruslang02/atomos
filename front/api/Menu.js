@@ -55,11 +55,9 @@ class Menu extends EventEmitter {
 		this.menu.overlay.className = "position-fixed w-100 h-100";
 		this.menu.overlay.style.cssText = "top:0;left:0;z-index:-1";
 		this.menu.onclick = e => e.stopPropagation();
-		this.menu.overlay.onclick = e => {
+		this.menu.overlay.onclick = () => {
 			let event = {
-				preventDefault: function () {
-					event.returnValue = false;
-				},
+				preventDefault: () => event.returnValue = false,
 				returnValue: true
 			};
 			_this.emit('menu-will-close', event);
@@ -125,8 +123,6 @@ class Menu extends EventEmitter {
 						_this.menu.overlay.onclick(e);
 
 					};
-					console.log(item.label, this.g(item.enabled));
-					if (AppWindow.getFocusedWindow()) console.log(AppWindow.getFocusedWindow().isMaximizable(), AppWindow.getFocusedWindow().isMaximized());
 					if (Registry.get('system.showMenuIcons') !== false) {
 						menuItem.classList.add("pl-3");
 						menuItem.icon = document.createElement("icon");

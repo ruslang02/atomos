@@ -219,4 +219,4 @@ function initCropper() {
 	});
 }
 
-win.show();
+

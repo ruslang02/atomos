@@ -31,7 +31,7 @@ win.task.menu.insert(-2, {
 	label: "Edit location",
 	icon: "pencil",
 	click() {
-		win.show();
+
 		nav.pathField.dispatchEvent(new MouseEvent('dblclick', {
 			'view': window,
 			'bubbles': true,
@@ -77,7 +77,7 @@ function init() {
 	if (win.arguments.callback)
 		renderFCBar();
 	renderStatusbar();
-	win.show();
+
 	navigate(win.arguments.file || process.env.HOME).then(() => console.log("Files loaded."));
 	renderMainMenu();
 }
@@ -541,7 +541,6 @@ async function renderDeviceSection() {
 			} catch (e) {
 			}
 			item.className = "dropdown-item rounded-right-pill d-flex align-items-center" + (win.options.darkMode ? " text-white" : "");
-			item.title = 'Click to mount/open drive';
 			item.icon = document.createElement("icon");
 			item.icon.className = "mdi mdi-18px mr-1 lh-18 mdi-usb";
 			item.header = document.createElement("div");
@@ -561,7 +560,6 @@ async function renderDeviceSection() {
 				}
 			}]);
 			item.append(item.icon, item.header);
-			new Tooltip(item, {placement: "right"});
 			item.addEventListener('click', function () {
 				if (isMounted)
 					navigate(mountDir);
@@ -652,7 +650,7 @@ function renderNav() {
 		navigate(":back");
 	};
 	nav.backButton.ondblclick = e => e.stopPropagation();
-	nav.backButton.title = "Previous (Ctrl+<i class='mdi mdi-chevron-left'></i>)";
+	nav.backButton.title = "Back".toLocaleString();
 
 	nav.forwardButton = document.createElement("button");
 	nav.forwardButton.className = "btn btn-sm mdi d-flex align-items-center mdi-arrow-right mdi-18px lh-r1" + (win.options.darkMode ? " btn-dark" : " btn-light");
@@ -662,7 +660,7 @@ function renderNav() {
 		navigate(":forward");
 	};
 	nav.forwardButton.ondblclick = e => e.stopPropagation();
-	nav.forwardButton.title = "Next (Ctrl+<i class='mdi mdi-chevron-right'></i>)";
+	nav.forwardButton.title = "Forward".toLocaleString();
 
 	nav.mainBar = document.createElement("div");
 	nav.mainBar.className = "btn-group align-items-stretch flex-shrink-0 mr-2 shadow-sm";
@@ -676,7 +674,7 @@ function renderNav() {
 		});
 	};
 	nav.folderButton.type = "button";
-	nav.folderButton.title = "Create folder (Ctrl+N)";
+	nav.folderButton.title = "Create folder".toLocaleString();
 
 	nav.refreshButton = document.createElement("button");
 	nav.refreshButton.type = "submit";
@@ -685,7 +683,7 @@ function renderNav() {
 		navigate(nav.pathField.dataset.edited === "true" ? nav.pathField.value : ":REFRESH");
 	};
 	nav.refreshButton.ondblclick = e => e.stopPropagation();
-	nav.refreshButton.title = "Refresh page (F5)";
+	nav.refreshButton.title = "Refresh";
 	nav.refreshButton.style.borderRadius = "0 .25rem .25rem 0";
 	nav.pathField = document.createElement("input");
 	nav.pathField.className = "form-control border-0 h-100 px-2 shadow-sm us-0 flex-grow-1 text-center" + (win.options.darkMode ? " bg-dark text-white" : " bg-light");

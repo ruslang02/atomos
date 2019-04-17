@@ -7,10 +7,11 @@ try {
 	OAuth2Client = require('google-auth-library').OAuth2Client;
 	youtubedl = require('youtube-dl');
 } catch (e) {
+	console.log(e);
 	postMessage({
 		action: "library-error"
 	});
-	close();
+	//self.close();
 }
 let SCOPES = ['https://www.googleapis.com/auth/youtube.readonly', "https://www.googleapis.com/auth/userinfo.profile"];
 let TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
@@ -95,7 +96,7 @@ onmessage = function (e) {
 					return;
 				}
 				oauth2Client.credentials = token;
-				storeToken(token).then(e =>
+				storeToken(token).then(() =>
 					authorize(clientSecret));
 			});
 			break;
@@ -120,7 +121,10 @@ onmessage = function (e) {
 				maxResults: 50,
 				order: "unread",
 				pageToken: pageToken
-			}, (e, res) => resolve(res)));
+			}, (e, res) => {
+					if (e) console.error(e);
+					resolve(res)
+			}));
 			try {
 				totalChannels = res.data.pageInfo.totalResults;
 			} catch (e) {
@@ -195,11 +199,11 @@ onmessage = function (e) {
 				order: "date",
 				videoEmbeddable: true,
 				maxResults: 5
-			}, (e, res) => resolve(subVideos.push.apply(subVideos, res.data.items))));
+			}, (_e, res) => resolve(subVideos.push.apply(subVideos, res.data.items))));
 		}
 
 		async function retrieveVideos() {
-			/*for (const channel of await retrieveChannels()) {
+			for (const channel of await retrieveChannels()) {
 				console.log(channel);
 				await retrieveVideo(channel.snippet.resourceId.channelId);
 			}
@@ -207,13 +211,16 @@ onmessage = function (e) {
 			subVideos = subVideos.sort(function (a, b) {
 				return new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt);
 			});
-			subVideos.length = 20;*/
+			subVideos.length = 20;
 			return await new Promise(resolve => google.youtube('v3').activities.list({
 				auth: oauth2Client,
 				part: "snippet, contentDetails",
 				home: true,
 				maxResults: 25
-			}, (e, res) => resolve(res.data)));
+			}, (e, res) => {
+				if(e) console.error(e);
+				resolve(res.data)
+			}));
 		}
 
 			retrieveVideos().then(videos => postMessage({action: "list-subscriptions", result: videos}));

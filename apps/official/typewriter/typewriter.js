@@ -3,7 +3,7 @@ const AppWindow = require("@api/WindowManager");
 const Menu = require(`@api/Menu`);
 const Shell = require("@api/Shell");
 const path = require("path");
-const {Snackbar, Notification} = require("@api/Notification");
+const {Snackbar} = require("@api/Notification");
 const MAX_SIZE = 51240;
 let win = AppWindow.getCurrentWindow();
 let el = {};
@@ -21,13 +21,13 @@ nav.openFile.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi
 nav.openFile.onclick = () => Shell.selectFile(Shell.ACTION_OPEN, {
 	defaultPath: path.join(process.env.HOME, "Documents")
 }).then(loadFile);
-nav.openFile.title = "Open (Ctrl+O)";
+nav.openFile.title = "Open".toLocaleString();
 nav.save = document.createElement("div");
 nav.save.className = "btn-group";
 nav.saveFile = document.createElement("button");
 nav.saveFile.className = "btn mdi d-flex btn-sm shadow-sm align-items-center mdi-content-save-outline mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.saveFile.onclick = () => nav.saveDrop.menu.getMenuItemById("save").click();
-nav.saveFile.title = "Save (Ctrl+S)";
+nav.saveFile.title = "Save".toLocaleString();
 nav.saveDrop = document.createElement("button");
 nav.saveDrop.className = "btn dropdown-toggle btn-sm dropdown-toggle-split shadow-sm mr-2" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.saveDrop.onclick = e => {
@@ -82,7 +82,7 @@ new Tooltip(nav.saveFile, {
 	placement: "bottom"
 });
 win.ui.header.prepend(nav);
-win.show();
+
 
 async function loadFile(file, force = false) {
 	if (!file) return;

@@ -47,10 +47,11 @@ renderLocale().then(() => {
 });
 fso.watch(path.join(osRoot, "locales"), renderLocale);
 String.toLocaleString = function (name) {
-	for (const data of window.localeData) {
+	if (typeof window.localeData === "object") for (const data of window.localeData) {
 		if (data[name])
 			return data[name];
 	}
+	return `${this}`;
 };
 String.prototype.toLocaleString = function () {
 	if (typeof window.localeData === "object") for (const data of window.localeData) {
@@ -68,6 +69,7 @@ fso.watch(wFile, () => {
 
 async function renderLocale() {
 	let locale = "en-US";
+	try {
 	let files = await fs.readdir(path.join(osRoot, "locales", locale));
 	for (let file of files) {
 		if (file === "default.json") continue;
@@ -76,6 +78,9 @@ async function renderLocale() {
 		let localeData = JSON.parse(localeFile);
 		(window.localeData = window.localeData || []).push(localeData);
 	}
+} catch {
+	if(locale !== "en-US") console.error("Locale", locale, "is not present");
+}
 }
 
 function renderWall() {

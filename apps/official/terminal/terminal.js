@@ -30,7 +30,7 @@ let dataset = document.createElement("datalist");
 dataset.id = Shell.uniqueId();
 //command.setAttribute("list", dataset.id);
 win.ui.body.append(commands, commandContainer, dataset);
-win.show();
+
 if (win.arguments.file) {
 	fs.lstat(win.arguments.file).then(stat => {
 		if (stat.isDirectory()) {

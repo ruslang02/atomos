@@ -21,7 +21,7 @@ function render() {
 				setTimeout(() => document.querySelector("splash").remove(), 1000);
 			}
 		}, 1000);*/
-		console.timeEnd("launch");
+		console.clear();
 	});
 	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto w-100 flex-shrink-0 position-absolute";
 	Elements.Bar.transition = "bottom 1s ease";

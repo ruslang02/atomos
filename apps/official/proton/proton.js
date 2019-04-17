@@ -6,7 +6,7 @@ const win = AppWindow.getCurrentWindow();
 const fs = require("fs");
 win.on('second-instance', (e, args) => {
 	if (args.newWindow) e.preventDefault();
-	else if (args.file) newTab(args.file);
+	else if (args.file || args.url) newTab(args.file || args.url);
 	win.show();
 });
 const isDarkMode = win.options.darkMode;
@@ -171,7 +171,7 @@ urlTooltip.style.cssText =
 	"bottom:0;left:0;position:absolute;max-width: 400px;border: 1px solid lightgray; border-bottom-left-radius: .25rem";
 win.ui.body.append(nav, tabCollection, urlTooltip);
 setImmediate(() => newTab(win.arguments.file || win.arguments.url));
-win.show();
+
 
 let tabMenu = new Menu([{
 	label: "Refresh",

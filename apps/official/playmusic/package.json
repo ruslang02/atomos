@@ -8,14 +8,15 @@
 	"homepage": "http://apps.atomos.org.uk/package/playmusic",
 	"icon": "play-circle-outline",
 	"color": "radial-gradient(#ff8f00 35%, #e65100 35%)",
-	"main": "gmusic.js",
+	"main": "main.js",
 	"description": "Online music streaming",
 	"dependencies": {
 		"atomos": "~0.8.0"
 	},
-	"width": 600,
-	"height": 500,
-	"minWidth": 500,
-	"minHeight": 450,
+	"show": false,
+	"width": 850,
+	"height": 600,
+	"minWidth": 750,
+	"minHeight": 500,
 	"type": "app"
 }

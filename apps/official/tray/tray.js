@@ -1,5 +1,3 @@
-const path = require("path"),
-	fs = require("fs").promises;
 const Shell = require("@api/Shell");
 const AppWindow = require("@api/WindowManager");
 const Menu = require(`@api/Menu`);
@@ -17,7 +15,7 @@ function updateTime() {
 		hour: '2-digit',
 		minute: '2-digit'
 	});
-	elems.Date.innerText = new Date().toLocaleDateString("en-US", {
+	elems.Date.innerText = elems.Container.dataset.originalTitle = new Date().toLocaleDateString("en-US", {
 		weekday: 'long',
 		year: 'numeric',
 		month: 'short',
@@ -39,7 +37,6 @@ if (Shell.isMobile) {
 	elems.Container.className = "btn shadow rounded-pill d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
 	elems.Container.style.height = CSS.px(38);
 	elems.Clock.className = "font-weight-bold mr-1";
-	elems.Container.title = "Tray (<i class='mdi mdi-atom'></i>+N)";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
 }
 elems.NIcons.className = "fly left show d-inline-flex mr-1 text-truncate";
@@ -61,7 +58,7 @@ elems.Container.menu = new Menu([{
 	type: "checkbox",
 	id: "DND",
 	checked: window.NOTIFICATIONS_MUTED,
-	click(checked, elem) {
+	click(_checked, elem) {
 		Elements.MenuBar.quickItems.items.DND.onclick(null);
 		elem.checked = window.NOTIFICATIONS_MUTED;
 	}

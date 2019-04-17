@@ -12,17 +12,17 @@ nav.copyClipboard = document.createElement("button");
 nav.copyClipboard.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-content-copy mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.copyClipboard.onclick = () => clipboard.writeImage(imageRes);
 nav.copyClipboard.disabled = true;
-nav.copyClipboard.title = "Copy to Clipboard".toLocaleString() + " (Ctrl+C)";
+nav.copyClipboard.title = "Copy to Clipboard".toLocaleString();
 nav.showInFiles = document.createElement("button");
 nav.showInFiles.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-folder-outline mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.showInFiles.onclick = () => Shell.showItemInFolder(url);
 nav.showInFiles.disabled = true;
-nav.showInFiles.title = "Show in File Manager".toLocaleString() + " (Ctrl+N)";
+nav.showInFiles.title = "Show in File Manager".toLocaleString();
 nav.share = document.createElement("button");
 nav.share.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-share mr-2 mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.share.onclick; // Shell.shareContent() TODO: API for sharing content
 nav.share.disabled = true;
-nav.share.title = "Share".toLocaleString() + " (Ctrl+S)";
+nav.share.title = "Share".toLocaleString();
 nav.append(nav.copyClipboard, nav.showInFiles, nav.share);
 new Tooltip(nav.copyClipboard, {
 	placement: "bottom"
@@ -58,7 +58,7 @@ captureButton.addEventListener("click", async () => {
 	url = output;
 	setTimeout(() => {
 		wc.capturePage(async function (result) {
-			win.show();
+
 			try {
 				let png = result.toPNG();
 				await fs.writeFile(output, png);
@@ -105,4 +105,3 @@ captureButton.append(captureButton.icon, captureButton.header);
 win.ui.body.append(image, captureButton);
 if (win.arguments.capture)
 	captureButton.click();
-else win.show();

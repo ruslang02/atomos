@@ -14,6 +14,7 @@
 	"maxWidth": 380,
 	"width": 255,
 	"height": 300,
+	"show": true,
 	"dependencies": {
 		"atomos": "~0.8.0"
 	}

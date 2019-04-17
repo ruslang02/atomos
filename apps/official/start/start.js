@@ -26,7 +26,7 @@ let menu = new Menu([{
 	label: "Toggle Developer Tools",
 		icon: "developer-board",
 	shortLabel: "Dev Tools",
-	click: e => {
+	click: () => {
 		require("electron").remote.getCurrentWindow().toggleDevTools();
 	}
 }, {
@@ -48,7 +48,7 @@ body.className = "d-flex align-items-center ml-2";
 button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 shadow d-flex align-items-center justify-content-center text-white p-0 my-1 mdi-chevron-up";
 button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
 button.style.height = button.style.width = CSS.px(38);
-if (!Shell.isMobile) button.title = "All Apps (<i class='mdi mdi-atom'></i>)";
+if (!Shell.isMobile) button.title = "All Apps";
 button.addEventListener("click", e => {
 	e.stopPropagation();
 	Elements.StartMenu.toggle();
@@ -70,7 +70,7 @@ if (Shell.isMobile) {
 	body.prepend(closeButton);
 	let tasksButton = document.createElement("button");
 	tasksButton.className = "mdi mdi-crop-square mdi-36px btn d-flex align-items-center bg-transparent lh-36 py-1";
-	tasksButton.onclick = e => TaskManager.toggle();
+	tasksButton.onclick = () => TaskManager.toggle();
 	body.append(tasksButton);
 } else button.classList.add("mr-3");
 if (!Shell.isMobile) new Tooltip(button);

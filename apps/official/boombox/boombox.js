@@ -2,7 +2,7 @@ const path = require("path");
 const AppWindow = require("@api/WindowManager");
 const Shell = require("@api/Shell");
 const Registry = require(`@api/Registry`);
-const {Notification, Snackbar} = require("@api/Notification");
+const {Notification} = require("@api/Notification");
 const xml2js = require('xml2js');
 const js2xml = require('jstoxml');
 const renderID3 = require('musicmetadata');
@@ -14,7 +14,7 @@ const win = AppWindow.getCurrentWindow();
 setImmediate(() => {
 	if (win.arguments.file) load(win.arguments.file);
 });
-win.on('second-instance', (e, args) => {
+win.on('second-instance', (_e, args) => {
 	load(args.file);
 });
 win.on('close', () => {
@@ -34,7 +34,7 @@ nav.openFile.onclick = () => {
 		load(file);
 	})
 };
-nav.openFile.title = "Open".toLocaleString() + " (Ctrl+O)";
+nav.openFile.title = "Open".toLocaleString();
 nav.saveFile = document.createElement("button");
 nav.saveFile.className = "btn mdi d-flex btn-sm shadow-sm align-items-center mdi-playlist-play mdi-18px lh-18" + (win.options.darkMode ? " btn-dark" : " btn-light");
 nav.saveFile.onclick = async function () {
@@ -76,7 +76,7 @@ nav.saveFile.onclick = async function () {
 		}]
 	});
 };
-nav.saveFile.title = "Export playlist".toLocaleString() + " (Ctrl+S)";
+nav.saveFile.title = "Export playlist".toLocaleString();
 nav.append(nav.openFile, nav.saveFile);
 win.ui.header.prepend(nav);
 win.ui.header.classList.remove("border-bottom");
@@ -126,13 +126,13 @@ let controls = document.createElement("div");
 controls.className = "d-flex align-items-center flex-shrink-0 m-2 justify-content-center";
 controls.previous = document.createElement("button");
 controls.previous.className = "btn mdi mdi-skip-previous mdi-24px lh-24 rounded-circle d-flex p-1" + (win.options.darkMode ? " btn-dark" : " btn-light");
-controls.previous.addEventListener("click", e => {
+controls.previous.addEventListener("click", () => {
 	if (playlist.active)
 		if (playlist.active.previousSibling) playlist.active.previousSibling.click();
 });
 controls.next = document.createElement("button");
 controls.next.className = "btn mdi mdi-skip-next mdi-24px lh-24 rounded-circle d-flex p-1" + (win.options.darkMode ? " btn-dark" : " btn-light");
-controls.next.addEventListener("click", e => {
+controls.next.addEventListener("click", () => {
 	if (playlist.active)
 		if (playlist.active.nextSibling) playlist.active.nextSibling.click();
 });
@@ -140,7 +140,7 @@ controls.play = document.createElement("button");
 controls.play.className = "btn mdi mdi-play mdi-pause mdi-24px mx-2 lh-24 rounded-circle d-flex p-2 text-white";
 controls.play.style.background = "var(--orange)";
 controls.play.style.zIndex = "5";
-controls.play.addEventListener("click", e => {
+controls.play.addEventListener("click", () => {
 	if (!playlist.active) controls.next.click();
 	else if (player.paused) player.play();
 	else player.pause();
@@ -154,7 +154,7 @@ footer.body.append(current, controls, addControls);
 footer.append(footer.progress, footer.body);
 main.append(playlist, cover);
 win.ui.body.append(main, footer);
-win.show();
+
 
 let player = document.createElement("audio");
 win.ui.body.append(player);
@@ -180,7 +180,7 @@ function generate(file) {
 	track.location = file.url;
 	track.artist = file.artist || "No artist";
 	track.innerText = file.title || "Unknown title";
-	track.onclick = e => {
+	track.onclick = () => {
 		if (playlist.active) playlist.active.classList.remove("active");
 		track.classList.add("active");
 		playlist.active = track;
@@ -266,7 +266,7 @@ async function load(file) {
 				"). Error: " + err)
 		});
 	} else
-		renderID3(fs.createReadStream(file), function (err, tags) {
+		renderID3(fs.createReadStream(file), function (_err, tags) {
 			generate({
 				url: file,
 				artist: tags.artist[0],
