@@ -379,7 +379,7 @@ notification.toast {
 
 .tooltip {
 	pointer-events: none;
-	transition-delay: .5s;
+	/*transition-delay: .5s;*/
 	font-family: inherit !important;
 }
 .tooltip .mdi {

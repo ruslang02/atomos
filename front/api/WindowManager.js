@@ -70,8 +70,10 @@ if (Registry.get("system.enableSuperFetch") === true && Object.keys(appCache).le
         continue;
       let appPath = path.join(itemPath, "..", config.main);
       let appCode = (await fs.readFile(appPath)).toString();
-      appCode = "module.exports = function(root, WINDOW_ID) {" + appCode + "}";
+      appCode = "module.exports = function() {" + appCode + "}";
       let appModule = new Module();
+      appModule.filename = appPath;
+      appModule.type = "window";
       appModule.paths = [path.join(osRoot, "node_modules"), path.join(osRoot, "apps", config.name.replace("@atomos", "official"), "node_modules")];
       appModule._compile(appCode, appPath);
       appCache[appPath] = appModule;
@@ -137,7 +139,8 @@ class AppWindow extends EventEmitter {
     const appRoot = path.join(osRoot, 'apps', prog);
     let appOptions = JSON.parse((await fs.readFile(appRoot + "/package.json")).toString());
     let options = Object.assign({}, defaultOptions, {
-      darkMode: Registry.get("system.isDarkMode")
+      darkMode: Registry.get("system.isDarkMode"),
+      theme: Registry.get("system.isDarkMode") ? "dark" : "light"
     }, appOptions, launchOptions, {
       arguments: args
     });

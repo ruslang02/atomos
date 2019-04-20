@@ -11,6 +11,8 @@
   "height": 500,
   "minHeight": 400,
   "minWidth": 450,
+  "show": false,
+  "showOnLoad": false,
   "main": "files.js",
   "dependencies": {
     "atomos": "~0.8.0"

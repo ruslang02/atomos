@@ -22,11 +22,11 @@ const {
 } = require("@api");
 
 const win = AppWindow.getCurrentWindow();
-win.ui.root.classList.remove("bg-semiwhite");
+win.ui.root.classList.remove("bg-semiwhite", "bg-semidark");
 win.ui.title.classList.add("d-none");
 win.ui.buttons.classList.add("my-1");
 win.ui.header.style.background = "rgba(0,0,0,0.2)";
-win.ui.root.style.background = "linear-gradient(to bottom, #4a76a8 0%, #4a76a8 300px, #edeef0 300px)";
+win.ui.root.style.background = `linear-gradient(to bottom, #4a76a8 0%, #4a76a8 300px, var(--${win.options.theme}) 300px)`;
 
 function login() {
   let alert = document.createElement("div");
@@ -43,15 +43,15 @@ function login() {
   let logo = document.createElement("icon");
   logo.className = "mdi display-1 mdi-vk text-white";
   let loginForm = document.createElement("form");
-  loginForm.className = "card rounded shadow border-0 w-100 scrollable-0";
+  loginForm.className = "card rounded shadow border-0 w-100 scrollable-0 bg-" + win.options.theme;
   let loginBody = document.createElement("div");
   loginBody.className = "card-body";
   let email = document.createElement("input");
-  email.className = "form-control mb-3";
+  email.className = "form-control mb-3" + (win.options.darkMode ? " bg-secondary text-white" : "");
   email.placeholder = "Phone or email".toLocaleString();
   email.required = true;
   let pass = document.createElement("input");
-  pass.className = "form-control";
+  pass.className = "form-control" + (win.options.darkMode ? " bg-secondary text-white" : "");
   pass.placeholder = "Password".toLocaleString();
   pass.type = "password";
   pass.required = true;

@@ -2,16 +2,17 @@ const Color = require("color");
 class Button extends HTMLButtonElement {
   constructor(options = {}) {
     super();
-    if(options.icon || options.text || options.color)
-    this._options = options;
+    if (options.icon || options.text || options.color)
+      this._options = options;
     this._init();
   }
 
   _init() {
-    if(!this._ready) this._ready = true; else return;
+    if (!this._ready) this._ready = true;
+    else return;
     const Shell = require("@api/Shell");
     this._options = this._options || {};
-    if(this._options.visible === undefined) this._options.visible = true;
+    if (this._options.visible === undefined) this._options.visible = true;
     console.log(this._options);
     this.innerHTML = "";
     this._iconElement = document.createElement("icon");
@@ -22,12 +23,13 @@ class Button extends HTMLButtonElement {
     this.icon = this._options.icon || "";
     this.innerText = this._options.text || "";
     this.id = Shell.uniqueId();
+    this._shadow = this._options.shadow;
     this.iconSize = this._options.iconSize || CSS.px(18);
     this._color = this._options.color || "#6c757d";
     this._outline = this._options.outline || false;
     this.visible = this._options.visible;
-      console.log(this._color);
     this.size = this._options.size;
+    this.disabled = this._options.disabled;
     this._tooltipLocation = this._options.tooltipLocation;
     this._initialTooltip = this._options.tooltip;
     this.append(this._iconElement, this._textElement, this._CSS);
@@ -41,7 +43,11 @@ class Button extends HTMLButtonElement {
     return template.content.firstChild;
   }
 
+  get icon() {
+    return this._icon;
+  }
   set icon(icon) {
+    if(this._icon === icon) return;
     this._icon = icon || "";
     this.updateStyles();
   }
@@ -53,16 +59,18 @@ class Button extends HTMLButtonElement {
   }
   set visible(bool) {
     this.classList.toggle("d-none", !bool);
-      this.classList.toggle("d-flex", !!bool);
+    this.classList.toggle("d-flex", !!bool);
   }
   get visible() {
     return this.classList.contains("d-flex");
   }
   set tooltip(text) {
-    if(!text) return;
+    if (!text) return;
     this.dataset.originalTitle = text;
-    if(!this._tooltipProvider)
-      this._tooltipProvider = new Tooltip(this, {placement: this._tooltipLocation || "top"});
+    if (!this._tooltipProvider)
+      this._tooltipProvider = new Tooltip(this, {
+        placement: this._tooltipLocation || "top"
+      });
   }
   set outline(bool) {
     this._outline = bool;
@@ -73,12 +81,12 @@ class Button extends HTMLButtonElement {
       this._color = getComputedStyle(document.documentElement).getPropertyValue(color);
     else
       this._color = color || "#6c757d";
-      for (let i = 0, l = this.classList.length; i < l; ++i) {
-        if (/btn-.*/.test(this.classList[i])) {
-          this.classList.remove(this.classList[i])
-          break;
-        }
+    for (let i = 0, l = this.classList.length; i < l; ++i) {
+      if (/btn-.*/.test(this.classList[i])) {
+        this.classList.remove(this.classList[i])
+        break;
       }
+    }
     switch (color) {
       case "primary":
       case "secondary":
@@ -110,23 +118,25 @@ class Button extends HTMLButtonElement {
     this.updateStyles();
   }
   connectedCallback() {
-
-    if(this._initialTooltip)
-    this.tooltip = this._initialTooltip;
+    console.log("callback");
+    if (this._initialTooltip)
+      this.tooltip = this._initialTooltip;
   }
   disconnectedCallback() {
-    if(this._tooltipProvider) this._tooltipProvider.hide();
+    console.log("disconnect");
+    if (this._tooltipProvider) this._tooltipProvider.hide();
   }
   updateStyles() {
     if (this._icon) {
-      this._iconElement.className = `mdi ${!!this._innerText ? "mr-2" : ""} mdi-${this._icon || "help-circle-outline"}`;
+      this._iconElement.className = `mdi${!!this._innerText ? " mr-2" : ""} d-flex mdi-${this._icon || "help-circle-outline"}`;
       this._iconElement.style.lineHeight = this._iconSize;
       this._iconElement.style.fontSize = this._iconSize;
     } else {
       this._iconElement.className = `d-none`;
     }
-      this._textElement.innerHTML = this._innerText || "";
-      this._textElement.classList.toggle("d-none", !this._innerText);
+    this._textElement.innerHTML = this._innerText || "";
+    this._textElement.classList.toggle("d-none", !this._innerText);
+    this.classList.toggle("shadow-sm", this._shadow);
   }
 }
 
@@ -236,7 +246,9 @@ function genCSS(color, id, outline) {
           box-shadow: 0 0 0 .2rem ${color.fade(0.5).rgb()}
       }`;
 }
-customElements.define('x-button', Button, {extends: "button"});
+customElements.define('x-button', Button, {
+  extends: "button"
+});
 customElements.define('x-spinner', Spinner);
 module.exports = {
   Button: Button,

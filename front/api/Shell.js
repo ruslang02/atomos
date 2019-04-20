@@ -322,7 +322,7 @@ class Shell {
     });
   }
 
-  static createFile(baseDir, options = {}) {
+  static createFile(baseDir, defaultTab) {
     return new Promise((resolve, reject) => {
       let modal = document.createElement("form");
       modal.dialog = document.createElement("main");
@@ -384,8 +384,8 @@ class Shell {
 
       nav.append(file, folder);
       container.append(nav, file.tab, folder.tab);
-      if (options.defaultTab)
-        eval(options.defaultTab + ".click()");
+      if (defaultTab)
+        eval(defaultTab + ".click()");
       else file.click();
 
       modal.className = "modal fade";
@@ -583,7 +583,7 @@ class Shell {
         let button = document.createElement("button");
         button.className = "btn " + (options.defaultId === i ? "btn-primary" : "btn-secondary");
         button.style.minWidth = CSS.px(60);
-        button.innerText = options.buttons[i].toLocaleString();
+        button.innerHTML = options.buttons[i].toLocaleString();
         button.realText = options.buttons[i];
         button.type = options.defaultId === i ? "submit" : "button";
         modal.footer.append(button);

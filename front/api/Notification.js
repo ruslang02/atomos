@@ -8,20 +8,20 @@ const Shell = require("@api/Shell");
 const AppWindow = require("@api/WindowManager");
 const NOTIFICATION_DELAY = 6000; //ms
 class Snackbar {
-  constructor(options) {
+  constructor(options, position) {
     if (typeof options === "string") options = {
       message: options
     };
     let self = this;
     let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
+    options.position = options.position || position || "bottom right"
     this.ui = document.createElement("snackbar");
-    this.ui.style.right = CSS.px(0);
     this.ui.style.minWidth = CSS.px(300);
     this.ui.style.maxWidth = CSS.px(450);
     this.ui.style.zIndex = "1010";
     this.ui.message = document.createElement("div");
     this.ui.button = document.createElement("button");
-    this.ui.className = "bg-dark text-white very-rounded shadow-lg d-flex position-absolute align-items-center mr-2 mb-2 p-2 fly up show";
+    this.ui.className = "bg-dark border border-secondary text-white very-rounded shadow-lg d-flex position-absolute align-items-center m-2 p-2 fly show";
     this.ui.message.className = "px-2 lh-18 my-1";
     this.ui.message.innerText = options.message.toLocaleString();
     this.ui.append(this.ui.message);
@@ -31,12 +31,48 @@ class Snackbar {
       this.ui.button.onclick = options.click || console.log;
       this.ui.append(this.ui.button);
     } else this.ui.message.classList.replace("my-1", "py-2");
-    if (AppWindow.fromId(module.parent.id)) {
-      this.ui.style.bottom = 0;
-      AppWindow.fromId(module.parent.id).ui.body.append(this.ui)
+    let currentWindow = function currentWindow(win) {
+      win = win || module.parent;
+      if (win.id && win.type === "window") return win;
+      else if (win.parent) return currentWindow(win.parent);
+      else return null;
+    }();
+    if (currentWindow && AppWindow.fromId(currentWindow.id)) {
+      AppWindow.fromId(currentWindow.id).ui.body.append(this.ui)
     } else {
-      this.ui.style.bottom = window.getComputedStyle(Elements.Bar).height;
       document.body.appendChild(this.ui);
+    }
+    let calcLeft = document.body.offsetWidth / 2 - this.ui.offsetWidth / 2;
+    switch (options.position) {
+      case "top":
+        this.ui.style.left = CSS.px(calcLeft);
+        this.ui.style.top = 0;
+        this.ui.classList.add("down");
+        break;
+      case "top left":
+        this.ui.style.left = this.ui.style.top = 0;
+        this.ui.classList.add("down");
+        break;
+      case "top right":
+        this.ui.style.right = this.ui.style.top = 0;
+        this.ui.classList.add("down");
+        break;
+      case "bottom":
+        this.ui.style.left = CSS.px(calcLeft);
+        this.ui.style.bottom = currentWindow ? 0 : window.getComputedStyle(Elements.Bar).height;
+        this.ui.classList.add("up");
+        break;
+      case "bottom left":
+        this.ui.style.left = 0;
+        this.ui.style.bottom = currentWindow ? 0 : window.getComputedStyle(Elements.Bar).height;
+        this.ui.classList.add("up");
+        break;
+      default:
+        this.ui.style.right = 0;
+        this.ui.style.bottom = currentWindow ? 0 : window.getComputedStyle(Elements.Bar).height;
+        this.ui.classList.add("up");
+        break;
+
     }
     setTimeout(() => {
       self.ui.classList.add("hide");
@@ -55,7 +91,13 @@ class Notification {
      * * sticky -- if it is true, notification can't be cleared by user itself, closed automatically when app closes
      */
     console.log(module);
-    let win = AppWindow.fromId(module.parent.id) || null;
+    let currentWindow = function currentWindow(win) {
+      win = win || module.parent;
+      if (win.id && win.type === "window") return win;
+      else if (win.parent) return currentWindow(win.parent);
+      else return null;
+    }();
+    let win = AppWindow.fromId(currentWindow.id) || null;
     options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, options);
     this.window = win;
     this.options = options;

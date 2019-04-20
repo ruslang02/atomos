@@ -63,7 +63,12 @@ class Menu extends EventEmitter {
 			_this.emit('menu-will-close', event);
 			if (event.returnValue) _this.closePopup();
 		};
-		this.window = AppWindow.fromId(module.parent.id);
+    let currentWindow = function currentWindow(win) {
+      win = win || module.parent;
+      if(win.id && win.type === "window") return win;
+      else if(win.parent) return currentWindow(win.parent); else return null;
+    };
+		this.window = AppWindow.fromId(currentWindow.id);
 		this.id = Shell.uniqueId();
 		this.menu.id = this.id;
 		this.renderMenu();

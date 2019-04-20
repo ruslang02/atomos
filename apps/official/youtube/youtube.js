@@ -86,7 +86,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			let channel = e.data.info;
 			body.innerHTML = "";
 			body.channelHeader = document.createElement("header");
-			body.channelHeader.className = "my-2 mx-3 card very-rounded shadow border-0 flex-column-reverse flex-shrink-0";
+			body.channelHeader.className = "my-2 mx-3 card very-rounded shadow border-0 flex-column-reverse flex-shrink-0 scrollable-0";
 			body.channelHeader.style.backgroundImage = `url('${channel.brandingSettings.image.bannerImageUrl}')`;
 			body.channelHeader.style.backgroundSize = `cover`;
 			body.channelHeader.style.height = CSS.px(150);
@@ -123,7 +123,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			if (e.data.items.length) sidebar.noChannels.remove();
 			for (const channel of e.data.items) {
 				let elem = document.createElement("button");
-				elem.className = "dropdown-item d-flex align-items-center rounded-right-pill";
+				elem.className = "dropdown-item d-flex align-items-center rounded-pill px-1";
 				elem.id = channel.id;
 				elem.innerHTML = `<img width=18 height=18 class='rounded-circle mr-2' src='${channel.snippet.thumbnails.default.url}'><div class="w-25 text-truncate flex-grow-1">${channel.snippet.title}</div>`;
 				elem.onclick = () => {
@@ -137,7 +137,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			}
 			break;
 		case "list-popular":
-			body.innerHTML = "<h3 class='mt-3 mb-2 mx-4'>Most popular</h3>";
+			body.innerHTML = `<h3 class='mt-3 mb-2 mx-4 text-${win.options.darkMode ? "white" : "dark"}'>Most popular</h3>`;
 			for (const item of e.data.items)
 				body.append(genVid(item));
 			break;
@@ -147,7 +147,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 				body.resultsSection.append(genVid(item));
 			break;
 		case "list-subscriptions":
-			body.innerHTML = "<h3 class='mt-3 mb-2 mx-4'>Popular on YouTube</h3><div class='alert alert-danger mb-0 mx-4'>Due to Google's illogical APIs to list your subscriptions a large amount of quota points are used and the operation is very slow and irrational. Sorry.</div>";
+			body.innerHTML = `<h3 class='mt-3 mb-2 mx-4 text-${win.options.darkMode ? "white" : "dark"}'>Popular on YouTube</h3><div class='alert alert-danger mb-0 mx-4'>Due to Google's illogical APIs to list your subscriptions a large amount of quota points are used and the operation is very slow and irrational. Sorry.</div>`;
 			for (const item of e.data.result.items)
 				body.append(genVid(item));
 			break;
@@ -164,7 +164,7 @@ win.ui.body.classList.remove("flex-column");
 
 function genVid(item) {
 	let elem = document.createElement("div");
-	elem.className = "card mt-2 p-2 mx-4 btn flex-shrink-0 text-left";
+	elem.className = "card mt-2 p-2 mx-4 btn flex-shrink-0 text-left" + (win.options.darkMode ? " bg-secondary text-white" : "");
 	elem.onclick = () => {
 		spinner.classList.replace("hide", "show");
 		console.log(item);
@@ -190,7 +190,6 @@ searchBtn.title = "Search videos";
 searchBtn.disabled = true;
 let loginBtn = document.createElement("button");
 loginBtn.className = "btn btn-sm mdi d-flex shadow-sm align-items-center mdi-account-circle-outline mdi-18px lh-18 mr-2 btn-danger";
-loginBtn.title = "Sign in with Google";
 loginBtn.disabled = true;
 win.ui.header.append(loginBtn, searchBtn);
 
@@ -203,13 +202,14 @@ new Tooltip(loginBtn, {
 });
 
 let sidebar = document.createElement("aside");
-sidebar.className = "scrollable-y w-25 scrollable-x-0 d-block";
+sidebar.className = "w-25 scrollable-0 d-flex flex-column";
 sidebar.style.maxWidth = "270px";
 sidebar.style.minWidth = "170px";
 sidebar.trending = document.createElement("button");
-sidebar.trending.className = "dropdown-item d-flex align-items-center rounded-right-pill";
-sidebar.trending.innerHTML = "<icon class='mdi mdi-fire mdi-18px mr-1'></icon><div>Trending</div>";
-sidebar.trending.disabled = true;
+sidebar.subs = document.createElement("button");
+sidebar.search = document.createElement("button");
+sidebar.trending.innerHTML = "<icon class='mdi mdi-fire mdi-24px lh-24 d-flex mr-2'></icon><div>Trending</div>";
+true;
 sidebar.trending.onclick = () => {
 	backend.postMessage({
 		action: "list-popular"
@@ -218,10 +218,7 @@ sidebar.trending.onclick = () => {
 	sidebar.trending.classList.add("active");
 	spinner.classList.replace("hide", "show");
 };
-sidebar.subs = document.createElement("button");
-sidebar.subs.className = "dropdown-item d-flex align-items-center rounded-right-pill";
-sidebar.subs.innerHTML = "<icon class='mdi mdi-checkbox-multiple-blank-outline mdi-18px mr-1'></icon><div>Subscriptions</div>";
-sidebar.subs.disabled = true;
+sidebar.subs.innerHTML = "<icon class='mdi mdi-checkbox-multiple-blank-outline mdi-24px lh-24 d-flex mr-2'></icon><div>Subscriptions</div>";
 sidebar.subs.onclick = () => {
 	backend.postMessage({
 		action: "list-subscriptions"
@@ -230,10 +227,10 @@ sidebar.subs.onclick = () => {
 	sidebar.subs.classList.add("active");
 	spinner.classList.replace("hide", "show");
 };
-sidebar.search = document.createElement("button");
-sidebar.search.className = "dropdown-item d-flex align-items-center rounded-right-pill";
-sidebar.search.innerHTML = "<icon class='mdi mdi-magnify mdi-18px mr-1'></icon><div>Search</div>";
-sidebar.search.disabled = true;
+sidebar.trending.className = sidebar.subs.className = sidebar.search.className =
+"dropdown-item p-2 d-flex font-weight-bolder align-items-center rounded-right-pill flex-shrink-0";
+sidebar.search.innerHTML = "<icon class='mdi mdi-magnify mdi-24px lh-24 d-flex mr-2'></icon><div>Search</div>";
+sidebar.trending.disabled = sidebar.subs.disabled = sidebar.search.disabled = true;
 sidebar.search.onclick = () => {
 	body.innerHTML = "";
 	for (const child of sidebar.children) child.classList.remove("active");
@@ -267,6 +264,7 @@ sidebar.channelsTitle = document.createElement("div");
 sidebar.channelsTitle.className = "dropdown-header";
 sidebar.channelsTitle.innerText = "Channels";
 sidebar.channels = document.createElement("div");
+sidebar.channels.className = "scrollable-y flex-grow-1 pl-2";
 sidebar.noChannels = document.createElement("button");
 sidebar.noChannels.disabled = true;
 sidebar.noChannels.className = "dropdown-item d-flex align-items-center";
@@ -274,7 +272,7 @@ sidebar.noChannels.innerHTML = "<div>Loading...</div>";
 sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels);
 
 let main = document.createElement("main");
-main.className = "bg-white shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y";
+main.className = "shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y bg-" + win.options.theme;
 let spinner = document.createElement("icon");
 spinner.style.cssText = "left:0;right:0;width:36px;height:36px;z-index:1000;";
 spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 position-absolute fly down show d-flex mx-auto p-1 rounded-circle lh-24 align-items-center justify-content-center " + (win.options.darkMode ? "bg-dark text-white border border-secondary" : "bg-light text-dark shadow");
