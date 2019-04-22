@@ -269,7 +269,8 @@ sidebar.noChannels = document.createElement("button");
 sidebar.noChannels.disabled = true;
 sidebar.noChannels.className = "dropdown-item d-flex align-items-center";
 sidebar.noChannels.innerHTML = "<div>Loading...</div>";
-sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsTitle, sidebar.channels, sidebar.noChannels);
+sidebar.channels.append(sidebar.noChannels);
+sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsTitle, sidebar.channels);
 
 let main = document.createElement("main");
 main.className = "shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y bg-" + win.options.theme;

@@ -18,7 +18,7 @@ root.footer.header.className = "h5 m-0 flex-grow-1 d-flex align-items-center";
 root.footer.header.innerText = "Settings";
 root.footer.append(root.footer.backButton, root.footer.header);
 root.body = document.createElement("main");
-root.body.className = "flex-grow-1 d-flex flex-column py-2 flex-nowrap scrollable-y";
+root.body.className = "flex-grow-1 d-flex flex-column pt-2 flex-nowrap scrollable-y";
 root.append(root.body, root.footer);
 
 function newSmallListItem(options) {
@@ -63,7 +63,7 @@ function newSmallListItem(options) {
 async function openSection(id, log = true) {
 	if (!id) {
 		root.classList.remove("show");
-		Elements.MenuBar.notifications.classList.add("show")
+		Elements.MenuBar.notifications.classList.add("show");
 		setTimeout(e => root.remove(), Shell.ui.fadeAnimation);
 		window.__settingsInst = undefined;
 		return;

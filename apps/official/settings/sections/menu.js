@@ -22,6 +22,7 @@ function newItem(title, descr, icon, color, onclick) {
 
 let items = {};
 items.account = newItem("Account", "Sign in to Atom Link", "account-box", "var(--indigo)", () => openSection("account"));
+items.networking = newItem("Network & internet", "Wi-Fi, wired connections, hotspot", "wifi-strength-4", "#1e88e5", () => openSection("network"));
 items.apps = newItem("Apps & notifications", "Default apps, package manager", "apps", "var(--orange)", () => openSection("apps"));
 //items.battery = newItem("Battery", "100% - fully charged", "battery", "var(--cyan)", () => {});
 items.display = newItem("Display", "Wallpaper, themes, brightness", "brightness-6", "var(--yellow)", () => openSection("display"));

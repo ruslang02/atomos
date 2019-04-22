@@ -2,7 +2,8 @@ const {
   AppWindow,
   Components: {
     Button
-  }
+  },
+  Shell
 } = require("@api");
 const {
   remote: {
@@ -18,8 +19,17 @@ const notesLocation = path.join(getPath("userData"), "Notes");
 win.ui.root.classList.remove("bg-semiwhite", "bg-semidark");
 win.ui.title.classList.add("d-none");
 win.ui.header.style.background = "rgba(0,0,0,0.15)";
-
+win.ui.root.style.backgroundColor = "whitesmoke";
+let currentFile = win.arguments.file;
 let noteName = document.createElement("input");
+if (currentFile) {
+  fs.promises.readFile(currentFile).then(res => {
+    let result = res.toString().trim();
+    noteName.value = result.split("\n")[0].substring(2).trim();
+    noteArea.innerHTML = result.replace("# " + noteName.value + "\n", "") || "";
+  })
+} else
+  noteName.value = "New note";
 noteName.className = "form-control-sm btn btn-white border-0 shadow-none mx-auto font-weight-bolder";
 noteName.style.cursor = "text";
 let colorBtn = new Button({
@@ -61,15 +71,17 @@ let noteArea = document.createElement("textarea");
 noteArea.className = "flex-grow-1 bg-transparent form-control border-0 shadow-none";
 noteArea.style.resize = "none";
 win.ui.body.append(noteArea);
-if (win.arguments.note) {
-  let file = win.arguments.note.split("_");
-  win.ui.root.style.backgroundColor = file[1];
-  noteName.value = file[0];
-  fs.promises.readFile(path.join(notesLocation, win.arguments.none + ".html"), "utf-8").then(contents => {
-    noteArea.value = contents;
-  });
-} else {
-  win.ui.root.style.backgroundColor = "#f9a825";
-  noteName.value = "New note";
+let saveTimeout;
+noteArea.oninput = () => {
+  clearTimeout(saveTimeout);
+  setTimeout(function () {
+    if (noteArea.value.trim()) save();
+  }, 3000);
+};
 
+function save() {
+  currentFile = currentFile || (Shell.uniqueId() + ".md");
+  fs.promises.writeFile(path.join(notesLocation, currentFile), "# " + noteName.value + "\n" + noteArea.value, "utf-8").then(console.log);
 }
+
+win.on('close', save);

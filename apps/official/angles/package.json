@@ -1,0 +1,25 @@
+{
+	"title": "untitled - Angles",
+	"productName": "Angles",
+	"name": "@atomos/angles",
+	"author": "Ruslan Garifullin <ruslan.g2002@gmail.com>",
+	"license": "GPL-3.0",
+	"version": "1.0.0",
+	"readme": "README.md",
+	"homepage": "http://apps.atomos.org.uk/ruslang02/angles",
+	"icon": "code-tags",
+	"color": "linear-gradient(135deg, #263238, #616161)",
+	"main": "angles.js",
+	"description": "Code Editor based on Ace",
+	"dependencies": {
+		"js-beautify": "^1.8.1",
+		"ace-builds": "^1.4.1",
+		"atomos": "~0.7.0"
+	},
+	"minWidth": 400,
+	"minHeight": 300,
+	"width": 800,
+	"height": 500,
+	"type": "app",
+	"darkMode": true
+}

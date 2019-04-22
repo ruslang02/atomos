@@ -68,7 +68,7 @@ class Shell {
   }
 
   static uniqueId() {
-    let uuid = 'ui-id-' + Math.random().toString(36).substr(2, 9);
+    let uuid = 'u' + Math.random().toString(36).substr(2, 9);
     if (document.getElementById(uuid))
       return Shell.uniqueId();
     else return uuid;
@@ -115,7 +115,7 @@ class Shell {
 
   static openSettings(section) {
     Elements.MenuBar.open();
-    Elements.MenuBar.notifications.classList.remove("show")
+    Elements.MenuBar.notifications.classList.remove("show");
     setTimeout(() => {
       Elements.MenuBar.settings = document.createElement("section");
       Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute very-rounded w-100 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");

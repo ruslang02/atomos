@@ -61,7 +61,7 @@ function init() {
     tracksBtnSS = gen("Songs", "music-box");
     SS.append(tracksBtnSS);
     sidebar.append(SS);
-  }
+  };
   services.gpm = document.createElement("button");
   services.gpm.className = "btn btn-sm shadow-sm d-flex align-items-center bg-orange text-white";
   services.gpm.icon = document.createElement("icon");
@@ -85,7 +85,7 @@ function init() {
         return;
       }
       tracksBtnGPM.click();
-    })
+    });
     let GPM = document.createElement("section");
     tracksBtnGPM = gen("Songs", "music-box");
     plBtnGPM = gen("Playlists", "playlist-music");
@@ -99,7 +99,7 @@ function init() {
       main.innerHTML = '';
       let header = document.createElement("h4");
       header.innerText = "All tracks";
-      header.className = "mx-2 mt-1 mb-3" + (win.options.darkMode ? " text-white" : "")
+      header.className = "mx-2 mt-1 mb-3" + (win.options.darkMode ? " text-white" : "");
       pm.getAllTracks((err, response) => {
         if (err) {
           new Snackbar("There was a problem retrieving tracks. Check the console");
@@ -124,7 +124,7 @@ function init() {
           smallItem.songId = this.songId;
           smallItem.addEventListener("contextmenu", () => {
             smallItem.remove();
-          })
+          });
           smallItem.addEventListener("click", function() {
             controls.play.icon = "loading";
             controls.play.classList.add("mdi-spin-faster");
@@ -151,8 +151,8 @@ function init() {
               smallItem.classList.add("active");
               playlist.active = smallItem;
             })
-          })
-          smallItem.append(smallItem.img, smallItem.header)
+          });
+          smallItem.append(smallItem.img, smallItem.header);
           if (e) new Menu([{
             label: "Play now",
             icon: "play",
@@ -181,7 +181,7 @@ function init() {
           let entry = document.createElement("button");
           entry.className = "dropdown-item d-flex px-1 py-0 align-items-center flex-shrink-0 border-bottom" + (win.options.darkMode ? " border-secondary" : "");
           entry.addEventListener("contextmenu", songContext);
-          entry.addEventListener("click", () => songContext.call(entry))
+          entry.addEventListener("click", () => songContext.call(entry));
           entry.songId = track.id;
           entry.art = new Image(36, 36);
           entry.art.src = track.albumArtRef[0].url;
@@ -204,7 +204,7 @@ function init() {
         }
         spinner.hide();
       })
-    })
+    });
     plBtnGPM.addEventListener("click", () => {
       spinner.show();
       plBtnGPM.activate();
@@ -213,7 +213,7 @@ function init() {
       main.innerHTML = '';
       let header = document.createElement("h4");
       header.innerText = "Playlists";
-      header.className = "mx-2 mt-1 mb-3" + (win.options.darkMode ? " text-white" : "")
+      header.className = "mx-2 mt-1 mb-3" + (win.options.darkMode ? " text-white" : "");
       pm.getPlayLists(function(err, data) {
         if (err) {
           new Snackbar("There was a problem retrieving tracks. Check the console");
@@ -224,7 +224,7 @@ function init() {
         main.append(header);
         console.log(data.data);
       });
-    })
+    });
     favBtnGPM.addEventListener("click", () => {
       spinner.show();
       favBtnGPM.activate();
@@ -233,7 +233,7 @@ function init() {
       main.innerHTML = '';
       let header = document.createElement("h4");
       header.innerText = "Favorites";
-      header.className = "mx-2 mt-1 mb-3" + (win.options.darkMode ? " text-white" : "")
+      header.className = "mx-2 mt-1 mb-3" + (win.options.darkMode ? " text-white" : "");
       pm.getFavorites(function(err, data) {
         if (err) {
           new Snackbar("There was a problem retrieving tracks. Check the console");
@@ -244,13 +244,13 @@ function init() {
         main.append(header);
         console.log(data.data);
       });
-    })
+    });
     GPM.append(tracksBtnGPM, plBtnGPM, favBtnGPM);
     sidebar.append(GPM);
-  }
+  };
   services.append(services.SS, services.gpm);
   win.ui.header.prepend(logoutBtn);
-  win.ui.header.classList.add("position-absolute", "w-100")
+  win.ui.header.classList.add("position-absolute", "w-100");
   win.ui.header.style.zIndex = 1000;
   let spinner = new Spinner();
 
@@ -271,16 +271,16 @@ function init() {
     btn.activate = () => {
       btn.classList.add("active", "bg-" + className);
       btn.icon.className = `mdi mdi-24px lh-24 d-flex mdi-${btn.iconName} mr-2`;
-    }
+    };
     btn.deactivate = () => {
       btn.classList.remove("active", "bg-" + className);
       btn.icon.className = `mdi mdi-24px lh-24 d-flex mdi-${btn.iconName}-outline mr-2`;
-    }
+    };
     return btn;
-  }
+  };
 
   let main = document.createElement("main");
-  main.className = "very-rounded shadow scrollable-y flex-grow-1 position-relative mx-2 p-2 d-flex flex-column " + (win.options.darkMode ? "bg-dark" : "bg-light")
+  main.className = "very-rounded shadow scrollable-y flex-grow-1 position-relative mx-2 p-2 d-flex flex-column " + (win.options.darkMode ? "bg-dark" : "bg-light");
 
   let playSection = document.createElement("section");
   playSection.className = "shadow d-flex flex-column very-rounded p-2 " + (win.options.darkMode ? "bg-dark" : "bg-light");
@@ -314,7 +314,7 @@ function init() {
   current.className = "d-flex align-items-center pl-1 flex-grow-1" + (win.options.darkMode ? " text-white" : " text-dark");
   current.style.width = 0;
   current.audioInfo = document.createElement("div");
-  current.audioInfo.className = "d-flex align-items-start flex-column justify-content-center flex-grow-1"
+  current.audioInfo.className = "d-flex align-items-start flex-column justify-content-center flex-grow-1";
   current.audioInfo.width = 0;
   current.audio = document.createElement("h5");
   current.audio.className = "mb-0 text-truncate w-100 font-weight-bolder";
@@ -328,7 +328,7 @@ function init() {
     addClasses: "p-1 rounded-circle",
     color: win.options.theme,
     disabled: true
-  })
+  });
   controls.previous.addEventListener("click", () => {
     if (playlist.active)
       if (playlist.active.previousSibling) playlist.active.previousSibling.click();
@@ -339,7 +339,7 @@ function init() {
     addClasses: "p-1 rounded-circle",
     color: win.options.theme,
     disabled: true
-  })
+  });
   controls.next.addEventListener("click", () => {
     if (playlist.active)
       if (playlist.active.nextSibling) playlist.active.nextSibling.click();
@@ -350,7 +350,7 @@ function init() {
     addClasses: "mx-2 p-2 rounded-circle text-white",
     color: "#ff5722",
     disabled: true
-  })
+  });
   controls.play.addEventListener("click", () => {
     if (!playlist.active) controls.next.click();
     else if (player.paused) player.play();
@@ -360,7 +360,7 @@ function init() {
   addControls.className = "flex-grow-1 d-flex align-items-center justify-content-end mr-3" + (win.options.darkMode ? " text-white" : "");
   addControls.style.width = 0;
   controls.append(controls.previous, controls.play, controls.next);
-  current.audioInfo.append(current.audio, current.artist)
+  current.audioInfo.append(current.audio, current.artist);
   current.append(art, current.audioInfo);
   footer.body.append(current, controls, addControls);
   footer.append(footer.progress, footer.body);
@@ -370,7 +370,7 @@ function init() {
 
   win.on('close', function() {
     player.pause();
-  })
+  });
   player.ontimeupdate = function() {
     footer.progress.value = player.currentTime || 0;
     footer.progress.max = player.duration || 0;
@@ -388,7 +388,7 @@ function init() {
   player.onprogress = function() {
     footer.progress.style.setProperty("--loaded-value", (player.buffered.end(player.buffered.length - 1) / footer.progress.max * 100) + "%");
     controls.play.disabled = false;
-  }
+  };
   player.onpause = function() {
     controls.play.icon = "play";
     controls.play.disabled = false;
@@ -397,7 +397,7 @@ function init() {
     controls.play.icon = "loading";
     controls.play._iconElement.classList.add("mdi-spin-faster");
     controls.play.disabled = true;
-  }
+  };
   win.ui.body.append(sidebar, main, spinner, playSection);
   win.ui.ui.append(footer);
   services.gpm.click();
@@ -469,10 +469,10 @@ function login() {
         init();
       }
     });
-  })
+  });
 
   container.append(modal.header, login, pass);
-  modal.body.append(icon, container)
+  modal.body.append(icon, container);
   modal.footer.append(errorText, cancel, submit);
   modal.content.append(modal.body, modal.footer);
   modal.dialog.append(modal.content);
@@ -482,7 +482,7 @@ function login() {
   modal.controller.show();
   modal.addEventListener("hidden.bs.modal", () => {
     modal.remove();
-    if (!cookies.androidId) win.close();
+    if (!cookies) win.close();
   });
 }
 
@@ -506,7 +506,7 @@ function openLogIn(url) {
     webview.addEventListener("ipc-message", e => {
       console.log(e);
       if (e.channel === "log-in" && JSON.parse(e.args[0]).state === "aos-spotify") {
-        Registry.set("spotify.account", JSON.parse(e.args[0]))
+        Registry.set("spotify.account", JSON.parse(e.args[0]));
         resolve(JSON.parse(e.args[0]).access_token);
         modal.controller.hide();
       }

@@ -7,32 +7,8 @@ class Button extends HTMLButtonElement {
     this._init();
   }
 
-  _init() {
-    if (!this._ready) this._ready = true;
-    else return;
-    const Shell = require("@api/Shell");
-    this._options = this._options || {};
-    if (this._options.visible === undefined) this._options.visible = true;
-    console.log(this._options);
-    this.innerHTML = "";
-    this._iconElement = document.createElement("icon");
-    this._iconElement.className = "mdi";
-    this._textElement = document.createElement("div");
-    this._CSS = document.createElement("style");
-    this.className = "btn d-flex align-items-center justify-content-center " + (this.shadow ? "shadow-sm " : "") + (this._options.addClasses || "");
-    this.icon = this._options.icon || "";
-    this.innerText = this._options.text || "";
-    this.id = Shell.uniqueId();
-    this._shadow = this._options.shadow;
-    this.iconSize = this._options.iconSize || CSS.px(18);
-    this._color = this._options.color || "#6c757d";
-    this._outline = this._options.outline || false;
-    this.visible = this._options.visible;
-    this.size = this._options.size;
-    this.disabled = this._options.disabled;
-    this._tooltipLocation = this._options.tooltipLocation;
-    this._initialTooltip = this._options.tooltip;
-    this.append(this._iconElement, this._textElement, this._CSS);
+  get visible() {
+    return this.classList.contains("d-inline-flex");
   }
 
   getDisconnected() {
@@ -57,33 +33,22 @@ class Button extends HTMLButtonElement {
 
     this.color = this._color;
   }
+
   set visible(bool) {
     this.classList.toggle("d-none", !bool);
-    this.classList.toggle("d-flex", !!bool);
+    this.classList.toggle("d-inline-flex", !!bool);
   }
-  get visible() {
-    return this.classList.contains("d-flex");
-  }
-  set tooltip(text) {
-    if (!text) return;
-    this.dataset.originalTitle = text;
-    if (!this._tooltipProvider)
-      this._tooltipProvider = new Tooltip(this, {
-        placement: this._tooltipLocation || "top"
-      });
-  }
-  set outline(bool) {
-    this._outline = bool;
-    this.color = this._color;
-  }
+
   set color(color) {
+    this._outlineLast = this._outlineLast || false;
+    if (color === this._color && this._outline === color.outline) return;
     if (color.includes("--"))
       this._color = getComputedStyle(document.documentElement).getPropertyValue(color);
     else
       this._color = color || "#6c757d";
     for (let i = 0, l = this.classList.length; i < l; ++i) {
       if (/btn-.*/.test(this.classList[i])) {
-        this.classList.remove(this.classList[i])
+        this.classList.remove(this.classList[i]);
         break;
       }
     }
@@ -98,7 +63,7 @@ class Button extends HTMLButtonElement {
       case "dark":
       case "link":
       case "white":
-        this._CSS.innerHTML = ""
+        this._CSS.innerHTML = "";
         this.classList.add("btn-" + (this._outline ? "outline-" : "") + color);
         break;
       default:
@@ -106,7 +71,50 @@ class Button extends HTMLButtonElement {
         this._CSS.innerHTML = genCSS(color, this.id, this._outline);
     }
     this.classList.add(this._size ? "btn-" + this._size : "btn", this._block ? "btn-block" : "btn");
+    this._outlineLast = this._outline;
     this.updateStyles();
+  }
+
+  set tooltip(text) {
+    if (!text) return;
+    this.dataset.originalTitle = text;
+    if (!this._tooltipProvider)
+      this._tooltipProvider = new Tooltip(this, {
+        placement: this._tooltipLocation || "top"
+      });
+  }
+
+  set outline(bool) {
+    this._outline = bool;
+    this.color = this._color;
+  }
+
+  _init() {
+    if (!this._ready) this._ready = true;
+    else return;
+    const Shell = require("@api/Shell");
+    this._options = this._options || {};
+    if (this._options.visible === undefined) this._options.visible = true;
+    console.log(this._options);
+    this.innerHTML = "";
+    this._iconElement = document.createElement("icon");
+    this._iconElement.className = "mdi";
+    this._textElement = document.createElement("div");
+    this._CSS = document.createElement("style");
+    this.className = "btn d-inline-flex align-items-center justify-content-center " + (this.shadow ? "shadow-sm " : "") + (this._options.addClasses || "");
+    this.icon = this._options.icon || "";
+    this.innerText = this._options.text || "";
+    this.id = Shell.uniqueId();
+    this._shadow = this._options.shadow || false;
+    this.iconSize = this._options.iconSize || CSS.px(18);
+    this._outline = this._options.outline || false;
+    this.color = this._options.color || "#6c757d";
+    this.visible = this._options.visible;
+    this.size = this._options.size;
+    this.disabled = this._options.disabled;
+    this._tooltipLocation = this._options.tooltipLocation;
+    this._initialTooltip = this._options.tooltip;
+    this.append(this._iconElement, this._textElement, this._CSS);
   }
   set iconSize(size) {
     if (typeof size === "number") size = CSS.px(size);
@@ -126,6 +134,7 @@ class Button extends HTMLButtonElement {
     console.log("disconnect");
     if (this._tooltipProvider) this._tooltipProvider.hide();
   }
+
   updateStyles() {
     if (this._icon) {
       this._iconElement.className = `mdi${!!this._innerText ? " mr-2" : ""} d-flex mdi-${this._icon || "help-circle-outline"}`;
@@ -136,7 +145,7 @@ class Button extends HTMLButtonElement {
     }
     this._textElement.innerHTML = this._innerText || "";
     this._textElement.classList.toggle("d-none", !this._innerText);
-    this.classList.toggle("shadow-sm", this._shadow);
+    this.classList.toggle("shadow-sm", !!this._shadow);
   }
 }
 
@@ -144,7 +153,7 @@ class Spinner extends HTMLElement {
   constructor() {
     super();
     this.icon = document.createElement("icon");
-    this.icon.className = "mdi mdi-spin-faster mdi-loading mdi-24px d-flex justify-content-center align-items-center lh-24"
+    this.icon.className = "mdi mdi-spin-faster mdi-loading mdi-24px d-flex justify-content-center align-items-center lh-24";
     this.style.cssText = "left:0;right:0;width:36px;height:36px;z-index:100";
     this.className = "position-absolute mt-5 bg-light border mx-auto p-1 rounded-circle shadow";
     this.hide();

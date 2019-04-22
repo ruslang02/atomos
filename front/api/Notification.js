@@ -14,7 +14,7 @@ class Snackbar {
     };
     let self = this;
     let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
-    options.position = options.position || position || "bottom right"
+    options.position = options.position || position || "bottom right";
     this.ui = document.createElement("snackbar");
     this.ui.style.minWidth = CSS.px(300);
     this.ui.style.maxWidth = CSS.px(450);
@@ -93,11 +93,12 @@ class Notification {
     console.log(module);
     let currentWindow = function currentWindow(win) {
       win = win || module.parent;
+      console.log(win.type);
       if (win.id && win.type === "window") return win;
       else if (win.parent) return currentWindow(win.parent);
       else return null;
     }();
-    let win = AppWindow.fromId(currentWindow.id) || null;
+    let win = AppWindow.fromId((currentWindow || "").id) || null;
     options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, options);
     this.window = win;
     this.options = options;

@@ -29,17 +29,17 @@ if (Shell.isMobile) {
 	body.style.top = 0;
 	body.style.left = 0;
 	elems.Container.className = "btn btn-dark shadow-sm px-2 py-1 w-100 rounded-0 d-flex align-items-stretch";
-	elems.Clock.className = "lh-r1 font-weight-bold ml-auto";
+	elems.Clock.className = "lh-r1 font-weight-bolder ml-auto";
 	elems.NIcons.style.maxWidth = "calc(18px * 6 + .25rem * 5)";
 	elems.NIcons.style.order = -1;
 } else {
 	body.className = "d-flex align-items-center";
 	elems.Container.className = "btn shadow rounded-pill d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
 	elems.Container.style.height = CSS.px(38);
-	elems.Clock.className = "font-weight-bold mr-1";
+	elems.Clock.className = "font-weight-bolder mr-2";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
 }
-elems.NIcons.className = "fly left show d-inline-flex mr-1 text-truncate";
+elems.NIcons.className = "fly left show d-inline-flex mr-2 text-truncate";
 elems.Date.className = "fly left show d-none mr-2";
 elems.Container.addEventListener("click", e => {
 	e.stopPropagation();
@@ -82,6 +82,7 @@ window.TrayItem = class TrayItem {
 
 	remove() {
 		this.elem.remove();
+
 	}
 };
 

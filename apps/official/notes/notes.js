@@ -44,7 +44,7 @@ header.refreshBtn = new Button({
   tooltip: "Refresh"
 });
 header.refreshBtn.onclick = refreshNotes;
-header.container.append(header.text, header.refreshBtn, header.searchBtn)
+header.container.append(header.text, header.refreshBtn, header.searchBtn);
 header.append(header.container);
 let noteContainer = document.createElement("main");
 noteContainer.className = "container p-3 flex-grow-1 scrollable-y d-flex flex-wrap align-items-start justify-content-start";
@@ -73,33 +73,13 @@ async function refreshNotes() {
     spin.hide();
     return;
   }
-  if (entries.length === 0) {
-    let noNotes = document.createElement("section");
-    noNotes.className = "align-self-center w-100 text-center text-muted d-flex flex-column lead font-weight-bolder";
-    noNotes.innerHTML = "<i class='mdi mdi-notebook display-1'></i>Nothing here";
-    newNote.animate([{
-      boxShadow: "0 0 0 0 var(--warning), 0 .5rem 1rem rgba(0,0,0,.15)"
-    }, {
-        boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
-    }, {
-        boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
-    }, {
-        boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
-    }, {
-        boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
-    }, {
-        boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
-    }], {
-      iterations: Infinity,
-      duration: 6000
-    })
-    noteContainer.append(noNotes)
-  }
   for (const entry of entries) {
+    if (entry.startsWith(".")) continue;
     fs.promises.readFile(path.join(notesLocation, entry), "utf-8").then(file => {
-      card.note.innerHTML = file || "<i class='text-muted'>Empty note</i>";
-    })
-    fs.promises.stat(entry).then(stat => {
+      card.header.innerText = file.split("\n")[0].substring(2).trim();
+      card.note.innerHTML = file.replace("# " + card.header.innerText + "\n", "") || "<i class='text-muted'>Empty note</i>";
+    });
+    fs.promises.stat(path.join(notesLocation, entry)).then(stat => {
       let nowDate = new Date().getTime();
       let text = new Date().toLocaleDateString("en-US", {
         month: 'long',
@@ -114,28 +94,55 @@ async function refreshNotes() {
       else if (nowDate - 1000 * 60 * 60 * 24 * 31 < stat.mtimeMs)
         text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 60 / 24 / 1000) + " days ago";
       card.actions.lastModified.innerText = text
-    })
+    });
     let card = document.createElement("span");
     card.onmouseenter = () => card.actions.classList.add("show");
     card.onmouseleave = () => card.actions.classList.remove("show");
     card.className = "very-rounded shadow card mb-3 d-inline-flex mr-3";
-    card.style.cssText = "min-width: 200px;"
+    card.style.cssText = "min-width: 200px";
     card.header = document.createElement("h5");
-    card.header.innerText = path.basename(entry, ".html");
     card.header.className = "font-weight-bolder mx-3 mt-3";
     card.note = document.createElement("div");
-    card.note.className = "mx-3"
+    card.note.className = "mx-3";
     card.actions = document.createElement("footer");
     card.actions.className = "d-flex align-items-center mr-2 ml-3 mb-2 fade";
     card.actions.delete = document.createElement("button");
     card.actions.delete.className = "mdi mdi-delete-outline btn btn-outline-danger border-0 p-1 lh-18 mdi-18px d-flex";
+    card.actions.delete.onclick = function () {
+      fs.rename(path.join(notesLocation, entry), path.join(notesLocation, "." + entry), console.log);
+    };
     card.actions.edit = document.createElement("button");
     card.actions.edit.className = "mdi mdi-pencil-outline btn btn-outline-warning border-0 p-1 lh-18 mdi-18px d-flex";
+    card.actions.edit.onclick = function () {
+      AppWindow.launch("@atomos/notes/edit", {file: path.join(notesLocation, entry)}, {modal: true});
+    };
     card.actions.lastModified = document.createElement("div");
     card.actions.lastModified.className = "text-muted flex-grow-1 text-truncate mr-auto smaller";
     card.actions.append(card.actions.lastModified, card.actions.edit, card.actions.delete);
     card.append(card.header, card.note, card.actions);
     noteContainer.append(card);
+  }
+  if (noteContainer.children.length === 0) {
+    let noNotes = document.createElement("section");
+    noNotes.className = "align-self-center w-100 text-center text-muted d-flex flex-column lead font-weight-bolder";
+    noNotes.innerHTML = "<i class='mdi mdi-notebook display-1'></i>Nothing here";
+    newNote.animate([{
+      boxShadow: "0 0 0 0 var(--warning), 0 .5rem 1rem rgba(0,0,0,.15)"
+    }, {
+      boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
+    }, {
+      boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
+    }, {
+      boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
+    }, {
+      boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
+    }, {
+      boxShadow: "0 0 0 20px rgba(255, 193, 7, 0.01), 0 .5rem 1rem rgba(0,0,0,.15)"
+    }], {
+      iterations: Infinity,
+      duration: 6000
+    });
+    noteContainer.append(noNotes)
   }
   spin.hide();
 }

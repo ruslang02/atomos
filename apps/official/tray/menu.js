@@ -9,7 +9,7 @@ const cp = require("child_process");
 const wifi = require("node-wifi");
 wifi.init({
   iface: null
-})
+});
 let overlay;
 if (!Elements)
   window.Elements = [];
@@ -63,7 +63,7 @@ Elements.MenuBar.close = function() {
   Elements.MenuBar.classList.replace("show", "hide");
   Elements.BarItems["official/tray"].Container.classList.remove("active");
   Elements.BarItems["official/tray"].Date.classList.add("hide");
-  Elements.MenuBar.notifications.classList.add("show")
+  Elements.MenuBar.notifications.classList.add("show");
   setTimeout(() => {
     if (Elements.MenuBar.settings)
       Elements.MenuBar.settings.remove();
@@ -93,7 +93,6 @@ renderNotifications();
 renderBrightnessSettings();
 renderSoundSettings();
 document.body.appendChild(Elements.MenuBar);
-
 function renderQuickSection() {
   //TODO: Make more customizable
 
@@ -108,20 +107,54 @@ function renderQuickSection() {
     icon: "wifi-strength-outline",
     addClasses: "p-2 rounded-circle",
 		iconSize: 24,
+    visible: false
   });
 
-  setInterval(function() {
-    wifi.getCurrentConnections().then(network => {
-      if (network.length) {
-        network = network[0];
-        WiFi.icon = "wifi-strength-" + Math.ceil(network.quality / 25);
-        WiFi.tooltip = network.ssid;
+  function updateNetwork() {
+    cp.exec("nmcli device wifi", (_e, output) => {
+      if (!output.trim().split("\n")[1]) {
+        WiFi.visible = false;
+        if (WiFi.tray) WiFi.tray.remove();
+        WiFi.tray = undefined;
       } else {
-        WiFi.icon = "wifi-strength-outline";
-        WiFi.tooltip = "Not connected";
+        WiFi.visible = true;
+        if (!WiFi.tray) WiFi.tray = new TrayItem("wifi-strength-outline");
+        cp.exec("nmcli radio wifi", function (_e, output) {
+          output = output.toString().trim();
+          WiFi.color = output === "enabled" ? "primary" : "secondary";
+          WiFi.outline = output !== "enabled";
+        });
+        wifi.getCurrentConnections().then(network => {
+          WiFi.tray.elem.classList.remove("mdi-wifi-strength-outline", "mdi-wifi-strength-1", "mdi-wifi-strength-2", "mdi-wifi-strength-3", "mdi-wifi-strength-4");
+          if (network.length) {
+            network = network[0];
+            WiFi.tray.elem.classList.add("mdi-wifi-strength-" + Math.ceil(network.quality / 25));
+            WiFi.icon = "wifi-strength-" + Math.ceil(network.quality / 25);
+            WiFi.tooltip = network.ssid;
+          } else {
+            WiFi.icon = "wifi-strength-outline";
+            WiFi.tooltip = "Not connected";
+            WiFi.tray.elem.classList.add("mdi-wifi-strength-outline");
+          }
+        });
+      }
+    });
+    cp.exec("nmcli networking", (_e, output) => {
+      let enabled = output.trim() === "enabled";
+      Radio.outline = enabled;
+      Radio.color = enabled ? "secondary" : "primary";
+      Radio.icon = enabled ? "airplane-off" : "airplane";
+      if (!enabled) {
+        if (!Radio.tray) Radio.tray = new TrayItem("airplane");
+      } else if (Radio.tray) {
+        Radio.tray.remove();
+        Radio.tray = undefined;
       }
     })
-  }, 1000)
+
+  }
+
+  setInterval(updateNetwork, 1000);
   let Screen = new Button({
     tooltip: "Brightness",
     color: "primary",
@@ -137,6 +170,14 @@ function renderQuickSection() {
     addClasses: "p-2 rounded-circle",
 		iconSize: 24,
   });
+  let Radio = new Button({
+    tooltip: "Airplane mode",
+    color: "secondary",
+    outline: true,
+    icon: "airplane-off",
+    addClasses: "p-2 rounded-circle",
+    iconSize: 24,
+  });
   let Sound = new Button({
     tooltip: "Volume",
     color: "primary",
@@ -151,10 +192,20 @@ function renderQuickSection() {
     addClasses: "p-2 rounded-circle",
 		iconSize: 24,
   });
+  Radio.onclick = () => {
+    cp.exec("nmcli networking " + (Radio.classList.contains("btn-primary") ? "on" : "off"), updateNetwork);
+  };
+  Radio.oncontextmenu = e => {
+    Shell.openSettings("network");
+  };
   WiFi.oncontextmenu = e => {
     e.stopPropagation();
     Shell.openSettings("network-wlan");
-  }
+  };
+  WiFi.onclick = () => {
+    cp.exec("nmcli radio wifi " + (WiFi.classList.contains("btn-primary") ? "off" : "on"), updateNetwork);
+  };
+
   Screen.oncontextmenu = e => {
     e.stopPropagation();
     Elements.MenuBar.brightnessSettings.classList.toggle("d-none");
@@ -165,6 +216,7 @@ function renderQuickSection() {
 		DND.color = window.NOTIFICATIONS_MUTED ? "danger" : "secondary";
 		DND.outline = !window.NOTIFICATIONS_MUTED;
     Elements.BarItems["official/tray"].Container.menu.getMenuItemById("DND").checked = window.NOTIFICATIONS_MUTED;
+    if (window.NOTIFICATIONS_MUTED) DND.tray = new TrayItem("minus-circle-outline"); else if (DND.tray) DND.tray.remove();
   };
   Sound.onclick = () => {
     cp.execSync("amixer -q -D pulse sset Master toggle");
@@ -180,10 +232,11 @@ function renderQuickSection() {
     WiFi,
     Screen,
     DND,
+    Radio,
     Sound,
     Settings
   };
-  Elements.MenuBar.quickItems.append(WiFi, Screen, DND, Sound, Settings);
+  Elements.MenuBar.quickItems.append(...Object.values(Elements.MenuBar.quickItems.items));
   if (!Shell.isMobile)
     Elements.MenuBar.appendChild(Elements.MenuBar.quickItems);
   else
@@ -252,6 +305,11 @@ function renderSoundSettings() {
     master.icon.classList.add("mdi-volume-" + (sound.muted ? "off" : "high"));
 		Elements.MenuBar.quickItems.items.Sound.color = sound.muted ? "secondary" : "primary";
 		Elements.MenuBar.quickItems.items.Sound.outline = sound.muted;
+    if (sound.muted) Elements.MenuBar.soundSettings.tray = new TrayItem("volume-off");
+    else if (Elements.MenuBar.soundSettings.tray) {
+      Elements.MenuBar.soundSettings.tray.remove();
+      Elements.MenuBar.soundSettings.tray = undefined
+    }
   };
   Elements.MenuBar.soundSettings.updateControls();
   master.append(master.icon, master.range);
@@ -259,11 +317,7 @@ function renderSoundSettings() {
   let notifVolume = document.createElement('div');
   notifVolume.className = "d-flex align-items-center mt-2";
   notifVolume.icon = document.createElement("icon");
-  notifVolume.icon.onclick = () => {
-    cp.execSync("amixer -q -D pulse sset Master toggle");
-    Elements.MenuBar.soundSettings.updateControls();
-  };
-  notifVolume.icon.className = `btn p-1 mdi mdi-24px lh-24 d-flex mdi-bell-outline rounded-circle mr-3 my-1 ` + (Shell.ui.darkMode ? "text-white btn-dark" : "btn-white text-dark");
+  notifVolume.icon.className = `btn p-1 mdi mdi-24px lh-24 d-flex mdi-bell-outline rounded-circle mr-3 my-1 disabled ` + (Shell.ui.darkMode ? "text-white btn-dark" : "btn-white text-dark");
   notifVolume.range = document.createElement("input");
   notifVolume.range.max = 1;
   notifVolume.range.min = 0;

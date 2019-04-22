@@ -19,5 +19,6 @@
   "minHeight": 450,
   "type": "app",
   "showOnLoad": false,
-  "show": false
+  "show": false,
+  "hidden": true
 }

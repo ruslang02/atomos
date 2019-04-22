@@ -1,7 +1,7 @@
 let vk, auth, VK, authErrors;
 
 function initVK() { /* Initializes in the end not to hang the UI when loading */
-  const VKIO = require("vk-io")
+  const VKIO = require("vk-io");
   VK = VKIO.VK;
   authErrors = VKIO.authErrors;
   vk = new VK({
@@ -35,7 +35,7 @@ function login() {
   alert.onanimationend = () => {
     if (alert.style.opacity == 0)
       alert.classList.add("d-none")
-  }
+  };
   let loginSection = document.createElement("section");
   loginSection.className = "d-flex flex-column align-items-center align-self-center position-relative";
   loginSection.style.top = CSS.px(100);
@@ -46,7 +46,7 @@ function login() {
   loginForm.className = "card rounded shadow border-0 w-100 scrollable-0 bg-" + win.options.theme;
   let loginBody = document.createElement("div");
   loginBody.className = "card-body";
-  let email = document.createElement("input");
+  /*let email = document.createElement("input");
   email.className = "form-control mb-3" + (win.options.darkMode ? " bg-secondary text-white" : "");
   email.placeholder = "Phone or email".toLocaleString();
   email.required = true;
@@ -138,8 +138,18 @@ function login() {
       })
   })
   submitDiv.append(openExternal, submitBtn);
-  loginBody.append(email, pass, submitDiv);
-  loginForm.append(loginBody, alert)
+  loginBody.append(email, pass, submitDiv);*/
+  let oAuthLogin = new Button({
+    color: "#4a76a8",
+    text: "Login using OAuth",
+    icon: "webhook",
+    addClasses: "w-100"
+  });
+  oAuthLogin.onclick = () => {
+
+  };
+  loginBody.append(oAuthLogin);
+  loginForm.append(loginBody, alert);
   loginSection.append(logo, loginForm);
   win.ui.body.append(loginSection);
 }
