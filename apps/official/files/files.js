@@ -97,7 +97,7 @@ async function navigate(url) {
     FCBar.submitButton.disabled = true;
   }
 
-  url = path.normalize(url.trim());
+	url = path.normalize(url);
   switch (url.toLowerCase()) {
     case ":back":
       url = history.items[--history.current];
@@ -322,10 +322,13 @@ async function navigate(url) {
       });
     };
     item.open = function() {
-      if (this.isDirectory)
+			if (item.isDirectory)
         navigate(file);
       else {
-        if (win.arguments.callback) sendBack();
+				if (win.arguments.callback) {
+					item.click();
+					sendBack();
+				}
         else if (this.shortcut) {
           AppWindow.launch(item.shortcut.app, item.shortcut.args);
         } else
@@ -440,7 +443,6 @@ function renderFCBar() {
 
 async function sendBack() {
   let file = path.join(nav.pathField.value, FCBar.textField.value);
-  console.log(file);
   let exists = fs.existsSync(file);
 
   function send() {
@@ -640,14 +642,16 @@ function renderNav() {
       icon: "arrow-left",
       color: win.options.darkMode ? "dark" : "light",
       disabled: true,
-      tooltip: "Back"
+			tooltip: "Back",
+			addClasses: "m-0 border-0"
     }),
     forwardButton: new Button({
       size: "sm",
       icon: "arrow-right",
       color: win.options.darkMode ? "dark" : "light",
       disabled: true,
-      tooltip: "Forward"
+			tooltip: "Forward",
+			addClasses: "m-0 border-0"
     }),
     folderButton: new Button({
       size: "sm",
@@ -692,10 +696,15 @@ function renderNav() {
   nav.pathField.oninput = () => nav.pathField.dataset.edited = "true";
   nav.pathField.style.zIndex = -1;
   nav.pathField.dataset.editMenu = false;
+
+	function kek(e) {
+		e.stopPropagation()
+	}
   nav.pathField.addEventListener("dblclick", function(e) {
     e.stopPropagation();
     nav.pathField.dataset.editMenu = true;
-    nav.pathField.dataset.draggable = false;
+		nav.pathField.addEventListener("mousedown", kek);
+		nav.pathField.addEventListener("mousemove", kek);
     nav.pathField.classList.remove("text-center");
     nav.inputGroup.classList.replace("shadow-sm", "shadow");
     nav.pathField.style.zIndex = 0;
@@ -709,10 +718,11 @@ function renderNav() {
     nav.pathField.classList.add("text-center");
     nav.inputGroup.classList.replace("shadow", "shadow-sm");
     nav.pathField.style.zIndex = -1;
-    nav.pathField.dataset.draggable = true;
+		nav.pathField.removeEventListener("mousedown", kek);
+		nav.pathField.removeEventListener("mousemove", kek);
     nav.pathField.dataset.editMenu = false;
   });
-  nav.inputGroup.append(nav.pathField, nav.refreshButton)
+	nav.inputGroup.append(nav.pathField, nav.refreshButton);
   navigation.append(nav.mainBar, nav.folderButton, nav.inputGroup);
   win.ui.header.prepend(navigation);
   win.ui.title.classList.add("d-none");

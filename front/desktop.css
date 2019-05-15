@@ -30,11 +30,11 @@ body.noAnim, body.noAnim * {
 	animation-duration: 0s !important;
 }
 
-body.blur message-box {
+body.blur .modal:not(.noBlur) {
 	--blur-radius: 5px;
 	backdrop-filter: blur(var(--blur-radius));
 	width: calc(100% + calc(2 * var(--blur-radius)));
-	height: calc(100% + calc(2 * var(--blur-radius)))
+	height: calc(100% + calc(2 * var(--blur-radius)));
 }
 @keyframes pulsate {
 	from {
@@ -131,7 +131,7 @@ body.blur message-box {
 }
 
 .bg-semiwhite {
-	    background: rgb(230, 230, 230, 0.75);
+	background: rgb(230, 230, 230);
 }
 
 .bg-semiwhite.shadow, .bg-semiwhite.active {
@@ -139,11 +139,11 @@ body.blur message-box {
 }
 
 .bg-semidark {
-	background: rgba(0, 0, 0, 0.75) !important;
+	background: rgb(45, 45, 45) !important;
 }
 
 .bg-semidark.shadow, .bg-semidark.active {
-	background: rgba(0, 0, 0, 0.85) !important;
+	background: rgba(5, 5, 5, 0.8) !important;
 }
 
 .font-weight-bolder {
@@ -166,7 +166,7 @@ body.blur message-box {
 }
 
 body > footer#taskbar {
-	box-shadow: inset 0 -90px 40px -80px rgba(191, 191, 191, 0.75), inset 0 -40px 30px -30px rgba(0, 0, 0, 0.7);
+	/* box-shadow: inset 0 -90px 40px -80px rgba(191, 191, 191, 0.75), inset 0 -40px 30px -30px rgba(0, 0, 0, 0.7); */
 	z-index: 990;
 	transition: all .25s ease;
 	bottom: 0;
@@ -201,7 +201,7 @@ body > footer#taskbar::before {
 body > footer#taskbar.autoHide:hover,
 body > footer#taskbar.autoHide.show,
 body > footer#taskbar:not(.autoHide) {
-	clip-path: inset(0 0 0 0);
+	/* clip-path: inset(0 0 0 0); */
 	/* backdrop-filter: blur(3px); */
 }
 
@@ -268,7 +268,7 @@ plugin[id="official/tasker"] > button:not(.active):active, plugin[id="official/s
 	filter: brightness(90%);
 }
 
-body.blur window.active {
+body.blur window {
 	backdrop-filter: blur(10px);
 }
 window.maximized {

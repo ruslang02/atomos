@@ -102,8 +102,7 @@ function init() {
 	ace.config.set('basePath', osRoot + "/node_modules/ace-builds/src-min");
 	if (win.arguments.file) newTab(win.arguments.file);
 	else newTab();
-	renderPreferencesDialog().then(() => console.log(
-		"Preferences window generated"));
+	renderPreferencesDialog();
 }
 
 setImmediate(init);
@@ -216,7 +215,7 @@ function newTab(url) {
 	tab.reload();
 	tab.activate();
 	tabs.push(tab);
-	if (url) tab.load(url).then(() => console.log("File", url, "has been loaded"));
+	if (url) tab.load(url);
 	return tab;
 }
 

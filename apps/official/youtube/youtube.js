@@ -1,9 +1,8 @@
-const AppWindow = require("@api/WindowManager");
-const Shell = require("@api/Shell");
+const {AppWindow, Shell, Components: {Spinner}} = require("@api");
 const Semver = require("semver");
 const win = AppWindow.getCurrentWindow();
 
-let ev = Semver(process.versions.electron);
+/*let ev = Semver(process.versions.electron);
 if(ev.major === 5 && ev.minor === 0 && ev.prerelease[0] === "beta") {
 	//win.close();
 	Shell.showMessageBox({
@@ -12,14 +11,13 @@ if(ev.major === 5 && ev.minor === 0 && ev.prerelease[0] === "beta") {
 		message: `Electron 5 crashes when using YouTube API. Please consider downgrading Electron version to 4.`
 	});
 	//return;
-}
+}*/
 
 const path = require("path");
 const Menu = require(`@api/Menu`);
 
 let backend = new Worker(path.join(__dirname, "worker.js"));
 backend.onmessage = e => {
-	console.log(e.data.action);
 	switch (e.data.action) {
 		case "library-error":
 			win.close();
@@ -78,7 +76,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			});
 			if (win.arguments.url || win.arguments.file) {
 				let url = new URL(win.arguments.url || win.arguments.file);
-				spinner.classList.replace("hide", "show");
+				spinner.show();
 				backend.postMessage({action: "play-video", id: url.searchParams.get("v")});
 			}
 			break;
@@ -116,7 +114,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 			for (const video of e.data.items)
 				body.channelResults.append(genVid(video));
 			body.append(body.channelResults);
-			spinner.classList.replace("show", "hide");
+			spinner.hide();
 			break;
 		case "get-channels":
 			sidebar.noChannels.innerText = "No items to show";
@@ -127,10 +125,9 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 				elem.id = channel.id;
 				elem.innerHTML = `<img width=18 height=18 class='rounded-circle mr-2' src='${channel.snippet.thumbnails.default.url}'><div class="w-25 text-truncate flex-grow-1">${channel.snippet.title}</div>`;
 				elem.onclick = () => {
-					console.log(channel.snippet);
 					backend.postMessage({action: "get-channel-info", id: channel.snippet.resourceId.channelId});
 					backend.postMessage({action: "get-channel-videos", id: channel.snippet.resourceId.channelId});
-					spinner.classList.replace("hide", "show");
+					spinner.show();
 
 				};
 				sidebar.channels.append(elem);
@@ -157,7 +154,7 @@ atomos/$ npm i googleapis google-auth-library youtube-dl</code></pre>
 		default:
 			console.log("Unknown response from backend", e.data);
 	}
-	spinner.classList.replace("show", "hide");
+	spinner.hide();
 };
 win.on('close', () => backend.terminate());
 win.ui.body.classList.remove("flex-column");
@@ -166,8 +163,7 @@ function genVid(item) {
 	let elem = document.createElement("div");
 	elem.className = "card mt-2 p-2 mx-4 btn flex-shrink-0 text-left" + (win.options.darkMode ? " bg-secondary text-white" : "");
 	elem.onclick = () => {
-		spinner.classList.replace("hide", "show");
-		console.log(item);
+		spinner.show();
 		backend.postMessage({action: "play-video", id: item.id.videoId || item.contentDetails.upload.videoId || item.id});
 	};
 	elem.media = document.createElement("div");
@@ -209,14 +205,13 @@ sidebar.trending = document.createElement("button");
 sidebar.subs = document.createElement("button");
 sidebar.search = document.createElement("button");
 sidebar.trending.innerHTML = "<icon class='mdi mdi-fire mdi-24px lh-24 d-flex mr-2'></icon><div>Trending</div>";
-true;
 sidebar.trending.onclick = () => {
 	backend.postMessage({
 		action: "list-popular"
 	});
 	for (const child of sidebar.children) child.classList.remove("active");
 	sidebar.trending.classList.add("active");
-	spinner.classList.replace("hide", "show");
+	spinner.show();
 };
 sidebar.subs.innerHTML = "<icon class='mdi mdi-checkbox-multiple-blank-outline mdi-24px lh-24 d-flex mr-2'></icon><div>Subscriptions</div>";
 sidebar.subs.onclick = () => {
@@ -225,7 +220,7 @@ sidebar.subs.onclick = () => {
 	});
 	for (const child of sidebar.children) child.classList.remove("active");
 	sidebar.subs.classList.add("active");
-	spinner.classList.replace("hide", "show");
+	spinner.show();
 };
 sidebar.trending.className = sidebar.subs.className = sidebar.search.className =
 "dropdown-item p-2 d-flex font-weight-bolder align-items-center rounded-right-pill flex-shrink-0";
@@ -252,7 +247,7 @@ sidebar.search.onclick = () => {
 			action: "search",
 			q: search.value
 		});
-		spinner.classList.replace("hide", "show");
+		spinner.show();
 	};
 	iappend.append(searchBtn);
 	searchBar.append(search, iappend);
@@ -274,14 +269,12 @@ sidebar.append(sidebar.trending, sidebar.subs, sidebar.search, sidebar.channelsT
 
 let main = document.createElement("main");
 main.className = "shadow very-rounded mx-2 mb-2 flex-grow-1 position-relative w-25 scrollable-y bg-" + win.options.theme;
-let spinner = document.createElement("icon");
-spinner.style.cssText = "left:0;right:0;width:36px;height:36px;z-index:1000;";
-spinner.className = "mdi mdi-spin-faster mdi-loading mdi-24px mt-5 position-absolute fly down show d-flex mx-auto p-1 rounded-circle lh-24 align-items-center justify-content-center " + (win.options.darkMode ? "bg-dark text-white border border-secondary" : "bg-light text-dark shadow");
+let spinner = new Spinner();
 let body = document.createElement("section");
 body.className = "d-flex flex-column w-100 h-100";
 main.append(spinner, body);
 win.ui.body.append(sidebar, main);
-spinner.classList.replace("hide", "show");
+spinner.show();
 
 
 function openLogIn(url) {

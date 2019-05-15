@@ -1,4 +1,5 @@
-setTitle("Date and time")
+const Shell = require("@api/Shell");
+setTitle("Date and time");
 
 function upd() {
 	list.changeDate.header.lastChild.innerHTML = new Date().toLocaleTimeString({}, {
@@ -27,7 +28,7 @@ list.changeDate = newSmallListItem({
 			'-' + pad(cDate.getUTCMonth() + 1) +
 			'-' + pad(cDate.getUTCDate()) +
 			'T' + pad(cDate.getUTCHours()) +
-			':' + pad(cDate.getUTCMinutes())
+			':' + pad(cDate.getUTCMinutes());
 		Shell.showMessageBox({
 			title: "Change current system time",
 			icon: "clock-outline",
@@ -44,8 +45,7 @@ list.changeDate = newSmallListItem({
 					hour: "numeric",
 					minute: "numeric",
 					second: "numeric"
-				}).toUpperCase().replace(",", "")
-				console.log(format, time)
+				}).toUpperCase().replace(",", "");
 				Shell.execAsRoot(`date --set="${format}"`, {
 					title: "Authenticate to change system time",
 					message: 'Type your root password'

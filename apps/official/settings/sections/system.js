@@ -1,6 +1,6 @@
 const fs = require("fs").promises;
 const path = require("path");
-
+const {Shell, AppWindow} = require("@api");
 setTitle("System");
 let info = JSON.parse(await fs.readFile(path.join(osRoot, "package.json")));
 let osinfo = document.createElement("section");
@@ -27,19 +27,20 @@ list.dat = newSmallListItem({
 list.pcinfo = newSmallListItem({
 	color: "var(--primary)",
 	icon: "memory",
-	label: "Device specifications"
+	label: "Device specifications",
+	click: () => openSection("system-specs")
 });
 list.sources = newSmallListItem({
 	color: "var(--success)",
 	icon: "source-branch",
-	label: "Open source licenses"
+	label: "Open source licenses",
+	click: () => AppWindow.launch("@atomos/typewriter", {file: osRoot + "/LICENSE"})
 });
-list.author = newSmallListItem({
-	color: "var(--dark)",
-	icon: "account",
-	label: "Developer's contacts"
-});
-list.append(list.dat);
+let newButton = document.createElement("button");
+newButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-github-face btn rounded-circle d-flex " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
+newButton.onclick = () => Shell.openExternal(info.repository.url);
+setActionButton(newButton);
+list.append(list.dat, list.pcinfo, list.sources);
 let debugInfo = document.createElement("div");
 debugInfo.className = "smaller text-muted lh-24 px-3";
 debugInfo.innerText = `Electron ${process.versions.electron}

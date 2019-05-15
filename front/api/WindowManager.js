@@ -31,7 +31,6 @@ const Registry = require(`@api/Registry`);
 const {
   Button
 } = require("@api/Components");
-console.log(module);
 window._wzindex = window._wzindex || 0;
 let
   windowCollection = new Proxy(window.instances = window.instances || [], {
@@ -228,7 +227,7 @@ class AppWindow extends EventEmitter {
 
     this.ui.root = document.createElement("window");
     this.ui.root.id = this.id;
-    this.ui.root.className = "very-rounded d-none flex-column scrollable-0 position-absolute" + (Registry.get("system.enableWindowShadows") ? " shadow-sm" : "");
+		this.ui.root.className = "very-rounded d-none flex-column position-absolute" + (Registry.get("system.enableWindowShadows") ? " shadow-sm" : "");
     if (Registry.get("system.enableTransparentWindows")) {
       this.ui.root.classList.add(this.options.darkMode ? "bg-semidark" : "bg-semiwhite");
     } else {
@@ -251,14 +250,14 @@ class AppWindow extends EventEmitter {
         _this.ui.root.classList.replace("d-flex", "d-none")
     };
     this.ui.header = document.createElement("window-header");
-    this.ui.header.className = "d-flex align-items-center flex-shrink-0 p-2" + (this.options.darkMode ? " text-white" : "");
+		this.ui.header.className = "d-flex align-items-center very-rounded-top flex-shrink-0 p-2" + (this.options.darkMode ? " text-white" : "");
     this.ui.header.addEventListener("dblclick", () => this._toggle());
     this.ui.title = document.createElement("window-title");
     this.ui.title.className = "flex-grow-1 text-center us-0";
     this.ui.title.innerText = this.options.title;
 
     this.ui.ui = document.createElement("window-ui");
-    this.ui.ui.className = "d-flex flex-column flex-grow-1 position-relative h-100";
+		this.ui.ui.className = "d-flex flex-column flex-grow-1 position-relative h-100 very-rounded";
 
     this.ui.buttons = document.createElement("window-buttons");
     this.ui.buttons.style.order = -10;
@@ -301,13 +300,14 @@ class AppWindow extends EventEmitter {
       this.ui.buttons.close.style.padding = CSS.px(6);
 
     this.ui.body = document.createElement("window-body");
-    this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0 position-relative h-100";
+		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0 position-relative very-rounded-bottom";
+		this.ui.body.style.height = 0;
     this.ui.body.dataset.draggable = false;
-
-    this.ui.overlay = document.createElement("overlay");
-    this.ui.overlay.style.cssText = "top:0;left:0;z-index:100";
-    this.ui.overlay.className = "d-none position-fixed w-100 h-100";
-    this.ui.root.append(this.ui.overlay);
+		/*
+				this.ui.overlay = document.createElement("overlay");
+				this.ui.overlay.style.cssText = "top:0;left:0;z-index:100";
+				this.ui.overlay.className = "d-none position-fixed w-100 h-100";
+				this.ui.root.append(this.ui.overlay);*/
 
     this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
     this.ui.header.append(this.ui.buttons, this.ui.title);
@@ -403,7 +403,7 @@ class AppWindow extends EventEmitter {
   showInactive() {
     if (this.ui.root.classList.contains("d-none")) {
       this.ui.root.classList.replace("d-none", "d-flex");
-      this._fade.playbackRate = 1
+			this._fade.playbackRate = 1;
       this._fade.play();
     }
     this.moveTop();
@@ -414,7 +414,7 @@ class AppWindow extends EventEmitter {
   hide() {
     Elements.Bar.classList.remove("maximized");
     if (this.ui.root.classList.contains("d-flex")) {
-      this._fade.playbackRate = -1
+			this._fade.playbackRate = -1;
       this._fade.play();
     }
   }
@@ -584,7 +584,7 @@ class AppWindow extends EventEmitter {
           self.ui.root.style.visibility = "hidden";
           document.body.append(ghost);
         }
-        self.ui.overlay.classList.remove("d-none");
+				_winoverlay.classList.remove("d-none");
       };
       corners.topLeft.style.cssText = `position:absolute;top: -${size}px; left:-${size}px; width:${2 * size}px; height:${2 * size}px; cursor: nwse-resize; z-index:101`;
       corners.topLeft.resizer = 1;
@@ -616,7 +616,7 @@ class AppWindow extends EventEmitter {
           ghost = null;
         }
         self.ui.root.style.visibility = "visible";
-        self.ui.overlay.classList.add("d-none");
+				_winoverlay.classList.add("d-none");
       });
       this.resizerTrigger = e => {
         let elem = ghost || self.ui.root;
@@ -690,6 +690,7 @@ class AppWindow extends EventEmitter {
         force = false;
       self.drag = e => {
         if (isDragging && !self.isResizing && (!cancel || force)) {
+					_winoverlay.style.background = e.clientY < 10 ? "rgba(30,30,30,0.7)" : "none";
           if (Registry.get("system.disableLiveTransformations")) {
             if (Math.abs(e.clientX - begin.x) < 3 || Math.abs(e.clientY - begin.y) < 3) return;
             if (!ghost) {
@@ -707,23 +708,27 @@ class AppWindow extends EventEmitter {
             self.ui.root.style.left = CSS.px(e.clientX - prev.x);
             self.ui.root.style.top = CSS.px(e.clientY - prev.y);
           }
-          self.ui.overlay.classList.remove("d-none");
+					_winoverlay.classList.remove("d-none");
         } else {
           prev.x = e.clientX - self.ui.root.offsetLeft;
           prev.y = e.clientY - self.ui.root.offsetTop;
         }
       };
-      self.mouseUpDrag = () => {
+			self.mouseUpDrag = e => {
         isDragging = false;
         cancel = false;
         force = false;
-        self.ui.overlay.classList.add("d-none");
+				_winoverlay.classList.add("d-none");
         if (ghost) {
           self.ui.root.style.left = ghost.style.left;
           self.ui.root.style.top = ghost.style.top;
           ghost.remove();
           ghost = null;
         }
+				if (e.clientY < 10) {
+					self.maximize();
+					self.setPosition(prev.x, prev.y);
+				}
         self.ui.root.style.visibility = "visible";
         document.body.style.cursor = "default";
       };

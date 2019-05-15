@@ -123,7 +123,7 @@ class Menu extends EventEmitter {
 					}
 					menuItem = document.createElement("button");
 					menuItem.className = "dropdown-item d-flex align-items-center";
-					menuItem.onmouseup = e => {
+					menuItem.onclick = e => {
 						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, item, _this.window, _this.activeElement);
 						_this.menu.overlay.onclick(e);
 
@@ -158,7 +158,7 @@ class Menu extends EventEmitter {
 					let menuInput = document.createElement("input");
 					menuInput.className = "custom-control-input";
 					menuInput.type = "checkbox";
-					menuItem.onmouseup = e => {
+					menuItem.onclick = e => {
 						menuInput.checked = item.checked = !menuInput.checked;
 						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, this.g(item.checked), item, _this.window, _this.activeElement);
 						_this.menu.overlay.onclick(e);
@@ -166,6 +166,7 @@ class Menu extends EventEmitter {
 					menuInput.checked = this.g(item.checked);
 					let menuTitle = document.createElement("label");
 					menuTitle.className = "flex-grow-1 custom-control-label" + (Shell.ui.darkMode ? " text-white" : "");
+					menuTitle.style.cursor = "pointer";
 					menuTitle.innerText = this.g(item.label).toLocaleString();
 					menuItem.append(menuInput, menuTitle);
 				}

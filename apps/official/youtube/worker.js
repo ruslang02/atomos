@@ -7,7 +7,6 @@ try {
 	OAuth2Client = require('google-auth-library').OAuth2Client;
 	youtubedl = require('youtube-dl');
 } catch (e) {
-	console.log(e);
 	postMessage({
 		action: "library-error"
 	});
@@ -53,13 +52,11 @@ function authorize(credentials) {
 			}, (e, result) => {
 				if (e) {
 					console.error(e);
-					postMessage({
-						action: "logged-in",
-						user: {
-							displayName: "Error loading user profile",
-							avatarURL: "about:blank"
-						}
+					let authUrl = oauth2Client.generateAuthUrl({
+						access_type: 'offline',
+						scope: SCOPES
 					});
+					postMessage({action: "log-in", url: authUrl});
 					return;
 				}
 				postMessage({
@@ -88,6 +85,10 @@ async function storeToken(token) {
 
 onmessage = function (e) {
 	let action = e.data.action;
+	let pageToken = "";
+	let subChannels = [];
+	let iChannels = 0;
+	let totalChannels = 0;
 	switch (action) {
 		case "return-token":
 			oauth2Client.getToken(e.data.token, function (err, token) {
@@ -108,10 +109,6 @@ onmessage = function (e) {
 			});
 			break;
 		case "get-channels":
-			let subChannels = [];
-			let iChannels = 0;
-			let totalChannels = 0;
-			let pageToken = "";
 
 		async function retrieveChannels() {
 			let res = await new Promise(resolve => google.youtube('v3').subscriptions.list({
@@ -203,11 +200,8 @@ onmessage = function (e) {
 		}
 
 		async function retrieveVideos() {
-			for (const channel of await retrieveChannels()) {
-				console.log(channel);
+			for (const channel of await retrieveChannels())
 				await retrieveVideo(channel.snippet.resourceId.channelId);
-			}
-			console.log(subVideos)
 			subVideos = subVideos.sort(function (a, b) {
 				return new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt);
 			});

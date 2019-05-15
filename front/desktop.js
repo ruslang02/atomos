@@ -5,7 +5,6 @@ const {
 let wc = remote.getCurrentWebContents();
 const Registry = require(`@api/Registry`);
 const {Snackbar, Notification} = require(`@api/Notification`);
-require('gitlab/dist/es5');
 const fso = require("fs");
 const path = require("path");
 const osRoot = path.join(__dirname, "..");
@@ -87,7 +86,6 @@ function renderWall() {
 	clearTimeout(time);
 	let settings = Registry.get("system.wallpaper");
 	if (!fso.existsSync(wFile)) {
-		console.log(wFile);
 		fso.copyFileSync(path.join(osRoot, "resources", "wallpaper.jpg"), wFile);
 	}
 	if (!settings)

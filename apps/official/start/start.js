@@ -44,10 +44,11 @@ let menu = new Menu([{
 		window.close();
 	}
 }]);
-body.className = "d-flex align-items-center ml-2";
+body.className = "d-flex align-items-center ml-2 mr-3";
 button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 shadow d-flex align-items-center justify-content-center text-white p-0 my-1 mdi-chevron-up";
 button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
 button.style.height = button.style.width = CSS.px(38);
+button.style.zIndex = 1;
 if (!Shell.isMobile) button.title = "All Apps";
 button.addEventListener("click", e => {
 	e.stopPropagation();
@@ -58,7 +59,11 @@ button.addEventListener("contextmenu", e => {
 	menu.popup();
 });
 button.style.transition = "transform .25s linear";
-body.appendChild(button);
+/*let searchBar = document.createElement("input");
+searchBar.className = "form-control rounded-pill pl-5 shadow" + (Shell.ui.darkMode ? "bg-dark border-dark text-white" : "");
+searchBar.style.cssText = "margin-left: -30px;width: 300px;height: 32px;";
+searchBar.placeholder = "What are you up to today?";*/
+body.append(button);
 if (Shell.isMobile) {
 	body.className = "d-flex justify-content-around flex-grow-1";
 	let closeButton = document.createElement("button");
@@ -72,7 +77,7 @@ if (Shell.isMobile) {
 	tasksButton.className = "mdi mdi-crop-square mdi-36px btn d-flex align-items-center bg-transparent lh-36 py-1";
 	tasksButton.onclick = () => TaskManager.toggle();
 	body.append(tasksButton);
-} else button.classList.add("mr-3");
+}
 if (!Shell.isMobile) new Tooltip(button);
 window.addEventListener("keydown", e => {
 	if (e.key === "Meta") window.__MetaKeyOverriden = false;

@@ -19,6 +19,8 @@
   "minHeight": 300,
   "type": "app",
   "skipTaskbar": true,
+	"minimizable": false,
+	"maximizable": false,
   "actions": [
     {
       "name": "Make a screenshot",

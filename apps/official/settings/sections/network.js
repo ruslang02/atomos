@@ -30,5 +30,5 @@ list.networking = newSmallListItem({
 		cp.exec("nmcli networking " + (checked ? "off" : "on"))
 	}
 });
-list.append(list.wifi, list.ethernet, list.generalLabel, list.networking);
+list.append(list.wifi, list.generalLabel, list.networking);
 main.append(list);

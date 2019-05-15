@@ -90,10 +90,8 @@ class Notification {
      * * requireInteraction -- indicates if notification will be active until user does something to it, defaults to false
      * * sticky -- if it is true, notification can't be cleared by user itself, closed automatically when app closes
      */
-    console.log(module);
     let currentWindow = function currentWindow(win) {
       win = win || module.parent;
-      console.log(win.type);
       if (win.id && win.type === "window") return win;
       else if (win.parent) return currentWindow(win.parent);
       else return null;

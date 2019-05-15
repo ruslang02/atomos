@@ -12,6 +12,7 @@
 	"height": 650,
 	"minHeight": 500,
 	"minWidth": 500,
+	"hidden": true,
 	"main": "notes.js",
 	"dependencies": {
 		"atomos": "~0.8.0"

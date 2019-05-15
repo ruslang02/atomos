@@ -5,6 +5,7 @@ const Shell = require("@api/Shell");
 const AppWindow = require("@api/WindowManager");
 const Menu = require(`@api/Menu`);
 const appPath = path.join(osRoot, "apps");
+const mathjs = require("mathjs");
 let root;
 let active;
 let allApps = [];
@@ -69,8 +70,6 @@ function render() {
 	renderSearch();
 	renderApps();
 	renderSearchSection();
-	renderNotFound();
-	//renderNewApp();
 	renderActions();
 
 	return Elements.StartMenu;
@@ -238,13 +237,13 @@ function renderSearch() {
 			"label": "Restart",
 			"icon": "restart",
 			click() {
-				require("child-process").exec("systemctl reboot");
+				require("child-process").exec("reboot");
 			}
 		}, {
 			"label": "Shut down",
 			"icon": "power",
 			click() {
-				if (!Shell.isDebug) require("child-process").exec("systemctl poweroff");
+				require("child-process").exec("poweroff");
 			}
 		}]).popup();
 	};
@@ -300,47 +299,6 @@ function renderSearch() {
 	new Tooltip(root.OffButton, {placement: "bottom"});
 }
 
-/*
-function renderNewApp() {
-	root.NewApp = document.createElement("section");
-	root.NewApp.className = "card very-rounded shadow justify-content-center align-items-center flex-grow-1" + (Shell.ui.darkMode ? " bg-dark" : "");
-	root.NewApp.style.display = "none";
-	root.NewApp.style.cssText = "--display: flex";
-	let icon = document.createElement("icon");
-	icon.className = "mdi mdi-shape-plus display-1 " + (Shell.ui.darkMode ? " text-white" : " text-secondary");
-	let header = document.createElement("p");
-	header.className = "mx-5 px-4 text-center" + (Shell.ui.darkMode ? " text-white" : " text-secondary");
-	header.innerHTML = "To install a new application, drag and drop '.wapp' archive here or select it from File Manager.";
-	root.NewApp.append(icon, header);
-	root.append(root.NewApp);
-}
-*/
-function renderNotFound() {
-
-	root.NotFound = document.createElement("section");
-	root.NotFound.className = "card very-rounded shadow justify-content-center align-items-center flex-grow-1" + (Shell.ui.darkMode ? " bg-dark text-white" : "");
-	root.NotFound.style.display = "none";
-	root.NotFound.style.cssText = "--display: flex";
-	let icon = document.createElement("icon");
-	icon.className = "mdi mdi-folder-remove-outline";
-	icon.style.cssText = `font-size: 96px;line-height: 96px;-webkit-text-stroke: 4px ${(Shell.ui.darkMode ? "var(--dark)" : "white")}`;
-	let title = document.createElement("h5");
-	title.className = "font-weight-normal";
-	title.innerText = '"" was not found';
-	let uselessinfo = document.createElement("p");
-	uselessinfo.className = "font-weight-normal";
-	uselessinfo.innerText = "There is no such application installed, but there may be one online.".toLocaleString();
-	uselessinfo.style.width = '80%';
-	let searchBtn = document.createElement("button");
-	searchBtn.className = "btn btn-outline-success";
-	searchBtn.innerText = "Search in Market".toLocaleString();
-	searchBtn.onclick = e => AppWindow.launch("official/market", {
-		q: root.Search.Input.value
-	});
-	root.NotFound.append(icon, title);
-	root.appendChild(root.NotFound)
-}
-
 function home() {
 	root.OffButton.classList.replace("mdi-apps", "mdi-plus");
 	showSection(root.Apps);
@@ -350,10 +308,20 @@ function home() {
 async function search() {
 	root.OffButton.classList.replace("mdi-apps", "mdi-plus");
 	let q = root.Search.Input.value.toLowerCase().trim();
-	root.NotFound.querySelector("h5").innerText = `"${q}" ${"was not found".toLocaleString()}`;
 	let res = [];
 	if (!q.trim()) {
 		showSection(root.Apps);
+		return;
+	}
+	if (q.startsWith("=")) {
+		showSection(root.SearchSection);
+		try {
+			let calc = mathjs.eval(q.substring(1));
+			if (!calc) calc = 0;
+			if (typeof calc !== "number") return;
+			root.SearchSection.innerHTML = `<div class='p-3'>Calculation result is:<h1>${calc}</h1></div>`;
+		} catch (e) {
+		}
 		return;
 	}
 	root.SearchSection.innerHTML = "";
@@ -371,9 +339,26 @@ async function search() {
 		} catch {
 		}
 	});
-	if (!res.length)
-		showSection(root.NotFound);
-	else {
+	res.sort(function (a, b) {
+		return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+	});
+	if (q.includes(".")) {
+		res.push({
+			name: `Visit "${q}"`,
+			appName: "Proton",
+			main: "proton",
+			icon: "earth",
+			app: path.join(osRoot, "apps", "official/proton", "visit.js")
+		});
+	}
+	res.push({
+		name: `Search "${q}"`,
+		appName: "Google",
+		main: "proton",
+		icon: "magnify",
+		app: path.join(osRoot, "apps", "official/proton", "search.js")
+	});
+	if (res.length) {
 		let items = [];
 		for (const i of res.keys()) {
 			const item = res[i];
@@ -389,6 +374,7 @@ async function search() {
 			elem.addEventListener("click", e => {
 				if (item.main) {
 					require(item.app/*path.join("@apps", item.app, item.main)*/);
+					delete require.cache[item.app];
 				} else AppWindow.launch(item.item);
 				Elements.StartMenu.close();
 			});
@@ -403,9 +389,6 @@ async function search() {
 			elem.append(elem.icon, elem.header, elem.additional);
 			items.push(elem);
 		}
-		items.sort(function (a, b) {
-			return a.header.innerText.toLowerCase().localeCompare(b.header.innerText.toLowerCase());
-		});
 		items[0].classList.add("active");
 		items[0].additional.classList.add("show");
 		root.SearchSection.append(...items);
@@ -415,10 +398,8 @@ async function search() {
 
 function showSection(elem) {
 	active = elem;
-	root.NotFound.style.display = "none";
 	root.SearchSection.style.display = "none";
 	root.Apps.style.display = "none";
-	//root.NewApp.style.display = "none";
 	elem.style.display = elem.style.getPropertyValue("--display");
 }
 

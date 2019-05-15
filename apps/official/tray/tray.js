@@ -91,6 +91,13 @@ window.addEventListener("keypress", e => {
 		window.__MetaKeyOverriden = true;
 		Elements.MenuBar.toggle();
 	}
+	if (e.metaKey && e.code === "KeyS") {
+		window.__MetaKeyOverriden = true;
+		Shell.openSettings();
+	}
+	if (e.metaKey && e.code === "KeyD") {
+		window.__MetaKeyOverriden = true;
+	}
 });
 require(__dirname + "/menu");
 return elems;

@@ -1,0 +1,1 @@
+require("@api/WindowManager").launch("official/proton", {url: Elements.StartMenu.Search.Input.value});

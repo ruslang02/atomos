@@ -100,7 +100,7 @@ nav.menu.menu = new Menu([{
 	icon: "home-outline",
 	visible: false,
 	click() {
-		console.log(newTab('proton://home'));
+		newTab('proton://home');
 	}
 }, {
 	label: "History",
@@ -249,14 +249,12 @@ function newTab(url = "https://www.startpage.com") {
 		});
 		tab.webview.addEventListener("new-window", e => {
 			e.preventDefault();
-			console.log(e);
 			if (["default", "foreground-tab", "background-tab", "new-window"].includes(
 				e.disposition))
 				newTab(e.url);
 		});
 		tab.webview.addEventListener("did-get-response-details", e => {
 			e.preventDefault();
-			console.log(e);
 		});
 		tab.webview.addEventListener("close", e => tab.close());
 		tab.webview.addEventListener("update-target-url", e => {
@@ -267,8 +265,8 @@ function newTab(url = "https://www.startpage.com") {
 				tab.navigate(url);
 				tab.loaded = true;
 				//tab.webview.getWebContents().setDevToolsWebContents(tab.devToolsWebview.getWebContents());
-				tab.webview.getWebContents().on("new-window", console.log);
-				tab.webview.getWebContents().on("did-get-response-details", console.log);
+				//tab.webview.getWebContents().on("new-window", console.log);
+				//tab.webview.getWebContents().on("did-get-response-details", console.log);
 			} else tab.update();
 		});
 		tab.webview.addEventListener("load-commit", e => {

@@ -464,7 +464,7 @@ class Shell {
 
     modal.dialog.className = "modal-dialog modal-dialog-centered";
     modal.content.className = "modal-content" + (Shell.ui.darkMode ? " bg-dark text-white" : " bg-light");
-    modal.apps.className = " py-2 m-3 rounded scrollable-y" + (Shell.ui.darkMode ? " bg-secondary border border-secondary text-white" : "bg-white shadow");
+		modal.apps.className = " py-2 m-3 rounded scrollable-y " + (Shell.ui.darkMode ? "bg-secondary border border-secondary text-white" : "bg-white shadow");
     modal.apps.style.maxHeight = "400px";
     modal.apps.style.minHeight = "200px";
     modal.header.className = "text-muted px-3 pt-3 ml-1";

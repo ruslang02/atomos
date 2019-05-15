@@ -98,10 +98,8 @@ async function execute() {
 		}).on('error', err => {
 			addMessage("<div class='text-danger'>" + err + "</div>");
 		}).on('exit', (code, signal) => {
-			console.log(code, oldValue.substring(0, spaceCheck).trim());
 			if (code === 127 && Shell.isAppInstalled(oldValue.substring(0, spaceCheck).trim())) {
 				noErr = true;
-				console.log(noErr);
 				AppWindow.launch(oldValue.substring(0, spaceCheck).trim(), oldValue.includes(" ") ? oldValue.substring(spaceCheck).trim() : {}, {
 					parent: win
 				}).then(win => {

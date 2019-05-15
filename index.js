@@ -2,11 +2,8 @@ const {
 	BrowserWindow,
 	app
 } = require('electron');
-const fs = require("fs");
 const path = require("path");
 let isDebug = global.isDebug = process.argv[2] && (process.argv[2].trim().toLowerCase() === "-d" || process.argv[1].includes("inspect-brk"));
-//let isMobile = global.isMobile = process.argv[2] && process.argv[2].trim().toLowerCase() === "--mobile";
-let isMobile = true;
 global.shutdown = {
 	confirmed: false
 };

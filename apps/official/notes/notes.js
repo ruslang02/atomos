@@ -47,7 +47,7 @@ header.refreshBtn.onclick = refreshNotes;
 header.container.append(header.text, header.refreshBtn, header.searchBtn);
 header.append(header.container);
 let noteContainer = document.createElement("main");
-noteContainer.className = "container p-3 flex-grow-1 scrollable-y d-flex flex-wrap align-items-start justify-content-start";
+noteContainer.className = "container p-3 flex-grow-1 scrollable-y d-flex flex-wrap align-content-start align-items-start justify-content-start";
 let newNote = new Button({
   icon: "plus",
   iconSize: CSS.px(36),

@@ -1,5 +1,6 @@
 const AppWindow = require("@api/WindowManager");
 const win = AppWindow.getCurrentWindow();
+win.ui.body.style.height = "auto";
 let header = document.createElement("div");
 header.className = "input-group mb-2 shadow-sm";
 let clear = document.createElement("button");

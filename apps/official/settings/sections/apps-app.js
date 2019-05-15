@@ -47,7 +47,6 @@ async function renderApp() {
 			defaultId: 1,
 			checkboxLabel: "Yes, uninstall this app"
 		}).then(([button, checkbox]) => {
-			console.log(button, checkbox);
 			if (button === "Proceed" && checkbox) {
 				delete_r(path.join(osRoot, "apps", window.__currentApp));
 				new Snackbar(`App "${header.appName.innerText}" was deleted`);

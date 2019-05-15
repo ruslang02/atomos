@@ -1,7 +1,4 @@
-const Shell = require("@api/Shell");
-const AppWindow = require("@api/WindowManager");
-const Menu = require(`@api/Menu`);
-const {Notification, Snackbar} = require("@api/Notification");
+const {Notification, Snackbar, Menu, AppWindow, Shell, Components: {Button}} = require("@api");
 const win = AppWindow.getCurrentWindow();
 const path = require("path");
 let saveState, cropper, file;
@@ -37,52 +34,54 @@ appButton.addEventListener("click", e => {
 	});
 });
 appButton.menu = new Menu([{
-		label: "New Window",
-		icon: "new-box",
-		accelerator: "Ctrl+N",
-		click() {
-			AppWindow.launch("official/brush");
-		}
-	}, {
-		type: "separator"
-	}, {
+	label: "New Window",
+	icon: "new-box",
+	accelerator: "Ctrl+N",
+	click() {
+		AppWindow.launch("official/brush");
+	}
+}, {
+	type: "separator"
+}, {
 	label: "Open".toLocaleString() + "...",
-		icon: "folder-outline",
-		accelerator: "Ctrl+O",
-		click() {
-			Shell.selectFile(Shell.ACTION_OPEN).then(file => {
-				loadFile(file);
+	icon: "folder-outline",
+	accelerator: "Ctrl+O",
+	click() {
+		Shell.selectFile(Shell.ACTION_OPEN).then(file => {
+			loadFile(file);
+		})
+	}
+}, {
+	type: "separator"
+}, {
+	label: "Save",
+	icon: "content-save",
+	accelerator: "Ctrl+S",
+	id: "save",
+	click() {
+		if (!file) appButton.menu.getMenuItemById("saveAs").click();
+		else cropper.getCroppedCanvas().toBlob(function (blob) {
+			toBuffer(blob, function (err, buffer) {
+				if (err) console.log("toBuffer failed" + err);
+				else
+					fs.writeFile(file, buffer, () => {
+						new Snackbar("Image was saved")
+					})
 			})
-		}
-	}, {
-		type: "separator"
-	}, {
-		label: "Save",
-		icon: "content-save",
-		accelerator: "Ctrl+S",
-		id: "save",
-		click() {
-			if (!file) appButton.menu.getMenuItemById("saveAs").click();
-			else cropper.getCroppedCanvas().toBlob(function (blob) {
-				toBuffer(blob, function (err, buffer) {
-					if (err) console.log("toBuffer failed" + err);
-					else
-						fs.writeFile(file, buffer, console.log)
-				})
-			})
-		}
-	}, {
+		})
+	}
+}, {
 	label: "Save As".toLocaleString() + "...",
-		icon: "content-save-settings",
-		accelerator: "Ctrl+Shift+S",
-		id: "saveAs",
-		click() {
-			Shell.selectFile(Shell.ACTION_SAVE).then(newFile => {
-				file = newFile;
-				appButton.menu.getMenuItemById("save").click();
-			})
-		}
-	}]);
+	icon: "content-save-settings",
+	accelerator: "Ctrl+Shift+S",
+	id: "saveAs",
+	click() {
+		Shell.selectFile(Shell.ACTION_SAVE).then(newFile => {
+			file = newFile;
+			appButton.menu.getMenuItemById("save").click();
+		})
+	}
+}]);
 win.ui.header.prepend(appButton);
 win.ui.header.classList.remove("border-bottom");
 let badge = document.createElement("div");
@@ -90,72 +89,60 @@ badge.className = "badge badge-primary mr-2";
 badge.innerText = "beta";
 win.ui.header.append(badge);
 
-function gen(icon) {
-	let btn = document.createElement("button");
-	btn.className = "btn btn-sm mdi " + (win.options.darkMode ? "btn-dark" : "btn-light") + " mr-2 d-flex shadow-sm align-items-center mdi-" + icon + " mdi-18px lh-18";
-	return btn;
-}
-
 let nav = document.createElement("nav");
-nav.className = "p-2 border-bottom d-flex";
+nav.className = "p-2 d-flex shadow";
+nav.style.zIndex = 1;
 nav.dataset.draggable = "true";
 win.ui.body.append(nav);
-nav.crop = gen("crop");
+nav.crop = new Button({
+	size: "sm",
+	icon: "crop",
+	shadow: true,
+	color: win.options.theme,
+	iconSize: 18,
+	addClasses: "mr-2"
+});
 nav.crop.addEventListener("click", e => {
 	nav.move.classList.replace("btn-primary", "btn-secondary");
 	nav.crop.classList.replace("btn-secondary", "btn-primary");
 	cropper.crop();
 	applyButtons.classList.remove("d-none");
 });
-nav.move = gen("image-outline");
+nav.move = new Button({
+	size: "sm",
+	icon: "",
+	shadow: true,
+	color: win.options.theme,
+	iconSize: 18,
+	addClasses: "mr-2"
+});
 nav.move.onclick = e => {
 	nav.crop.classList.replace("btn-primary", "btn-secondary");
 	nav.move.classList.replace("btn-secondary", "btn-primary");
 	cropper.clear();
 };
-nav.rotateLeft = gen("rotate-left");
-nav.rotateLeft.onclick = e => {
+nav.rotateLeft = new Button({
+	size: "sm",
+	icon: "rotate-left",
+	shadow: true,
+	color: win.options.theme,
+	iconSize: 18,
+	addClasses: "mr-2"
+});
+nav.rotateLeft.onclick = () => {
 	cropper.rotate(-90);
 	applyButtons.classList.remove("d-none");
 };
-nav.rotateRight = gen("rotate-right");
+nav.rotateRight = new Button({
+	size: "sm",
+	icon: "rotate-right",
+	shadow: true,
+	color: win.options.theme,
+	iconSize: 18
+});
 nav.rotateRight.onclick = e => {
 	cropper.rotate(90);
 	applyButtons.classList.remove("d-none");
-};
-nav.cropLandscape = gen("crop-landscape");
-nav.cropLandscape.onclick = e => {
-	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
-	nav.cropLandscape.classList.replace("btn-secondary", "btn-primary");
-	cropper.setAspectRatio(16 / 9);
-};
-nav.cropSquare = gen("crop-square");
-nav.cropSquare.onclick = e => {
-	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
-	nav.cropSquare.classList.replace("btn-secondary", "btn-primary");
-	cropper.setAspectRatio(1);
-};
-nav.cropFree = gen("crop-free");
-nav.cropFree.onclick = e => {
-	group3.children.forEach(e => e.classList.replace("btn-primary", "btn-secondary"));
-	nav.cropFree.classList.replace("btn-secondary", "btn-primary");
-	cropper.setAspectRatio(0);
-};
-nav.grid = gen("grid");
-nav.grid.onclick = e => {
-	guides = !guides;
-	this.classList.toggle("btn-primary");
-	this.classList.toggle("btn-secondary");
-	cropper.destroy();
-	initCropper();
-};
-nav.texture = gen("texture");
-nav.texture.onclick = e => {
-	this.classList.toggle("btn-primary");
-	this.classList.toggle("btn-secondary");
-	background = !background;
-	cropper.destroy();
-	initCropper();
 };
 applyButtons = document.createElement("div");
 applyButtons.className = "btn-group btn-group-sm ml-auto d-none";
@@ -164,6 +151,7 @@ applyButtons.cancel.onclick = e => {
 	cropper.destroy();
 	image.src = saveState;
 	initCropper();
+	applyButtons.classList.add("d-none");
 };
 applyButtons.cancel.className = "btn btn-danger mdi mdi-close mdi-18px lh-18 d-flex";
 applyButtons.apply = document.createElement("button");
@@ -177,7 +165,7 @@ applyButtons.apply.onclick = e => {
 	applyButtons.classList.add("d-none");
 };
 applyButtons.append(applyButtons.cancel, applyButtons.apply);
-nav.append(nav.crop, nav.move, nav.rotateLeft, nav.rotateRight, nav.cropLandscape, nav.cropFree, nav.cropSquare, nav.grid, nav.texture, applyButtons);
+nav.append(nav.crop, nav.move, nav.rotateLeft, nav.rotateRight, applyButtons);
 let cropperElem = document.createElement("main");
 let image = new Image();
 cropperElem.className = "flex-grow-1 d-flex text-truncate rounded-bottom bg-secondary";
@@ -198,9 +186,8 @@ function initCropper() {
 	cropper = new Cropper(image, {
 		autoCrop: false,
 		dragMode: "move",
-		aspectRatio: 16 / 9,
-		background: background,
-		guides: guides,
+		background: true,
+		guides: true,
 		cropstart: function (e) {
 			if (e.detail.action === "move") {
 				nav.crop.classList.replace("btn-primary", "btn-secondary");

@@ -13,7 +13,6 @@ class Button extends HTMLButtonElement {
 
   getDisconnected() {
     let html = this.outerHTML.replace('is="x-button"', '');
-    console.log(html);
     let template = document.createElement('template');
     template.innerHTML = html;
     return template.content.firstChild;
@@ -95,7 +94,6 @@ class Button extends HTMLButtonElement {
     const Shell = require("@api/Shell");
     this._options = this._options || {};
     if (this._options.visible === undefined) this._options.visible = true;
-    console.log(this._options);
     this.innerHTML = "";
     this._iconElement = document.createElement("icon");
     this._iconElement.className = "mdi";
@@ -126,12 +124,10 @@ class Button extends HTMLButtonElement {
     this.updateStyles();
   }
   connectedCallback() {
-    console.log("callback");
     if (this._initialTooltip)
       this.tooltip = this._initialTooltip;
   }
   disconnectedCallback() {
-    console.log("disconnect");
     if (this._tooltipProvider) this._tooltipProvider.hide();
   }
 

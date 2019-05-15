@@ -11,7 +11,6 @@
 	<div class="spinner-grow text-light" role="status" style="width:3rem; height: 3rem;"></div>
 </splash>!-->
 <script>
-	let enablePWDEntry = false;
 	Object.assign(window, require('bootstrap.native/dist/bootstrap-native-v4'));
 	const moduleAlias = require('module-alias');
 	const path = require("path");
@@ -20,17 +19,13 @@
 	moduleAlias.addAlias('@apps', osRoot + '/apps');
 	moduleAlias();
 	window.Elements = {};
-	let btntemp = document.createElement("section");
-	document.head.append(btntemp);
-	Elements.BTNTEMP = btntemp;
+	let _winoverlay = document.createElement("overlay");
+	_winoverlay.className = "position-fixed w-100 h-100 d-none";
+	_winoverlay.style.cssText = "top:0;left:0;z-index:1000;transition: background .2s ease;";
+	document.body.append(_winoverlay);
 	const AsyncFunction = Object.getPrototypeOf(async function () {
 	}).constructor;
-	if (enablePWDEntry)
-		require("./passworded-entry").validate().then(function () {
-			require("./desktop")
-		}); else {
-		require("./desktop")
-	}
+	require("./desktop");
 </script>
 </body>
 </html>

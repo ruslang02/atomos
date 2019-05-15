@@ -45,5 +45,24 @@ list.darkMode = newSmallListItem({
 		})
 	}
 });
-list.append(list.wallpaper, list.wm, /* list.generalLabel , */list.darkMode);
+
+let dScale = newSmallListItem({
+	label: "Display Scaling",
+	sublabel: "x" + require("electron").remote.getCurrentWebContents().getZoomFactor()
+});
+dScale.classList.remove("btn", "btn-white", "btn-dark", "align-items-center");
+dScale.classList.add("flex-column");
+dScale.notifRange = document.createElement("input");
+dScale.notifRange.type = "range";
+dScale.notifRange.className = "custom-range mt-2";
+dScale.notifRange.min = 0.5;
+dScale.notifRange.max = 2.0;
+dScale.notifRange.step = 0.25;
+dScale.notifRange.value = require("electron").remote.getCurrentWebContents().getZoomFactor();
+dScale.notifRange.onchange = () => {
+	require("electron").remote.getCurrentWebContents().setZoomFactor(parseFloat(dScale.notifRange.value));
+	dScale.querySelector("div.small").innerText = "x" + dScale.notifRange.value;
+};
+dScale.append(dScale.notifRange);
+list.append(list.wallpaper, list.wm, /* list.generalLabel , */list.darkMode, dScale);
 main.append(list);
