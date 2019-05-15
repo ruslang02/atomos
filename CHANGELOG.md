@@ -103,7 +103,7 @@
  - _aos-typewriter_ was added some notification interaction
  - End disk image Linux updated
 
-## 0.4 RTM
+## 0.4
  - API removal
  - New apps _boombox_, _angles_, _ash_, _brush_
  - Improved stability and fixed lots of bugs
