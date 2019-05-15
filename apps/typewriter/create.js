@@ -1,1 +1,0 @@
-AppWindow.launch("typewriter");

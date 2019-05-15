@@ -1,100 +1,162 @@
-const BSN = require('bootstrap.native/dist/bootstrap-native-v4');
-/*
-window.$ = window.jQuery = require("jquery");
-let jui = document.createElement("script");
-jui.src = "../node_modules/jquery-ui-dist/jquery-ui.min.js";
-document.body.append(jui);*/
+const {
+	ipcRenderer,
+	remote
+} = require("electron");
+let wc = remote.getCurrentWebContents();
+const Registry = require(`@api/Registry`);
+const {Snackbar, Notification} = require(`@api/Notification`);
+const fso = require("fs");
 const path = require("path");
-let Elements = {};
-let autoStartWorkers = [];
 const osRoot = path.join(__dirname, "..");
-
-const AsyncFunction = Object.getPrototypeOf(async function () {
-}).constructor;
-(async function () {
-	const {
-		remote
-	} = require("electron");
-	const fso = require("fs");
-	const fs = fso.promises;
-	const taskbarPath = path.join(osRoot, "apps/bar");
-	LoadCSS();
-	for (const api of await fs.readdir(__dirname + "/api"))
-		await new AsyncFunction(await fs.readFile(path.join(__dirname, "api", api)))();
-
-	for (const worker of (Registry.get("system.autostart") || [])) {
-		let work = new Worker(worker.src);
-		autoStartWorkers.push({
-			name: worker.name,
-			src: worker.src,
-			worker: work
-		})
-	}
-
-	new AsyncFunction('root', '__dirname', await fs.readFile(taskbarPath + "/bar.js", "utf-8"))
-	(document.body, taskbarPath);
-	let wFile = path.join(process.env.HOME, ".config", "wallpaper.jpg");
-	let time;
-	renderWall();
-	fso.watch(wFile, e => {
-		if (!time) time = setTimeout(renderWall, 1000);
+const fs = fso.promises;
+LoadCSS();
+let autoStartWorkers = [];
+let blockNW;
+ipcRenderer.on('new-window', (e, u) => {
+	const AppWindow = require(`@api/WindowManager`);
+	if (blockNW || u === "about:blank") return;
+	AppWindow.launch("official/proton", {
+		url: u
 	});
+	blockNW = true;
+	setTimeout(() => blockNW = false, 50);
+});
 
-	function renderWall() {
-		clearTimeout(time);
-		let registry = new Registry("system");
-		let settings = registry.get();
-		if (!fso.existsSync(wFile)) {
-			console.log(wFile);
-			fso.copyFileSync(path.join(osRoot, "resources", "wallpaper.jpg"), wFile);
+window.zoomFactor = 1;
+setInterval(() => {
+	wc.getZoomFactor(zoom => {
+		if (zoomFactor !== zoom) {
+			new Snackbar("Zoom Factor was changed to " + zoom);
+			window.zoomFactor = zoom
 		}
-		if (!Object.getOwnPropertyNames(settings.wallpaper || {}).length)
-			registry.set(Object.assign(settings, {
-				wallpaper: {
-					positioning: "scalencrop",
-					color: 'black'
-				}
-			}));
-		let wpSettings = settings.wallpaper;
-		let wpURL = "url('" + new URL("file://" + wFile).href + "?" + shell.uniqueId() + "')";
-		switch (wpSettings.positioning) {
-			case "scale":
-				document.body.style.background = `${wpSettings.color} ${wpURL} 100% 100% no-repeat`;
-				break;
-			case "scalencrop":
-				document.body.style.background = `${wpSettings.color} ${wpURL} center/cover no-repeat`;
-				break;
-			case "scalencontain":
-				document.body.style.background = `${wpSettings.color} ${wpURL} center/contain no-repeat`;
-				break;
-			case "center":
-				document.body.style.background = `${wpSettings.color} ${wpURL} no-repeat center`;
-				break;
-			case "tile":
-				document.body.style.background = `${wpSettings.color} ${wpURL}`;
-				break;
-		}
+	})
+}, 5000);
+
+for (const worker of (Registry.get("system.autostart") || [])) {
+	let work = new Worker(worker.src);
+	autoStartWorkers.push({
+		name: worker.name,
+		src: worker.src,
+		worker: work
+	})
+}
+renderLocale().then(() => {
+	require("@apps/official/container");
+	require("@apps/official/bar");
+});
+fso.watch(path.join(osRoot, "locales"), renderLocale);
+String.toLocaleString = function (name) {
+	if (typeof window.localeData === "object") for (const data of window.localeData) {
+		if (data[name])
+			return data[name];
 	}
+	return `${this}`;
+};
+String.prototype.toLocaleString = function () {
+	if (typeof window.localeData === "object") for (const data of window.localeData) {
+		if (data[this])
+			return data[this];
+	}
+	return `${this}`;
+};
+let wFile = path.join(process.env.HOME, ".config", "wallpaper.jpg");
+let time;
+renderWall();
+fso.watch(wFile, () => {
+	if (!time) time = setTimeout(renderWall, 1000);
+});
 
-	function LoadCSS() {
-		document.title = "AtomOS (Rendering...)";
-		let cssList = [
-			"node_modules/bootstrap/dist/css/bootstrap.min.css",
-			"node_modules/@mdi/font/css/materialdesignicons.min.css",
-			"node_modules/source-sans-pro/source-sans-pro.css",
-			//"node_modules/jquery-ui-dist/jquery-ui.min.css",
-			"front/desktop.css"
-		];
-		let promises = [];
-		cssList.forEach(function (item) {
-			promises.push(new Promise(resolve => {
-				let style = document.createElement("link");
-				style.rel = "stylesheet";
-				style.href = path.join(osRoot, item);
-				style.onload = resolve;
-				document.head.appendChild(style);
-			}));
+async function renderLocale() {
+	let locale = "en-US";
+	try {
+		let files = await fs.readdir(path.join(osRoot, "locales", locale));
+		for (let file of files) {
+			if (file === "default.json") continue;
+			file = path.join(osRoot, "locales", locale, file);
+			let localeFile = (await fs.readFile(file)).toString();
+			let localeData = JSON.parse(localeFile);
+			(window.localeData = window.localeData || []).push(localeData);
+		}
+	} catch {
+		if (locale !== "en-US") console.error("Locale", locale, "is not present");
+	}
+}
+
+function renderWall() {
+	clearTimeout(time);
+	let settings = Registry.get("system.wallpaper");
+	if (!fso.existsSync(wFile)) {
+		fso.copyFileSync(path.join(osRoot, "resources", "wallpaper.jpg"), wFile);
+	}
+	if (!settings)
+		Registry.set("system.wallpaper", settings = {
+			positioning: "scalencrop",
+			color: 'black'
 		});
-		return Promise.all(promises);
+	let wpURL = "url('" + new URL("file://" + wFile).href + "?" + require(`@api/Shell`).uniqueId() + "')";
+	switch (settings.positioning) {
+		case "scale":
+			document.body.style.background = `${settings.color} ${wpURL} 100% 100% no-repeat`;
+			break;
+		case "scalencrop":
+			document.body.style.background = `${settings.color} ${wpURL} center/cover no-repeat`;
+			break;
+		case "scalencontain":
+			document.body.style.background = `${settings.color} ${wpURL} center/contain no-repeat`;
+			break;
+		case "center":
+			document.body.style.background = `${settings.color} ${wpURL} no-repeat center`;
+			break;
+		case "tile":
+			document.body.style.background = `${settings.color} ${wpURL}`;
+			break;
 	}
-})().then(e => document.title = "AtomOS (Render complete)");
+}
+
+function LoadCSS() {
+	document.title = "AtomOS (Rendering...)";
+	let cssList = [
+		"front/desktop-pre.css",
+		"node_modules/bootstrap/dist/css/bootstrap.min.css",
+		"node_modules/@mdi/font/css/materialdesignicons.min.css",
+		"node_modules/source-sans-pro/source-sans-pro.css",
+		"front/desktop.css"
+	];
+	let promises = [];
+	cssList.forEach(function (item) {
+		promises.push(new Promise(resolve => {
+			let style = document.createElement("link");
+			style.rel = "stylesheet";
+			style.href = path.join(osRoot, item);
+			style.onload = resolve;
+			document.head.appendChild(style);
+		}));
+	});
+	return Promise.all(promises);
+}
+
+document.title = "AtomOS (Render complete)";
+if (Registry.get("system.enableSimpleEffects") === true)
+	document.body.classList.add("simple");
+if (Registry.get("system.disableAnimations") === true)
+	document.body.classList.add("noAnim");
+if (Registry.get("system.enableBlur") === true)
+	document.body.classList.add("blur");
+
+Registry.watch("system", (key, value) => {
+	switch (key) {
+		case "system.enableBlur":
+			document.body.classList.toggle("blur", value);
+			break;
+		case "system.disableAnimations":
+			document.body.classList.toggle("noAnim", value);
+			break;
+		case "system.enableSimpleEffects":
+			document.body.classList.toggle("simple", value);
+			break;
+	}
+});
+
+require(`@api/EditMenu`);
+require(`@api/Shortcuts`);
+require(`@api/Components`);

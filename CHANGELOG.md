@@ -1,4 +1,19 @@
 # Changelog
+
+## 0.8.0
+ - New UI design, macOS-styled apps and windows
+ - defaultFontSize changed from 16 to 14 pixels
+ - Apps _brush_, _angles_, _calendar_, _playmusic_, _youtube_, _calculator_
+ - Performance enhancements
+ - Bugfixes
+ - Removal of InteractJS libraries, integrated window manager
+ - Dark Mode improved
+ - Wi-Fi support, airplane mode
+ - Heavily enhanced Quick Search
+ - HiDPI display support
+ - Advanced PC information
+ - Optimizations for Electron v5, v6
+ 
 ## 0.7.1
  - Bugfixes, patches
  - Removal of all Icons8 files

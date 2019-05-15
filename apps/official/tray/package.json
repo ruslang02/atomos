@@ -1,0 +1,23 @@
+{
+	"name": "@atomos/tray",
+	"productName": "Tray Bar Widget",
+	"version": "1.0.0",
+	"author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+	"license": "GPL-3.0",
+	"homepage": "http://apps.atomos.org.uk/package/tray",
+	"icon": "clock-outline",
+	"color": "#4527a0",
+	"main": "tray.js",
+	"type": "bar-plugin",
+	"removable": "false",
+	"dependencies": {
+		"atomos": "~0.8.0"
+	},
+	"actions": [
+		{
+			"name": "Mute notifications",
+			"main": "actions/mute.js",
+			"icon": "bell-off"
+		}
+	]
+}

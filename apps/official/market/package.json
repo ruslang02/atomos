@@ -1,0 +1,21 @@
+{
+	"title": "Application Manager",
+	"productName": "Market",
+	"name": "@atomos/market",
+	"type": "app",
+	"version": "1.0.0",
+	"description": "Download other available applications for AtomOS",
+	"icon": "cart",
+	"color": "linear-gradient(135deg, #0288d1, #00bcd4)",
+	"width": 600,
+	"height": 500,
+	"minHeight": 400,
+	"minWidth": 530,
+	"removable": "false",
+	"main": "market.js",
+	"dependencies": {
+		"atomos": "~0.8.0",
+		"gitlab": "~4.3.0"
+	},
+	"hidden": true
+}

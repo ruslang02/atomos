@@ -1,0 +1,20 @@
+{
+	"title": "Notes",
+	"productName": "Notes",
+	"name": "@atomos/notes",
+	"type": "app",
+	"version": "1.0.0",
+	"homepage": "http://apps.atomos.org.uk/package/notes",
+	"description": "Simple notes app",
+	"icon": "card-text-outline",
+	"color": "#d32f2f",
+	"width": 700,
+	"height": 650,
+	"minHeight": 500,
+	"minWidth": 500,
+	"hidden": true,
+	"main": "notes.js",
+	"dependencies": {
+		"atomos": "~0.8.0"
+	}
+}

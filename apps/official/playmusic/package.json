@@ -1,0 +1,22 @@
+{
+	"title": "Google Play Music",
+	"productName": "Play Music",
+	"name": "@atomos/playmusic",
+	"author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+	"license": "GPL-3.0",
+	"version": "1.0.0",
+	"homepage": "http://apps.atomos.org.uk/package/playmusic",
+	"icon": "play-circle-outline",
+	"color": "radial-gradient(#ff8f00 35%, #e65100 35%)",
+	"main": "main.js",
+	"description": "Online music streaming",
+	"dependencies": {
+		"atomos": "~0.8.0"
+	},
+	"show": false,
+	"width": 850,
+	"height": 600,
+	"minWidth": 750,
+	"minHeight": 500,
+	"type": "app"
+}

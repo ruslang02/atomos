@@ -1,0 +1,21 @@
+{
+	"title": "Calculator",
+	"productName": "Calculator",
+	"name": "@atomos/calculator",
+	"type": "app",
+	"version": "1.0.0",
+	"homepage": "http://apps.atomos.org.uk/package/calculator",
+	"description": "Do simple maths",
+	"icon": "calculator-variant",
+	"color": "linear-gradient(to bottom, #a0a0a0 0%,#6d6d6d 50%,#ff7c00 51%,#ff7f04 100%)",
+	"main": "calculator.js",
+	"maximizable": false,
+	"minWidth": 180,
+	"maxWidth": 380,
+	"width": 255,
+	"height": 300,
+	"show": true,
+	"dependencies": {
+		"atomos": "~0.8.0"
+	}
+}

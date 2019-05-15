@@ -1,0 +1,47 @@
+{
+	"title": "Files",
+	"productName": "Files",
+	"name": "@atomos/files",
+	"type": "app",
+	"version": "1.0.0",
+	"description": "Lightweight File Manager",
+	"icon": "folder",
+	"color": "darkorange",
+	"width": 600,
+	"height": 500,
+	"minHeight": 400,
+	"minWidth": 450,
+	"show": false,
+	"showOnLoad": false,
+	"main": "files.js",
+	"dependencies": {
+		"atomos": "~0.8.0"
+	},
+	"actions": [
+		{
+			"name": "Home Folder",
+			"main": "actions/openHome.js",
+			"icon": "home-outline"
+		},
+		{
+			"name": "Documents Folder",
+			"icon": "file-document-box-outline",
+			"main": "actions/openDocs.js"
+		},
+		{
+			"name": "Music Folder",
+			"icon": "music-box-outline",
+			"main": "actions/openMusic.js"
+		},
+		{
+			"name": "Pictures Folder",
+			"icon": "image-outline",
+			"main": "actions/openPictures.js"
+		},
+		{
+			"name": "Videos Folder",
+			"icon": "play-box-outline",
+			"main": "actions/openVideos.js"
+		}
+	]
+}
