@@ -6,7 +6,7 @@
 Latest version: 0.8. [Download](https://github.com/ruslang02/atomos/releases).
 
 Fully web-based X11 Desktop Environment on Linux, working in Electron.
-Contains web-based applications with absolute Node.JS access.
+Contains web-based applications with full Node.JS and Electron access. All latest JS technologies are used.
 There is also an operating system available based on this.
 
 ## Installation (for Linux)
@@ -34,4 +34,5 @@ lightdm-webkit theme: https://github.com/ruslang02/atomos-lightdm-webkit-theme
 Changelog is available [here](https://github.com/ruslang02/atomos/blob/master/CHANGELOG.md).
 
 ## Hacking
-You can edit your desktop envionment in real-time, adding features and modifying the look and feel.
+You can open Developer Tools in debug menu or by right-clicking Menu button.
+All apps and elements are being generated with VanillaJS.
