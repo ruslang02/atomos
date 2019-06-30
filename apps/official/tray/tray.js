@@ -6,7 +6,10 @@ let elems = {
 	Container: document.createElement("button"),
 	NIcons: document.createElement("section"),
 	Clock: document.createElement("clock"),
-	Date: document.createElement("date")
+	Date: document.createElement("date"),
+	updatePosition() {
+		Elements.MenuBar.updatePosition();
+	}
 };
 
 function updateTime() {

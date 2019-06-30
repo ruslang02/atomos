@@ -6,6 +6,7 @@ const AppWindow = require("@api/WindowManager");
 const Menu = require(`@api/Menu`);
 const appPath = path.join(osRoot, "apps");
 const mathjs = require("mathjs");
+const {Registry} = require("@api");
 let root;
 let active;
 let allApps = [];
@@ -54,18 +55,15 @@ function render() {
 		Elements.StartMenu.close();
 	});
 
-	function updatePosition() {
+	Elements.StartMenu.updatePosition = () => {
 		Elements.StartMenu.style.bottom = Elements.Bar.offsetHeight + "px";
-		Elements.StartMenu.style.left = root.clientLeft + "px";
+		Elements.StartMenu.style.left = Elements.Bar.offsetLeft + "px";
 	}
 
 	Elements.StartMenu.style.zIndex = 990;
 	body.appendChild(Elements.StartMenu);
 
-	updatePosition();
-	if (!Shell.isMobile) {
-		new ResizeObserver(updatePosition).observe(Elements.Bar);
-	}
+	Elements.StartMenu.updatePosition();
 
 	renderSearch();
 	renderApps();
@@ -110,8 +108,13 @@ async function renderApps() {
 		root.appendChild(root.Apps);
 	}
 
-	async function scanApps(dir) {
+	async function scanApps(dir = appPath) {
+		if (dir === appPath) {
+			allApps = [];
+			root.Apps.innerHTML = "";
+		}
 		let dirs = await fs.readdir(dir);
+		const showHidden = Registry.get("system.showAllApps") === true;
 		for (const item of dirs) {
 			let itemPath = path.join(dir, item);
 			let stat = await fs.lstat(itemPath);
@@ -128,7 +131,7 @@ async function renderApps() {
 			try {
 				let json = await fs.readFile(itemPath);
 				let config = JSON.parse(json.toString());
-				if (config.hidden || config.type !== "app")
+				if ((config.hidden && !showHidden) || config.type !== "app")
 					continue;
 				let appID = config.name.replace("@atomos", "official").replace("@", "");
 				appEntry.addEventListener("contextmenu", e => {
@@ -176,6 +179,7 @@ async function renderApps() {
 		}
 	}
 
+	Elements.StartMenu.scanApps = scanApps;
 	await scanApps(appPath);
 
 }

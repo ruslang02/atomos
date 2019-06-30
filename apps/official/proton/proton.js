@@ -300,7 +300,7 @@ function newTab(url = "https://www.startpage.com") {
 		if (tabs.active) tabs.active.deactivate();
 		tab.classList.add(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-none", "d-flex");
-		tab.webview.classList.replace("d-none", "d-inline-flex");
+		tab.section.classList.replace("d-none", "d-flex");
 		tabs.active = tab;
 		tab.update();
 	};
@@ -323,8 +323,7 @@ function newTab(url = "https://www.startpage.com") {
 	tab.deactivate = function () {
 		tab.classList.remove(isDarkMode ? "bg-dark" : "bg-white", "shadow-sm");
 		tab.closeButton.classList.replace("d-flex", "d-none");
-		tab.webview.classList.replace("d-inline-flex", "d-none");
-
+		tab.section.classList.replace("d-flex", "d-none");
 	};
 	tab.navigate = function (url) {
 		try {

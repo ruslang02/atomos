@@ -14,6 +14,7 @@ el.textarea.style.resize = "none";
 el.textarea.autofocus = true;
 el.textarea.style.outline = 0;
 win.ui.body.appendChild(el.textarea);
+win.ui.title.classList.add("text-truncate", "px-2");
 let nav = document.createElement("nav");
 nav.className = "d-flex";
 nav.openFile = document.createElement("button");

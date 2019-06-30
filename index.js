@@ -3,10 +3,11 @@ const {
 	app
 } = require('electron');
 const path = require("path");
-let isDebug = global.isDebug = process.argv[2] && (process.argv[2].trim().toLowerCase() === "-d" || process.argv[1].includes("inspect-brk"));
+let isDebug = !!(process.argv[2] && (process.argv[2].trim().toLowerCase() === "-d" || process.argv[1].includes("inspect-brk")));
 global.shutdown = {
 	confirmed: false
 };
+global.isDebug = isDebug;
 let win;
 app.on('ready', function() {
 	const {
@@ -23,7 +24,8 @@ app.on('ready', function() {
 		minimizable: isDebug,
 		maximizable: isDebug,
 		closable: isDebug,
-		fullscreen: !isDebug,
+		fullscreen: false,
+		fullscreenable: false,
 		show: true,
 		title: 'AtomOS (Launching...)',
 		x: isDebug ? 100 : x,
@@ -43,7 +45,8 @@ app.on('ready', function() {
 	win.maximize();
 	win.loadFile(path.join(__dirname, "front/desktop.html"));
 	if (win.removeMenu) win.removeMenu(); else win.setMenu(null);
-	if (isDebug) win.toggleDevTools();
+	/*if (isDebug)*/
+	win.toggleDevTools();
 	if (isDebug) win.webContents.on('devtools-opened', () => {
 		win.webContents.addWorkSpace(__dirname)
 	});

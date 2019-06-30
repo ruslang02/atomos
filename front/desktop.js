@@ -1,10 +1,7 @@
 const {
-	ipcRenderer,
-	remote
+	ipcRenderer
 } = require("electron");
-let wc = remote.getCurrentWebContents();
 const Registry = require(`@api/Registry`);
-const {Snackbar, Notification} = require(`@api/Notification`);
 const fso = require("fs");
 const path = require("path");
 const osRoot = path.join(__dirname, "..");
@@ -23,14 +20,7 @@ ipcRenderer.on('new-window', (e, u) => {
 });
 
 window.zoomFactor = 1;
-setInterval(() => {
-	wc.getZoomFactor(zoom => {
-		if (zoomFactor !== zoom) {
-			new Snackbar("Zoom Factor was changed to " + zoom);
-			window.zoomFactor = zoom
-		}
-	})
-}, 5000);
+setInterval(window.relocate, 5000);
 
 for (const worker of (Registry.get("system.autostart") || [])) {
 	let work = new Worker(worker.src);
@@ -43,6 +33,7 @@ for (const worker of (Registry.get("system.autostart") || [])) {
 renderLocale().then(() => {
 	require("@apps/official/container");
 	require("@apps/official/bar");
+	require(`./screen`);
 });
 fso.watch(path.join(osRoot, "locales"), renderLocale);
 String.toLocaleString = function (name) {

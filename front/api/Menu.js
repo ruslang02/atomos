@@ -2,6 +2,8 @@ const EventEmitter = require("events");
 const Registry = require(`@api/Registry`);
 const Shell = require(`@api/Shell`);
 const AppWindow = require(`@api/WindowManager`);
+
+const {remote: {screen}} = require("electron");
 const defaultOptions = {
 	click: undefined,
 	role: undefined,
@@ -219,10 +221,13 @@ class Menu extends EventEmitter {
 			returnValue: true
 		};
 		this.emit('menu-will-show', event);
+		console.log(this);
 		if (event.returnValue) {
 			document.body.appendChild(this.menu);
-			if (options.x + this.menu.offsetWidth > window.innerWidth) options.x = window.innerWidth - this.menu.offsetWidth;
-			if (options.y + this.menu.offsetHeight > window.innerHeight) options.y = options.y - this.menu.offsetHeight;
+			for (const disp of screen.getAllDisplays()) {
+				if (options.x + this.menu.offsetWidth > (disp.bounds.x + disp.bounds.width) / zoomFactor && options.x < (disp.bounds.x + disp.bounds.width) / zoomFactor) options.x = (disp.bounds.x + disp.bounds.width) / zoomFactor - this.menu.offsetWidth;
+				if (options.y + this.menu.offsetHeight > (disp.bounds.y + disp.bounds.height) / zoomFactor && options.y < (disp.bounds.y + disp.bounds.height) / zoomFactor) options.y = options.y - this.menu.offsetHeight;
+			}
 
 			this.menu.style.top = options.y + "px";
 			this.menu.style.left = options.x + "px";

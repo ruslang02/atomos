@@ -419,5 +419,12 @@ async function login() {
 	modal.append(modal.dialog);
 	document.body.append(modal);
 	modal.controller = new Modal(modal);
+
+	modal.addEventListener("show.bs.modal", () => {
+		modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+		modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+		modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+		modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+	});
 	modal.controller.show();
 }

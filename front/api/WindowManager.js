@@ -25,7 +25,8 @@ const
 		autoSize: false,
 		darkMode: false,
 		arguments: {}
-	};
+	},
+	{remote: {screen}} = require("electron");
 const Shell = require("@api/Shell");
 const Registry = require(`@api/Registry`);
 const {
@@ -408,7 +409,7 @@ class AppWindow extends EventEmitter {
 			this._fade.play();
 		}
 		this.moveTop();
-		if (this.isMaximized())
+		if (this.isMaximized() && this._maxDisp === screen.getPrimaryDisplay())
 			Elements.Bar.classList.add("maximized");
 	}
 
@@ -436,12 +437,43 @@ class AppWindow extends EventEmitter {
 		return this.ui.root.classList.contains("maximized");
 	}
 
+	_updateMainDisp() {
+		if (this.isMaximized()) return;
+		let maxArea = 0, target, styles = window.getComputedStyle(this.ui.root);
+		let bounds = this._bounds = {
+			x: parseInt(styles.left),
+			y: parseInt(styles.top),
+			width: parseInt(styles.width),
+			height: parseInt(styles.height)
+		};
+
+		for (const disp of screen.getAllDisplays()) {
+			let areaI = (Math.min((disp.bounds.x + disp.bounds.width) / zoomFactor, bounds.x + bounds.width) - Math.max(disp.bounds.x / zoomFactor, bounds.x)) *
+				(Math.min((disp.bounds.y + disp.bounds.height) / zoomFactor, bounds.y + bounds.height) - Math.max(disp.bounds.y / zoomFactor, bounds.y));
+
+			if (areaI > maxArea) {
+				maxArea = areaI;
+				target = disp
+			}
+		}
+
+		this.mainDisp = target;
+	}
+
 	maximize() {
 		if (this.fullscreen) this.setFullScreen(false);
 		this.show();
+		this._updateMainDisp();
+		let target = this.mainDisp;
 		if (!this.isMaximizable()) return;
+		if (target.id === screen.getPrimaryDisplay().id)
+			Elements.Bar.classList.add("maximized");
+		this.ui.root.style.left = CSS.px(target.bounds.x / zoomFactor);
+		this.ui.root.style.top = CSS.px(target.bounds.y / zoomFactor);
+		this.ui.root.style.width = CSS.px(target.bounds.width / zoomFactor);
+		this.ui.root.style.height = CSS.px(target.bounds.height / zoomFactor);
 		this.ui.root.classList.add("maximized");
-		Elements.Bar.classList.add("maximized");
+		this._maxDisp = target;
 		this.emit('maximize');
 	}
 
@@ -455,6 +487,10 @@ class AppWindow extends EventEmitter {
 	restore() {
 		this.show();
 		if (Shell.isMobile) return;
+		this.ui.root.style.left = CSS.px(this._bounds.x);
+		this.ui.root.style.top = CSS.px(this._bounds.y);
+		this.ui.root.style.width = CSS.px(this._bounds.width);
+		this.ui.root.style.height = CSS.px(this._bounds.height);
 		this.ui.root.classList.remove("maximized");
 		Elements.Bar.classList.remove("maximized");
 		this.emit('restore');
@@ -520,6 +556,7 @@ class AppWindow extends EventEmitter {
 		this.ui.root.style.width = width + "px";
 		this.ui.root.style.height = height + "px";
 		this.emit('resize');
+		this._updateMainDisp();
 	}
 
 	getSize() {
@@ -530,6 +567,7 @@ class AppWindow extends EventEmitter {
 		if (Shell.isMobile) return;
 		this.ui.root.style.width = width + this._offsets.left + this._offsets.right + "px";
 		this.ui.root.style.height = height + this._offsets.top + this._offsets.bottom + "px";
+		this._updateMainDisp();
 		if (emit) this.emit('resize');
 	}
 
@@ -617,10 +655,12 @@ class AppWindow extends EventEmitter {
 					ghost = null;
 				}
 				self.ui.root.style.visibility = "visible";
+				this._updateMainDisp();
 				_winoverlay.classList.add("d-none");
 			});
 			this.resizerTrigger = e => {
 				let elem = ghost || self.ui.root;
+				_winoverlay.style.background = "none";
 				if (!self.isResizing) return;
 				e.stopImmediatePropagation();
 				switch (self.isResizing) {
@@ -685,7 +725,7 @@ class AppWindow extends EventEmitter {
 			let prev = {
 					x: 0,
 					y: 0
-				},
+				}, preCords,
 				begin, isDragging = false,
 				cancel = false,
 				force = false;
@@ -716,20 +756,43 @@ class AppWindow extends EventEmitter {
 				}
 			};
 			self.mouseUpDrag = e => {
+				this._updateMainDisp();
+				if (ghost) {
+					if (!self.isMaximized()) {
+						self.ui.root.style.left = ghost.style.left;
+						self.ui.root.style.top = ghost.style.top;
+					}
+					ghost.remove();
+					ghost = null;
+				}
+				if (e.clientY < 10 && isDragging) {
+					self.maximize();
+					console.log(preCords);
+					self._bounds.x = preCords[0];
+					self._bounds.y = preCords[1];
+					console.log(self._bounds);
+				} else if (isDragging) {
+					for (const disp of screen.getAllDisplays()) {
+						if (e.clientX - disp.bounds.x / zoomFactor < 20 && e.clientX - disp.bounds.x / zoomFactor >= 0)
+							self.setBounds({
+								x: disp.bounds.x / zoomFactor,
+								y: disp.bounds.y / zoomFactor,
+								height: disp.bounds.height / zoomFactor,
+								width: disp.bounds.width / 2 / zoomFactor
+							});
+						else if ((disp.bounds.x + disp.bounds.width) / zoomFactor - e.clientX < 20 && (disp.bounds.x + disp.bounds.width) / zoomFactor - e.clientX >= 0)
+							self.setBounds({
+								x: (disp.bounds.x + (disp.bounds.width / 2)) / zoomFactor,
+								y: disp.bounds.y / zoomFactor,
+								height: disp.bounds.height / zoomFactor,
+								width: disp.bounds.width / 2 / zoomFactor
+							});
+					}
+				}
 				isDragging = false;
 				cancel = false;
 				force = false;
 				_winoverlay.classList.add("d-none");
-				if (ghost) {
-					self.ui.root.style.left = ghost.style.left;
-					self.ui.root.style.top = ghost.style.top;
-					ghost.remove();
-					ghost = null;
-				}
-				if (e.clientY < 10) {
-					self.maximize();
-					self.setPosition(prev.x, prev.y);
-				}
 				self.ui.root.style.visibility = "visible";
 				document.body.style.cursor = "default";
 			};
@@ -737,6 +800,7 @@ class AppWindow extends EventEmitter {
 			document.body.addEventListener("mousemove", self.drag);
 			self.ui.root.addEventListener("mousedown", e => {
 				self.show();
+				preCords = self.getPosition();
 				if (self.isResizing || self.isMaximized() || self.isFullScreen()) return;
 				begin = {
 					x: e.clientX,
@@ -810,6 +874,7 @@ class AppWindow extends EventEmitter {
 		if (Shell.isMobile) return;
 		this.ui.root.style.left = x + "px";
 		this.ui.root.style.top = y + "px";
+		this._updateMainDisp();
 	}
 
 	getPosition() {
@@ -820,6 +885,7 @@ class AppWindow extends EventEmitter {
 		if (Shell.isMobile) return;
 		this.ui.root.style.left = x + this._offsets.left + "px";
 		this.ui.root.style.top = y + this._offsets.top + "px";
+		this._updateMainDisp();
 	}
 
 	getContentPosition() {

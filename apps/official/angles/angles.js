@@ -221,6 +221,12 @@ function newTab(url) {
 
 async function renderPreferencesDialog() {
 	prefs = document.createElement("div");
+	prefs.addEventListener("show.bs.modal", () => {
+		prefs.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+		prefs.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+		prefs.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+		prefs.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+	});
 	prefs.id = "angles";
 	prefs.dialog = document.createElement("div");
 	prefs.content = document.createElement("form");

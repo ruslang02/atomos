@@ -317,6 +317,12 @@ class Shell {
 			modal.append(modal.dialog);
 			document.body.append(modal);
 			modal.controller = new Modal(modal);
+			modal.addEventListener("show.bs.modal", () => {
+				modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+				modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+				modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+				modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+			});
 			modal.controller.show();
 			password.focus();
 		});
@@ -407,6 +413,13 @@ class Shell {
 			modal.append(modal.dialog);
 			document.body.append(modal);
 			modal.controller = new Modal(modal);
+			modal.addEventListener("show.bs.modal", () => {
+				let win = AppWindow.getFocusedWindow();
+				modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+				modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+				modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+				modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+			});
 			modal.controller.show();
 			cancelButton.addEventListener("click", modal.controller.hide);
 			confirmButton.addEventListener("click", () => {
@@ -520,6 +533,13 @@ class Shell {
 		modal.append(modal.dialog);
 		document.body.append(modal);
 		let control = new Modal(modal);
+		modal.addEventListener("show.bs.modal", () => {
+			let win = AppWindow.getFocusedWindow();
+			modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+			modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+			modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+			modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+		});
 		modal.cancelButton.addEventListener("click", control.hide);
 		modal.selectButton.addEventListener("click", () => {
 			control.hide();
@@ -643,6 +663,13 @@ class Shell {
 			modal.dialog.append(modal.content);
 			modal.append(modal.dialog);
 			document.body.append(modal);
+			modal.addEventListener("show.bs.modal", () => {
+				let win = AppWindow.getFocusedWindow();
+				modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+				modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+				modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+				modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+			});
 			modal.controller = new Modal(modal, {
 				backdrop: options.backdrop
 			});

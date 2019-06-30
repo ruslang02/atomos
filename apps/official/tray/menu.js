@@ -17,10 +17,15 @@ Elements.MenuBar = document.createElement("aside");
 Elements.MenuBar.className = "position-fixed m-2 d-flex flex-column-reverse hide fly up";
 Elements.MenuBar.id = "official/tray";
 Elements.MenuBar.style.zIndex = "990";
-if (!Shell.isMobile) {
+
+Elements.MenuBar.updatePosition = () => {
+	let barStyle = window.getComputedStyle(Elements.Bar);
 	Elements.MenuBar.style.width = "350px";
-	Elements.MenuBar.style.bottom = "var(--taskbar-height)";
-	Elements.MenuBar.style.right = "0px";
+	Elements.MenuBar.style.bottom = `calc(${barStyle.bottom} + ${barStyle.height})`;
+	Elements.MenuBar.style.right = barStyle.right;
+}
+if (!Shell.isMobile) {
+	Elements.MenuBar.updatePosition();
 
 } else {
 	Elements.MenuBar.classList.add("w-100", "h-100");
@@ -83,7 +88,6 @@ Elements.MenuBar.close = function () {
 		}).onfinish = () => overlay.classList.add("d-none");
 	}
 };
-
 Elements.MenuBar.addEventListener("click", function (e) {
 	e.stopPropagation();
 });

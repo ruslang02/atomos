@@ -9,6 +9,16 @@ function initVK() { /* Initializes in the end not to hang the UI when loading */
 		language: "en",
 		debug: true
 	});
+	const implicitFlow = vk.auth.implicitFlowUser();
+
+	implicitFlow.run()
+		.then((response) => {
+			console.log('Token:', response.token);
+			console.log('Expires:', response.expires);
+
+			console.log('Email:', response.email);
+			console.log('User ID:', response.user);
+		});
 	auth = vk.auth;
 	win.show();
 }

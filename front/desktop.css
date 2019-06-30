@@ -182,14 +182,15 @@ body.dark > footer#taskbar {
 	/* background: rgba(37, 37, 37, 0.57); */
 }
 
-body > footer#taskbar.autoHide {
+body > footer#taskbar.autoHide,
+body > footer#taskbar.maximized {
 	clip-path: inset(calc(var(--taskbar-height) - 4px) 0 0 0);
 	bottom: 0;
 }
 
 body > footer#taskbar::before {
 	content: "";
-	position: fixed;
+	position: absolute;
 	bottom: 0;
 	left: 0;
 	width: 100%;
@@ -201,17 +202,11 @@ body > footer#taskbar::before {
 
 body > footer#taskbar.autoHide:hover,
 body > footer#taskbar.autoHide.show,
-body > footer#taskbar:not(.autoHide) {
-	/* clip-path: inset(0 0 0 0); */
+body > footer#taskbar.maximized:hover,
+body > footer#taskbar.maximized.show,
+body > footer#taskbar:not(.autoHide):not(.maximized) {
+	clip-path: inset(0 0 0 0);
 	/* backdrop-filter: blur(3px); */
-}
-
-body > footer#taskbar.maximized:not(.autoHide) {
-	background: rgb(230, 230, 230);
-}
-
-body.dark > footer#taskbar.maximized:not(.autoHide) {
-	background: var(--dark);
 }
 
 plugin[id="official/tasker"] > button.active::after {
@@ -274,11 +269,7 @@ body.blur window {
 	backdrop-filter: blur(10px);
 }
 window.maximized {
-	width: 100% !important;
 	border-radius: 0 !important;
-	top: 0 !important;
-	left: 0 !important;
-	height: calc(100% - var(--taskbar-hided)) !important;
 }
 
 window.maximized.bg-semiwhite {

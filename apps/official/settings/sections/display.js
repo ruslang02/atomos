@@ -62,6 +62,7 @@ dScale.notifRange.value = require("electron").remote.getCurrentWebContents().get
 dScale.notifRange.onchange = () => {
 	require("electron").remote.getCurrentWebContents().setZoomFactor(parseFloat(dScale.notifRange.value));
 	dScale.querySelector("div.small").innerText = "x" + dScale.notifRange.value;
+	window.relocate();
 };
 dScale.append(dScale.notifRange);
 list.append(list.wallpaper, list.wm, /* list.generalLabel , */list.darkMode, dScale);

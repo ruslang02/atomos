@@ -41,5 +41,14 @@ list.enableUltraFetch = newSmallListItem({
 		Registry.set("system.enableUltraFetch", checked);
 	}
 });
-list.append(list.windowProps, list.enableCaching, list.enableSuperFetch, list.enableUltraFetch);
+list.showAllApps = newSmallListItem({
+	label: "Show all apps",
+	sublabel: "Also show unfinished, WIP and dummy apps in Start drawer",
+	type: "checkbox",
+	checked: Registry.get("system.showAllApps"),
+	click(checked) {
+		Registry.set("system.showAllApps", checked);
+	}
+});
+list.append(list.windowProps, list.enableCaching, list.enableSuperFetch, list.enableUltraFetch, list.showAllApps);
 main.append(list);

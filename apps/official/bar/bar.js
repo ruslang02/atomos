@@ -23,9 +23,11 @@ function render() {
 		}, 1000);*/
 		//console.clear();
 	});
-	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto w-100 flex-shrink-0 position-absolute";
+	Elements.Bar.className = "px-2 pt-1 pb-2 d-flex flex-nowrap mt-auto flex-shrink-0 position-absolute";
 	Elements.Bar.transition = "bottom 1s ease";
+	Elements.Bar.style.top = "calc(var(--taskbar-y) - var(--taskbar-height))";
 	updatePosition();
+	window.addEventListener("resize", updatePosition);
 	new ResizeObserver(updatePosition).observe(Elements.Bar);
 	Elements.Bar.menu = new Menu([{
 		type: "checkbox",
@@ -47,10 +49,17 @@ function render() {
 }
 
 function updatePosition() {
+	console.log("update");
 	autoHide = Registry.get("taskbar.autoHide") || false;
 	Elements.Bar.classList.toggle("autoHide", autoHide);
 	document.body.style.setProperty("--taskbar-height", CSS.px(Elements.Bar.offsetHeight));
 	document.body.style.setProperty("--taskbar-hided", autoHide ? "0px" : CSS.px(Elements.Bar.offsetHeight));
+	for (const elem of Object.values(Elements.BarItems)) {
+		try {
+			setTimeout(elem.updatePosition, 100);
+		} catch {
+		}
+	}
 }
 
 async function loadPlugins() {

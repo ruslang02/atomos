@@ -1,4 +1,4 @@
-let fs = require('fs');
+const fs = require('fs');
 let google;
 let OAuth2Client;
 let youtubedl;
@@ -44,14 +44,13 @@ function authorize(credentials) {
 			});
 			postMessage({action: "log-in", url: authUrl});
 		} else {
-			oauth2Client.credentials = JSON.parse(token);
+			oauth2Client.credentials = JSON.parse(token.toString());
 			google.people('v1').people.get({
 				auth: oauth2Client,
 				resourceName: "people/me",
 				personFields: "names,photos"
 			}, (e, result) => {
 				if (e) {
-					console.error(e);
 					let authUrl = oauth2Client.generateAuthUrl({
 						access_type: 'offline',
 						scope: SCOPES

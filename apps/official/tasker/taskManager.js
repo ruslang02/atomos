@@ -78,8 +78,8 @@ class TaskManager {
 			e.stopPropagation();
 			_this.menu.renderMenu();
 			_this.menu.popup({
-				x: (_this.task.offsetLeft + _this.task.offsetWidth) / 2,
-				y: window.innerHeight - _this.task.offsetHeight - 16
+				x: Elements.Bar.offsetLeft + (_this.task.offsetLeft + _this.task.offsetWidth) / 2,
+				y: Elements.Bar.offsetTop
 			});
 			Elements.Bar.keepOpen(true);
 			_this.menu.once("menu-will-close", () => Elements.Bar.keepOpen(false));

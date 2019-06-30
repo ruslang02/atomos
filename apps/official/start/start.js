@@ -4,51 +4,83 @@ const Menu = require(`@api/Menu`);
 const Shell = require("@api/Shell");
 const AppWindow = require("@api/WindowManager");
 let menu = new Menu([{
-	label: "File Manager",
-	icon: "folder-outline",
-	click() {
-		AppWindow.launch("official/files");
-	}
-}, {
-	label: "Terminal",
-	icon: "console-line",
-	click() {
-		AppWindow.launch("official/terminal");
-	}
-}, {
-	label: "Settings",
-	icon: "settings-outline",
-	click() {
-		Shell.openSettings();
-	}
-},
-	{type: "separator"}, {
-		label: "Toggle Developer Tools",
-		icon: "developer-board",
-		shortLabel: "Dev Tools",
-		click: () => {
-			require("electron").remote.getCurrentWindow().toggleDevTools();
+		label: "Refresh app list",
+		icon: "refresh",
+		click() {
+			Elements.StartMenu.scanApps();
 		}
-	}, {
-		label: "Restart System UI",
-		icon: "restart",
-		shortLabel: "Reboot",
-		click: () => {
-			require("electron").remote.getCurrentWindow().reload();
+	}, {type: "separator"}, {
+		label: "File Manager",
+		icon: "folder-outline",
+		click() {
+			AppWindow.launch("official/files");
 		}
-	}, {
-		label: "Quit AtomOS",
-		icon: "exit-to-app",
-		shortLabel: "Quit",
-		click: () => {
-			window.close();
+	},
+		{
+			label: "Terminal",
+			icon:
+				"console-line",
+			click() {
+				AppWindow.launch("official/terminal");
+			}
 		}
-	}]);
+		,
+		{
+			label: "Settings",
+			icon:
+				"settings-outline",
+			click() {
+				Shell.openSettings();
+			}
+		}
+		,
+		{
+			type: "separator"
+		}
+		,
+		{
+			label: "Toggle Developer Tools",
+			icon:
+				"developer-board",
+			shortLabel:
+				"Dev Tools",
+			click:
+				() => {
+					require("electron").remote.getCurrentWindow().toggleDevTools();
+				}
+		}
+		,
+		{
+			label: "Restart System UI",
+			icon:
+				"restart",
+			shortLabel:
+				"Reboot",
+			click:
+				() => {
+					require("electron").remote.getCurrentWindow().reload();
+				}
+		}
+		,
+		{
+			label: "Quit AtomOS",
+			icon:
+				"exit-to-app",
+			shortLabel:
+				"Quit",
+			click:
+				() => {
+					window.close();
+				}
+		}
+	])
+;
 body.className = "d-flex align-items-center ml-2 mr-3";
 button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 shadow d-flex align-items-center justify-content-center text-white p-0 my-1 mdi-chevron-up";
 button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
 button.style.height = button.style.width = CSS.px(38);
 button.style.zIndex = 1;
+button.updatePosition = () => console.log(Elements.StartMenu.updatePosition());
 if (!Shell.isMobile) button.title = "All Apps";
 button.addEventListener("click", e => {
 	e.stopPropagation();

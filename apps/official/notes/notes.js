@@ -80,24 +80,30 @@ async function refreshNotes() {
 			card.header.innerText = file.split("\n")[0].substring(2).trim();
 			card.note.innerHTML = file.replace("# " + card.header.innerText + "\n", "") || "<i class='text-muted'>Empty note</i>";
 		});
-		fs.promises.stat(path.join(notesLocation, entry)).then(stat => {
-			let nowDate = new Date().getTime();
-			let text = new Date().toLocaleDateString("en-US", {
-				month: 'long',
-				day: 'numeric'
-			});
-			if (nowDate - 1000 * 60 < stat.mtimeMs)
-				text = Math.trunc((nowDate - stat.mtimeMs) / 1000) + " seconds ago";
-			else if (nowDate - 1000 * 60 * 60 < stat.mtimeMs)
-				text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 1000) + " minutes ago";
-			else if (nowDate - 1000 * 60 * 60 * 24 < stat.mtimeMs)
-				text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 60 / 1000) + " hours ago";
-			else if (nowDate - 1000 * 60 * 60 * 24 * 31 < stat.mtimeMs)
-				text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 60 / 24 / 1000) + " days ago";
-			card.actions.lastModified.innerText = text
-		});
+
 		let card = document.createElement("span");
-		card.onmouseenter = () => card.actions.classList.add("show");
+		card.updateTime = () => {
+			fs.promises.stat(path.join(notesLocation, entry)).then(stat => {
+				let nowDate = new Date().getTime();
+				let text = new Date().toLocaleDateString("en-US", {
+					month: 'long',
+					day: 'numeric'
+				});
+				if (nowDate - 1000 * 60 < stat.mtimeMs)
+					text = Math.trunc((nowDate - stat.mtimeMs) / 1000) + " seconds ago";
+				else if (nowDate - 1000 * 60 * 60 < stat.mtimeMs)
+					text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 1000) + " minutes ago";
+				else if (nowDate - 1000 * 60 * 60 * 24 < stat.mtimeMs)
+					text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 60 / 1000) + " hours ago";
+				else if (nowDate - 1000 * 60 * 60 * 24 * 31 < stat.mtimeMs)
+					text = Math.trunc((nowDate - stat.mtimeMs) / 60 / 60 / 24 / 1000) + " days ago";
+				card.actions.lastModified.innerText = text
+			});
+		};
+		card.onmouseenter = () => {
+			card.updateTime();
+			card.actions.classList.add("show");
+		};
 		card.onmouseleave = () => card.actions.classList.remove("show");
 		card.className = "very-rounded shadow card mb-3 d-inline-flex mr-3";
 		card.style.cssText = "min-width: 200px";

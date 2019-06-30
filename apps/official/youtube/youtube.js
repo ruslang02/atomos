@@ -1,20 +1,20 @@
-const {AppWindow, Shell, Components: {Spinner}} = require("@api");
+const {AppWindow, Shell, Components: {Spinner}, Registry} = require("@api");
 const Semver = require("semver");
 const win = AppWindow.getCurrentWindow();
 
-/*let ev = Semver(process.versions.electron);
-if(ev.major === 5 && ev.minor === 0 && ev.prerelease[0] === "beta") {
-	//win.close();
-	Shell.showMessageBox({
-		type: "error",
-		title: "Compatibility error",
-		message: `Electron 5 crashes when using YouTube API. Please consider downgrading Electron version to 4.`
-	});
-	//return;
-}*/
-
 const path = require("path");
 const Menu = require(`@api/Menu`);
+
+if (Registry.get("youtube.firstRun") === undefined)
+	Shell.showMessageBox({
+		type: "info",
+		title: "API keys are exposed",
+		message: `If you are experiencing problems with authentication into YouTube, you should consider getting your own ClientID and ClientSecret for this application to work. 
+<br/><br/>
+<a 	target='_blank' href='https://developers.google.com/youtube/v3/quickstart/nodejs' 
+		onclick='document.activeElement.parentElement.parentElement.parentElement.parentElement.parentElement.controller.hide()'>More info</a>`
+	});
+Registry.set("youtube.firstRun", true);
 
 let backend = new Worker(path.join(__dirname, "worker.js"));
 backend.onmessage = e => {
@@ -306,6 +306,12 @@ function openLogIn(url) {
 	modal.append(modal.dialog);
 	document.body.append(modal);
 	modal.controller = new Modal(modal);
+	modal.addEventListener("show.bs.modal", () => {
+		modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
+		modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
+		modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
+		modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
+	});
 	modal.controller.show();
 }
 

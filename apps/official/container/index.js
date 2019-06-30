@@ -1,4 +1,4 @@
-const {Menu, Registry} = require("@api");
+const {Menu, Registry, Shell} = require("@api");
 let container = document.createElement("main");
 container.className = "flex-grow-1";
 container.addEventListener("mousedown", () => {
@@ -6,7 +6,7 @@ container.addEventListener("mousedown", () => {
 	if (AppWindow.getFocusedWindow()) AppWindow.getFocusedWindow().blur();
 });
 container.addEventListener("contextmenu", () => {
-	let as = Registry.get("system.autostart")[0];
+	let as = (Registry.get("system.autostart") || [])[0];
 	new Menu([{
 		icon: "image-outline",
 		label: "Wallpapers",
