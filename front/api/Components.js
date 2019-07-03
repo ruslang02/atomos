@@ -105,7 +105,6 @@ class Button extends HTMLButtonElement {
 	_init() {
 		if (!this._ready) this._ready = true;
 		else return;
-		const Shell = require("@api/Shell");
 		this._options = this._options || {};
 		if (this._options.visible === undefined) this._options.visible = true;
 		this.innerHTML = "";
@@ -116,7 +115,7 @@ class Button extends HTMLButtonElement {
 		this.className = "btn d-inline-flex align-items-center justify-content-center " + (this.shadow ? "shadow-sm " : "") + (this._options.addClasses || "");
 		this.icon = this._options.icon || "";
 		this.innerText = this._options.text || "";
-		this.id = Shell.uniqueId();
+		this.id = window.uniqueId();
 		this._shadow = this._options.shadow || false;
 		this.iconSize = this._options.iconSize || CSS.px(18);
 		this._outline = this._options.outline || false;
@@ -269,3 +268,4 @@ module.exports = {
 	Button: Button,
 	Spinner: Spinner
 };
+

@@ -221,7 +221,6 @@ class Menu extends EventEmitter {
 			returnValue: true
 		};
 		this.emit('menu-will-show', event);
-		console.log(this);
 		if (event.returnValue) {
 			document.body.appendChild(this.menu);
 			for (const disp of screen.getAllDisplays()) {

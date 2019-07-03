@@ -1,7 +1,4 @@
-const Shell = require("@api/Shell");
-const AppWindow = require("@api/WindowManager");
-const Menu = require(`@api/Menu`);
-
+const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Shell = require("@api/Shell");
 let elems = {
 	Container: document.createElement("button"),
 	NIcons: document.createElement("section"),
@@ -26,7 +23,6 @@ function updateTime() {
 	});
 }
 
-updateTime();
 if (Shell.isMobile) {
 	body.className = "position-fixed w-100";
 	body.style.top = 0;

@@ -1,7 +1,9 @@
 const {
-	ipcRenderer
+	ipcRenderer,
+	remote: {getCurrentWindow}
 } = require("electron");
 const Registry = require(`@api/Registry`);
+if (Registry.get("system.openDevTools") === true) getCurrentWindow().openDevTools();
 const fso = require("fs");
 const path = require("path");
 const osRoot = path.join(__dirname, "..");

@@ -50,5 +50,13 @@ list.showAllApps = newSmallListItem({
 		Registry.set("system.showAllApps", checked);
 	}
 });
-list.append(list.windowProps, list.enableCaching, list.enableSuperFetch, list.enableUltraFetch, list.showAllApps);
+list.openDevTools = newSmallListItem({
+	label: "Open Developer Tools on start",
+	type: "checkbox",
+	checked: Registry.get("system.openDevTools"),
+	click(checked) {
+		Registry.set("system.openDevTools", checked);
+	}
+});
+list.append(list.windowProps, list.enableCaching, list.enableSuperFetch, list.enableUltraFetch, list.showAllApps, list.openDevTools);
 main.append(list);

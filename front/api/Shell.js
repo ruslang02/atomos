@@ -13,6 +13,15 @@ const path = require("path"),
 	proc = require("child_process");
 const Registry = require(`@api/Registry`);
 module.exports = class Shell2 {
+	static clearAPICache() {
+		if (!window._firstAppLoaded) return;
+		delete require.cache[require.resolve("@api/WindowManager")];
+		delete require.cache[require.resolve("@api/Notification")];
+		delete require.cache[require.resolve("@api/Menu")];
+		delete require.cache[require.resolve("@api/Shell")];
+		delete require.cache[require.resolve("@api/Registry")];
+		delete require.cache[require.resolve("@api")];
+	}
 	static get ui() {
 		return {
 			fadeAnimation: Registry.get("system.fadeAnimationDuration") || 150,
@@ -326,6 +335,14 @@ class Shell {
 			modal.controller.show();
 			password.focus();
 		});
+	}
+
+	static clearAPICache() {
+		if (!window._firstAppLoaded) return;
+		delete require.cache[require.resolve("@api/WindowManager")];
+		delete require.cache[require.resolve("@api/Notification")];
+		delete require.cache[require.resolve("@api/Menu")];
+		delete require.cache[require.resolve("@api/Shell")];
 	}
 
 	static createFile(baseDir, defaultTab) {
@@ -714,3 +731,4 @@ Object.defineProperty(Shell, "isDebug", {
 	value: require("electron").remote.getGlobal("isDebug")
 });
 if (Shell.ui.darkMode) document.body.classList.add("dark");
+window.uniqueId = Shell.uniqueId;

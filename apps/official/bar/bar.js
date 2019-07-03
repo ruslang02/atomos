@@ -1,6 +1,4 @@
-const Registry = require(`@api/Registry`);
-const Menu = require(`@api/Menu`);
-const path = require("path");
+const Menu = require("@api/Menu"), Registry = require("@api/Registry");
 const fs = require("fs").promises;
 if (!Registry.get("taskbar.items"))
 	Registry.set('taskbar.items', ["official/start", "official/tasker", "official/tray"]);
@@ -49,7 +47,6 @@ function render() {
 }
 
 function updatePosition() {
-	console.log("update");
 	autoHide = Registry.get("taskbar.autoHide") || false;
 	Elements.Bar.classList.toggle("autoHide", autoHide);
 	document.body.style.setProperty("--taskbar-height", CSS.px(Elements.Bar.offsetHeight));

@@ -1,16 +1,10 @@
 const fso = require("fs");
 const fs = fso.promises;
 const path = require("path");
-const Shell = require("@api/Shell");
-const AppWindow = require("@api/WindowManager");
-const Menu = require(`@api/Menu`);
-const appPath = path.join(osRoot, "apps");
-const mathjs = require("mathjs");
-const {Registry} = require("@api");
-let root;
-let active;
-let allApps = [];
-let allActions = [];
+const appPath = osRoot + "/apps";
+const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Registry = require("@api/Registry"),
+	Shell = require("@api/Shell");
+let root, active, allApps = [], allActions = [], mathjs;
 
 function render() {
 	Elements.StartMenu = document.createElement("startmenu");
@@ -73,7 +67,7 @@ function render() {
 	return Elements.StartMenu;
 }
 
-require("fs").watch(appPath, (a, b) => {
+fso.watch(appPath, () => {
 	renderApps();
 	renderActions();
 });
@@ -318,6 +312,7 @@ async function search() {
 		return;
 	}
 	if (q.startsWith("=")) {
+		if (!mathjs) mathjs = require("mathjs");
 		showSection(root.SearchSection);
 		try {
 			let calc = mathjs.eval(q.substring(1));

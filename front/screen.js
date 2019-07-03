@@ -1,16 +1,14 @@
-const {remote: {screen, getCurrentWindow, getCurrentWebContents}} = require("electron");
-const wc = getCurrentWebContents();
-const {Shell} = require("@api");
+const Shell = require("@api/Shell");
 if (Shell.isDebug)
 	window.relocate = function relocate() {
-		wc.getZoomFactor(zoom => {
-			if (window.zoomFactor !== zoom)
-				window.zoomFactor = zoom;
+		window.zoomFactor = 1.0;
 			document.body.style.setProperty("--taskbar-y", CSS.px(window.innerHeight));
 			Elements.Bar.style.left = CSS.px(0);
 			Elements.Bar.style.width = CSS.px(window.innerWidth);
-		})
-	}; else {
+	};
+else {
+	const {remote: {screen, getCurrentWindow, getCurrentWebContents}} = require("electron");
+	const wc = getCurrentWebContents();
 	window.relocate = function relocate() {
 		wc.getZoomFactor(zoom => {
 			if (window.zoomFactor !== zoom)

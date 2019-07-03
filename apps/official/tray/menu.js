@@ -1,16 +1,8 @@
 const fs = require('fs').promises;
 const path = require('path');
-const {
-	Shell,
-	Registry,
-	Components: {Button}
-} = require("@api");
+const {Button} = require("@api/Components"), Registry = require("@api/Registry"), Shell = require("@api/Shell");
 const cp = require("child_process");
-const wifi = require("node-wifi");
-wifi.init({
-	iface: null
-});
-let overlay;
+let overlay, wifi;
 if (!Elements)
 	window.Elements = [];
 Elements.MenuBar = document.createElement("aside");
@@ -98,10 +90,14 @@ renderBrightnessSettings();
 renderSoundSettings();
 document.body.appendChild(Elements.MenuBar);
 
-function renderQuickSection() {
+async function renderQuickSection() {
 	//TODO: Make more customizable
 
 	Elements.MenuBar.quickItems = document.createElement("section");
+	if (!Shell.isMobile)
+		Elements.MenuBar.appendChild(Elements.MenuBar.quickItems);
+	else
+		Elements.MenuBar.prepend(Elements.MenuBar.quickItems);
 	Elements.MenuBar.quickItems.className = "card very-rounded shadow flex-row p-3 fade show justify-content-around mt-2 flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
 	Elements.MenuBar.quickItems.items = [];
 	if (Shell.isMobile)
@@ -116,6 +112,12 @@ function renderQuickSection() {
 	});
 
 	function updateNetwork() {
+		if (!wifi) {
+			wifi = require("node-wifi");
+			wifi.init({
+				iface: null
+			});
+		}
 		cp.exec("nmcli device wifi", (_e, output) => {
 			if (!output.trim().split("\n")[1]) {
 				WiFi.visible = false;
@@ -160,13 +162,13 @@ function renderQuickSection() {
 	}
 
 	setInterval(updateNetwork, 1000);
-	let Screen = new Button({
+	/*let Screen = new Button({
 		tooltip: "Brightness",
 		color: "primary",
 		icon: "brightness-6",
 		addClasses: "p-2 rounded-circle",
 		iconSize: 24,
-	});
+	});*/
 	let DND = new Button({
 		tooltip: "Do Not Disturb",
 		color: "secondary",
@@ -211,11 +213,11 @@ function renderQuickSection() {
 		cp.exec("nmcli radio wifi " + (WiFi.classList.contains("btn-primary") ? "off" : "on"), updateNetwork);
 	};
 
-	Screen.oncontextmenu = e => {
+	/*Screen.oncontextmenu = e => {
 		e.stopPropagation();
 		Elements.MenuBar.brightnessSettings.classList.toggle("d-none");
 		Elements.MenuBar.brightnessSettings.classList.toggle("d-flex");
-	};
+	};*/
 	DND.onclick = () => {
 		window.NOTIFICATIONS_MUTED = !window.NOTIFICATIONS_MUTED;
 		DND.color = window.NOTIFICATIONS_MUTED ? "danger" : "secondary";
@@ -235,17 +237,12 @@ function renderQuickSection() {
 	Settings.onclick = () => Shell.openSettings();
 	Elements.MenuBar.quickItems.items = {
 		WiFi,
-		Screen,
 		DND,
 		Radio,
 		Sound,
 		Settings
 	};
 	Elements.MenuBar.quickItems.append(...Object.values(Elements.MenuBar.quickItems.items));
-	if (!Shell.isMobile)
-		Elements.MenuBar.appendChild(Elements.MenuBar.quickItems);
-	else
-		Elements.MenuBar.prepend(Elements.MenuBar.quickItems);
 }
 
 async function renderBrightnessSettings() {
@@ -277,7 +274,7 @@ async function renderBrightnessSettings() {
 		Elements.MenuBar.brightnessSettings.append(master);
 		Elements.MenuBar.insertBefore(Elements.MenuBar.brightnessSettings, Elements.MenuBar.notifications);
 	} catch (e) {
-		Elements.MenuBar.quickItems.items.Screen.remove();
+		//Elements.MenuBar.quickItems.items.Screen.remove();
 	}
 }
 

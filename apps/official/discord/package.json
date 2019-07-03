@@ -1,0 +1,16 @@
+{
+  "name": "@atomos/discord",
+  "productName": "Discord",
+  "version": "1.0.0",
+  "author": "Ruslan <ruslan.g2002@gmail.com> (https://vk.com/ruslan.g2002)",
+  "license": "GPL-3.0",
+  "homepage": "http://apps.atomos.org.uk/package/discord",
+  "icon": "discord",
+  "color": "#7289DA",
+  "main": "discord.js",
+  "type": "app",
+  "dependencies": {
+    "atomos": "~0.8.0"
+  },
+  "hidden": true
+}

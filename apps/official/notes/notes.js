@@ -1,20 +1,11 @@
 const {
-	AppWindow
+	AppWindow,
+	Components: {Button, Spinner},
+	Snackbar
 } = require("@api");
-const {
-	Button,
-	Spinner
-} = require("@api/Components");
-const {
-	remote: {
-		app: {
-			getPath
-		}
-	}
-} = require("electron");
 const path = require("path");
 const fs = require("fs");
-const notesLocation = path.join(getPath("userData"), "Notes");
+const notesLocation = path.join(process.env.HOME, "/.config/Notes");
 const win = AppWindow.getCurrentWindow();
 win.ui.root.classList.remove("bg-semiwhite");
 win.ui.title.classList.add("d-none");
@@ -36,6 +27,7 @@ header.searchBtn = new Button({
 	addClasses: "p-1 rounded-circle ml-2",
 	tooltip: "Search"
 });
+header.searchBtn.onclick = () => new Snackbar("sss", "bottom left");
 header.refreshBtn = new Button({
 	icon: "refresh",
 	iconSize: CSS.px(24),
@@ -105,7 +97,7 @@ async function refreshNotes() {
 			card.actions.classList.add("show");
 		};
 		card.onmouseleave = () => card.actions.classList.remove("show");
-		card.className = "very-rounded shadow card mb-3 d-inline-flex mr-3";
+		card.className = "rounded shadow-sm card mb-3 d-inline-flex mr-3";
 		card.style.cssText = "min-width: 200px";
 		card.header = document.createElement("h5");
 		card.header.className = "font-weight-bolder mx-3 mt-3";
@@ -117,11 +109,13 @@ async function refreshNotes() {
 		card.actions.delete.className = "mdi mdi-delete-outline btn btn-outline-danger border-0 p-1 lh-18 mdi-18px d-flex";
 		card.actions.delete.onclick = function () {
 			fs.rename(path.join(notesLocation, entry), path.join(notesLocation, "." + entry), console.log);
+			new Snackbar("Card was moved to Trash", "bottom left");
 		};
 		card.actions.edit = document.createElement("button");
 		card.actions.edit.className = "mdi mdi-pencil-outline btn btn-outline-warning border-0 p-1 lh-18 mdi-18px d-flex";
 		card.actions.edit.onclick = function () {
-			AppWindow.launch("@atomos/notes/edit", {file: path.join(notesLocation, entry)}, {modal: true});
+			let editWindow = AppWindow.launch("@atomos/notes/edit", {file: path.join(notesLocation, entry)}, {modal: true});
+			editWindow.on('close', refreshNotes);
 		};
 		card.actions.lastModified = document.createElement("div");
 		card.actions.lastModified.className = "text-muted flex-grow-1 text-truncate mr-auto smaller";

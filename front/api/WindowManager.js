@@ -115,11 +115,8 @@ class AppWindow extends EventEmitter {
 	}
 
 	static async launch(prog, args = {}, launchOptions = {}) {
-		// Okay... This is a veryyy dirty hack to create new instances of APIs...
-		delete require.cache[require.resolve("@api/WindowManager")];
-		delete require.cache[require.resolve("@api/Notification")];
-		delete require.cache[require.resolve("@api/Menu")];
-		delete require.cache[require.resolve("@api")];
+		window._firstAppLoaded = true;
+		Shell.clearAPICache();
 		let similar = windowCollection.find(e => {
 			return e ? e.app === prog : false;
 		});
@@ -142,8 +139,11 @@ class AppWindow extends EventEmitter {
 			darkMode: Registry.get("system.isDarkMode"),
 			theme: Registry.get("system.isDarkMode") ? "dark" : "light"
 		}, appOptions, launchOptions, {
-			arguments: args
+			arguments: args,
+			parent: AppWindow.getCurrentWindow(),
+			children: []
 		});
+
 
 		await fs.access(appRoot + "/" + options.main);
 		let win = new AppWindow(winID, prog);
@@ -151,6 +151,15 @@ class AppWindow extends EventEmitter {
 		win.arguments = win.options.arguments;
 		win._render();
 		if (win.options.show) win.show();
+		if (win.options.modal) {
+			win.options.parent.setEnabled(false);
+			win.on('closed', () => win.options.parent.setEnabled(true));
+		}
+		if (win.options.parent) win.options.parent.options.children.push(win);
+		win.on('closed', () => {
+			if (win.options.parent)
+				win.options.parent.options.children.splice(win.options.parent.options.children.indexOf(win), 1)
+		});
 		windowCollection[winID] = win;
 		win._paint();
 		win.file = path.join(osRoot, "apps", prog, options.main);
@@ -358,7 +367,9 @@ class AppWindow extends EventEmitter {
 
 	focus() {
 		let _this = this;
-		if (!this.isFocused()) {
+		if (this.ui.overlay && this.options.children)
+			for (const child of this.options.children) child.show();
+		else if (!this.isFocused()) {
 			this.flashFrame(false);
 			setTimeout(() => this.updateThumbnail(), 300);
 			windowCollection.forEach(win => {
@@ -408,7 +419,8 @@ class AppWindow extends EventEmitter {
 			this._fade.playbackRate = 1;
 			this._fade.play();
 		}
-		this.moveTop();
+		if (!(this.ui.overlay && this.options.children))
+			this.moveTop();
 		if (this.isMaximized() && this._maxDisp === screen.getPrimaryDisplay())
 			Elements.Bar.classList.add("maximized");
 	}
@@ -547,8 +559,15 @@ class AppWindow extends EventEmitter {
 		};
 	}
 
-	setEnabled(_enable) {
-		// TODO: What?
+	setEnabled(enable) {
+		if (!enable && !this.ui.overlay) {
+			this.ui.overlay = document.createElement("overlay");
+			this.ui.overlay.addEventListener("mousedown", e => e.stopPropagation())
+			this.ui.root.append(this.ui.overlay);
+		} else if (enable && this.ui.overlay) {
+			this.ui.overlay.remove();
+			this.ui.overlay = undefined;
+		}
 	}
 
 	setSize(width, height) {
@@ -765,13 +784,11 @@ class AppWindow extends EventEmitter {
 					ghost.remove();
 					ghost = null;
 				}
-				if (e.clientY < 10 && isDragging) {
+				if (e.clientY < 10 && isDragging && !self.isResizing && (!cancel || force)) {
 					self.maximize();
-					console.log(preCords);
 					self._bounds.x = preCords[0];
 					self._bounds.y = preCords[1];
-					console.log(self._bounds);
-				} else if (isDragging) {
+				} else if (isDragging && !self.isResizing && (!cancel || force)) {
 					for (const disp of screen.getAllDisplays()) {
 						if (e.clientX - disp.bounds.x / zoomFactor < 20 && e.clientX - disp.bounds.x / zoomFactor >= 0)
 							self.setBounds({

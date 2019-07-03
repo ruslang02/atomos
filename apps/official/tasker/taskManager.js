@@ -1,7 +1,5 @@
-const Shell = require(`@api/Shell`);
-const Registry = require(`@api/Registry`);
-const Menu = require("@api/Menu");
-const AppWindow = require("@api/WindowManager");
+const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Registry = require("@api/Registry"),
+	Shell = require("@api/Shell");
 let tasks = document.createElement("div");
 tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
 tasks.className = "w-100 position-fixed fade px-3 d-none";

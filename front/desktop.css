@@ -39,11 +39,11 @@ body.blur .modal:not(.noBlur) {
 
 @keyframes pulsate {
 	from {
-		box-shadow: 0 0 0 0 var(--danger);
+		box-shadow: 0 0 0 0 var(--warning);
 	}
 
 	to {
-		box-shadow: 0 0 30px 5px var(--danger);
+		box-shadow: 0 0 5px 5px var(--warning);
 	}
 }
 
@@ -170,7 +170,7 @@ body > footer#taskbar {
 	/* box-shadow: inset 0 -90px 40px -80px rgba(191, 191, 191, 0.75), inset 0 -40px 30px -30px rgba(0, 0, 0, 0.7); */
 	z-index: 990;
 	transition: all .25s ease;
-	bottom: 0;
+	/* bottom: 0; */
 }
 
 body.simple > footer#taskbar {
@@ -247,8 +247,8 @@ plugin[id="official/tasker"] > button:not(.active) {
 }
 
 .flash {
-	box-shadow: 0 0 30px 5px var(--danger);
-	animation: pulsate 1s ease-out infinite alternate !important;
+	box-shadow: 0 0 30px 5px var(--warning);
+	animation: pulsate .5s ease-out infinite alternate !important;
 }
 
 plugin[id="official/tasker"] > button, plugin[id="official/start"] > button {
@@ -270,6 +270,17 @@ body.blur window {
 }
 window.maximized {
 	border-radius: 0 !important;
+}
+
+window > overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: black;
+	opacity: 0.25;
+	border-radius: .5rem;
 }
 
 window.maximized.bg-semiwhite {

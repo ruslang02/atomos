@@ -13,10 +13,10 @@
 	"dependencies": {
 		"atomos": "~0.8.0"
 	},
-	"width": 600,
-	"height": 500,
+  "width": 750,
+  "height": 550,
 	"minWidth": 500,
-	"minHeight": 450,
+  "minHeight": 500,
 	"type": "app",
 	"hidden": true
 }

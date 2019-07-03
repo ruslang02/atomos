@@ -1,8 +1,8 @@
-const {Menu, Registry, Shell} = require("@api");
+const Menu = require("@api/Menu"), Registry = require("@api/Registry"), Shell = require("@api/Shell");
 let container = document.createElement("main");
 container.className = "flex-grow-1";
 container.addEventListener("mousedown", () => {
-	const AppWindow = require(`@api/WindowManager`);
+	const {AppWindow} = require(`@api`);
 	if (AppWindow.getFocusedWindow()) AppWindow.getFocusedWindow().blur();
 });
 container.addEventListener("contextmenu", () => {

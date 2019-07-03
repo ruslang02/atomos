@@ -1,8 +1,6 @@
 const fs = require("fs").promises;
 let button = document.createElement("button");
-const Menu = require(`@api/Menu`);
-const Shell = require("@api/Shell");
-const AppWindow = require("@api/WindowManager");
+const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Shell = require("@api/Shell");
 let menu = new Menu([{
 		label: "Refresh app list",
 		icon: "refresh",
@@ -80,7 +78,7 @@ button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 shadow d-flex al
 button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
 button.style.height = button.style.width = CSS.px(38);
 button.style.zIndex = 1;
-button.updatePosition = () => console.log(Elements.StartMenu.updatePosition());
+button.updatePosition = () => Elements.StartMenu.updatePosition();
 if (!Shell.isMobile) button.title = "All Apps";
 button.addEventListener("click", e => {
 	e.stopPropagation();

@@ -31,21 +31,6 @@ if (!Registry.get("files.accessList")) {
 	Registry.set("files", JSON.parse(defaultFile));
 }
 win.ui.body.classList.add("position-relative");
-win.task.menu.insert(-2, {
-	label: "Edit location",
-	icon: "pencil",
-	click() {
-
-		nav.pathField.dispatchEvent(new MouseEvent('dblclick', {
-			'view': window,
-			'bubbles': true,
-			'cancelable': true
-		}));
-	}
-});
-win.task.menu.insert(-1, {
-	type: "separator"
-});
 let settings = new Proxy(Registry.get("files"), {
 	set(t, p, v) {
 		t[p] = v;
@@ -83,7 +68,21 @@ function init() {
 	renderStatusbar();
 
 	navigate(win.arguments.file || process.env.HOME).finally(() => win.show());
-	renderMainMenu();
+	win.task.menu.insert(-2, {
+		label: "Edit location",
+		icon: "pencil",
+		click() {
+
+			nav.pathField.dispatchEvent(new MouseEvent('dblclick', {
+				'view': window,
+				'bubbles': true,
+				'cancelable': true
+			}));
+		}
+	});
+	win.task.menu.insert(-1, {
+		type: "separator"
+	});
 }
 
 async function navigate(url) {
@@ -204,10 +203,10 @@ async function navigate(url) {
 			main.childNodes.forEach(item => item.classList.remove("active"));
 			item.classList.add("active");
 			activeItem = item;
-			renderFileMenu();
 		});
 		item.addEventListener('contextmenu', e => {
 			e.stopPropagation();
+			if (!fileMenu) renderFileMenu();
 			fileMenu.popup();
 		});
 		item.addEventListener('dragstart', function (e) {

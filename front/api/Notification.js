@@ -14,6 +14,7 @@ class Snackbar {
 		};
 		let self = this;
 		let timeout = options.timeout || (options.message.length > 20 ? options.message.length * 150 : 3000);
+		let currentWindow = AppWindow.getCurrentWindow();
 		options.position = options.position || position || "bottom right";
 		this.ui = document.createElement("snackbar");
 		this.ui.style.minWidth = CSS.px(300);
@@ -31,17 +32,8 @@ class Snackbar {
 			this.ui.button.onclick = options.click || console.log;
 			this.ui.append(this.ui.button);
 		} else this.ui.message.classList.replace("my-1", "py-2");
-		let currentWindow = function currentWindow(win) {
-			win = win || module.parent;
-			if (win.id && win.type === "window") return win;
-			else if (win.parent) return currentWindow(win.parent);
-			else return null;
-		}();
-		if (currentWindow && AppWindow.fromId(currentWindow.id)) {
-			AppWindow.fromId(currentWindow.id).ui.body.append(this.ui)
-		} else {
-			document.body.appendChild(this.ui);
-		}
+		if (currentWindow) currentWindow.ui.body.append(this.ui);
+		else document.body.appendChild(this.ui);
 		let calcLeft = document.body.offsetWidth / 2 - this.ui.offsetWidth / 2;
 		switch (options.position) {
 			case "top":
