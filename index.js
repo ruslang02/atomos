@@ -4,6 +4,7 @@ const {
 } = require('electron');
 const path = require("path");
 let isDebug = !!(process.argv[2] && (process.argv[2].trim().toLowerCase() === "-d" || process.argv[1].includes("inspect-brk")));
+app.commandLine.appendSwitch('--enable-features', 'OverlayScrollbar');
 global.shutdown = {
 	confirmed: false
 };
@@ -39,7 +40,8 @@ app.on('ready', function() {
 			experimentalFeatures: true,
 			nodeIntegration: true,
 			webviewTag: true,
-			sandbox: false
+			sandbox: false,
+			blinkFeatures: 'OverlayScrollbars'
 		}
 	});
 	win.maximize();

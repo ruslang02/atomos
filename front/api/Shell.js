@@ -30,7 +30,13 @@ module.exports = class Shell2 {
 		}
 	}
 };
-const AppWindow = require("@api/WindowManager");
+let AppWindow = new Proxy({}, {
+	get: function (target, prop) {
+		AppWindow = require("@api/WindowManager");
+		return AppWindow[prop];
+	}
+});
+
 
 let copy_r = async function (src, dest) {
 	let exists = fs.existsSync(src);
@@ -124,11 +130,13 @@ class Shell {
 
 	static openSettings(section) {
 		Elements.MenuBar.open();
-		Elements.MenuBar.notifications.classList.remove("show");
+		Elements.MenuBar.notifications.hide();
+		Elements.MenuBar.footerBar.classList.add("d-none");
 		setTimeout(() => {
 			Elements.MenuBar.settings = document.createElement("section");
-			Elements.MenuBar.settings.className = "card shadow fade scrollable-0 position-absolute very-rounded w-100 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
+			Elements.MenuBar.settings.className = "card shadow fade scrollable-0 w-100 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
 			Elements.MenuBar.settings.style.zIndex = 100;
+			Elements.MenuBar.settings.style.bottom = 0;
 			if (Shell.isMobile) {
 				Elements.MenuBar.settings.style.top = 0;
 				Elements.MenuBar.settings.style.left = 0;
@@ -187,6 +195,7 @@ class Shell {
 	}
 
 	static isDefaultApp(eg, prog) { // extension or generic
+		console.log(AppWindow);
 		if (!prog) prog = AppWindow.getFocusedWindow().app;
 		if (eg.startsWith("."))
 			return (Registry.get("system.associations") || {})[eg] === prog;
@@ -343,6 +352,7 @@ class Shell {
 		delete require.cache[require.resolve("@api/Notification")];
 		delete require.cache[require.resolve("@api/Menu")];
 		delete require.cache[require.resolve("@api/Shell")];
+		delete require.cache[require.resolve("@api")];
 	}
 
 	static createFile(baseDir, defaultTab) {

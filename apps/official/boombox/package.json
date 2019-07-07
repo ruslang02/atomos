@@ -17,5 +17,6 @@
 	"height": 500,
 	"minWidth": 500,
 	"minHeight": 450,
-	"type": "app"
+	"type": "app",
+	"backgroundable": true
 }

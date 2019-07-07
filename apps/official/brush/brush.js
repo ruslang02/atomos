@@ -1,10 +1,8 @@
-const {Notification, Snackbar, Menu, AppWindow, Shell, Components: {Button}} = require("@api");
+const {Snackbar, Menu, AppWindow, Shell, Components: {Button}} = require("@api");
 const win = AppWindow.getCurrentWindow();
 const path = require("path");
 let saveState, cropper, file;
 let toBuffer = require('blob-to-buffer');
-let guides = true;
-let background = true;
 let css = document.createElement("link");
 css.href = path.join(osRoot, "/node_modules/cropperjs/dist/cropper.min.css");
 css.rel = "stylesheet";
@@ -90,7 +88,7 @@ badge.innerText = "beta";
 win.ui.header.append(badge);
 
 let nav = document.createElement("nav");
-nav.className = "p-2 d-flex shadow";
+nav.className = "p-2 d-flex shadow-sm";
 nav.style.zIndex = 1;
 nav.dataset.draggable = "true";
 win.ui.body.append(nav);
@@ -110,7 +108,7 @@ nav.crop.addEventListener("click", e => {
 });
 nav.move = new Button({
 	size: "sm",
-	icon: "",
+	icon: "drag",
 	shadow: true,
 	color: win.options.theme,
 	iconSize: 18,

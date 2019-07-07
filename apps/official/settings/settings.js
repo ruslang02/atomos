@@ -63,7 +63,8 @@ function newSmallListItem(options) {
 async function openSection(id, log = true) {
 	if (!id) {
 		root.classList.remove("show");
-		Elements.MenuBar.notifications.classList.add("show");
+		Elements.MenuBar.footerBar.classList.remove("d-none");
+		Elements.MenuBar.notifications.show();
 		setTimeout(e => root.remove(), Shell.ui.fadeAnimation);
 		window.__settingsInst = undefined;
 		return;

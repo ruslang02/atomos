@@ -22,7 +22,7 @@ else {
 			}
 			getCurrentWindow().setBounds({x: minX, y: minY, width: maxWidth, height: maxHeight});
 			let mainDisp = screen.getPrimaryDisplay().bounds;
-			document.body.style.setProperty("--taskbar-y", (mainDisp.y + mainDisp.height) / zoomFactor);
+			document.body.style.setProperty("--taskbar-y", CSS.px((mainDisp.y + mainDisp.height) / zoomFactor));
 			Elements.Bar.style.left = CSS.px(mainDisp.x / zoomFactor);
 			Elements.Bar.style.width = CSS.px(mainDisp.width / zoomFactor);
 		})

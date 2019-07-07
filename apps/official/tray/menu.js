@@ -6,7 +6,9 @@ let overlay, wifi;
 if (!Elements)
 	window.Elements = [];
 Elements.MenuBar = document.createElement("aside");
-Elements.MenuBar.className = "position-fixed m-2 d-flex flex-column-reverse hide fly up";
+Elements.MenuBar.className = "position-fixed shadow-sm d-flex flex-column hide fly up scrollable-y scrollable-x-0";
+Elements.MenuBar.style.margin = ".75rem";
+Elements.MenuBar.style.maxHeight = "var(--taskbar-y)";
 Elements.MenuBar.id = "official/tray";
 Elements.MenuBar.style.zIndex = "990";
 
@@ -23,7 +25,6 @@ if (!Shell.isMobile) {
 	Elements.MenuBar.classList.add("w-100", "h-100");
 	Elements.MenuBar.classList.replace("m-2", "p-2");
 	Elements.MenuBar.style.top = "29px";
-	Elements.MenuBar.classList.replace("flex-column-reverse", "flex-column");
 	overlay = document.createElement("div");
 	overlay.style.cssText = "position: fixed;top: 0;left: 0;right: 0;bottom: 0;background: rgba(0,0,0,0.5);z-index: 989; opacity:0; visibility: hidden";
 	document.body.appendChild(overlay);
@@ -60,7 +61,6 @@ Elements.MenuBar.close = function () {
 	Elements.MenuBar.classList.replace("show", "hide");
 	Elements.BarItems["official/tray"].Container.classList.remove("active");
 	Elements.BarItems["official/tray"].Date.classList.add("hide");
-	Elements.MenuBar.notifications.classList.add("show");
 	setTimeout(() => {
 		if (Elements.MenuBar.settings)
 			Elements.MenuBar.settings.remove();
@@ -85,7 +85,35 @@ Elements.MenuBar.addEventListener("click", function (e) {
 });
 window.addEventListener("click", Elements.MenuBar.close);
 renderQuickSection();
-renderNotifications();
+Elements.MenuBar.notifications = [];
+
+function updN() {
+	Elements.MenuBar.nCount.innerText = Elements.MenuBar.notifications.length + " new notification" + (Elements.MenuBar.notifications.length !== 1 ? "s" : "");
+	Elements.MenuBar.clearN.classList.toggle("show", Elements.MenuBar.notifications.length)
+}
+
+Elements.MenuBar.notifications = new Proxy(Elements.MenuBar.notifications, {
+	apply: function (target, thisArg, argumentsList) {
+		return thisArg[target].apply(this, argumentList);
+	},
+	deleteProperty: function (target, property) {
+		updN()
+		return true;
+	},
+	set: function (target, property, value, receiver) {
+		target[property] = value;
+		updN()
+		return true;
+	}
+});
+Elements.MenuBar.notifications.hide = function () {
+	for (const n of Elements.MenuBar.notifications)
+		n.hide();
+};
+Elements.MenuBar.notifications.show = function () {
+	for (const n of Elements.MenuBar.notifications)
+		n.show();
+};
 renderBrightnessSettings();
 renderSoundSettings();
 document.body.appendChild(Elements.MenuBar);
@@ -93,15 +121,27 @@ document.body.appendChild(Elements.MenuBar);
 async function renderQuickSection() {
 	//TODO: Make more customizable
 
+	Elements.MenuBar.footerBar = document.createElement("section");
+	Elements.MenuBar.footerBar.className = "toast card shadow-lg position-sticky fade show mb-0 flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white");
+	Elements.MenuBar.footerBar.style.order = 10000;
+	Elements.MenuBar.footerBar.style.marginTop = CSS.rem(0.75);
+	Elements.MenuBar.footerBar.style.bottom = 0;
+	Elements.MenuBar.nBar = document.createElement("div");
+	Elements.MenuBar.nBar.className = "d-flex border-bottom align-items-center px-3 py-2";
+	Elements.MenuBar.nCount = document.createElement("div");
+	Elements.MenuBar.nCount.className = "text-muted";
+	Elements.MenuBar.nCount.innerText = "No new notifications";
+	Elements.MenuBar.clearN = document.createElement("button");
+	Elements.MenuBar.clearN.className = "btn btn-secondary rounded-pill py-1 lh-r1 px-2 ml-auto fade show";
+	Elements.MenuBar.clearN.innerText = "Clear all";
+	Elements.MenuBar.nBar.append(Elements.MenuBar.nCount, Elements.MenuBar.clearN);
 	Elements.MenuBar.quickItems = document.createElement("section");
-	if (!Shell.isMobile)
-		Elements.MenuBar.appendChild(Elements.MenuBar.quickItems);
-	else
-		Elements.MenuBar.prepend(Elements.MenuBar.quickItems);
-	Elements.MenuBar.quickItems.className = "card very-rounded shadow flex-row p-3 fade show justify-content-around mt-2 flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
+	Elements.MenuBar.footerBar.append(Elements.MenuBar.nBar, Elements.MenuBar.quickItems);
+	Elements.MenuBar.prepend(Elements.MenuBar.footerBar);
+	Elements.MenuBar.quickItems.className = "d-flex p-3 justify-content-around flex-shrink-0";
 	Elements.MenuBar.quickItems.items = [];
 	if (Shell.isMobile)
-		Elements.MenuBar.quickItems.classList.add("mb-2");
+		Elements.MenuBar.footerBar.classList.add("mb-2");
 	let WiFi = new Button({
 		tooltip: "Not connected",
 		color: "primary",
@@ -272,7 +312,7 @@ async function renderBrightnessSettings() {
 		Elements.MenuBar.brightnessSettings.updateControls();
 		master.append(master.icon, master.range);
 		Elements.MenuBar.brightnessSettings.append(master);
-		Elements.MenuBar.insertBefore(Elements.MenuBar.brightnessSettings, Elements.MenuBar.notifications);
+		Elements.MenuBar.insertBefore(Elements.MenuBar.brightnessSettings, Elements.MenuBar.footerBar);
 	} catch (e) {
 		//Elements.MenuBar.quickItems.items.Screen.remove();
 	}
@@ -335,7 +375,10 @@ function renderSoundSettings() {
 	notifVolume.range.onchange(null);
 	notifVolume.append(notifVolume.icon, notifVolume.range);
 	Elements.MenuBar.soundSettings.append(master, notifVolume);
-	Elements.MenuBar.insertBefore(Elements.MenuBar.soundSettings, Elements.MenuBar.notifications);
+	try {
+		Elements.MenuBar.insertBefore(Elements.MenuBar.soundSettings, Elements.MenuBar.footerBar);
+	} catch (e) {
+	}
 }
 
 function getCurrentVolume() {
@@ -356,21 +399,3 @@ function getCurrentVolume() {
 		}
 	}
 }
-
-function renderNotifications() {
-	Elements.MenuBar.notifications = document.createElement("notifications");
-	Elements.MenuBar.notifications.className = "flex-grow-1 fade show";
-	Elements.MenuBar.notifications.none = document.createElement("section");
-	Elements.MenuBar.notifications.none.className = "card shadow very-rounded flex-column p-3 text-center text-muted font-italic " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
-	Elements.MenuBar.notifications.none.innerText = "No new notifications".toLocaleString();
-	Elements.MenuBar.notifications.appendChild(Elements.MenuBar.notifications.none);
-	Elements.MenuBar.appendChild(Elements.MenuBar.notifications)
-}
-
-let notificationsCount = Elements.MenuBar.notifications.childElementCount - 1;
-new MutationObserver(e => {
-	notificationsCount = e[0].target.childNodes.length - 1;
-	Elements.MenuBar.notifications.none.classList.toggle("d-none", !!notificationsCount);
-}).observe(Elements.MenuBar.notifications, {
-	childList: true
-});

@@ -1,7 +1,13 @@
 const EventEmitter = require("events");
 const Registry = require(`@api/Registry`);
 const Shell = require(`@api/Shell`);
-const AppWindow = require(`@api/WindowManager`);
+let AppWindow = new Proxy({}, {
+	get: function (target, prop) {
+		AppWindow = require("@api/WindowManager");
+		return AppWindow[prop];
+	}
+});
+
 
 const {remote: {screen}} = require("electron");
 const defaultOptions = {

@@ -15,5 +15,6 @@
 	"dependencies": {
 		"atomos": "~0.8.0",
 		"google-auth-library": "^2.0.0"
-	}
+	},
+	"backgroundable": true
 }

@@ -1,19 +1,22 @@
 const {
 	AppWindow,
-	Components: {Button, Spinner},
+	Components: {Button},
+	Shell,
 	Snackbar
 } = require("@api");
 const path = require("path");
 const fs = require("fs");
-const notesLocation = path.join(process.env.HOME, "/.config/Notes");
+const {markdown} = require("markdown");
+const notesLocation = path.join(require("electron").remote.app.getPath("userData"), "Notes");
 const win = AppWindow.getCurrentWindow();
 win.ui.root.classList.remove("bg-semiwhite");
 win.ui.title.classList.add("d-none");
 win.ui.buttons.classList.add("my-1");
-win.ui.header.style.background = "#c67100";
-win.ui.root.style.background = "#edeef0";
+win.ui.root.style.background = "#c67100";
+win.ui.body.style.background = "#edeef0";
 let header = document.createElement("header");
 header.className = "shadow-sm";
+header.dataset.draggable = true;
 header.style.background = "#ffa000";
 header.container = document.createElement("div");
 header.container.className = "container my-0 pl-4 pr-3 d-flex align-items-center";
@@ -28,15 +31,23 @@ header.searchBtn = new Button({
 	tooltip: "Search"
 });
 header.searchBtn.onclick = () => new Snackbar("sss", "bottom left");
-header.refreshBtn = new Button({
+let spin = new Button({
 	icon: "refresh",
 	iconSize: CSS.px(24),
 	color: "#ffa000",
 	addClasses: "p-1 rounded-circle ml-auto",
 	tooltip: "Refresh"
 });
-header.refreshBtn.onclick = refreshNotes;
-header.container.append(header.text, header.refreshBtn, header.searchBtn);
+spin.onclick = refreshNotes;
+spin.hide = function () {
+	spin.icon = "refresh";
+	spin.classList.remove("mdi-spin");
+};
+spin.show = function () {
+	spin.icon = "loading";
+	spin.classList.add("mdi-spin");
+};
+header.container.append(header.text, spin);
 header.append(header.container);
 let noteContainer = document.createElement("main");
 noteContainer.className = "container p-3 flex-grow-1 scrollable-y d-flex flex-wrap align-content-start align-items-start justify-content-start";
@@ -49,8 +60,6 @@ let newNote = new Button({
 });
 newNote.style.cssText = "bottom:0;right:0;";
 newNote.onclick = () => AppWindow.launch("@atomos/notes/edit");
-let spin = new Spinner();
-win.ui.ui.append(spin);
 refreshNotes();
 win.ui.body.append(header, noteContainer, newNote);
 
@@ -70,7 +79,7 @@ async function refreshNotes() {
 		if (entry.startsWith(".")) continue;
 		fs.promises.readFile(path.join(notesLocation, entry), "utf-8").then(file => {
 			card.header.innerText = file.split("\n")[0].substring(2).trim();
-			card.note.innerHTML = file.replace("# " + card.header.innerText + "\n", "") || "<i class='text-muted'>Empty note</i>";
+			card.note.innerHTML = markdown.toHTML(file.replace("# " + card.header.innerText + "\n", "")) || "<i class='text-muted'>Empty note</i>";
 		});
 
 		let card = document.createElement("span");
@@ -97,7 +106,7 @@ async function refreshNotes() {
 			card.actions.classList.add("show");
 		};
 		card.onmouseleave = () => card.actions.classList.remove("show");
-		card.className = "rounded shadow-sm card mb-3 d-inline-flex mr-3";
+		card.className = "rounded shadow-sm card mb-3 d-inline-flex mr-3 fade show";
 		card.style.cssText = "min-width: 200px";
 		card.header = document.createElement("h5");
 		card.header.className = "font-weight-bolder mx-3 mt-3";
@@ -110,12 +119,14 @@ async function refreshNotes() {
 		card.actions.delete.onclick = function () {
 			fs.rename(path.join(notesLocation, entry), path.join(notesLocation, "." + entry), console.log);
 			new Snackbar("Card was moved to Trash", "bottom left");
+			card.classList.remove("show");
+			setTimeout(() => card.remove(), Shell.ui.fadeAnimation);
 		};
 		card.actions.edit = document.createElement("button");
 		card.actions.edit.className = "mdi mdi-pencil-outline btn btn-outline-warning border-0 p-1 lh-18 mdi-18px d-flex";
 		card.actions.edit.onclick = function () {
 			let editWindow = AppWindow.launch("@atomos/notes/edit", {file: path.join(notesLocation, entry)}, {modal: true});
-			editWindow.on('close', refreshNotes);
+			editWindow.on('closed', refreshNotes);
 		};
 		card.actions.lastModified = document.createElement("div");
 		card.actions.lastModified.className = "text-muted flex-grow-1 text-truncate mr-auto smaller";

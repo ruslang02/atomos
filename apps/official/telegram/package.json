@@ -18,5 +18,6 @@
 	"minWidth": 500,
   "minHeight": 500,
 	"type": "app",
-	"hidden": true
+  "hidden": true,
+  "disableBlur": true
 }

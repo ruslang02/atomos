@@ -9,7 +9,7 @@ let root, active, allApps = [], allActions = [], mathjs;
 function render() {
 	Elements.StartMenu = document.createElement("startmenu");
 	root = Elements.StartMenu;
-	Elements.StartMenu.className = "position-fixed d-flex flex-column p-2 hide fly up";
+	Elements.StartMenu.className = "position-fixed d-flex flex-column px-2 pb-2 hide fly up";
 	Elements.StartMenu.style.height = "400px";
 	Elements.StartMenu.style.width = "400px";
 	Elements.StartMenu.addEventListener("contextmenu", e => e.stopPropagation());

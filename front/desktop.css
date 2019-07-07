@@ -205,11 +205,11 @@ body > footer#taskbar.autoHide.show,
 body > footer#taskbar.maximized:hover,
 body > footer#taskbar.maximized.show,
 body > footer#taskbar:not(.autoHide):not(.maximized) {
-	clip-path: inset(0 0 0 0);
+	clip-path: none;
 	/* backdrop-filter: blur(3px); */
 }
 
-plugin[id="official/tasker"] > button.active::after {
+plugin[id="official/tasker"] > button:not(.bgTasks).active::after {
 	background-color: white;
 }
 
@@ -226,7 +226,7 @@ plugin[id="official/tasker"] > button.active::after {
 	background-color: rgba(177, 177, 177, 0.3)
 }
 
-plugin[id="official/tasker"] > button::after {
+plugin[id="official/tasker"] > button:not(.bgTasks)::after {
 	content: "";
 	border-radius: 10px;
 	padding: 1px;
@@ -242,7 +242,7 @@ plugin[id="official/tasker"] > button::after {
 	transition: background .25s ease;
 }
 
-plugin[id="official/tasker"] > button:not(.active) {
+plugin[id="official/tasker"] > button:not(.active, .bgTasks) {
 	opacity: 0.85;
 }
 
@@ -251,17 +251,17 @@ plugin[id="official/tasker"] > button:not(.active) {
 	animation: pulsate .5s ease-out infinite alternate !important;
 }
 
-plugin[id="official/tasker"] > button, plugin[id="official/start"] > button {
+plugin[id="official/tasker"] > button:not(.bgTasks), plugin[id="official/start"] > button {
 	transition: filter .25s ease, opacity .25s ease;
 	--progress-color: var(--primary);
 	--progress-value: 0%;
 }
 
-plugin[id="official/tasker"] > button:not(.active):hover, plugin[id="official/start"] > button:hover {
+plugin[id="official/tasker"] > button:not(.active, .bgTasks):hover, plugin[id="official/start"] > button:hover {
 	filter: brightness(120%);
 }
 
-plugin[id="official/tasker"] > button:not(.active):active, plugin[id="official/start"] > button:active {
+plugin[id="official/tasker"] > button:not(.active, .bgTasks):active, plugin[id="official/start"] > button:active {
 	filter: brightness(90%);
 }
 
@@ -283,6 +283,10 @@ window > overlay {
 	border-radius: .5rem;
 }
 
+window.noBlur {
+	backdrop-filter: none !important;
+}
+
 window.maximized.bg-semiwhite {
 	background: rgb(230, 230, 230) !important
 }
@@ -291,35 +295,50 @@ window.maximized window-ui > div[style*=cursor] {
 	pointer-events: none;
 }
 
-/*
- * macOS-like window buttons glyphs
-window window-buttons .btn-danger:hover::before {
+body.showWindowButtonGlyphs window window-buttons .btn-danger:hover::before {
 	content: "\F156";
 	font-family: 'Material Design Icons', serif;
 	position: absolute;
 	top: 0;
 	left: 0;
-	line-height: 14px;
-	font-size: 14px;
+	line-height: 12px;
+	font-size: 12px;
 }
-window window-buttons .btn-success:hover::before {
+
+body.showWindowButtonGlyphs window window-buttons .btn-success:hover::before {
 	content: "\F143";
 	font-family: 'Material Design Icons', serif;
 	position: absolute;
 	top: 0;
 	left: 0;
-	line-height: 14px;
-	font-size: 14px;
+	line-height: 12px;
+	font-size: 12px;
 }
-window window-buttons .btn-warning:hover::before {
+
+body.showWindowButtonGlyphs window window-buttons .btn-warning:hover::before {
 	content: "\F140";
 	font-family: 'Material Design Icons', serif;
 	position: absolute;
 	top: 0;
 	left: 0;
-	line-height: 14px;
-	font-size: 14px;
-}*/
+	line-height: 12px;
+	font-size: 12px;
+}
+
+body.showWindowButtonGlyphs window .btn-info:hover::before {
+	content: "\F12F";
+	font-family: 'Material Design Icons', serif;
+	position: absolute;
+	top: 0;
+	left: 0px;
+	line-height: 8px;
+	right: 0;
+	font-size: 8px;
+	bottom: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+}
 
 notification.type-image .toast-body div.smaller::after {
 	content: "";
@@ -335,12 +354,16 @@ notification.type-image.dark .toast-body div.smaller::after {
 	background: linear-gradient(transparent, var(--dark));
 }
 
-notification header *, notification notification-actions button {
+notification header *, notification notification-actions button, .clip-text {
 	-webkit-background-clip: text !important;
 	background-clip: text !important;
 }
 
-notification.toast {
+.notification-showing {
+	display: none !important;
+}
+
+.toast {
 	backdrop-filter: none;
 }
 
@@ -492,7 +515,7 @@ notification.toast {
 
 .btn-white {
 	color: var(--dark);
-	background-color: transparent;
+	/* background-color: transparent; */
 	border-color: transparent;
 }
 

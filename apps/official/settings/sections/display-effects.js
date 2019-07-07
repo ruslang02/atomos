@@ -26,7 +26,7 @@ list.transparency = newSmallListItem({
 		Registry.set("system.enableTransparentWindows", checked);
 	}
 });
-list.blur = newSmallListItem({
+list.blurUI = newSmallListItem({
 	label: "Blur",
 	sublabel: "Use blur in UI",
 	type: "checkbox",
@@ -42,6 +42,16 @@ list.shadows = newSmallListItem({
 	checked: Registry.get("system.enableWindowShadows"),
 	click(checked) {
 		Registry.set("system.enableWindowShadows", checked);
+	}
+});
+list.windowGlyphs = newSmallListItem({
+	label: "Show window buttons glyphs",
+	sublabel: "Get macOS-like close, maximize, minimize button glyphs",
+	type: "checkbox",
+	checked: Registry.get("system.enableWindowButtonGlyphs"),
+	click(checked) {
+		Registry.set("system.enableWindowButtonGlyphs", checked);
+		document.body.classList.toggle("showWindowButtonGlyphs", checked)
 	}
 });
 list.liveTransforms = newSmallListItem({
@@ -79,5 +89,5 @@ list.menuIcons = newSmallListItem({
 		Registry.set("system.showMenuIcons", checked);
 	}
 });
-list.append(list.thumbEnabled, list.transparency, list.blur, list.shadows, list.liveTransforms, list.noAnimations, list.lowPerformance, list.menuIcons);
+list.append(list.thumbEnabled, list.transparency, list.blurUI, list.shadows, list.windowGlyphs, list.liveTransforms, list.noAnimations, list.lowPerformance, list.menuIcons);
 main.append(list);

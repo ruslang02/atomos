@@ -93,19 +93,16 @@ nav.saveFile.onclick = async function () {
 };
 nav.append(nav.openFile, nav.saveFile);
 win.ui.header.prepend(nav);
-win.ui.header.classList.remove("border-bottom");
-win.ui.header.classList.add("position-absolute", "w-100");
-win.ui.header.style.zIndex = 10;
 
 
 let main = document.createElement("main");
 main.className = "row m-0 flex-grow-1 p-0";
 let playlist = document.createElement("section");
-playlist.className = "col-4 pl-0 pr-2 mt-2 pt-5 scrollable-y";
+playlist.className = "col-4 pl-0 pr-2 mt-2 scrollable-y";
 playlist.style.minWidth = CSS.rem(12);
 playlist.style.maxWidth = CSS.rem(20);
 let cover = document.createElement("section");
-cover.className = "flex-grow-1 d-flex align-items-center position-relative justify-content-center mx-2 very-rounded shadow mt-5 " + (win.options.darkMode ? "bg-dark border-secondary" : "bg-light");
+cover.className = "flex-grow-1 d-flex align-items-center position-relative justify-content-center mx-2 very-rounded shadow " + (win.options.darkMode ? "bg-dark border-secondary" : "bg-light");
 cover.image = new Image();
 cover.image.className = "position-absolute m-auto mw-100 mh-100";
 cover.appendChild(cover.image);

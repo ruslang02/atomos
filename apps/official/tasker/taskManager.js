@@ -1,13 +1,83 @@
 const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Registry = require("@api/Registry"),
-	Shell = require("@api/Shell");
+	Shell = require("@api/Shell"), {Button} = require("@api/Components");
 let tasks = document.createElement("div");
 tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
 tasks.className = "w-100 position-fixed fade px-3 d-none";
+let bgTasks = new Button({
+	icon: "flip-to-back",
+	color: "secondary",
+	addClasses: "rounded-circle mr-3 p-1 ml-auto bgTasks",
+	iconSize: 24,
+	tooltip: "0 background apps"
+});
+bgTasks.style.order = 1000;
+let bgPanel = document.createElement("section");
+bgPanel.className = "toast hide card shadow-sm p-3 position-absolute bg-white fly up";
+bgPanel.style.right = CSS.rem(1);
+bgPanel.style.width = CSS.px(250);
+bgPanel.header = document.createElement("div");
+bgPanel.header.innerText = "Background apps (0)";
+bgPanel.header.className = "text-center";
+bgPanel.apps = document.createElement("div");
+bgPanel.apps.className = "d-none flex-column mt-2";
+bgPanel.append(bgPanel.header, bgPanel.apps);
+bgPanel.open = function () {
+	bgPanel.classList.remove("d-none");
+	setTimeout(() => bgPanel.classList.replace("hide", "show"), 10);
+};
+bgPanel.close = function () {
+	bgPanel.classList.replace("show", "hide");
+	setTimeout(() => bgPanel.classList.add("d-none"), Shell.ui.fadeAnimation);
+};
+body.appendChild(bgPanel);
+bgTasks.addEventListener("click", e => {
+	e.stopPropagation();
+	if (bgPanel.classList.contains("show")) bgPanel.close(); else bgPanel.open();
+});
+bgPanel.add = id => {
+	let win = AppWindow.fromId(id);
+	let icon = document.createElement("icon");
+	icon.style.WebkitTextFillColor = "transparent";
+	icon.style.background = (win.options.color || "var(--dark)") + " 50% 50% / 1000px";
+	icon.className = "mdi mdi-18px lh-18 mr-2 d-flex clip-text mdi-" + (win.options.icon || "application");
+	let header = document.createElement("div");
+	header.innerText = win.options.productName || win.options.name;
+	let elem = document.createElement("button");
+	elem.className = "p-2 btn-white btn d-flex text-left align-items-center lh-r1";
+	elem.append(icon, header);
+	elem.id = "w" + id;
+	elem.onclick = e => {
+		e.stopPropagation();
+		win.show();
+	};
+	bgPanel.apps.append(elem);
+};
+bgPanel.delete = id => {
+	bgPanel.apps.querySelector("#w" + id).remove();
+};
+window._windowBGPanel = bgPanel;
+window.addEventListener("click", bgPanel.close);
+
+new MutationObserver(function () {
+	if (bgPanel.apps.childNodes.length === 0)
+		bgPanel.apps.classList.replace("d-flex", "d-none");
+	else
+		bgPanel.apps.classList.replace("d-none", "d-flex");
+	bgPanel.header.innerText = "Background apps (" + bgPanel.apps.childNodes.length + ")";
+	bgTasks.tooltip = bgPanel.apps.childNodes.length + " background apps"
+}).observe(bgPanel.apps, {
+	childList: true
+});
+
 document.body.append(tasks);
 try {
-	body.className = "flex-grow-1 py-1";
+	body.className = "flex-grow-1 py-1 d-flex align-items-center position-relative";
+	body.appendChild(bgTasks);
 } catch (e) {
 }
+body.updatePosition = function () {
+	bgPanel.style.bottom = CSS.px(body.clientHeight);
+};
 
 class TaskManager {
 	constructor(wID) {

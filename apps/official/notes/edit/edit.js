@@ -32,7 +32,7 @@ if (currentFile) {
 	noteName.value = "New note";
 noteName.className = "form-control-sm btn btn-white border-0 shadow-none mx-auto font-weight-bolder";
 noteName.style.cursor = "text";
-let colorBtn = new Button({
+/*let colorBtn = new Button({
 	size: "sm",
 	icon: "palette",
 	color: "light",
@@ -64,9 +64,8 @@ new Popover(colorBtn, {
 	placement: "bottom",
 	title: "Color",
 	trigger: "click"
-});
-noteName.dataset.draggable = colorBtn.dataset.draggable = false;
-win.ui.header.append(noteName, colorBtn);
+});*/
+win.ui.header.append(noteName);
 let noteArea = document.createElement("textarea");
 noteArea.className = "flex-grow-1 bg-transparent form-control border-0 shadow-none";
 noteArea.style.resize = "none";

@@ -148,6 +148,7 @@ class Button extends HTMLButtonElement {
 		this._textElement.innerHTML = this._innerText || "";
 		this._textElement.classList.toggle("d-none", !this._innerText);
 		this.classList.toggle("shadow-sm", !!this._shadow);
+		this.dataset.draggable = "false";
 	}
 }
 

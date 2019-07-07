@@ -129,12 +129,10 @@ function LoadCSS() {
 }
 
 document.title = "AtomOS (Render complete)";
-if (Registry.get("system.enableSimpleEffects") === true)
-	document.body.classList.add("simple");
-if (Registry.get("system.disableAnimations") === true)
-	document.body.classList.add("noAnim");
-if (Registry.get("system.enableBlur") === true)
-	document.body.classList.add("blur");
+document.body.classList.toggle("simple", Registry.get("system.enableSimpleEffects") === true);
+document.body.classList.toggle("noAnim", Registry.get("system.disableAnimations") === true);
+document.body.classList.toggle("blur", Registry.get("system.enableBlur") === true);
+document.body.classList.toggle("showWindowButtonGlyphs", Registry.get("system.enableWindowButtonGlyphs") === true);
 
 Registry.watch("system", (key, value) => {
 	switch (key) {

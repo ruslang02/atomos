@@ -24,7 +24,10 @@ const
 		alwaysOnTop: false,
 		autoSize: false,
 		darkMode: false,
-		arguments: {}
+		disableBlur: false,
+		arguments: {},
+		cheapResize: false,
+		backgroundable: false
 	},
 	{remote: {screen}} = require("electron");
 const Shell = require("@api/Shell");
@@ -103,6 +106,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	static getCurrentWindow() {
+		console.log(module);
 		if (module.parent && module.parent.id !== undefined && module.parent.type === "window")
 			return windowCollection[module.parent.id];
 		else if (module.parent.parent && module.parent.parent.id !== undefined && module.parent.parent.type === "window")
@@ -244,6 +248,7 @@ class AppWindow extends EventEmitter {
 			if (this.options.darkMode) this.ui.root.style.background = "#0a0a0a";
 			else this.ui.root.style.background = "#dee2e6";
 		}
+		if (this.options.disableBlur) this.ui.root.classList.add("noBlur");
 		this.ui.root.style.transition = "background .25s linear, backdrop-filter .25s linear";
 		this.ui.root.appWindow = this;
 		this._fade = this.ui.root.animate([{
@@ -272,7 +277,6 @@ class AppWindow extends EventEmitter {
 		this.ui.buttons = document.createElement("window-buttons");
 		this.ui.buttons.style.order = -10;
 		this.ui.buttons.className = "ml-2 mr-3 d-flex flex-shrink-0 flex-row-reverse";
-		this.ui.buttons.dataset.draggable = false;
 
 
 		this.ui.buttons.minimize = new Button({
@@ -280,21 +284,28 @@ class AppWindow extends EventEmitter {
 			tooltip: "Minimize",
 			shadow: true,
 			visible: this.options.minimizable,
-			addClasses: "ml-2 rounded-circle"
+			addClasses: "ml-2 rounded-circle position-relative"
 		});
 		this.ui.buttons.maximize = new Button({
 			color: "success",
 			tooltip: "Maximize",
 			shadow: true,
 			visible: this.options.maximizable,
-			addClasses: "ml-2 rounded-circle"
+			addClasses: "ml-2 rounded-circle position-relative"
 		});
 		this.ui.buttons.close = new Button({
 			color: "danger",
 			tooltip: "Close",
 			shadow: true,
 			visible: this.options.closable,
-			addClasses: "rounded-circle"
+			addClasses: "rounded-circle position-relative"
+		});
+		this.ui.buttons.putToBG = new Button({
+			color: "info",
+			tooltip: "Background",
+			shadow: true,
+			visible: this.options.backgroundable,
+			addClasses: "rounded-circle ml-2 position-relative"
 		});
 		this.ui.buttons.minimize.addEventListener("click", e => {
 			e.stopPropagation();
@@ -305,9 +316,15 @@ class AppWindow extends EventEmitter {
 			e.stopPropagation();
 			_this.close();
 		});
+		this.ui.buttons.putToBG.addEventListener("click", e => {
+			e.stopPropagation();
+			_this.background();
+		});
 		this.ui.buttons.minimize.style.padding =
 			this.ui.buttons.maximize.style.padding =
-				this.ui.buttons.close.style.padding = CSS.px(6);
+				this.ui.buttons.close.style.padding =
+					this.ui.buttons.putToBG.style.padding = CSS.px(6);
+		this.ui.buttons.putToBG.style.order = 10000;
 
 		this.ui.body = document.createElement("window-body");
 		this.ui.body.className = "flex-grow-1 d-flex flex-column scrollable-0 position-relative very-rounded-bottom";
@@ -320,7 +337,7 @@ class AppWindow extends EventEmitter {
 				this.ui.root.append(this.ui.overlay);*/
 
 		this.ui.buttons.append(this.ui.buttons.maximize, this.ui.buttons.minimize, this.ui.buttons.close);
-		this.ui.header.append(this.ui.buttons, this.ui.title);
+		this.ui.header.append(this.ui.buttons, this.ui.title, this.ui.buttons.putToBG);
 		this.ui.ui.append(this.ui.header, this.ui.body);
 		this.ui.root.append(this.ui.ui);
 		//console.log("rendered")
@@ -363,6 +380,16 @@ class AppWindow extends EventEmitter {
 		});
 		if (this.close())
 			AppWindow.launch(this.app, this.options.arguments, newOptions)
+	}
+
+	background() {
+		this.task.task.classList.replace("d-inline-flex", "d-none");
+		this.hide();
+		this.once('show', function () {
+			this.task.task.classList.replace("d-none", "d-inline-flex");
+			_windowBGPanel.delete(this.id);
+		});
+		_windowBGPanel.add(this.id);
 	}
 
 	focus() {
@@ -410,6 +437,7 @@ class AppWindow extends EventEmitter {
 		else {
 			this.showInactive();
 			this.focus();
+			this.emit("show");
 		}
 	}
 
@@ -438,7 +466,7 @@ class AppWindow extends EventEmitter {
 	}
 
 	isModal() {
-		// TODO: Modal windows
+		return this.options.modal;
 	}
 
 	unmaximize() {
@@ -562,7 +590,7 @@ class AppWindow extends EventEmitter {
 	setEnabled(enable) {
 		if (!enable && !this.ui.overlay) {
 			this.ui.overlay = document.createElement("overlay");
-			this.ui.overlay.addEventListener("mousedown", e => e.stopPropagation())
+			this.ui.overlay.addEventListener("mousedown", e => e.stopPropagation());
 			this.ui.root.append(this.ui.overlay);
 		} else if (enable && this.ui.overlay) {
 			this.ui.overlay.remove();
@@ -635,7 +663,7 @@ class AppWindow extends EventEmitter {
 				prevX = e.clientX;
 				prevY = e.clientY;
 				self.show();
-				if (Registry.get("system.disableLiveTransformations")) {
+				if (Registry.get("system.disableLiveTransformations") || self.options.cheapResize) {
 					ghost = document.createElement("ghost");
 					ghost.className = "very-rounded position-absolute d-flex align-items-center justify-content-center";
 					ghost.style.cssText = `${self.ui.root.style.cssText}; height: ${self.ui.root.offsetHeight}px; box-shadow: inset 0 0 0 5px ${window.getComputedStyle(self.ui.root).backgroundColor}; background: ${self.options.darkMode ? "rgba(30,30,30,0.7)" : "rgba(222,226,230, 0.6)"}; z-index:1020`;
@@ -721,7 +749,7 @@ class AppWindow extends EventEmitter {
 				}
 				prevX = e.clientX;
 				prevY = e.clientY;
-				if (Registry.get("system.showWindowProps") && Registry.get("system.disableLiveTransformations"))
+				if (Registry.get("system.showWindowProps") && (Registry.get("system.disableLiveTransformations") || self.options.cheapResize))
 					ghost.innerHTML = `<div class="bg-light text-dark py-1 px-2 text-center very-rounded">(${elem.offsetLeft}; ${elem.offsetTop})<br />${elem.clientWidth}x${elem.clientHeight}</div>`;
 			};
 			document.body.addEventListener("mousemove", this.resizerTrigger);
@@ -829,10 +857,10 @@ class AppWindow extends EventEmitter {
 				}
 			});
 			self.ui.root.querySelectorAll("[data-draggable='true']").forEach(elem => {
-				elem.addEventListener("mousedown", () => force = true)
+				elem.addEventListener("mousedown", () => force = cancel !== true)
 			});
-			self.ui.root.querySelectorAll("[data-draggable='false']").forEach(elem => {
-				elem.addEventListener("mousedown", () => cancel = true)
+			self.ui.root.querySelectorAll("[data-draggable='false'], button").forEach(elem => {
+				elem.addEventListener("mousedown", () => cancel = force !== true)
 			});
 		} else {
 			if (self.drag)
