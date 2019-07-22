@@ -15,7 +15,6 @@ const win = AppWindow.getCurrentWindow();
 const pm = new (require('playmusic'));
 win.ui.body.classList.remove("flex-column", "scrollable-0");
 win.ui.body.classList.add("py-2", "pr-2");
-win.ui.header.classList.add("pr-3");
 win.ui.title.classList.add("fade");
 let cookies;
 if (!(cookies = Registry.get("playmusic.account"))) login();

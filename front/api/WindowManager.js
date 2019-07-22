@@ -98,7 +98,6 @@ class AppWindow extends EventEmitter {
 	static getFocusedWindow() {
 		return windowCollection.slice().reverse().find(win => (win ? win.isFocused() : false)) || null;
 	}
-
 	static clearGarbage() {
 		for (const i of Object.keys(windowCollection)) {
 			if (!windowCollection[i]) windowCollection.splice(i, 1);
@@ -106,12 +105,14 @@ class AppWindow extends EventEmitter {
 	}
 
 	static getCurrentWindow() {
-		console.log(module);
-		if (module.parent && module.parent.id !== undefined && module.parent.type === "window")
-			return windowCollection[module.parent.id];
-		else if (module.parent.parent && module.parent.parent.id !== undefined && module.parent.parent.type === "window")
-			return windowCollection[module.parent.parent.id];
-		else return null;
+		let curModule = module;
+		while (curModule) {
+			console.log(curModule.parent);
+			if (curModule.parent && curModule.parent.id !== undefined && curModule.parent.type === "window")
+				return windowCollection[curModule.parent.id];
+			else if (curModule.parent) curModule = curModule.parent;
+			else return null;
+		}
 	}
 
 	static getAllWindows() {
@@ -196,6 +197,7 @@ class AppWindow extends EventEmitter {
 				console.timeEnd("app load");
 			}
 		}
+		Shell.clearAPICache();
 		win._initEvents();
 		if (Shell.isMobile) win.maximize();
 		win.setMovable(win.options.draggable);
@@ -276,7 +278,7 @@ class AppWindow extends EventEmitter {
 
 		this.ui.buttons = document.createElement("window-buttons");
 		this.ui.buttons.style.order = -10;
-		this.ui.buttons.className = "ml-2 mr-3 d-flex flex-shrink-0 flex-row-reverse";
+		this.ui.buttons.className = "mr-3 ml-2 d-flex flex-shrink-0 flex-row-reverse";
 
 
 		this.ui.buttons.minimize = new Button({
@@ -305,7 +307,7 @@ class AppWindow extends EventEmitter {
 			tooltip: "Background",
 			shadow: true,
 			visible: this.options.backgroundable,
-			addClasses: "rounded-circle ml-2 position-relative"
+			addClasses: "mx-2 rounded-circle ml-2 position-relative"
 		});
 		this.ui.buttons.minimize.addEventListener("click", e => {
 			e.stopPropagation();

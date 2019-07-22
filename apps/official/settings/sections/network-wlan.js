@@ -8,7 +8,7 @@ const {
 } = require("@api");
 const wifi = require("node-wifi");
 wifi.init({
-	iface: "wlx18a6f7143aea"
+	iface: Registry.get("system.networking.wlanInterface") || "wlp1s0"
 });
 setTitle("Wi-Fi");
 

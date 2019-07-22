@@ -261,12 +261,42 @@ function genCSS(color, id, outline) {
       }`;
 }
 
+class Dialog extends HTMLElement {
+	constructor() {
+		super();
+		let win = require("@api").AppWindow.getCurrentWindow();
+		this.className = "modal fade";
+		this.tabIndex = -1;
+		this.setAttribute("aria-hidden", "true");
+		this.container = document.createElement("form");
+		this.container.className = "modal-dialog modal-dialog-centered";
+		this.content = document.createElement("main");
+		this.content.className = "modal-content shadow-lg" + (win.options.darkMode ? " bg-dark text-white" : "")
+	}
+
+	connectedCallback() {
+		this.controller = new Modal(this);
+	}
+
+	open() {
+		this.controller.show();
+	}
+
+	close() {
+		this.controller.hide();
+	}
+
+	disconnectedCallback() {
+		delete this.controller;
+	}
+}
+
 customElements.define('x-button', Button, {
 	extends: "button"
 });
 customElements.define('x-spinner', Spinner);
+customElements.define('x-dialog', Dialog);
 module.exports = {
-	Button: Button,
-	Spinner: Spinner
+	Button, Spinner, Dialog
 };
 

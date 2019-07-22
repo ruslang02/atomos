@@ -9,15 +9,14 @@ const fs = require("fs");
 const {markdown} = require("markdown");
 const notesLocation = path.join(require("electron").remote.app.getPath("userData"), "Notes");
 const win = AppWindow.getCurrentWindow();
-win.ui.root.classList.remove("bg-semiwhite");
 win.ui.title.classList.add("d-none");
 win.ui.buttons.classList.add("my-1");
-win.ui.root.style.background = "#c67100";
-win.ui.body.style.background = "#edeef0";
+win.ui.root.style.background = win.options.darkMode ? "var(--darker)" : "#c67100";
+win.ui.body.style.background = win.options.darkMode ? "var(--darker)" : "#edeef0";
 let header = document.createElement("header");
-header.className = "shadow-sm";
+header.className = "shadow-sm" + (win.options.darkMode ? " text-warning" : "");
 header.dataset.draggable = true;
-header.style.background = "#ffa000";
+header.style.background = win.options.darkMode ? "var(--dark)" : "#ffa000";
 header.container = document.createElement("div");
 header.container.className = "container my-0 pl-4 pr-3 d-flex align-items-center";
 header.text = document.createElement("div");
@@ -34,8 +33,9 @@ header.searchBtn.onclick = () => new Snackbar("sss", "bottom left");
 let spin = new Button({
 	icon: "refresh",
 	iconSize: CSS.px(24),
-	color: "#ffa000",
-	addClasses: "p-1 rounded-circle ml-auto",
+	color: win.options.darkMode ? "warning" : "#ffa000",
+	outline: win.options.darkMode,
+	addClasses: "p-1 rounded-circle ml-auto " + (win.options.darkMode ? "border-dark" : ""),
 	tooltip: "Refresh"
 });
 spin.onclick = refreshNotes;
@@ -106,7 +106,7 @@ async function refreshNotes() {
 			card.actions.classList.add("show");
 		};
 		card.onmouseleave = () => card.actions.classList.remove("show");
-		card.className = "rounded shadow-sm card mb-3 d-inline-flex mr-3 fade show";
+		card.className = "rounded shadow-sm card mb-3 d-inline-flex mr-3 fade show" + (win.options.darkMode ? " bg-dark text-white" : "");
 		card.style.cssText = "min-width: 200px";
 		card.header = document.createElement("h5");
 		card.header.className = "font-weight-bolder mx-3 mt-3";

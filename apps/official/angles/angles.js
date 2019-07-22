@@ -64,7 +64,7 @@ let tabs = [];
 let fileMenu, editMenu, viewMenu;
 let tabCollection = document.createElement("section");
 tabCollection.className =
-	"d-flex scrollable-x-0 flex-grow-1 pl-1 flex-shrink-0 scrollable-0";
+	"d-flex scrollable-x-0 flex-grow-1 pl-2 flex-shrink-0 scrollable-0";
 tabCollection.style.marginBottom = "-1px";
 tabCollection.style.width = 0;
 tabCollection.style.zIndex = "100";

@@ -20,6 +20,7 @@ module.exports = class Shell2 {
 		delete require.cache[require.resolve("@api/Menu")];
 		delete require.cache[require.resolve("@api/Shell")];
 		delete require.cache[require.resolve("@api/Registry")];
+		//delete require.cache[require.resolve("@api/Components")];
 		delete require.cache[require.resolve("@api")];
 	}
 	static get ui() {
@@ -30,12 +31,7 @@ module.exports = class Shell2 {
 		}
 	}
 };
-let AppWindow = new Proxy({}, {
-	get: function (target, prop) {
-		AppWindow = require("@api/WindowManager");
-		return AppWindow[prop];
-	}
-});
+let AppWindow;
 
 
 let copy_r = async function (src, dest) {
@@ -90,6 +86,7 @@ class Shell {
 	}
 
 	static async openItem(file) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		let settings = Registry.get("system");
 		settings.associations = settings.associations || {};
 		let extension = path.extname(file).toLowerCase().trim();
@@ -130,8 +127,6 @@ class Shell {
 
 	static openSettings(section) {
 		Elements.MenuBar.open();
-		Elements.MenuBar.notifications.hide();
-		Elements.MenuBar.footerBar.classList.add("d-none");
 		setTimeout(() => {
 			Elements.MenuBar.settings = document.createElement("section");
 			Elements.MenuBar.settings.className = "card shadow fade scrollable-0 w-100 " + (Shell.ui.darkMode ? "bg-dark text-white" : "");
@@ -142,7 +137,11 @@ class Shell {
 				Elements.MenuBar.settings.style.left = 0;
 				Elements.MenuBar.settings.classList.add("flex-column-reverse")
 			}
-			setTimeout(() => Elements.MenuBar.settings.classList.add("show"), Shell.ui.fadeAnimation);
+			setTimeout(() => {
+				Elements.MenuBar.settings.classList.add("show");
+				Elements.MenuBar.notifications.hide();
+				Elements.MenuBar.footerBar.classList.add("d-none");
+			}, Shell.ui.fadeAnimation);
 			Elements.MenuBar.settings.style.height = "450px";
 			fs.promises.readFile(path.join(osRoot, "apps", "official/settings", "settings.js")).then(code => {
 				new Function('root', 'sectionToOpen', code.toString())(Elements.MenuBar.settings, section);
@@ -152,6 +151,7 @@ class Shell {
 	}
 
 	static selectFile(action, options) { // TODO: Custom Places as in .NET, multiselect
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		return new Promise(resolve => {
 			let args = Object.assign({
 				createDirectory: action !== 0,
@@ -183,18 +183,19 @@ class Shell {
 	}
 
 	static showItemInFolder(file) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		AppWindow.launch("official/files", {
 			file: file
 		});
 	}
 
 	static openExternal(url) {
-		AppWindow.launch("official/proton", {
-			file: url
-		});
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
+		AppWindow.launch("official/proton", {url});
 	}
 
 	static isDefaultApp(eg, prog) { // extension or generic
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		console.log(AppWindow);
 		if (!prog) prog = AppWindow.getFocusedWindow().app;
 		if (eg.startsWith("."))
@@ -204,6 +205,7 @@ class Shell {
 	}
 
 	static setAsDefaultApp(eg, prog) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		return new Promise(async function (resolve) {
 
 			if (!prog) prog = AppWindow.getFocusedWindow().app;
@@ -228,6 +230,7 @@ class Shell {
 	}
 
 	static removeAsDefaultApp(eg, prog) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		if (!prog) prog = AppWindow.getFocusedWindow().app;
 		let settings = Registry.get("system");
 		if (eg.startsWith(".")) {
@@ -352,10 +355,12 @@ class Shell {
 		delete require.cache[require.resolve("@api/Notification")];
 		delete require.cache[require.resolve("@api/Menu")];
 		delete require.cache[require.resolve("@api/Shell")];
+		//delete require.cache[require.resolve("@api/Components")];
 		delete require.cache[require.resolve("@api")];
 	}
 
 	static createFile(baseDir, defaultTab) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		return new Promise((resolve, reject) => {
 			let modal = document.createElement("form");
 			modal.dialog = document.createElement("main");
@@ -470,6 +475,7 @@ class Shell {
 	static async openItemIn(file, options = {
 		checked: false
 	}) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 
 		let modal = document.createElement("div");
 		modal.dialog = document.createElement("div");
@@ -582,6 +588,7 @@ class Shell {
 	}
 
 	static showMessageBox(options) {
+		if (!AppWindow) AppWindow = require("@api/WindowManager");
 		return new Promise(resolve => {
 
 			options = Object.assign({}, defaultOptions, options);
@@ -598,7 +605,7 @@ class Shell {
 			modal.content.className = "modal-content shadow-lg" + (Shell.ui.darkMode ? " bg-dark text-white" : "");
 			modal.body.className = "modal-body d-flex";
 			modal.header.innerText = options.title.toLocaleString();
-			modal.header.className = "mb-1";
+			modal.header.className = "mb-3";
 			modal.footer.className = "modal-footer" + (Shell.ui.darkMode ? " border-secondary" : "");
 			modal.className = "modal fade";
 			modal.tabIndex = -1;

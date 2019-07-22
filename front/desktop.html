@@ -3,29 +3,9 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>AtomOS (Rendering...)</title>
+	<title>AtomOS</title>
 </head>
 <body class="h-100 us-0 d-flex flex-column scrollable-0">
-<!--<splash
-	style="display:flex;align-items:center;justify-content: center; transition-duration: 1s; background:black;color:white;position:fixed;z-index:2000;top:0;left:0;width:100%;height:100%">
-	<div class="spinner-grow text-light" role="status" style="width:3rem; height: 3rem;"></div>
-</splash>!-->
-<script>
-	Object.assign(window, require('bootstrap.native/dist/bootstrap-native-v4'));
-	const moduleAlias = require('module-alias');
-	const path = require("path");
-	const osRoot = path.join(__dirname, "..");
-	moduleAlias.addAlias('@api', osRoot + '/front/api');
-	moduleAlias.addAlias('@apps', osRoot + '/apps');
-	moduleAlias();
-	window.Elements = {};
-	let _winoverlay = document.createElement("overlay");
-	_winoverlay.className = "position-fixed w-100 h-100 d-none";
-	_winoverlay.style.cssText = "top:0;left:0;z-index:1000;transition: background .2s ease;";
-	document.body.append(_winoverlay);
-	const AsyncFunction = Object.getPrototypeOf(async function () {
-	}).constructor;
-	require("./desktop");
-</script>
+<script src="index.js"></script>
 </body>
 </html>

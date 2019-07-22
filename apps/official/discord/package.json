@@ -15,7 +15,6 @@
     "atomos": "~0.8.0"
   },
   "cheapResize": true,
-  "disableBlur": true,
   "width": 1100,
   "height": 800,
   "minWidth": 600,

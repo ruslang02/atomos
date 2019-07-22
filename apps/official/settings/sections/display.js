@@ -34,15 +34,6 @@ list.darkMode = newSmallListItem({
 	checked: Registry.get("system.isDarkMode") || false,
 	click(checked) {
 		Registry.set("system.isDarkMode", checked);
-		new Snackbar({
-			message: "UI restart is needed to apply changes",
-			buttonText: "Restart",
-			type: "danger",
-			timeout: 1000 * 60 * 60 * 24,
-			click() {
-				require("electron").remote.getCurrentWindow().reload();
-			}
-		})
 	}
 });
 

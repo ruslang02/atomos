@@ -1,0 +1,26 @@
+[class*=container][class*=alignStretch] > [class*=wrapper] {
+	padding-top: 1.5rem;
+	background: none !important;
+}
+
+[class*=chat] > [class*=title], [class*=container] > [class*=container] {
+	padding-right: 3.5rem;
+}
+
+[class*=wrapper] + [class*=base], [class*=contentRegion] {
+	margin-left: 10px !important;
+	border-radius: .5rem 0 0 .5rem !important;
+}
+
+[class*=listItem] > [class*=listItemWrapper], [class*=listItem] > [class*=blobContainer],
+[class*=listItem] > [class*=guildSeparator] {
+	margin-left: 10px;
+}
+
+[class*=systemPad] > [class*=listItem]:last-child, [class*=systemPad] > [class*=listItem]:nth-last-child(2) > [class*=guildSeparator] {
+	display: none
+}
+
+#app-mount, [class*=layer][role=dialog], [class*=layers], [class*=sidebarRegion], [class*=standardSidebarView], [class*=layer][role=dialog] > [class*=container] {
+	background: none !important;
+}

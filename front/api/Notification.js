@@ -5,12 +5,8 @@ const globalOptions = {
 };
 const Registry = require(`@api/Registry`);
 const Shell = require("@api/Shell");
-let AppWindow = new Proxy({}, {
-	get: function (target, prop) {
-		AppWindow = require("@api/WindowManager");
-		return AppWindow[prop];
-	}
-});
+const EventListener = require("events");
+let AppWindow = require("@api/WindowManager");
 
 const NOTIFICATION_DELAY = 6000; //ms
 class Snackbar {
@@ -79,7 +75,7 @@ class Snackbar {
 	}
 }
 
-class Notification {
+class Notification extends EventListener {
 	constructor(title, options) {
 		/* How-to:
 		 * title -- title of the notification
@@ -88,31 +84,39 @@ class Notification {
 		 * * requireInteraction -- indicates if notification will be active until user does something to it, defaults to false
 		 * * sticky -- if it is true, notification can't be cleared by user itself, closed automatically when app closes
 		 */
+		super();
 		let win = AppWindow.getCurrentWindow();
+		let self = this;
+		this._hidedNodes = false;
 		if (typeof options === "string") options = {body: options}; else if (typeof options !== "object") options = {};
-		options = Object.assign({}, globalOptions, win ? win.options.notificationOptions || {} : {}, options);
+		console.log(win, module);
+		if (!win) options = Object.assign({}, globalOptions, options);
+		else options = Object.assign({}, globalOptions, win.options.notificationOptions || {}, options);
 		this.window = win = win ? (Object.keys(win).length ? win : {options: {}}) : {options: {}};
 		this.options = options;
 		if (title === null) return;
 		this.ui = document.createElement("notification");
+		this.ui.container = document.createElement("main");
+		this.ui.container.className = Shell.ui.darkMode ? "btn-dark" : "btn-white";
 		this.ui.className = (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white") + " toast position-relative fly left show flex-shrink-0";
 		this.ui.header = document.createElement("header");
-		this.ui.header.className = "toast-header border-0 py-2 " + (Shell.ui.darkMode ? "text-white" : "");
+		this.ui.header.className = "toast-header border-0 pt-2 pb-1 bg-transparent" + (Shell.ui.darkMode ? " text-white" : "");
 		this.ui.app = document.createElement("strong");
 		this.ui.appIcon = document.createElement("icon");
 		this.ui.time = document.createElement("small");
 		this.ui.body = document.createElement("div");
 		this.ui.messageTitle = document.createElement("div");
 		this.ui.message = document.createElement("div");
-		this.ui.body.className = "toast-body px-0 d-flex btn-white py-2 pr-2";
-		this.ui.body.addEventListener("click", function () {
+		this.ui.body.className = "toast-body px-0 d-flex pb-2 pt-1 pr-2";
+		this.ui.container.addEventListener("click", function () {
 			if (win.options.title) {
+				self.emit("click");
 				win.show();
 				Elements.MenuBar.close();
 			}
 		});
 		this.ui.text = document.createElement("div");
-		this.ui.text.className = "px-3 flex-grow-1";
+		this.ui.text.className = "px-3 flex-grow-1 w-100";
 		this.ui.app.className = "mr-auto lh-18 ml-1";
 		this.ui.appIcon.className = "mdi mdi-18px lh-18 mr-1 d-flex align-items-center mdi-" + (win.options.icon || "android");
 		this.ui.app.style.WebkitTextFillColor = this.ui.appIcon.style.WebkitTextFillColor = "transparent";
@@ -121,31 +125,34 @@ class Notification {
 		this.ui.app.innerText = win.options.productName || "System UI";
 		this.ui.time.innerText = "just now";
 		this.ui.time.className = "text-muted smaller font-weight-bolder";
-		this.ui.message.className = "position-relative text-truncate " + (Shell.ui.darkMode ? "text-light" : "");
-
+		this.ui.message.className = "position-relative scrollable-0 w-100";
+		this.ui.message.style.textOverflow = "ellipsis";
+		this.ui.message.style["-webkit-line-clamp"] = "3";
+		this.ui.message.style["-webkit-box-orient"] = "vertical";
+		this.ui.message.style.maxHeight = CSS.rem(5);
+		this.ui.message.style.wordBreak = "break-word";
+		this.ui.message.style.display = "-webkit-box";
 		this.title = title;
 		this.ui.messageTitle.className = "font-weight-bold";
 		this.body = options.body;
-		if (options.image) {
-			this.ui.classList.add("type-image");
-			if (Shell.ui.darkMode) this.ui.classList.add("dark");
-			this.ui.message.classList.replace("px-3", "mt-2");
-			this.ui.body.classList.replace("pb-2", "pb-0")
-		}
 		this.ui.close = document.createElement("button");
 		this.ui.close.className = "close mdi mdi-close ml-2" + (Shell.ui.darkMode ? " text-white" : "");
 		this.ui.close.classList.toggle("d-none", options.sticky);
-		this.ui.close.onclick = () => this.dismiss();
+		this.ui.close.onclick = e => {
+			e.stopPropagation();
+			this.dismiss();
+		};
 		this.ui.header.append(this.ui.appIcon, this.ui.app, /*this.ui.time, */ this.ui.close);
 		this.ui.text.append(this.ui.messageTitle, this.ui.message);
 		this.ui.body.append(this.ui.text);
-		if (options.avatarImage) {
-			this.ui.avatarImage = new Image(48, 48);
-			this.ui.avatarImage.src = options.avatarImage;
-			this.ui.avatarImage.className = "rounded ml-auto";
+		if (options.image || (options.image = options.icon)) {
+			this.ui.avatarImage = document.createElement("div");
+			this.ui.avatarImage.style.background = `url("${options.image}") cover center center no-repeat`;
+			this.ui.avatarImage.className = "rounded ml-auto shadow-sm";
 			this.ui.body.append(this.ui.avatarImage);
 		}
-		this.ui.append(this.ui.header, this.ui.body);
+		this.ui.container.append(this.ui.header, this.ui.body);
+		this.ui.append(this.ui.container);
 		if (options.actions) {
 			this.ui.actions = document.createElement('notification-actions');
 			this.ui.actions.className = "py-2 px-3 d-flex justify-content-between" + (Shell.ui.darkMode ? " bg-dark" : " bg-light");
@@ -172,6 +179,7 @@ class Notification {
 	}
 
 	show() {
+		this.ui.classList.remove("notification-showing");
 		if (this.ui.classList.contains("show")) return;
 		this.ui.classList.remove("d-none");
 		setTimeout(() => this.ui.classList.replace("hide", "show"), Shell.ui.fadeAnimation);
@@ -211,10 +219,28 @@ class Notification {
 	}
 
 	dismiss() {
+		let self = this;
 		this.ui.classList.replace("show", "hide");
 		this.trayItem.remove();
 		Elements.MenuBar.notifications.splice(Elements.MenuBar.notifications.indexOf(this), 1);
-		setTimeout(e => this.ui.remove(), Shell.ui.flyAnimation);
+		setTimeout(() => {
+			if (self._hidedNodes) self._stopShowing();
+			self.ui.remove()
+		}, Shell.ui.flyAnimation);
+		this.emit("dismiss");
+	}
+
+	_stopShowing() {
+		let self = this;
+		Elements.MenuBar.close();
+		setTimeout(() => {
+			if (self._hidedNodes) {
+				for (const node of self._hidedNodes)
+					node.classList.remove("notification-showing");
+				self._hidedNodes = false;
+			}
+		}, Shell.ui.flyAnimation);
+		if (this.ui) this.ui.removeEventListener("click", this._stopShowing)
 	}
 
 	notify() {
@@ -229,26 +255,18 @@ class Notification {
 		let that = this;
 		this.ui.classList.replace("hide", "show");
 		if (Elements.MenuBar.classList.contains("show")) return;
-		let hidedNodes = [];
+		this._hidedNodes = [];
 		for (const node of Elements.MenuBar.childNodes) {
 			if (node !== that.ui) {
-				hidedNodes.push(node);
+				this._hidedNodes.push(node);
 				node.classList.add("notification-showing");
 			}
 		}
 		Elements.MenuBar.open();
 
-		function stopShowing() {
-			Elements.MenuBar.close();
-			setTimeout(() => {
-				for (const node of hidedNodes) node.classList.remove("notification-showing")
-			}, Shell.ui.flyAnimation);
-			that.ui.removeEventListener("click", stopShowing)
-		}
-
 		if (this.options.requireInteraction === true)
-			setTimeout(stopShowing, NOTIFICATION_DELAY);
-		else this.ui.addEventListener("click", stopShowing)
+			setTimeout(this._stopShowing, NOTIFICATION_DELAY);
+		else this.ui.addEventListener("click", this._stopShowing)
 	}
 }
 

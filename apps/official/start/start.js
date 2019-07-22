@@ -73,12 +73,11 @@ let menu = new Menu([{
 		}
 	])
 ;
-body.className = "d-flex align-items-center ml-2 mr-3";
+body.className = "d-flex position-relative align-items-center ml-2 mr-3";
 button.className = "btn border-0 rounded-max mdi mdi-36px lh-36 shadow d-flex align-items-center justify-content-center text-white p-0 my-1 mdi-chevron-up";
 button.style.background = "linear-gradient(135deg, #283593, #1565c0)";
 button.style.height = button.style.width = CSS.px(38);
 button.style.zIndex = 1;
-button.updatePosition = () => Elements.StartMenu.updatePosition();
 if (!Shell.isMobile) button.title = "All Apps";
 button.addEventListener("click", e => {
 	e.stopPropagation();
@@ -117,6 +116,6 @@ window.addEventListener("keyup", e => {
 });
 
 fs.readFile(__dirname + "/menu.js", "utf-8").then(code => {
-	new Function('body', '__dirname', code)(document.body, __dirname)
+	new Function('body', '__dirname', code)(body, __dirname)
 });
 return button;

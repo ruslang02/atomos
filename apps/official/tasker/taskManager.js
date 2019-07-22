@@ -1,5 +1,5 @@
 const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Registry = require("@api/Registry"),
-	Shell = require("@api/Shell"), {Button} = require("@api/Components");
+	Shell = require("@api/Shell"), {Button} = require("@api/Components"), {Notification} = require("@api/Notification");
 let tasks = document.createElement("div");
 tasks.style.cssText = "background: rgba(0,0,0,0.8); height: calc(100% - 90px); top: 29px; left:0;z-index:990";
 tasks.className = "w-100 position-fixed fade px-3 d-none";
@@ -8,11 +8,11 @@ let bgTasks = new Button({
 	color: "secondary",
 	addClasses: "rounded-circle mr-3 p-1 ml-auto bgTasks",
 	iconSize: 24,
-	tooltip: "0 background apps"
+	tooltip: "Background apps"
 });
 bgTasks.style.order = 1000;
 let bgPanel = document.createElement("section");
-bgPanel.className = "toast hide card shadow-sm p-3 position-absolute bg-white fly up";
+bgPanel.className = "toast hide card shadow-sm p-3 position-absolute fly up " + (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white");
 bgPanel.style.right = CSS.rem(1);
 bgPanel.style.width = CSS.px(250);
 bgPanel.header = document.createElement("div");
@@ -22,12 +22,12 @@ bgPanel.apps = document.createElement("div");
 bgPanel.apps.className = "d-none flex-column mt-2";
 bgPanel.append(bgPanel.header, bgPanel.apps);
 bgPanel.open = function () {
-	bgPanel.classList.remove("d-none");
-	setTimeout(() => bgPanel.classList.replace("hide", "show"), 10);
+	Elements.Bar.keepOpen(true);
+	bgPanel.classList.replace("hide", "show");
 };
 bgPanel.close = function () {
+	Elements.Bar.keepOpen(false);
 	bgPanel.classList.replace("show", "hide");
-	setTimeout(() => bgPanel.classList.add("d-none"), Shell.ui.fadeAnimation);
 };
 body.appendChild(bgPanel);
 bgTasks.addEventListener("click", e => {
@@ -43,7 +43,7 @@ bgPanel.add = id => {
 	let header = document.createElement("div");
 	header.innerText = win.options.productName || win.options.name;
 	let elem = document.createElement("button");
-	elem.className = "p-2 btn-white btn d-flex text-left align-items-center lh-r1";
+	elem.className = "p-2 btn d-flex text-left align-items-center lh-r1 " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 	elem.append(icon, header);
 	elem.id = "w" + id;
 	elem.onclick = e => {
@@ -59,12 +59,14 @@ window._windowBGPanel = bgPanel;
 window.addEventListener("click", bgPanel.close);
 
 new MutationObserver(function () {
-	if (bgPanel.apps.childNodes.length === 0)
+	if (bgPanel.apps.childNodes.length === 0) {
 		bgPanel.apps.classList.replace("d-flex", "d-none");
-	else
+		bgTasks.icon = "flip-to-back";
+	} else {
 		bgPanel.apps.classList.replace("d-none", "d-flex");
+		bgTasks.icon = "numeric-" + (bgPanel.apps.childNodes.length > 9 ? "9+" : bgPanel.apps.childNodes.length);
+	}
 	bgPanel.header.innerText = "Background apps (" + bgPanel.apps.childNodes.length + ")";
-	bgTasks.tooltip = bgPanel.apps.childNodes.length + " background apps"
 }).observe(bgPanel.apps, {
 	childList: true
 });

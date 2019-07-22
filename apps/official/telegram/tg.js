@@ -46,7 +46,6 @@ const telegram = MTProto({
 });
 
 const win = AppWindow.getCurrentWindow();
-win.ui.root.classList.remove("bg-semiwhite");
 win.ui.title.classList.add("d-none");
 win.ui.buttons.classList.add("my-1");
 win.ui.header.style.background = "rgba(0,0,0,0.2)";

@@ -26,6 +26,7 @@ function initVK() { /* Initializes in the end not to hang the UI when loading */
 const {
 	AppWindow,
 	Shell,
+	Notification,
 	Components: {
 		Button,
 		Spinner
@@ -33,7 +34,6 @@ const {
 } = require("@api");
 
 const win = AppWindow.getCurrentWindow();
-win.ui.root.classList.remove("bg-semiwhite", "bg-semidark");
 win.ui.title.classList.add("d-none");
 win.ui.buttons.classList.add("my-1");
 win.ui.header.style.background = "rgba(0,0,0,0.2)";
@@ -157,7 +157,6 @@ function login() {
 		addClasses: "w-100"
 	});
 	oAuthLogin.onclick = () => {
-
 	};
 	loginBody.append(oAuthLogin);
 	loginForm.append(loginBody, alert);

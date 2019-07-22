@@ -9,16 +9,16 @@ let root, active, allApps = [], allActions = [], mathjs;
 function render() {
 	Elements.StartMenu = document.createElement("startmenu");
 	root = Elements.StartMenu;
-	Elements.StartMenu.className = "position-fixed d-flex flex-column px-2 pb-2 hide fly up";
-	Elements.StartMenu.style.height = "400px";
-	Elements.StartMenu.style.width = "400px";
+	Elements.StartMenu.className = "position-absolute mb-3 d-flex flex-column hide fly up";
+	Elements.StartMenu.style.bottom = CSS.px(Elements.BarItems["official/start"].offsetHeight);
+	Elements.StartMenu.style.height = Elements.StartMenu.style.width = CSS.px(400);
 	Elements.StartMenu.addEventListener("contextmenu", e => e.stopPropagation());
-	if (Shell.isMobile) {
+	/*if (Shell.isMobile) {
 		Elements.StartMenu.classList.add("w-100");
 		setTimeout(function () {
 			Elements.StartMenu.style.height = "calc(100% - " + CSS.px(Elements.Bar.offsetHeight + Elements.MenuBar.offsetTop) + ")";
 		}, 500);
-	}
+	}*/
 	Elements.StartMenu.toggle = function () {
 		let condition = Elements.StartMenu.classList.contains("show");
 		if (condition)
@@ -49,15 +49,8 @@ function render() {
 		Elements.StartMenu.close();
 	});
 
-	Elements.StartMenu.updatePosition = () => {
-		Elements.StartMenu.style.bottom = Elements.Bar.offsetHeight + "px";
-		Elements.StartMenu.style.left = Elements.Bar.offsetLeft + "px";
-	}
-
 	Elements.StartMenu.style.zIndex = 990;
 	body.appendChild(Elements.StartMenu);
-
-	Elements.StartMenu.updatePosition();
 
 	renderSearch();
 	renderApps();

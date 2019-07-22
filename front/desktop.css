@@ -16,9 +16,13 @@ button, button:focus, button:hover:focus, button:active:focus {
 	--font-family-sans-serif: Source Sans Pro, sans-serif;
 	font-family: Source Sans Pro, sans-serif;
 	overflow: hidden;
-	transition: background-image 2s linear;
+	/* transition: background-image 2s linear; */
 	--taskbar-height: 50px;
 	--taskbar-hided: 50px;
+}
+
+:root {
+	--darker: rgb(37, 37, 37);
 }
 
 body.simple {
@@ -136,15 +140,15 @@ body.blur .modal:not(.noBlur) {
 }
 
 .bg-semiwhite.shadow, .bg-semiwhite.active {
-	background: rgba(224, 224, 224, 0.85) !important;
+	background: rgba(224, 224, 224, 0.85);
 }
 
 .bg-semidark {
-	background: rgb(45, 45, 45) !important;
+	background: rgb(45, 45, 45);
 }
 
 .bg-semidark.shadow, .bg-semidark.active {
-	background: rgba(5, 5, 5, 0.8) !important;
+	background: rgba(5, 5, 5, 0.8);
 }
 
 .font-weight-bolder {
@@ -284,11 +288,15 @@ window > overlay {
 }
 
 window.noBlur {
-	backdrop-filter: none !important;
+	/* backdrop-filter: none !important; */
 }
 
 window.maximized.bg-semiwhite {
-	background: rgb(230, 230, 230) !important
+	background: rgb(230, 230, 230)
+}
+
+window.maximized.bg-semidark {
+	background: rgb(45, 45, 45)
 }
 
 window.maximized window-ui > div[style*=cursor] {
@@ -330,11 +338,11 @@ body.showWindowButtonGlyphs window .btn-info:hover::before {
 	font-family: 'Material Design Icons', serif;
 	position: absolute;
 	top: 0;
-	left: 0px;
-	line-height: 8px;
+	left: 0;
 	right: 0;
-	font-size: 8px;
 	bottom: 0;
+	line-height: 8px;
+	font-size: 8px;
 	margin: auto;
 	width: 8px;
 	height: 8px;

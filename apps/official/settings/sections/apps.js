@@ -7,9 +7,8 @@ root.append(main);
 let osinfo = document.createElement("section");
 osinfo.className = "d-flex flex-column flex-shrink-0 align-items-center p-3";
 osinfo.icon = document.createElement("icon");
-osinfo.icon.className = "mdi mdi-application mdi-36px d-flex rounded-circle py-2 pr-2 text-white lh-36 mb-2";
+osinfo.icon.className = "mdi mdi-application mdi-36px d-flex rounded-circle p-2 text-white lh-36 mb-2";
 osinfo.icon.style.background = "var(--orange)";
-osinfo.icon.style.paddingLeft = "calc(0.5rem - 0.6px)"; // An awful workaround. Question materialdesignicons.com why I should do this
 osinfo.osname = document.createElement("div");
 osinfo.osname.className = "h5 m-0";
 osinfo.append(osinfo.icon, osinfo.osname);
@@ -49,12 +48,11 @@ appList.className = "list-group scrollable-x-0";
 
 async function listApps(dir) {
 	let apps = await fs.readdir(dir);
-	osinfo.osname.innerText = apps.length + " " + "apps installed".toLocaleString();
 	for (const item of apps) {
 		let itemPath = path.join(dir, item);
 		let stat = await fs.stat(itemPath);
 		if (stat.isDirectory()) {
-			listApps(itemPath);
+			await listApps(itemPath);
 			continue;
 		} else if (item.toLowerCase().trim() !== "package.json") continue;
 		try {
@@ -84,4 +82,6 @@ async function listApps(dir) {
 }
 
 main.append(appList);
-listApps(path.join(osRoot, "apps"));
+listApps(path.join(osRoot, "apps")).then(() => {
+	osinfo.osname.innerText = appList.childElementCount + " " + "apps installed".toLocaleString();
+});
