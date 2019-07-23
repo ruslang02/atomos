@@ -45,7 +45,7 @@ webview.addEventListener("new-window", (e, url) => {
 let settingsBtn = document.createElement("button");
 settingsBtn.className = "mdi mdi-18px fade mdi-settings lh-18 d-flex close text-white";
 settingsBtn.style.order = 9999;
-settingsBtn.style.textShadow = "none";
+settingsBtn.style.textShadow = "0 1px 2px black";
 settingsBtn.title = "Settings";
 settingsBtn.onclick = openSettings;
 new Tooltip(settingsBtn);

@@ -18,3 +18,11 @@
 [class*=systemPad] > [class*=listItem]:last-child, [class*=systemPad] > [class*=listItem]:nth-last-child(2) > [class*=guildSeparator] {
 	display: none
 }
+
+[class*=notice] {
+	position: fixed;
+	right: 1rem;
+	bottom: 1rem;
+	padding: .1rem 2rem .1rem .5rem;
+	border-radius: .25rem !important;
+}

@@ -24,3 +24,11 @@
 #app-mount, [class*=layer][role=dialog], [class*=layers], [class*=sidebarRegion], [class*=standardSidebarView], [class*=layer][role=dialog] > [class*=container] {
 	background: none !important;
 }
+
+[class*=notice] {
+	position: fixed !important;
+	right: 1rem;
+	bottom: 1rem;
+	padding: .1rem 2rem .1rem .5rem !important;
+	border-radius: .25rem !important;
+}
