@@ -5,7 +5,6 @@ let elems = {
 	Clock: document.createElement("clock"),
 	Date: document.createElement("date"),
 	updatePosition() {
-		Elements.MenuBar.updatePosition();
 	}
 };
 

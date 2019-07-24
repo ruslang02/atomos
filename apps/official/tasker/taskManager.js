@@ -6,14 +6,14 @@ tasks.className = "w-100 position-fixed fade px-3 d-none";
 let bgTasks = new Button({
 	icon: "flip-to-back",
 	color: "secondary",
-	addClasses: "rounded-circle mr-3 p-1 ml-auto bgTasks",
+	addClasses: "rounded-circle mr-2 p-1 ml-auto bgTasks",
 	iconSize: 24,
 	tooltip: "Background apps"
 });
 bgTasks.style.order = 1000;
 let bgPanel = document.createElement("section");
 bgPanel.className = "toast hide card shadow-sm p-3 position-absolute fly up " + (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white");
-bgPanel.style.right = CSS.rem(1);
+bgPanel.style.right = CSS.rem(0.5);
 bgPanel.style.width = CSS.px(250);
 bgPanel.header = document.createElement("div");
 bgPanel.header.innerText = "Background apps (0)";
@@ -72,14 +72,13 @@ new MutationObserver(function () {
 });
 
 document.body.append(tasks);
+setTimeout(() =>
+	bgPanel.style.bottom = CSS.px(body.offsetHeight), 100)
 try {
 	body.className = "flex-grow-1 py-1 d-flex align-items-center position-relative";
 	body.appendChild(bgTasks);
 } catch (e) {
 }
-body.updatePosition = function () {
-	bgPanel.style.bottom = CSS.px(body.clientHeight);
-};
 
 class TaskManager {
 	constructor(wID) {
