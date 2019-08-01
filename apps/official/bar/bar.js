@@ -1,7 +1,7 @@
 const Menu = require("@api/Menu"), Registry = require("@api/Registry");
 const fs = require("fs").promises;
 if (!Registry.get("taskbar.items"))
-	Registry.set('taskbar.items', ["official/start", "official/tasker", "official/tray"]);
+    Registry.set('taskbar.items', ["official/start", "official/tasker", "official/batterymeter", "official/tray"]);
 let autoHide = Registry.get("taskbar.autoHide") || false;
 Registry.watch("taskbar", updatePosition);
 render();
