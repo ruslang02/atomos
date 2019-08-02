@@ -9,8 +9,8 @@ let root, active, allApps = [], allActions = [], mathjs;
 function render() {
 	Elements.StartMenu = document.createElement("startmenu");
 	root = Elements.StartMenu;
-	Elements.StartMenu.className = "position-absolute mb-3 d-flex flex-column hide fly up";
-	Elements.StartMenu.style.bottom = CSS.px(Elements.BarItems["official/start"].offsetHeight);
+	Elements.StartMenu.className = "position-absolute d-flex flex-column hide fly up";
+	Elements.StartMenu.style.bottom = "var(--taskbar-height)";
 	Elements.StartMenu.style.height = Elements.StartMenu.style.width = CSS.px(400);
 	Elements.StartMenu.addEventListener("contextmenu", e => e.stopPropagation());
 	/*if (Shell.isMobile) {
@@ -88,7 +88,7 @@ async function renderApps() {
 	} else {
 		root.Apps = document.createElement("apps");
 		active = root.Apps;
-		root.Apps.className = "bg-white flex-grow-1 p-2 toast show mw-100 scrollable" + (Shell.ui.darkMode ? " bg-dark" : "");
+		root.Apps.className = "bg-white flex-grow-1 m-0 p-2 toast show mw-100 scrollable" + (Shell.ui.darkMode ? " bg-dark" : "");
 		root.Apps.style.cssText = "--display: grid";
 		root.Apps.style.display = "grid";
 		root.Apps.style.gridTemplateColumns = "25% 25% 25% 25%";
@@ -202,7 +202,7 @@ async function renderActions() {
 
 function renderSearchSection() {
 	root.SearchSection = document.createElement("section");
-	root.SearchSection.className = "flex-nowrap bg-white p-2 flex-grow-1 toast show mw-100 scrollable" + (Shell.ui.darkMode ? " bg-dark" : "");
+	root.SearchSection.className = "flex-nowrap bg-white p-2 card flex-grow-1 toast show mw-100 scrollable" + (Shell.ui.darkMode ? " bg-dark" : "");
 	root.SearchSection.style.cssText = "--display: flex";
 	root.SearchSection.style.display = "none";
 	root.appendChild(root.SearchSection);

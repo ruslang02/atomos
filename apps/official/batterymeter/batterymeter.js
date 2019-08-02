@@ -2,6 +2,7 @@ const {
 	Button
 } = require("@api/Components");
 const Menu = require("@api/Menu");
+const Shell = require("@api/Shell");
 const Registry = require("@api/Registry");
 const si = require("systeminformation");
 let batteryTimer = setInterval(updateBattery, 10000);
@@ -14,27 +15,35 @@ function updateBattery() {
 		if (icon === 100) icon = "battery";
 		else if (icon === 0) icon = "battery-outline";
 		else icon = "battery-" + icon;
-		let iconSize = !!Registry.get("system.showBatteryPercentage") ? 18 : 24;
-		button.icon.className = `mdi mdi-${iconSize}px lh-${iconSize} mdi-${icon} ${!!Registry.get("system.showBatteryPercentage") ? "mr-1" : ""}`;
+        let isPerc = !!Registry.get("system.showBatteryPercentage");
+        let iconSize = isPerc ? 18 : 24;
+        let status = data.percent > 49 ? "success" : (data.percent > 19 ? "warning" : "danger");
+        button.icon.className = `mdi mdi-${iconSize}px d-flex lh-${iconSize} mdi-${icon}`;
+        batteryIcon.className = `mdi mdi-48px d-flex lh-48 mdi-${icon}`;
+        button.icon.classList.toggle("mr-1", isPerc);
+        button.percentage.classList.toggle("d-none", !isPerc);
+        batteryIcon.style["-webkit-text-stroke"] = `2px var(--${status})`;
+        batteryHeader.className = "text-white d-flex py-2 px-3 align-items-center bg-" + status;
 		button.icon.style.height = CSS.px(iconSize);
-		button.percentage.innerText = !!Registry.get("system.showBatteryPercentage") ? data.percent + "%" : "";
-		button.className = `${data.model ? "d-flex" : "d-none"} btn  btn-${data.percent > 49 ? "success" : (data.percent > 19 ? "warning" : "danger")} rounded-pill d-flex mr-2 align-items-center`
+        button.percentage.innerText = batteryPerc.innerText = isPerc ? data.percent + "%" : "";
+        button.className = `${data.model ? "d-flex" : "d-none"} btn btn-${status} rounded-pill d-flex mr-2 align-items-center`;
 		button.dataset.originalTitle = "Time remaining: " + data.timeremaining + " minutes";
-		button.style.padding = !!Registry.get("system.showBatteryPercentage") ? ".25rem .75rem" : ".25rem";
+        button.style.padding = isPerc ? ".25rem .75rem" : ".25rem";
 		button.style.height = CSS.px(35);
 	}).catch(e => {
-		console.error(e);
 		clearInterval(batteryTimer);
 	})
 }
 
 body.className = "d-flex align-items-center position-relative";
 let button = document.createElement("button");
-button.className = "";
 button.icon = document.createElement("icon");
-button.icon.className = "mdi mdi-18px lh-18";
 button.percentage = document.createElement("div");
 button.append(button.icon, button.percentage);
+button.addEventListener("click", e => {
+    e.stopPropagation();
+    if (batteryPanel.classList.contains("show")) batteryPanel.close(); else batteryPanel.open();
+});
 button.oncontextmenu = e => {
 	e.stopPropagation();
 	new Menu([{
@@ -47,13 +56,12 @@ button.oncontextmenu = e => {
 		}
 	}]).popup();
 };
-updateBattery().then(() => {
-	new Tooltip(button);
-});
 
 let batteryPanel = document.createElement("section");
-batteryPanel.className = "toast fly up hide card position-absolute";
-batteryPanel.style.right = 0;
+batteryPanel.className = "toast fly up hide card m-0 position-absolute " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
+batteryPanel.style.right = CSS.rem(0.5);
+batteryPanel.style.minWidth = CSS.px(300);
+batteryPanel.style.bottom = "var(--taskbar-height)";
 batteryPanel.open = function () {
 	Elements.Bar.keepOpen(true);
 	batteryPanel.classList.replace("hide", "show");
@@ -63,14 +71,15 @@ batteryPanel.close = function () {
 	batteryPanel.classList.replace("show", "hide");
 };
 let batteryHeader = document.createElement("header");
-batteryHeader.className = "text-white d-flex";
 let batteryIcon = document.createElement("icon");
-batteryIcon.className = "mdi mdi-48px lh-48 mdi-battery-30";
 let batteryPerc = document.createElement("div");
 batteryPerc.className = "h1 m-0 font-weight-light";
 batteryHeader.append(batteryIcon, batteryPerc);
-batteryPanel.append(batteryHeader);
+let batteryInfo = document.createElement("div");
+batteryInfo.className = "py-2 px-3";
+batteryPanel.append(batteryHeader, batteryInfo);
 body.append(button, batteryPanel);
-setTimeout(() =>
-	batteryPanel.style.bottom = CSS.px(body.offsetHeight), 100);
+updateBattery().then(() => {
+    new Tooltip(button);
+});
 return button;

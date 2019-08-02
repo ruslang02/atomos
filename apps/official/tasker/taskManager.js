@@ -12,9 +12,10 @@ let bgTasks = new Button({
 });
 bgTasks.style.order = 1000;
 let bgPanel = document.createElement("section");
-bgPanel.className = "toast hide card shadow-sm p-3 position-absolute fly up " + (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white");
+bgPanel.className = "toast hide card shadow-sm p-3 m-0 position-absolute fly up " + (Shell.ui.darkMode ? "bg-dark text-white" : "bg-white");
 bgPanel.style.right = CSS.rem(0.5);
 bgPanel.style.width = CSS.px(250);
+bgPanel.style.bottom = "var(--taskbar-height)";
 bgPanel.header = document.createElement("div");
 bgPanel.header.innerText = "Background apps (0)";
 bgPanel.header.className = "text-center";
@@ -72,8 +73,6 @@ new MutationObserver(function () {
 });
 
 document.body.append(tasks);
-setTimeout(() =>
-	bgPanel.style.bottom = CSS.px(body.offsetHeight), 100)
 try {
 	body.className = "flex-grow-1 py-1 d-flex align-items-center position-relative";
 	body.appendChild(bgTasks);

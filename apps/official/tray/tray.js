@@ -33,6 +33,7 @@ if (Shell.isMobile) {
 } else {
 	body.className = "d-flex align-items-center position-relative";
 	elems.Container.className = "btn shadow rounded-pill d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
+	elems.Container.style.height = CSS.px(35);
 	elems.Clock.className = "font-weight-bolder mr-2";
 	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
 }
@@ -69,6 +70,7 @@ body.appendChild(elems.Container);
 if (!Shell.isMobile) new Tooltip(elems.Container);
 
 setInterval(updateTime, 1000);
+updateTime();
 window.TrayItem = class TrayItem {
 	constructor(icon) {
 		let iconSize = 18;

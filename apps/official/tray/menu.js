@@ -7,18 +7,14 @@ module.exports = function (body) {
 	if (!Elements)
 		window.Elements = [];
 	Elements.MenuBar = document.createElement("aside");
-	Elements.MenuBar.className = "position-absolute shadow-sm d-flex mb-5 flex-column hide fly up scrollable-y scrollable-x-0";
-	Elements.MenuBar.style.margin = "0 0 .75rem 0";
+	Elements.MenuBar.className = "position-absolute shadow-sm d-flex mb-0 flex-column hide fly up scrollable-y scrollable-x-0";
 	Elements.MenuBar.style.right = 0;
 	Elements.MenuBar.style.width = CSS.px(350);
+	Elements.MenuBar.style.bottom = "var(--taskbar-height)";
 	Elements.MenuBar.style.maxHeight = "var(--taskbar-y)";
 	Elements.MenuBar.id = "official/tray";
 	Elements.MenuBar.style.zIndex = "990";
-	setTimeout(() =>
-		Elements.MenuBar.style.bottom = CSS.px(Elements.BarItems["official/tray"].Container.offsetHeight), 100)
-	if (!Shell.isMobile) {
-
-	} else {
+	if (Shell.isMobile) {
 		Elements.MenuBar.classList.add("w-100", "h-100");
 		Elements.MenuBar.classList.replace("m-2", "p-2");
 		Elements.MenuBar.style.top = "29px";
