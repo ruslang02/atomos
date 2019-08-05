@@ -20,7 +20,7 @@ function updateBattery() {
         let iconSize = isPerc ? 18 : 24;
         let hours = Math.trunc(data.timeremaining / 60);
         let minutes = data.timeremaining - Math.trunc(data.timeremaining / 60) * 60;
-        let time = hours > 0 ? hours + " hours" + (minutes > 0 ? " and " + minutes + " minutes" : "") : (minutes > 0 ? minutes + " minutes" : "Not available")
+		let time = hours > 0 ? hours + " hours" + (minutes > 0 ? " " + minutes + " minutes" : "") : (minutes > 0 ? minutes + " minutes" : "Not available")
         let status = (data.percent > 49 || data.ischarging) ? "success" : (data.percent > 19 ? "warning" : "danger");
         button.icon.className = `mdi mdi-${iconSize}px d-flex lh-${iconSize} mdi-${icon}`;
         batteryIcon.className = `mdi mdi-48px d-flex lh-48 mdi-${icon}`;

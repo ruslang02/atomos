@@ -88,7 +88,7 @@ async function renderApps() {
 	} else {
 		root.Apps = document.createElement("apps");
 		active = root.Apps;
-		root.Apps.className = "bg-white flex-grow-1 m-0 p-2 toast show mw-100 scrollable" + (Shell.ui.darkMode ? " bg-dark" : "");
+		root.Apps.className = "flex-grow-1 m-0 p-2 toast show mw-100 scrollable " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
 		root.Apps.style.cssText = "--display: grid";
 		root.Apps.style.display = "grid";
 		root.Apps.style.gridTemplateColumns = "25% 25% 25% 25%";
@@ -202,7 +202,7 @@ async function renderActions() {
 
 function renderSearchSection() {
 	root.SearchSection = document.createElement("section");
-	root.SearchSection.className = "flex-nowrap bg-white p-2 card flex-grow-1 toast show mw-100 scrollable" + (Shell.ui.darkMode ? " bg-dark" : "");
+	root.SearchSection.className = "flex-nowrap p-2 card flex-grow-1 toast show mw-100 scrollable " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
 	root.SearchSection.style.cssText = "--display: flex";
 	root.SearchSection.style.display = "none";
 	root.appendChild(root.SearchSection);
@@ -210,7 +210,7 @@ function renderSearchSection() {
 
 function renderSearch() {
 	root.Search = document.createElement("search");
-	root.Search.className = "input-group bg-white toast show mw-100 d-flex shadow mb-2 flex-shrink-0" + (Shell.ui.darkMode ? " bg-dark" : "");
+	root.Search.className = "input-group toast show mw-100 d-flex shadow mb-2 flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
 	let igp = document.createElement("label");
 	igp.className = "input-group-prepend m-0 d-flex align-items-center";
 	igp.htmlFor = "__searchInput";

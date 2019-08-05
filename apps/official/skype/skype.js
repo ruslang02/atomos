@@ -23,6 +23,11 @@ webview.addEventListener("dom-ready", function () {
 		console.log("stop", file.toString())
 	});
 });
+webview.addEventListener("new-window", (e, url) => {
+	e.preventDefault();
+	console.log(e.url);
+	Shell.openExternal(e.url)
+});
 webview.addEventListener("focus", () => win.show());
 webview.addEventListener("ipc-message", (e) => {
 	let n = e.args[0];

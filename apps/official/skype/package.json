@@ -15,6 +15,7 @@
   },
   "cheapResize": true,
   "disableBlur": true,
+  "backgroundable": true,
   "width": 1100,
   "height": 800,
   "minWidth": 600,

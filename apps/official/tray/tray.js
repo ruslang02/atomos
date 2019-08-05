@@ -10,11 +10,11 @@ let elems = {
 
 function updateTime() {
 	if (Shell.isMobile) document.body.style.paddingTop = elems.Container.offsetHeight + "px";
-	elems.Clock.innerText = new Date().toLocaleTimeString("en-US", {
+	elems.Clock.innerText = new Date().toLocaleTimeString({}, {
 		hour: '2-digit',
 		minute: '2-digit'
 	});
-	elems.Date.innerText = elems.Container.dataset.originalTitle = new Date().toLocaleDateString("en-US", {
+	elems.Date.innerText = elems.Container.dataset.originalTitle = new Date().toLocaleDateString({}, {
 		weekday: 'long',
 		year: 'numeric',
 		month: 'short',
@@ -35,7 +35,7 @@ if (Shell.isMobile) {
 	elems.Container.className = "btn shadow rounded-pill d-flex align-items-center" + (Shell.ui.darkMode ? " btn-dark" : " btn-light");
 	elems.Container.style.height = CSS.px(35);
 	elems.Clock.className = "font-weight-bolder mr-2";
-	elems.NIcons.style.maxWidth = "calc(18px * 3 + .25rem * 2)";
+	elems.NIcons.style.maxWidth = "calc(18px * 5 + .25rem * 4)";
 }
 elems.NIcons.className = "fly left show d-inline-flex flex-row-reverse justify-content-end mr-2 text-truncate";
 elems.Date.className = "fly left show d-none mr-2";

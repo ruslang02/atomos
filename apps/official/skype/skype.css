@@ -1,3 +1,7 @@
-[style*='border-color: rgb(213, 217, 222); background'], [style*='height: 88px'] {
+[style*='border-color: rgb(213, 217, 222); background'], [style*='border-color: rgb(43, 44, 51); background'], [style*='height: 88px'] {
 	padding-top: 2rem;
+}
+
+div[style*='background-color: rgb(43, 44, 51)'] {
+	display: none;
 }
