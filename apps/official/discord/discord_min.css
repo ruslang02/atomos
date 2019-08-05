@@ -13,7 +13,7 @@
 }
 
 [class*=listItem] > [class*=listItemWrapper], [class*=listItem] > [class*=blobContainer],
-[class*=listItem] > [class*=guildSeparator] {
+[class*=listItem] > [class*=guildSeparator], [class*=wrapper] > [class*=listItem] > [draggable] > [class*=wrapper] {
 	margin-left: 10px;
 }
 
@@ -31,4 +31,8 @@
 	bottom: 1rem;
 	padding: .1rem 2rem .1rem .5rem !important;
 	border-radius: .25rem !important;
+}
+
+[class*=expandedFolderBackground] {
+    margin-left: 5px;
 }

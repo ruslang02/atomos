@@ -3,5 +3,5 @@
 }
 
 div[style*='background-color: rgb(43, 44, 51)'] {
-	display: none;
+    display: none !important;
 }

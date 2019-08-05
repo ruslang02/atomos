@@ -128,12 +128,14 @@ class Notification extends EventListener {
 		this.ui.message.className = "position-relative scrollable-0 w-100";
 		this.ui.message.style.textOverflow = "ellipsis";
 		this.ui.message.style["-webkit-line-clamp"] = "3";
-		this.ui.message.style["-webkit-box-orient"] = "vertical";
+		this.ui.message.style["-webkit-box-orient"] = this.ui.messageTitle.style["-webkit-box-orient"] = "vertical";
 		this.ui.message.style.maxHeight = CSS.rem(5);
-		this.ui.message.style.wordBreak = "break-word";
-		this.ui.message.style.display = "-webkit-box";
+		this.ui.message.style.wordBreak = this.ui.messageTitle.style.wordBreak = "break-word";
+		this.ui.message.style.display = this.ui.messageTitle.style.display = "-webkit-box";
 		this.title = title;
-		this.ui.messageTitle.className = "font-weight-bold";
+		this.ui.messageTitle.className = "font-weight-bold scrollable-0";
+		this.ui.messageTitle.style["-webkit-line-clamp"] = "2";
+		this.ui.messageTitle.style.maxHeight = CSS.rem(3);
 		this.body = options.body;
 		this.ui.close = document.createElement("button");
 		this.ui.close.className = "close mdi mdi-close ml-2" + (Shell.ui.darkMode ? " text-white" : "");
@@ -145,10 +147,14 @@ class Notification extends EventListener {
 		this.ui.header.append(this.ui.appIcon, this.ui.app, /*this.ui.time, */ this.ui.close);
 		this.ui.text.append(this.ui.messageTitle, this.ui.message);
 		this.ui.body.append(this.ui.text);
-		if (options.image || (options.image = options.icon)) {
+		if (!options.image) options.image = options.icon;
+		if (options.image) {
+			console.log(options.image);
 			this.ui.avatarImage = document.createElement("div");
-			this.ui.avatarImage.style.background = `url("${options.image}") cover center center no-repeat`;
-			this.ui.avatarImage.className = "rounded ml-auto shadow-sm";
+			this.ui.avatarImage.style.height = this.ui.avatarImage.style.width = CSS.px(48);
+			this.ui.avatarImage.style.backgroundImage = `url(${options.image || options.icon})`;
+			this.ui.avatarImage.style.backgroundSize = 'cover';
+			this.ui.avatarImage.className = "rounded ml-auto shadow-sm flex-shrink-0";
 			this.ui.body.append(this.ui.avatarImage);
 		}
 		this.ui.container.append(this.ui.header, this.ui.body);

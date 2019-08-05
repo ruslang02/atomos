@@ -1,6 +1,6 @@
 window.ipcRenderer = require("electron").ipcRenderer;
 window.oldNotification = window.Notification;
-var Notification = function () {
+let Notification = function () {
 	ipcRenderer.sendToHost("notification", arguments);
 };
 Notification.requestPermission = window.oldNotification.requestPermission;

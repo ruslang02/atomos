@@ -9,8 +9,10 @@ let batteryTimer = setInterval(updateBattery, 10000);
 
 function updateBattery() {
 	return si.battery().then(data => {
-		if (!data.model)
+        if (!data.model) {
 			clearInterval(batteryTimer);
+            return;
+        }
 		let icon = Math.round(data.percent / 10) * 10;
 		if (icon === 100) icon = "battery";
 		else if (icon === 0) icon = "battery-outline";
@@ -20,14 +22,14 @@ function updateBattery() {
         let iconSize = isPerc ? 18 : 24;
         let hours = Math.trunc(data.timeremaining / 60);
         let minutes = data.timeremaining - Math.trunc(data.timeremaining / 60) * 60;
-		let time = hours > 0 ? hours + " hours" + (minutes > 0 ? " " + minutes + " minutes" : "") : (minutes > 0 ? minutes + " minutes" : "Not available")
+        let time = hours > 0 ? hours + " hours" + (minutes > 0 ? " " + minutes + " minutes" : "") : (minutes > 0 ? minutes + " minutes" : "Not available");
         let status = (data.percent > 49 || data.ischarging) ? "success" : (data.percent > 19 ? "warning" : "danger");
         button.icon.className = `mdi mdi-${iconSize}px d-flex lh-${iconSize} mdi-${icon}`;
         batteryIcon.className = `mdi mdi-48px d-flex lh-48 mdi-${icon}`;
         button.icon.classList.toggle("mr-1", isPerc);
         button.percentage.classList.toggle("d-none", !isPerc);
         batteryIcon.style["-webkit-text-stroke"] = `2px var(--${status})`;
-        batteryHeader.className = "text-white d-flex py-2 px-3 align-items-center bg-" + status;
+        batteryHeader.className = `d-flex py-2 px-3 align-items-center bg-${status} ${status !== "warning" ? "text-white" : ""}`;
 		button.icon.style.height = CSS.px(iconSize);
         button.percentage.innerText = batteryPerc.innerText = data.percent + "%";
         button.className = `${data.model ? "d-flex" : "d-none"} btn btn-${status} rounded-pill d-flex mr-2 align-items-center`;
@@ -44,6 +46,7 @@ let button = document.createElement("button");
 button.icon = document.createElement("icon");
 button.percentage = document.createElement("div");
 button.style.height = CSS.px(35);
+button.className = "d-none";
 button.append(button.icon, button.percentage);
 button.addEventListener("click", e => {
     e.stopPropagation();
@@ -67,6 +70,7 @@ batteryPanel.className = "toast fly up hide card m-0 position-absolute " + (Shel
 batteryPanel.style.right = CSS.rem(0.5);
 batteryPanel.style.minWidth = CSS.px(300);
 batteryPanel.style.bottom = "var(--taskbar-height)";
+batteryPanel.oncontextmenu = e => e.stopPropagation();
 batteryPanel.open = function () {
 	Elements.Bar.keepOpen(true);
 	batteryPanel.classList.replace("hide", "show");
@@ -81,7 +85,7 @@ let batteryPerc = document.createElement("div");
 batteryPerc.className = "h1 m-0 font-weight-light";
 batteryHeader.append(batteryIcon, batteryPerc);
 let batteryInfo = document.createElement("div");
-batteryInfo.className = "py-3 px-4";
+batteryInfo.className = "py-3 px-4" + (Shell.ui.darkMode ? " text-white" : "");
 batteryPanel.append(batteryHeader, batteryInfo);
 body.append(button, batteryPanel);
 updateBattery().then(() => {

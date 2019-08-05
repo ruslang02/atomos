@@ -9,7 +9,7 @@ webview.preload = path.join(__dirname, "captureNotifications.js");
 win.ui.body.append(webview);
 win.ui.body.classList.replace("very-rounded-bottom", "very-rounded");
 win.ui.root.style.background = "white";
-win.ui.title.classList.add("d-none");
+win.ui.title.classList.add("fade");
 win.ui.header.classList.remove("p-2");
 win.ui.header.classList.add("position-absolute", "py-2", "w-100");
 win.ui.header.style.zIndex = "100";

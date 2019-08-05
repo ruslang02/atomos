@@ -22,6 +22,7 @@ bgPanel.header.className = "text-center";
 bgPanel.apps = document.createElement("div");
 bgPanel.apps.className = "d-none flex-column mt-2";
 bgPanel.append(bgPanel.header, bgPanel.apps);
+bgPanel.oncontextmenu = e => e.stopPropagation();
 bgPanel.open = function () {
 	Elements.Bar.keepOpen(true);
 	bgPanel.classList.replace("hide", "show");
@@ -46,6 +47,7 @@ bgPanel.add = id => {
 	let elem = document.createElement("button");
 	elem.className = "p-2 btn d-flex text-left align-items-center lh-r1 " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 	elem.append(icon, header);
+	elem.oncontextmenu = () => win.task.menu.popup();
 	elem.id = "w" + id;
 	elem.onclick = e => {
 		e.stopPropagation();
@@ -118,6 +120,16 @@ class TaskManager {
 			delay: 250
 		});
 		this.menu = new Menu([{
+			label: "Background",
+			type: "checkbox",
+			id: "bg",
+			checked: () => this.window.backgrounded,
+			click: () => this.window.backgrounded ? this.window.show() : this.window.background(),
+			visible: this.window.options.backgroundable
+		}, {
+			type: "separator",
+			visible: this.window.options.backgroundable
+		}, {
 			label: "Maximize",
 			id: "max",
 			icon: "window-maximize",
@@ -154,7 +166,6 @@ class TaskManager {
 		});
 		this.window.ui.header.addEventListener("contextmenu", function (e) {
 			e.stopPropagation();
-			_this.menu.renderMenu();
 			_this.menu.popup();
 		});
 		this.window.ui.buttons.addEventListener("contextmenu", e => e.stopPropagation());
@@ -162,6 +173,9 @@ class TaskManager {
 			e.stopPropagation();
 			_this.menu.closePopup();
 			_this.window.show()
+		});
+		this.menu.on('menu-will-show', () => {
+			this.menu.renderMenu();
 		});
 		this.window.on('closed', function () {
 			document.body.click();

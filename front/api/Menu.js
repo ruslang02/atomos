@@ -167,11 +167,12 @@ class Menu extends EventEmitter {
 					menuInput.className = "custom-control-input";
 					menuInput.type = "checkbox";
 					menuItem.onclick = e => {
-						menuInput.checked = item.checked = !menuInput.checked;
-						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, this.g(item.checked), item, _this.window, _this.activeElement);
+						menuInput.checked = !menuInput.checked;
+						(item.click || (() => console.log("This menu item does not have an onclick event."))).call(null, this.g(menuInput.checked), item, _this.window, _this.activeElement);
 						_this.menu.overlay.onclick(e);
 					};
 					menuInput.checked = this.g(item.checked);
+					console.log(this.g(item.checked), item);
 					let menuTitle = document.createElement("label");
 					menuTitle.className = "flex-grow-1 custom-control-label" + (Shell.ui.darkMode ? " text-white" : "");
 					menuTitle.style.cursor = "pointer";

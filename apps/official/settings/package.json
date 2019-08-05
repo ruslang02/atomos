@@ -19,5 +19,13 @@
 			"main": "action.js",
 			"icon": "settings"
 		}
-	]
+    ],
+  "quickTiles": {
+    "wifi": "tray_plugins/wifi.js",
+    "dnd": "tray_plugins/dnd.js",
+    "radio": "tray_plugins/radio.js",
+    "sound": "tray_plugins/sound.js",
+    "brightness": "tray_plugins/brightness.js",
+    "shortcut": "tray_plugins/shortcut.js"
+  }
 }

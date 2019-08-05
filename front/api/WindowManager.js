@@ -388,9 +388,11 @@ class AppWindow extends EventEmitter {
 		this.task.task.classList.replace("d-inline-flex", "d-none");
 		this.hide();
 		this.once('show', function () {
+			this.backgrounded = false;
 			this.task.task.classList.replace("d-none", "d-inline-flex");
 			_windowBGPanel.delete(this.id);
 		});
+		this.backgrounded = true;
 		_windowBGPanel.add(this.id);
 	}
 
