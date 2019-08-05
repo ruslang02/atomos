@@ -15,9 +15,10 @@ function updateBattery() {
 		if (icon === 100) icon = "battery";
 		else if (icon === 0) icon = "battery-outline";
 		else icon = "battery-" + icon;
+        if (data.ischarging) icon = icon.replace("battery", "battery-charging");
         let isPerc = !!Registry.get("system.showBatteryPercentage");
         let iconSize = isPerc ? 18 : 24;
-        let status = data.percent > 49 ? "success" : (data.percent > 19 ? "warning" : "danger");
+        let status = (data.percent > 49 || data.ischarging) ? "success" : (data.percent > 19 ? "warning" : "danger");
         button.icon.className = `mdi mdi-${iconSize}px d-flex lh-${iconSize} mdi-${icon}`;
         batteryIcon.className = `mdi mdi-48px d-flex lh-48 mdi-${icon}`;
         button.icon.classList.toggle("mr-1", isPerc);
@@ -25,11 +26,11 @@ function updateBattery() {
         batteryIcon.style["-webkit-text-stroke"] = `2px var(--${status})`;
         batteryHeader.className = "text-white d-flex py-2 px-3 align-items-center bg-" + status;
 		button.icon.style.height = CSS.px(iconSize);
-        button.percentage.innerText = batteryPerc.innerText = isPerc ? data.percent + "%" : "";
+        button.percentage.innerText = batteryPerc.innerText = data.percent + "%";
         button.className = `${data.model ? "d-flex" : "d-none"} btn btn-${status} rounded-pill d-flex mr-2 align-items-center`;
 		button.dataset.originalTitle = "Time remaining: " + data.timeremaining + " minutes";
         button.style.padding = isPerc ? ".25rem .75rem" : ".25rem";
-		button.style.height = CSS.px(35);
+        batteryInfo.innerHTML = `<b class="mr-2">Manufacturer</b> ${data.manufacturer || "Unknown"}<br/><b class="mr-2">Model</b> ${data.model || "Unknown"}<br/><b class="mr-2">Time remaining</b> ${data.timeremaining} minutes`
 	}).catch(e => {
 		clearInterval(batteryTimer);
 	})
@@ -39,6 +40,7 @@ body.className = "d-flex align-items-center position-relative";
 let button = document.createElement("button");
 button.icon = document.createElement("icon");
 button.percentage = document.createElement("div");
+button.style.height = CSS.px(35);
 button.append(button.icon, button.percentage);
 button.addEventListener("click", e => {
     e.stopPropagation();
@@ -76,7 +78,7 @@ let batteryPerc = document.createElement("div");
 batteryPerc.className = "h1 m-0 font-weight-light";
 batteryHeader.append(batteryIcon, batteryPerc);
 let batteryInfo = document.createElement("div");
-batteryInfo.className = "py-2 px-3";
+batteryInfo.className = "py-3 px-4";
 batteryPanel.append(batteryHeader, batteryInfo);
 body.append(button, batteryPanel);
 updateBattery().then(() => {
