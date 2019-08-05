@@ -18,6 +18,9 @@ function updateBattery() {
         if (data.ischarging) icon = icon.replace("battery", "battery-charging");
         let isPerc = !!Registry.get("system.showBatteryPercentage");
         let iconSize = isPerc ? 18 : 24;
+        let hours = Math.trunc(data.timeremaining / 60);
+        let minutes = data.timeremaining - Math.trunc(data.timeremaining / 60) * 60;
+        let time = hours > 0 ? hours + " hours" + (minutes > 0 ? " and " + minutes + " minutes" : "") : (minutes > 0 ? minutes + " minutes" : "Not available")
         let status = (data.percent > 49 || data.ischarging) ? "success" : (data.percent > 19 ? "warning" : "danger");
         button.icon.className = `mdi mdi-${iconSize}px d-flex lh-${iconSize} mdi-${icon}`;
         batteryIcon.className = `mdi mdi-48px d-flex lh-48 mdi-${icon}`;
@@ -28,9 +31,9 @@ function updateBattery() {
 		button.icon.style.height = CSS.px(iconSize);
         button.percentage.innerText = batteryPerc.innerText = data.percent + "%";
         button.className = `${data.model ? "d-flex" : "d-none"} btn btn-${status} rounded-pill d-flex mr-2 align-items-center`;
-		button.dataset.originalTitle = "Time remaining: " + data.timeremaining + " minutes";
+        button.dataset.originalTitle = "Time remaining: " + time;
         button.style.padding = isPerc ? ".25rem .75rem" : ".25rem";
-        batteryInfo.innerHTML = `<b class="mr-2">Manufacturer</b> ${data.manufacturer || "Unknown"}<br/><b class="mr-2">Model</b> ${data.model || "Unknown"}<br/><b class="mr-2">Time remaining</b> ${data.timeremaining} minutes`
+        batteryInfo.innerHTML = `<b class="mr-2">Manufacturer</b> ${data.manufacturer || "Unknown"}<br/><b class="mr-2">Model</b> ${data.model || "Unknown"}<br/><b class="mr-2">Time remaining</b> ${time}`
 	}).catch(e => {
 		clearInterval(batteryTimer);
 	})
