@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.1
+ - Multi-monitor support
+ - Update to Electron 6
+ - New and updated apps:
+   - discord: **added**
+   - skype: **added**
+   - notes: **added**
+   - batterymeter: **added** (bar widget)
+   - alphaclock, angles, boombox, brush, files, playmusic, typewriter, youtube: **heavily optimised**
+ - Module caching optimised
+ - Backgroundable Apps, way to minimize apps to tray
+ - Dark mode improved
+ - Different locale support
+
 ## 0.8.0
  - New UI design, macOS-styled apps and windows
  - defaultFontSize changed from 16 to 14 pixels

@@ -1,5 +1,4 @@
 const {AppWindow, Shell, Components: {Spinner}, Registry} = require("@api");
-const Semver = require("semver");
 const win = AppWindow.getCurrentWindow();
 
 const path = require("path");
