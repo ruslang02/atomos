@@ -128,6 +128,7 @@ module.exports = function (body) {
 		Elements.MenuBar.quickItems.append(...Object.values(Elements.MenuBar.quickItems.items));
 	}
 
+	Elements.MenuBar.reloadQT = loadQuickTiles;
 	loadQuickTiles();
 	body.appendChild(Elements.MenuBar);
 

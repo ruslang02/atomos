@@ -110,8 +110,7 @@ class Shell {
 				console.error(err);
 				return;
 			}
-			let pkg = await fsp.readFile(path.join(tempPath, "package.json"));
-			let info = JSON.parse(pkg.toString());
+            let info = require(path.join(tempPath, "package.json"));
 			copy_r(tempPath, path.join(osRoot, "apps", info.name.replace("@atomos", "official"))).then(() => {
 				new Notification({
 					icon: "done",
@@ -209,7 +208,8 @@ class Shell {
 		return new Promise(async function (resolve) {
 
 			if (!prog) prog = AppWindow.getFocusedWindow().app;
-			let pkg = JSON.parse(await fsp.readFile(path.join(osRoot, "apps", prog, "package.json")));
+            let pkg = require(
+                path.join(osRoot, "apps", prog, "package.json"));
 			Shell.showMessageBox({
 				type: "question",
 				buttons: ["No", "Yes"],
@@ -445,13 +445,7 @@ class Shell {
 			modal.append(modal.dialog);
 			document.body.append(modal);
 			modal.controller = new Modal(modal);
-			modal.addEventListener("show.bs.modal", () => {
-				let win = AppWindow.getFocusedWindow();
-				modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
-				modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
-				modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
-				modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
-			});
+            modal.addEventListener("show.bs.modal", showEvent);
 			modal.controller.show();
 			cancelButton.addEventListener("click", modal.controller.hide);
 			confirmButton.addEventListener("click", () => {
@@ -532,8 +526,7 @@ class Shell {
 					continue;
 				} else if (item.trim().toLowerCase() !== "package.json") continue;
 				try {
-					let json = await fsp.readFile(itemPath);
-					let pkg = JSON.parse(json.toString());
+                    let pkg = require(itemPath);
 					if (pkg.hidden || pkg.type !== "app")
 						continue;
 					let elem = document.createElement("button");
@@ -566,13 +559,7 @@ class Shell {
 		modal.append(modal.dialog);
 		document.body.append(modal);
 		let control = new Modal(modal);
-		modal.addEventListener("show.bs.modal", () => {
-			let win = AppWindow.getFocusedWindow();
-			modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
-			modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
-			modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
-			modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
-		});
+        modal.addEventListener("show.bs.modal", showEvent);
 		modal.cancelButton.addEventListener("click", control.hide);
 		modal.selectButton.addEventListener("click", () => {
 			control.hide();
@@ -697,13 +684,7 @@ class Shell {
 			modal.dialog.append(modal.content);
 			modal.append(modal.dialog);
 			document.body.append(modal);
-			modal.addEventListener("show.bs.modal", () => {
-				let win = AppWindow.getFocusedWindow();
-				modal.style.left = CSS.px(win.mainDisp.bounds.x / zoomFactor);
-				modal.style.top = CSS.px(win.mainDisp.bounds.y / zoomFactor);
-				modal.style.width = CSS.px(win.mainDisp.bounds.width / zoomFactor);
-				modal.style.height = CSS.px(win.mainDisp.bounds.height / zoomFactor);
-			});
+            modal.addEventListener("show.bs.modal", showEvent);
 			modal.controller = new Modal(modal, {
 				backdrop: options.backdrop
 			});
@@ -711,8 +692,17 @@ class Shell {
 		})
 	}
 }
-
 module.exports = Shell;
+
+function showEvent() {
+    let win = AppWindow.getCurrentWindow();
+    let disp = win ? win.mainDisp : screen.getPrimaryDisplay();
+    let modal = document.querySelector(".modal:last-child");
+    modal.style.left = CSS.px(disp.bounds.x / zoomFactor);
+    modal.style.top = CSS.px(disp.bounds.y / zoomFactor);
+    modal.style.width = CSS.px(disp.bounds.width / zoomFactor);
+    modal.style.height = CSS.px(disp.bounds.height / zoomFactor);
+}
 const defaultOptions = {
 	type: "none",
 	buttons: ["OK"],

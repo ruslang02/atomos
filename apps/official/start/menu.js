@@ -116,8 +116,7 @@ async function renderApps() {
 			appEntry.className = "btn py-1 px-2 mb-1 flex-shrink-0 d-flex flex-column align-items-center justify-content-center " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 
 			try {
-				let json = await fs.readFile(itemPath);
-				let config = JSON.parse(json.toString());
+                let config = require(itemPath);
 				if ((config.hidden && !showHidden) || config.type !== "app")
 					continue;
 				let appID = config.name.replace("@atomos", "official").replace("@", "");
@@ -184,8 +183,7 @@ async function renderActions() {
 					await addAction(name);
 					continue;
 				} else if (item.toLowerCase().trim() !== "package.json") continue;
-				let json = await fs.readFile(name);
-				let pkg = JSON.parse(json.toString());
+                let pkg = require(name);
 				for (const action of pkg.actions)
 					allActions.push(Object.assign(action, {
 						name: action.name.toLocaleString(),
@@ -210,7 +208,7 @@ function renderSearchSection() {
 
 function renderSearch() {
 	root.Search = document.createElement("search");
-	root.Search.className = "input-group toast show mw-100 d-flex shadow mb-2 flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
+    root.Search.className = "input-group toast show mw-100 d-flex mb-2 flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
 	let igp = document.createElement("label");
 	igp.className = "input-group-prepend m-0 d-flex align-items-center";
 	igp.htmlFor = "__searchInput";

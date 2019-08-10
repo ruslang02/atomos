@@ -151,7 +151,7 @@ nav.menu.menu = new Menu([{
 				icon: "earth",
 				iconBG: "linear-gradient(135deg, #1b5e20, #689f38)",
 				title: "Proton",
-				message: `Version ${JSON.parse(fs.readFileSync(__dirname + "/package.json").toString()).version}. Based on <code>&lt;webview&gt;</code> + Electron.<br/><br/>
+                message: `Version ${require(__dirname + "/package.json").version}. Based on <code>&lt;webview&gt;</code> + Electron.<br/><br/>
 &copy; Copyright 2017-2018 AtomOS devs.`
 			})
 		}

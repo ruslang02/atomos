@@ -7,8 +7,7 @@ async function renderLauncher() {
 	let items = Registry.get("launcher.items") || [];
 	if (items.length) {
 		for (const item of items) {
-			let json = await fs.readFile(path.join(osRoot, "apps", item, "package.json"));
-			let pkg = JSON.parse(json.toString());
+            let pkg = require(path.join(osRoot, "apps", item, "package.json"));
 			let elem = document.createElement('div');
 			elem.className = "mr-3 position-relative active fade show";
 			elem.title = pkg.productName || pkg.name;

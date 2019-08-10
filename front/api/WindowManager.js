@@ -66,9 +66,7 @@ if (Registry.get("system.enableSuperFetch") === true && Object.keys(appCache).le
 				await scanApps(itemPath);
 				continue;
 			} else if (item.trim().toLowerCase() !== "package.json") continue;
-
-			let json = await fs.readFile(itemPath);
-			let config = JSON.parse(json.toString());
+			let config = require(itemPath);
 			if (config.hidden || config.type !== "app")
 				continue;
 			let appPath = path.join(itemPath, "..", config.main);
@@ -107,7 +105,6 @@ class AppWindow extends EventEmitter {
 	static getCurrentWindow() {
 		let curModule = module;
 		while (curModule) {
-			console.log(curModule.parent);
 			if (curModule.parent && curModule.parent.id !== undefined && curModule.parent.type === "window")
 				return windowCollection[curModule.parent.id];
 			else if (curModule.parent) curModule = curModule.parent;
@@ -139,7 +136,7 @@ class AppWindow extends EventEmitter {
 		const winID = window._wzindex++;
 		prog = prog.replace("@atomos", "official");
 		const appRoot = path.join(osRoot, 'apps', prog);
-		let appOptions = JSON.parse((await fs.readFile(appRoot + "/package.json")).toString());
+		let appOptions = require(appRoot + "/package.json");
 		let options = Object.assign({}, defaultOptions, {
 			darkMode: Registry.get("system.isDarkMode"),
 			theme: Registry.get("system.isDarkMode") ? "dark" : "light"

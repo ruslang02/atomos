@@ -56,7 +56,7 @@ async function listApps(dir) {
 			continue;
 		} else if (item.toLowerCase().trim() !== "package.json") continue;
 		try {
-			let pkg = JSON.parse(await fs.readFile(itemPath));
+            let pkg = require(itemPath);
 			let elem = document.createElement("button");
 			elem.onclick = () => {
 				window.__currentApp = pkg.name.replace("@atomos", "official").replace("@", "");

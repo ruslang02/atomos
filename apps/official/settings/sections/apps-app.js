@@ -18,7 +18,7 @@ setTitle("App info");
 async function renderApp() {
 	const pkgFile = path.join(osRoot, "apps", window.__currentApp, "package.json");
 	root.innerHTML = "";
-	let pkg = JSON.parse(await fs.readFile(pkgFile));
+    let pkg = require(pkgFile);
 	let header = document.createElement("header");
 	header.className = "d-flex align-items-center px-3 pt-2 pb-3";
 	header.icon = document.createElement("icon");

@@ -62,8 +62,7 @@ function updatePosition() {
 async function loadPlugins() {
 	let items = Registry.get("taskbar.items");
 	for (const id of items.values()) {
-		let file = await fs.readFile(path.join(osRoot, "apps", id, "package.json"), "utf-8");
-		let pkg = JSON.parse(file);
+        let pkg = require(path.join(osRoot, "apps", id, "package.json"));
 		if (pkg.type !== "bar-plugin")
 			return;
 		try {

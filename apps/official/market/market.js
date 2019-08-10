@@ -186,10 +186,8 @@ async function loadApp(app) {
 	api.Projects.show(app).then(async function (pkg) {
 		console.log(pkg);
 		let appPath = path.join(osRoot, "apps", pkg.path_with_namespace, "package.json");
-		if (fs.existsSync(appPath)) {
-			let file = await fsp.readFile(appPath);
-			installedVersion = JSON.parse(file.toString()).version;
-		}
+        if (fs.existsSync(appPath))
+            installedVersion = require(appPath).version;
 		descr.innerText = pkg.description;
 		isInstalled.className = "d-flex align-items-center mdi mdi-18px font-weight-bolder mr-auto " + (installedVersion ? "mdi-check" : "mdi-close");
 		isInstalled.innerHTML = "&nbsp;&nbsp;" + (installedVersion ? "This app is installed".toLocaleString() : "This app is not installed".toLocaleString());
@@ -339,7 +337,7 @@ async function refreshInstalledApps() {
 				continue;
 			} else if (dir.toLowerCase().trim() !== "package.json") continue;
 			try {
-				let app = JSON.parse(await fsp.readFile(name));
+                let app = require(name);
 				let elem = document.createElement("div");
 				elem.className = "btn very-rounded d-flex text-left mt-2 align-items-center " + (win.options.darkMode ? "btn-outline-light" : "btn-white");
 				elem.icon = document.createElement("icon");

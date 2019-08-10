@@ -2,6 +2,8 @@ const {
 	BrowserWindow,
 	app
 } = require('electron');
+const widevine = require('electron-widevinecdm-dev');
+widevine.load(app);
 const path = require("path");
 let isDebug = !!(process.argv[2] && (process.argv[2].trim().toLowerCase() === "-d" || process.argv[1].includes("inspect-brk")));
 app.commandLine.appendSwitch('--enable-features', 'OverlayScrollbar');

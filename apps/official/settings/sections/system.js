@@ -25,7 +25,7 @@ list.dat = newSmallListItem({
 	click: e => openSection("system-time")
 });
 list.pcinfo = newSmallListItem({
-	color: "var(--primary)",
+    color: "var(--dark)",
 	icon: "memory",
 	label: "Device specifications",
 	click: () => openSection("system-specs")
@@ -36,11 +36,17 @@ list.sources = newSmallListItem({
 	label: "Open source licenses",
 	click: () => AppWindow.launch("@atomos/typewriter", {file: osRoot + "/LICENSE"})
 });
+list.quickTiles = newSmallListItem({
+    color: "var(--primary)",
+    icon: "gamepad-circle-outline",
+    label: "Quick Tiles",
+    click: () => openSection("system-quicktiles")
+});
 let newButton = document.createElement("button");
 newButton.className = "m-2 lh-24 p-1 mdi mdi-24px mdi-github-face btn rounded-circle d-flex " + (Shell.ui.darkMode ? "btn-dark" : "btn-white");
 newButton.onclick = () => Shell.openExternal(info.repository.url);
 setActionButton(newButton);
-list.append(list.dat, list.pcinfo, list.sources);
+list.append(list.dat, list.pcinfo, list.sources, list.quickTiles);
 let debugInfo = document.createElement("div");
 debugInfo.className = "smaller text-muted lh-24 px-3";
 debugInfo.innerText = `Electron ${process.versions.electron}
