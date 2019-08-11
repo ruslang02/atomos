@@ -13,6 +13,7 @@
  - Backgroundable Apps, way to minimize apps to tray
  - Dark mode improved
  - Different locale support
+ - Wi-Fi, networking support
 
 ## 0.8.0
  - New UI design, macOS-styled apps and windows
