@@ -4,7 +4,8 @@ const path = require("path");
 const {
 	Shell,
 	Snackbar,
-	Menu
+    Menu,
+    Registry
 } = require("@api");
 const wifi = require("node-wifi");
 wifi.init({
