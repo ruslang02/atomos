@@ -112,7 +112,11 @@ window.addEventListener("keydown", e => {
 	if (e.key === "Meta") window.__MetaKeyOverriden = false;
 });
 window.addEventListener("keyup", e => {
-	if (e.key === "Meta" && !window.__MetaKeyOverriden) Elements.StartMenu.toggle();
+	if (!window.__MetaKeyOverriden && e.code === "KeyA") {
+		Elements.StartMenu.open();
+		Elements.StartMenu.AssistantButton.click();
+		window.__MetaKeyOverriden = true;
+	} else if (e.key === "Meta" && !window.__MetaKeyOverriden) Elements.StartMenu.toggle();
 });
 
 fs.readFile(__dirname + "/menu.js", "utf-8").then(code => {

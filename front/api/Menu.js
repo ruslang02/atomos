@@ -172,7 +172,6 @@ class Menu extends EventEmitter {
 						_this.menu.overlay.onclick(e);
 					};
 					menuInput.checked = this.g(item.checked);
-					console.log(this.g(item.checked), item);
 					let menuTitle = document.createElement("label");
 					menuTitle.className = "flex-grow-1 custom-control-label" + (Shell.ui.darkMode ? " text-white" : "");
 					menuTitle.style.cursor = "pointer";
