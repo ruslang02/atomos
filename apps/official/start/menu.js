@@ -4,9 +4,10 @@ const path = require("path");
 const cp = require("child_process");
 const appPath = osRoot + "/apps";
 const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Registry = require("@api/Registry"),
-    Shell = require("@api/Shell");
+    Shell = require("@api/Shell"), {Button} = require("@api/Components");
+const {Assistant} = require(__dirname + "/assistant");
 const sdk = require("microsoft-cognitiveservices-speech-sdk");
-const subscriptionKey = "c0d3d6639ccd4b868f449e149fef61ca";
+const subscriptionKey = Registry.get("assistant.speechsdk.key") || "";
 const serviceRegion = "westeurope";
 let root, active, allApps = [], allActions = [], mathjs;
 
@@ -273,18 +274,27 @@ function renderAssistantSection() {
     root.Assistant.style.cssText = "--display: flex";
     root.Assistant.style.display = "none";
     root.Assistant.style.overflow = "overlay";
+    let backButton = document.createElement("button");
+    backButton.className = "btn btn-secondary mdi mdi-24px lh-24 d-flex p-1 mdi-arrow-left rounded-circle shadow m-2 position-absolute";
+    backButton.style.top = backButton.style.left = 0;
+    root.Assistant.append(backButton);
+    let assistant = new Assistant({
+        send(message) {
+            generateMessage(message, true);
+        }
+    });
     root.Assistant.add = r => {
         generateMessage(r.text);
-        let command = r.text.trim().toLowerCase();
-        if (command.includes("weather"))
-            generateMessage("It will be sunny tomorrow.", true);
+        assistant.process(r.text.trim()).then(message => {
+            generateMessage(message, true);
+        });
     };
     root.Assistant.reset = () => {
         root.Assistant.innerHTML = "";
         let poweredBy = document.createElement("div");
         poweredBy.className = "p-2 text-center text-muted";
         poweredBy.innerHTML = "Powered by <b>Azure Cognitive Services</b>";
-        root.Assistant.append(poweredBy);
+        root.Assistant.append(poweredBy, backButton);
     };
     root.Assistant.reset();
 

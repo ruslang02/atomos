@@ -1,5 +1,6 @@
 const {Snackbar, Menu, AppWindow, Shell, Components: {Button}} = require("@api");
 const win = AppWindow.getCurrentWindow();
+const fs = require("fs");
 const path = require("path");
 let saveState, cropper, file;
 let toBuffer = require('blob-to-buffer');

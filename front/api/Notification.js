@@ -152,7 +152,7 @@ class Notification extends EventListener {
 			console.log(options.image);
 			this.ui.avatarImage = document.createElement("div");
 			this.ui.avatarImage.style.height = this.ui.avatarImage.style.width = CSS.px(48);
-			this.ui.avatarImage.style.backgroundImage = `url(${options.image || options.icon})`;
+			this.ui.avatarImage.style.backgroundImage = `url(${options.image})`;
 			this.ui.avatarImage.style.backgroundSize = 'cover';
 			this.ui.avatarImage.className = "rounded ml-auto shadow-sm flex-shrink-0";
 			this.ui.body.append(this.ui.avatarImage);

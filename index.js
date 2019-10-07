@@ -2,8 +2,6 @@ const {
 	BrowserWindow,
 	app
 } = require('electron');
-const widevine = require('electron-widevinecdm-dev');
-widevine.load(app);
 const path = require("path");
 let isDebug = !!(process.argv[2] && (process.argv[2].trim().toLowerCase() === "-d" || process.argv[1].includes("inspect-brk")));
 app.commandLine.appendSwitch('--enable-features', 'OverlayScrollbar');
@@ -49,9 +47,7 @@ app.on('ready', function() {
 	win.maximize();
 	win.loadFile(path.join(__dirname, "front/desktop.html"));
 	if (win.removeMenu) win.removeMenu(); else win.setMenu(null);
-	if (isDebug) win.webContents.on('devtools-opened', () => {
-		win.webContents.addWorkSpace(__dirname)
-	});
+    if (isDebug) win.openDevTools();
 	win.webContents.on('new-window', (e, u) => {
 		e.preventDefault();
 		win.webContents.send("new-window", u);
