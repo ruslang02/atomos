@@ -32,6 +32,7 @@ body.simple {
 body.noAnim, body.noAnim * {
 	transition: none !important;
 	animation-duration: 0s !important;
+    box-shadow: none !important;
 }
 
 body.blur .modal:not(.noBlur) {

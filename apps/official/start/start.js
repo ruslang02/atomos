@@ -113,7 +113,8 @@ window.addEventListener("keydown", e => {
 });
 window.addEventListener("keyup", e => {
 	if (!window.__MetaKeyOverriden && e.code === "KeyA") {
-		Elements.StartMenu.open();
+		if (Elements.StartMenu.classList.contains("hide"))
+			Elements.StartMenu.open();
 		Elements.StartMenu.AssistantButton.click();
 		window.__MetaKeyOverriden = true;
 	} else if (e.key === "Meta" && !window.__MetaKeyOverriden) Elements.StartMenu.toggle();
