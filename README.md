@@ -1,11 +1,9 @@
 # AtomOS Desktop Environment
 
 ![alt text](https://raw.githubusercontent.com/ruslang02/atomos/master/PREVIEW.png)
-**Tested on Electron 6.0. Previous versions of Electron are not guaranteed to work with AtomOS 0.8.1.**
+**Tested on Electron 9.0. Previous versions of Electron are not guaranteed to work with recent builds.**
 
-Latest version: 0.8.1. [Download](https://github.com/ruslang02/atomos/releases).
-
-Fully web-based X11 Desktop Environment on Linux, working in Electron.
+Fully JS-based X11 Desktop Environment on Linux, working in Electron.
 Contains web-based applications with full Node.JS and Electron access. All latest JS technologies are used.
 There is also an operating system available based on this.
 

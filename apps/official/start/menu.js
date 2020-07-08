@@ -4,10 +4,6 @@ const path = require("path");
 const cp = require("child_process");
 const Menu = require("@api/Menu"), AppWindow = require("@api/WindowManager"), Registry = require("@api/Registry"),
     Shell = require("@api/Shell"), {Button} = require("@api/Components");
-const sdk = require("microsoft-cognitiveservices-speech-sdk");
-const SpeechSDKkey = Registry.get("assistant.speechsdk.key") || "";
-const AccuWeatherkey = Registry.get("assistant.weather.key") || "";
-const serviceRegion = "westeurope";
 const appPath = osRoot + "/apps";
 let root, active, allApps = [], allActions = [], mathjs;
 
@@ -34,7 +30,6 @@ function render() {
     };
     Elements.StartMenu.open = function () {
         Elements.Bar.keepOpen(true);
-        root.Assistant.reset();
         Elements.StartMenu.classList.replace("hide", "show");
         Elements.StartMenu.Search.Input.value = "";
         if (root.Search.Input.tooltip) root.Search.Input.tooltip.show();
@@ -44,11 +39,9 @@ function render() {
         root.Search.Input.placeholder = "Search apps or execute any action...".toLocaleString();
     };
     Elements.StartMenu.close = function () {
-        if (recognizer) recognizer.dispose();
         Elements.Bar.keepOpen(false);
         Elements.StartMenu.classList.replace("show", "hide");
         Elements.BarItems["official/start"].style.transform = "rotate(0deg)";
-        root.AssistantButton.classList.remove("text-danger");
     };
 
     Elements.StartMenu.addEventListener("click", function (e) {
@@ -65,9 +58,8 @@ function render() {
     renderApps();
     renderSearchSection();
     renderSearch();
-    renderAssistantSection();
     renderAccountSection();
-    root.append(root.Account, root.SearchSection, root.AppsSection, root.Assistant, root.Search);
+    root.append(root.Account, root.SearchSection, root.AppsSection, root.Search);
     return Elements.StartMenu;
 }
 
@@ -267,55 +259,6 @@ function renderSearchSection() {
     root.SearchSection.style.display = "none";
 }
 
-
-function renderAssistantSection() {
-    root.Assistant = document.createElement("section");
-    root.Assistant.className = "flex-nowrap py-2 px-3 flex-column-reverse position-relative flex-grow-1 toast show mw-100  " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
-    root.Assistant.style.cssText = "--display: flex";
-    root.Assistant.style.display = "none";
-    root.Assistant.style.overflow = "overlay";
-    let backButton = document.createElement("button");
-    backButton.className = "btn btn-secondary mdi mdi-24px lh-24 d-flex p-1 mdi-arrow-left rounded-circle shadow m-2 position-absolute";
-    backButton.style.top = backButton.style.left = 0;
-    backButton.onclick = () => showSection(root.AppsSection);
-    root.Assistant.append(backButton);
-    root.Assistant.new = r => {
-        root.Assistant.add(r.text);
-        assistantWorker.postMessage({
-            action: "process",
-            command: r.text.trim()
-        });
-    };
-    root.Assistant.reset = () => {
-        root.Assistant.innerHTML = "";
-        let poweredBy = document.createElement("div");
-        poweredBy.className = "p-2 text-center text-muted";
-        poweredBy.innerHTML = "Powered by <b>Azure Cognitive Services</b>";
-        root.Assistant.append(poweredBy, backButton);
-    };
-    root.Assistant.reset();
-
-    root.Assistant.add = (message, assistant = false) => {
-        let dir = assistant ? "left" : "right";
-        let color = assistant ? "light text-dark border" : "info text-white";
-        let row = document.createElement("div");
-        row.className = "mt-2 text-" + dir;
-        let elem = document.createElement("div");
-        elem.className = "d-inline-block very-rounded py-2 px-3 shadow-sm bg-" + color;
-        elem.style.minWidth = CSS.px(150);
-        elem.style.maxWidth = CSS.px(250);
-        elem.innerHTML = message;
-        row.append(elem);
-        root.Assistant.prepend(row);
-        root.Assistant.scrollTop = root.Assistant.scrollHeight;
-    }
-}
-
-let recognizer;
-let assistantWorker;
-
-let audioConfig, speechConfig;
-
 function renderSearch() {
     root.Search = document.createElement("search");
     root.Search.className = "input-group toast show mw-100 d-flex shadow flex-shrink-0 " + (Shell.ui.darkMode ? "bg-dark" : "bg-white");
@@ -329,78 +272,9 @@ function renderSearch() {
     root.Search.Input.className = "form-control bg-transparent py-2 px-1 border-0 shadow-none" + (Shell.ui.darkMode ? " text-white" : "");
     igp.htmlFor = root.Search.Input.id = "__searchInput";
     root.Search.Input.dataset.editMenu = "false";
-    root.AssistantButton = document.createElement("button");
-    root.AssistantButton.className = "mdi mdi-18px lh-18 px-2 border-0 shadow-none mdi-microphone btn d-flex align-items-center" + (Shell.ui.darkMode ? " text-white" : "");
-    root.AssistantButton.title = "Assistant (preview)".toLocaleString();
-    root.AssistantButton.onclick = () => {
-        if (!assistantWorker) {
-            assistantWorker = new Worker(__dirname + "/assistant.js");
-            assistantWorker.onmessage = e => {
-                switch (e.data.action) {
-                    case "ready":
-                        assistantWorker.postMessage({
-                            action: "sendKeys",
-                            keys: {
-                                AccuWeatherkey,
-                                SpeechSDKkey
-                            }
-                        });
-                        break;
-                    case "reply":
-                        root.Assistant.add(e.data.reply, true);
-                }
-            };
-            try {
-                audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
-                speechConfig = sdk.SpeechConfig.fromSubscription(SpeechSDKkey, serviceRegion);
-                speechConfig.speechRecognitionLanguage = "en-US";
-            } catch (e) {
-                root.Assistant.add("Uh oh!<br><br>There is no <b>Azure Cognitive Services key</b> present in system. Add it in Settings and try again.", true);
-                root.Search.Input.placeholder = "";
-                root.AssistantButton.classList.remove("text-danger");
-
-            }
-        }
-        if (root.AssistantButton.classList.contains("text-danger")) {
-            if (recognizer) recognizer.dispose();
-            root.AssistantButton.classList.remove("text-danger");
-            if (root.Assistant.childNodes.length > 1) {
-                root.Search.Input.placeholder = "Press on the microphone and start speaking".toLocaleString();
-            } else showSection(root.AppsSection);
-        }
-
-        root.AssistantButton.classList.add("text-danger");
-        root.Search.Input.placeholder = "Talk in the microphone...".toLocaleString();
-        showSection(root.Assistant);
-        recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
-        recognizer.recognizing = (sender, event) => {
-            root.Search.Input.placeholder = event.result.text + "...";
-        };
-        recognizer.recognized = (sender, event) => {
-            root.Search.Input.placeholder = "";
-            root.AssistantButton.classList.remove("text-danger");
-            if (event.result)
-                root.Assistant.new(event.result);
-            else {
-                if (root.Assistant.childNodes.length > 1) {
-                    root.Search.Input.placeholder = "Press on the microphone and start speaking".toLocaleString();
-                } else showSection(root.AppsSection);
-            }
-        };
-        recognizer.recognizeOnceAsync(
-            function (result) {
-                recognizer.close();
-                recognizer = undefined;
-            },
-            function (err) {
-                console.trace("err - " + err);
-
-                recognizer.close();
-                recognizer = undefined;
-            });
-    };
+    
     igp.appendChild(root.SearchIcon);
-    root.Search.append(igp, root.Search.Input, root.AssistantButton);
+    root.Search.append(igp, root.Search.Input);
     root.Search.Input.addEventListener("input", search);
     root.Search.Input.addEventListener("keydown", e => {
         if (e.key === "ArrowUp") {
@@ -530,14 +404,13 @@ async function search() {
         items[0].additional.classList.add("show");
         root.SearchSection.append(...items);
         showSection(root.SearchSection);
-    }
+    }	
 }
 
 function showSection(elem) {
     active = elem;
     root.SearchSection.style.display = "none";
     root.AppsSection.style.display = "none";
-    root.Assistant.style.display = "none";
     elem.style.display = elem.style.getPropertyValue("--display");
 }
 
