@@ -614,3 +614,7 @@ menu.dropdown-menu {
 	border-bottom-left-radius: 50rem !important;
 	border-top-left-radius: 50rem !important;
 }
+
+.toast {
+	flex: 0;
+}

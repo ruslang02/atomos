@@ -16,7 +16,7 @@
     "test-no-sandbox": "electron . -d --no-sandbox --remote-debugging-port=9229",
     "test-no-gpu": "electron . -d --disable-gpu --remote-debugging-port=9229"
   },
-  "author": "Ruslan",
+  "author": "Ruslan Garifullin <ruslan.g2002@gmail.com>",
   "license": "MPL-2.0",
   "optionalDependencies": {
     "google-auth-library": "^2.0.2",
