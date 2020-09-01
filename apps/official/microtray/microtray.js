@@ -1,5 +1,0 @@
-class MicroTray {
-	constructor(win) {
-
-	}
-}

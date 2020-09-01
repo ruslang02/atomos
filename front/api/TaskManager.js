@@ -1,1 +1,0 @@
-module.exports = require("@apps/official/tasker");
