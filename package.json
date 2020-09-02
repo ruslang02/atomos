@@ -20,7 +20,7 @@
   "license": "MPL-2.0",
   "optionalDependencies": {
     "google-auth-library": "^2.0.2",
-    "googleapis": "^36.0.0",
+    "googleapis": "^39.1.0",
     "telegram-mtproto": "^2.2.2",
     "vk-io": "^4.0.0-rc.19"
   },
