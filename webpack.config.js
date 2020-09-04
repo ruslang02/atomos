@@ -1,14 +1,14 @@
 const HtmlPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin: CleanPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const { join } = require('path');
+const { join, resolve } = require('path');
 const { glob } = require('glob');
 
 const mainCfg = {
   mode: 'none',
   target: 'electron-main',
   node: {
-    __dirname: false,
+    __dirname: true,
     __filename: false,
   },
   entry: {
@@ -17,12 +17,16 @@ const mainCfg = {
   module: {
     rules: [
       {
-        test: /\.(ts)$/,
+        test: /\.ts$/,
         exclude: /node_modules/,
         use: {
           loader: "ts-loader"
         }
-      }
+      },
+      {
+        test: /\.node$/,
+        loader: 'node-loader',
+      },
     ]
   },
   output: {
@@ -31,9 +35,15 @@ const mainCfg = {
     path: join(__dirname, 'dist'),
   },
   resolve: {
+    alias: {
+      '../build/Debug/iconv.node$': resolve(
+        __dirname,
+        'node_modules/iconv/build/Release/iconv.node'
+      ),
+    },
     extensions: ['.ts', '.js', '.json'],
-  },
-  plugins: [new CleanPlugin()]
+  },  
+  //plugins: [new CleanPlugin()]
 };
 
 const windows = glob.sync("./src/windows/*/renderer.tsx");
@@ -65,11 +75,11 @@ const rendererCfg = {
         use: {
           loader: "ts-loader"
         }
-      }
+      },
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.json'],
+    extensions: ['.tsx', '.ts', '.js', '.json', '.node'],
   },
   output: {
     filename: '[name].bundle.js',

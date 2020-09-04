@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "noImplicitAny": true,
+    "outDir": "dist", 
     "module": "commonjs",
     "target": "es2020",
     "jsx": "react",
@@ -16,6 +15,6 @@
     "alwaysStrict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "resolveJsonModule": true,
+    "resolveJsonModule": true
   }
 }

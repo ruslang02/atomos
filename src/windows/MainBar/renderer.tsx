@@ -17,6 +17,8 @@ const GlobalStyle = createGlobalStyle`
     width: 100%;
   }
 
+  *::-webkit-scrollbar { display: none; }
+
   #root {
     display: flex;
   }
@@ -30,11 +32,11 @@ export function App() {
     setInterval(() => {
       exec('qdbus org.kde.KWin /Compositor org.kde.kwin.Compositing.active', (_err, stdout) => {
         setCompositor({
-          enabled: stdout === 'true',
+          enabled: !!stdout,
           wm: 'kwin'
         });
       });
-    }, 5e3);
+    }, 5000);
   });
 
   return (
