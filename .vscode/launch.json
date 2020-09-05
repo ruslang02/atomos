@@ -13,13 +13,16 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
+      "args": [],
       "outFiles": [
-        "${workspaceFolder}/src/**/*.js"
+        "${workspaceFolder}/src/**/*.ts"
       ],
       "sourceMaps": true,
       "sourceMapPathOverrides": {
         "webpack:///*": "${workspaceRoot}/*"
       },
+      "autoAttachChildProcesses": true,
+      "console": "integratedTerminal"
     }
   ]
 }

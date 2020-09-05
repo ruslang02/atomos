@@ -1,13 +1,12 @@
 import { mdiApps, mdiWindowMaximize } from '@mdi/js';
 import Icon from '@mdi/react';
 import Color from 'color';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, IpcRendererEvent } from 'electron';
 import React, { useContext, useEffect, useState } from 'react';
 import styled, { ThemeProps, ThemeProvider } from 'styled-components';
 import { Window } from 'wmctrljs';
 import { CompositorContext, CompositorContextValue } from '../../contexts/CompositorContext';
 import { ThemeContext, ThemeContextValue } from '../../contexts/ThemeContext';
-import { IpcRendererEvent } from 'electron/renderer';
 
 interface RenderProps {
   readonly compositor: CompositorContextValue;
@@ -47,6 +46,8 @@ const FloatButton = styled.button<ThemeProps<ThemeContextValue>>`
     flex-shrink: 0;
   }
 `;
+
+
 
 function TaskBar() {
   const [windows, setWindows] = useState<Window[]>([]);
