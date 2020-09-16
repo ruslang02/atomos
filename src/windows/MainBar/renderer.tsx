@@ -15,6 +15,7 @@ const GlobalStyle = createGlobalStyle`
     font-size: 14px;
     height: 100%;
     width: 100%;
+    overflow: hidden;
   }
 
   *::-webkit-scrollbar { display: none; }
@@ -29,10 +30,10 @@ export function App() {
   const [compositor, setCompositor] = useState<CompositorContextValue>(defaultCompositorValue);
   const [theme, setTheme] = useState<ThemeContextValue>(defaultThemeValue);
   useEffect(() => {
-    setInterval(() => {
+    setTimeout(() => {
       exec('qdbus org.kde.KWin /Compositor org.kde.kwin.Compositing.active', (_err, stdout) => {
         setCompositor({
-          enabled: !!stdout,
+          enabled: !!(stdout.trim() === "true"),
           wm: 'kwin'
         });
       });

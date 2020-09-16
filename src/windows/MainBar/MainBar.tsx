@@ -35,6 +35,7 @@ const FloatButton = styled.button<ThemeProps<ThemeContextValue>>`
   padding: .5rem .75rem;
   margin-right: .5rem;
   flex-shrink: 0;
+  outline: none;
   max-width: 150px;
   span {
     overflow: hidden;
@@ -45,6 +46,12 @@ const FloatButton = styled.button<ThemeProps<ThemeContextValue>>`
   svg {
     flex-shrink: 0;
   }
+  &:hover {
+    box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.7), inset 0px 0px 0px 100px ${props => Color(props.theme.colors.primary).lighten(1).hex()};
+  }
+  &:active {
+    background: #${props => Color(props.theme.colors.primary).darken(1).hex()};
+  }
 `;
 
 
@@ -52,10 +59,7 @@ const FloatButton = styled.button<ThemeProps<ThemeContextValue>>`
 function TaskBar() {
   const [windows, setWindows] = useState<Window[]>([]);
   useEffect(() => {
-    const handleGetWindows = (_e: IpcRendererEvent, val: Window[]) => {
-      console.log(val);
-      setWindows(val);
-    };
+    const handleGetWindows = (_e: any, wins: Window[]) => console.log(setWindows(wins));
     ipcRenderer.on('x11.getWindows', handleGetWindows);
     return () => {
       ipcRenderer.off('x11.getWindows', handleGetWindows);
@@ -64,7 +68,7 @@ function TaskBar() {
   return (
     <div style={{ flexGrow: 1, overflow: "auto", width: "0", padding: ".5rem" }}>{
       windows.map(window => (
-        <FloatButton>
+        <FloatButton key={window.win_id}>
           <Icon path={mdiWindowMaximize} size="24px" />
           <span style={{ marginLeft: '.25rem' }}>{window.win_name}</span>
         </FloatButton>

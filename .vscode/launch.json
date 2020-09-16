@@ -13,6 +13,9 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
+      "env": {
+        "ELECTRON_ENABLE_LOGGING": "1"
+      },
       "args": [],
       "outFiles": [
         "${workspaceFolder}/src/**/*.ts"
@@ -22,7 +25,7 @@
         "webpack:///*": "${workspaceRoot}/*"
       },
       "autoAttachChildProcesses": true,
-      "console": "integratedTerminal"
+      "console": "internalConsole"
     }
   ]
 }
