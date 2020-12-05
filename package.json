@@ -44,7 +44,6 @@
     "musicmetadata": "^2.0.5",
     "node-viewerjs": "^0.6.6",
     "node-wifi": "^2.0.5",
-    "playmusic": "git+https://github.com/jamon/playmusic.git",
     "semver": "^5.7.0",
     "source-sans-pro": "^2.45.0",
     "systeminformation": "^4.13.2",
