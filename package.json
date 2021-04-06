@@ -46,7 +46,7 @@
     "node-wifi": "^2.0.5",
     "semver": "^5.7.0",
     "source-sans-pro": "^2.45.0",
-    "systeminformation": "^4.13.2",
+    "systeminformation": "^5.6.4",
     "tar": "^4.4.10",
     "xml2js": "^0.4.19",
     "youtube-dl": "^1.13.1"
